@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import tree from './modules/tree';
+import tree from './store/modules/tree';
 
 Vue.use(Vuex)
 
