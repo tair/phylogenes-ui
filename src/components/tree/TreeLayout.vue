@@ -211,7 +211,7 @@
 
                 enteringNodes
                     .append('circle')
-                    .attr('r', 5)
+                    .attr('r', 10)
                     .classed("normal_circle", true)
                     .classed("dup_circle", (d) => {
                         if(d.data.node_type) {

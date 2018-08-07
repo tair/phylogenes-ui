@@ -1,11 +1,11 @@
 <template>
     <div id="table-view">
-        <table id="onlyHeader">
+        <table id="table-oh">
             <thead>
                 <tr></tr>
             </thead>
         </table>
-        <table id="orig">
+        <table id="table-wh">
             <tbody></tbody>
         </table>
     </div>
@@ -23,8 +23,8 @@
         data() {
             return {
                 selectedNode: null,
-                table: null,
-                tableDup: null,
+                tableBody: null,
+                tableHeader: null,
                 i: 0,
                 rowHeight: 40,
                 marginTopY: 120,
@@ -33,22 +33,17 @@
             }
         },
         methods: {
-            renderTableHeaders(table) {
+            renderTableHeaders(table, colWidths) {
                 var titles = d3.keys(this.stateTreeData[0]);
-                //console.log(titles);
 
                 const updateTh = table.select('thead').select('tr')
                     .selectAll('th')
                     .data(titles);
                 const enterTh = updateTh.enter()
                     .append("th")
-                    .style("min-width", function(d,i) {
-                        if(i == 0) return "20px";
-                        if(i == 1) return "230px";
-                        if(i == 2) return "150px";
-                        if(i == 3) return "230px";
-                        if(i == 4) return "230px";
-                        return "130px";
+                    .style("width", function(d,i) {
+                        var width = colWidths[i] + "px";
+                        return width;
                     });
                 const exitTh = updateTh.exit();
 
@@ -60,65 +55,131 @@
                     .style("opacity", 0)
                     .remove();
             },
-            update() {
-                // var tableV = d3.select("table");
-                // var scrollHeight = tableV.property("scrollHeight");
-                // console.log(scrollHeight);
-
-                this.table = d3.select('#table-view').select('#orig');
-                this.tableDup = d3.select('#table-view').select('#onlyHeader');
-                //this.table.style("scrollTop", 20);
-
-                var marginTop = (this.marginTopY + this.paddingTopY - this.rowHeight)+"px";
-                // this.table.transition().duration(500)
-                //     .style("margin-top",marginTop);
-                this.tableDup.transition().duration(500)
-                    .style("margin-top",marginTop);
-
-                // ~~~~~~~~~~~~~~~~~~~ Titles ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            renderTableBody(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
-                this.renderTableHeaders(this.table);
-
-                this.renderTableHeaders(this.tableDup);
-                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-                const updateTr = this.table.select('tbody')
+                //var data = this.stateTreeData
+                //Maps all the tree data into it's own rows.
+                var rows_d3_map = table_d3.select('tbody')
                     .selectAll('tr')
                     .data(this.stateTreeData);
-                //console.log(updateTr);
-                const enterTr = updateTr.enter().append('tr')
-                    .style("opacity", 0);
-                const exitTr = updateTr.exit();
+                // console.log(this.stateTreeData);
 
-                const updateTd = updateTr.merge(enterTr)
+                if(rows_d3_map.length === 0) {
+                    console.log("No new entering nodes");
+                    return;
+                }
+                //All the rows which are new. At first load it's all the rows from data.
+                var rows_entering = rows_d3_map.enter();
+                // console.log("Enter: ", rows_entering.size());
+                var rows_exiting = rows_d3_map.exit();
+                // console.log("Exit: ", rows_exiting.size());
+                // console.log(rows_d3_map);
+                //Modify the rows entering with appending html tags or modifying its style.
+                rows_entering = rows_entering.append('tr')
+                    .style("opacity", 0);
+                /*
+                    Here we append <tr> to <tbody> and add style. The html looks like this:
+                    <tbody>
+                        <tr style="opacity: 0"></tr>
+                        ...
+                        ...
+                        <tr style="opacity: 0"></tr>
+                    </tbody>
+                 */
+                //console.log(rows_entering);
+                rows_entering.transition().duration(1000)
+                    .style("opacity", 1);
+                rows_exiting.transition().duration(500)
+                    .style("opacity", 0)
+                    .remove();
+
+                // console.log(rows_entering.selectAll('tr'));
+
+                var tdHeight = this.rowHeight + 'px';
+                /*
+                    selection.merge(other)
+                Returns a new selection merging this selection with the specified other selection.
+                The returned selection has the same number of groups and the same parents as this selection.
+                commonly used to merge the enter and update selections after a data-join.
+                */
+                var td_rows_map = rows_d3_map.merge(rows_entering);
+                td_rows_map = td_rows_map
                     .selectAll('td')
-                    .data(function (d) {
-                        return titles.map(function (k) {
+                    .data((d) => {
+                        return titles.map((k) => {
                             return { 'value': d[k], 'name': k};
                         });
                     });
 
-                enterTr.transition().duration(1000)
-                    .style("opacity", 1);
+                // console.log(td_rows_map);
+                var td_entering = td_rows_map.enter();
+                td_entering = td_entering.append('td');
 
-                const enterTd = updateTd.enter().append('td');
-                const exitTd = updateTd.exit();
-
-                var tdHeight = this.rowHeight + 'px';
-                //merge
-                const td = updateTd.merge(enterTd)
-                    .attr('class', 'container')
+                td_rows_map = td_rows_map.merge(td_entering);
+                td_rows_map = td_rows_map
                     .attr('data-th', d => d.name)
-                    .style('height', tdHeight)
-                    .on('drag', d => {
-                        console.log("Dragging");
-                    })
-                    .text(d => d.value);
+                    .text(d => d.value)
+                    .style('height', tdHeight);
+            },
+            getColWidths(table_d3) {
+                var widths = [];
+                //Select the first <tr> from the table
+                var selection = table_d3.select('tbody')
+                    .select('tr');
 
-                exitTd.transition().duration(100).remove();
-                exitTr.transition().duration(500)
-                    .style("opacity", 0)
-                    .remove();
+                selection.each(function(d) {
+                    d3.selectAll(this.childNodes)
+                        .each(function(d) {
+                            widths.push(d3.select(this).node().getBoundingClientRect().width)
+                        });
+                });
+                return widths;
+            },
+            update() {
+                if(this.stateTreeData == null) return;
+
+                this.tableBody = d3.select('#table-view').select('#table-wh');
+                this.renderTableBody(this.tableBody);
+                // ~~~~~~~~~~~~~~~~~~~ Titles ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+                var colWidths = this.getColWidths(this.tableBody);
+                this.tableHeader = d3.select('#table-view').select('#table-oh');
+                this.renderTableHeaders(this.tableHeader, colWidths);
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+                var marginTop = (this.marginTopY + this.paddingTopY - this.rowHeight)+"px";
+                // this.table.transition().duration(500)
+                //     .style("margin-top",marginTop);
+                this.tableHeader.transition().duration(500)
+                    .style("margin-top",marginTop);
+            },
+            setScroll(val) {
+                var elmnt = document.getElementById("table-wh");
+                if(elmnt == null) return;
+                if(val.y > 0) {
+                    elmnt.scrollTop = 0;
+                } else {
+                    var treeBottomY = -val.y;
+                    elmnt.scrollTop = treeBottomY;
+                }
+            },
+            setPadding(val) {
+                var elmnt = document.getElementById("table-wh");
+                if(elmnt == null) return;
+                if(val.y > 0) {
+                    this.paddingTopY = val.y;
+                } else {
+                    this.paddingTopY = 0;
+                    var treeBottomY = -val.y;
+                    elmnt.scrollTop = treeBottomY;
+                    var diff = treeBottomY - elmnt.scrollTop;
+                    if(diff > 10) {
+                        this.paddingTopY = -diff;
+                    }
+                }
+            },
+            handleScroll(event) {
+                var table1 = document.getElementById("table-wh");
+                if(table1 == null) return;
             }
         },
         computed: {
@@ -138,40 +199,25 @@
                 handler: function (val, oldVal) {
                     this.rowHeight = 40;
                     this.rowHeight = this.rowHeight * val.k;
-                    //console.log(val.y);
-                    var elmnt = document.getElementById("orig");
-
-                    if(val.y > 0) {
-                        this.paddingTopY = val.y;
-                        elmnt.scrollTop = 0;
-                    } else {
-                        //console.log(elmnt.scrollTop);
-                        this.paddingTopY = 0;
-                        var treeBottomY = -val.y;
-                        elmnt.scrollTop = treeBottomY;
-                        var diff = treeBottomY - elmnt.scrollTop;
-                        if(diff > 10) {
-                            //console.log(this.paddingTopY);
-                            this.paddingTopY = -diff;
-                            //console.log(diff);
-                        }
-                        //console.log(elmnt.scrollTop);
-                        //console.log(val.y);
-                    }
-
+                    this.setScroll(val);
+                    this.setPadding(val);
                     //console.log(this.rowHeight);
                     this.update();
                 },
             }
         },
         mounted() {
-
+            var elmnt = document.getElementById("table-wh");
+            if(elmnt == null) return;
+            elmnt.addEventListener('scroll', this.handleScroll)
+            this.update();
         },
     }
 </script>
 
 <style>
-    #orig {
+    /*Table without header*/
+    #table-wh {
         display: block;
         width: 100%;
         height: 750px;
@@ -180,10 +226,12 @@
         overflow-x: scroll;
         overflow-y: scroll;
     }
-    #onlyHeader {
+    /*Table Only display header*/
+    #table-oh {
         border-collapse: collapse;
-        display: block;
+        /*display: block;*/
         width: 100%;
+        table-layout:fixed;
     }
 
     th {
@@ -191,21 +239,16 @@
         color: white;
         font-weight: bold;
         cursor: s-resize;
-        background-repeat: no-repeat;
-        background-position: 3% center;
         height: 40px;
+        border: 1px solid #ccc;
     }
-    td, th {
+    td {
         padding: 2px;
         border: 1px solid #ccc;
         text-align: left;
         white-space: nowrap;
         overflow: hidden;
         text-overflow:ellipsis;
-    }
-    td.container {
-        width: 50px;
-        cursor: pointer;
     }
 
 </style>
