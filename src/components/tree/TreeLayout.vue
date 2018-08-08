@@ -1,23 +1,37 @@
 <template>
+    <div>
     <svg id="treeSvg" width="900" height="900">
         <g id="wrapper" class="wrapper">
             <g class="links"></g>
-            <g class="nodes"></g>
+            <g class="nodes" @contextmenu.prevent="$refs.menu.open"></g>
             <g class="cols"></g>
         </g>
         <g id="axisX" class="axis axisX"></g>
     </svg>
+
+    <context-menu ref="menu">
+        <ul class="options">
+            <li @click="onClick('A')">Option A</li>
+            <li @click="onClick('B')">Option B</li>
+        </ul>
+    </context-menu>
+    </div>
 </template>
 
 <script>
     import * as d3 from 'd3';
     import {mapActions} from 'vuex';
 
+    import contextMenu from '../menu/ContextMenu';
+
     import * as types from '../../store/types_treedata';
 
     export default {
         name: "treelayout",
         props: ['jsonData'],
+        components: {
+          'context-menu': contextMenu
+        },
         data() {
             return {
                 rootNode: null,
@@ -49,9 +63,8 @@
                     return "translate(" + this.rootNodeX + "," + 0 + ")";
                 });
 
-
             console.log("Tree Layout Mounted");
-            if(this.jsonData !== null) {
+            if(this.jsonData != null) {
                 this.rootNode = this.jsonData;
                 this.initTree();
                 this.updateTree(this.rootNode);
@@ -64,6 +77,9 @@
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 stateTreeNodes: types.TREE_ACTION_SET_NODES
             }),
+            onClick(opt) {
+                console.log('Clicked', opt);
+            },
             initTree() {
                 //d3.tree() -- Position Y is according to depth
                 //d3.cluster() - Position Y ignores depth
@@ -483,6 +499,34 @@
 </script>
 
 <style>
+    .options {
+        width: 250px;
+        border: 1px solid #BDBDBD;
+        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+        background: #FAFAFA;
+        display: block;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        z-index: 999999;
+    }
+    .options li {
+        border-bottom: 1px solid #E0E0E0;
+        margin: 0;
+        padding: 5px 35px;
+        cursor: pointer;
+    }
+
+    .options li:last-child {
+        border-bottom: none;
+    }
+
+    .options li:hover {
+        background: #1E88E5;
+        color: #FAFAFA;
+    }
+
     #treel{
         z-index: 1;
         background-color: #c4e3f3;
