@@ -70,7 +70,6 @@
                 this.updateTree(this.rootNode);
             }
             this.renderXAxis();
-            //console.log(this.content);
         },
         methods: {
             ...mapActions({
@@ -81,16 +80,17 @@
                 console.log('Clicked', opt);
             },
             initTree() {
+
                 //d3.tree() -- Position Y is according to depth
                 //d3.cluster() - Position Y ignores depth
                 var treeLayout = d3.tree()
                     .size([800, 800]);
+
                 // Put the root node, and all it's nested children inside a tree layout
                 // Adds d.y and d.x which gives the positions for the rootNode
                 // and it's nested children inside the tree layout
                 treeLayout(this.rootNode);
 
-                //console.log(this.rootNode);
                 //x0 & y0 keep track of previous positions for each node
                 this.rootNode.x0 = this.rootNode.x;
                 this.rootNode.y0 = this.rootNode.y;
@@ -102,7 +102,6 @@
                 this.alreadyUpdated = false;
                 this.initTree();
                 this.updateTree(d);
-                //centerNode(d);
             },
             toggleChildren(d) {
                 if (d.children) {
@@ -144,12 +143,6 @@
                     d.y = d.y + actualLength;
 
                 }
-                // if(d.depth > 1) {
-                //     d.y = d.y - 150;
-                //     let branch_length_scaled = 150*d.data.branch_length;
-                //     if(branch_length_scaled === 0) branch_length_scaled = 20;
-                //     d.y = d.y + branch_length_scaled;
-                // }
             },
             updateTree(source) {
                 if(this.alreadyUpdated) return;
@@ -159,8 +152,6 @@
 
                 this.counter = 0;
                 this.calculateDepthFirstIds(nodes[0]);
-                // console.log("Test");
-                //this.updateTableData(nodes);
 
                 var final_depth = 0;
                 //Calculate depth of tree
@@ -176,7 +167,6 @@
                     this.setCustomPositionX(d);
                     this.setCustomPositionY(d, final_depth);
                 });
-                // console.log(nodes);
 
                 //Join all nodes (g.node) with the 'rootnode' data we created from csv
                 //Add id for all nodes, so that they 'enter' in order they were created.
@@ -243,16 +233,6 @@
                         return d._children ? "black" : "#fff";
                     });
 
-                // enteringNodes
-                //     .append('rect')
-                //     .attr('width',2000)
-                //     .attr('height',40)
-                //     .style('fill', function (d) {
-                //         return d.depth%2==0 ? "black" : "grey";
-                //     });
-
-                // Add labels for the nodes
-
                 enteringNodes.append('text')
                     .attr("dy", ".35em")
                     .attr("x", function (d) {
@@ -278,10 +258,9 @@
                     })
                     .style("fill-opacity", 0);
 
-                //this.renderText(enteringNodes);
-
                 //Update
                 var updatedNodes = enteringNodes.merge(nodesData);
+
                 // Transition to the proper position for the node from source (x0,y0)
                 updatedNodes.transition()
                     .duration(this.duration)
@@ -301,6 +280,7 @@
                         return "translate(" + source.y + "," + source.x + ")";
                     })
                     .remove();
+
                 // On exit reduce the node circles size to 0
                 nodeExits.select('circle')
                     .attr('r', 1e-6);
@@ -332,7 +312,6 @@
                     })
                     .classed('leaf_path', d => d.data.organism)
                     .on("mouseover", this.mouseOver)
-                    .on("mousemove", this.mousePoint)
                     .on("mouseleave", this.mouseLeave);
 
                 //Update
@@ -359,14 +338,12 @@
                     + "C" + (s.y + d.y) / 2 + "," + s.x
                     + " " + (s.y + d.y) / 2 + "," + d.x
                     + " " + d.y + "," + d.x;
-                //console.log(log);
                 return "M" + s.y + "," + s.x
                     + "C" + (s.y + d.y) / 2 + "," + s.x
                     + " " + (s.y + d.y) / 2 + "," + d.x
                     + " " + d.y + "," + d.x;
             },
             calculateDepthFirstIds(d) {
-                //console.log("I: " + d.id);
                 if (d.children) {
                     d.children.forEach(c => {
                         this.counter++;
@@ -375,24 +352,12 @@
                     });
                 }
             },
-            mousePoint(d) {
-                //console.log(d);
-                var _x = d3.mouse(d3.event.currentTarget)[0];
-                var _y = d3.mouse(d3.event.currentTarget)[1];
-                // this.circle
-                //     .attr("cx", _x+ 20)
-                //     .attr("cy", _y);
-            },
             mouseOver(d) {
-              //console.log("Over ", e);
-              //this.circle.transition().duration(200).style("opacity", "1");
                 this.$emit('mouse-over-link', d);
                 var nodes = [{x: d.x, y: d.y}];
                 this.dropVerticalLine(nodes);
             },
             mouseLeave(d) {
-                //console.log('Leave');
-                //this.circle.transition().duration(200).style("opacity", "0");
                 this.$emit('mouse-leaves-link', d);
                 var nodes = [];
                 this.dropVerticalLine(nodes);
@@ -401,19 +366,12 @@
                 return d3.zoom().scaleExtent([this.scaleX, this.scaleY])
                     .on("zoom", () => {
                         g.attr("transform", d3.event.transform);
-                        // //console.log(d3.event.transform.k);
-                        // this.stateTreeZoom(d3.event.transform.k);
                     })
                     .on("end", () => {
-                        //console.log(d3.event.transform.y);
                         this.rootNodeX = d3.event.transform.x;
                         this.rootNodeY = d3.event.transform.y;
                         this.renderXAxis();
                         this.stateTreeZoom(d3.event.transform);
-
-                        // var nodes = this.rootNode.descendants();
-                        // this.stateTreeNodes(nodes);
-                        //console.log(d3.event.transform.y);
                     })
             },
             renderXAxis() {
@@ -468,28 +426,22 @@
                     + "L" + s.y + "," + dest;
             },
             setDragListener(g) {
-                return d3.drag().on("start", () => {
+                return d3.drag()
+                    .on("start", () => {
 
-                })
+                    })
                     .on("drag", () => {
 
                     })
                     .on("end", () => {
-                        //console.log("End");
+
                     });
             }
         },
         watch: {
-            content: {
-                handler: function (val, oldVal) {
-                    //console.log("C: ", val);
-                },
-                deep: true
-            },
             jsonData: {
                 handler: function (val, oldVal) {
                     this.rootNode = val;
-                    // console.log(this.rootNode);
                     this.initTree();
                     this.updateTree(this.rootNode);
                 }

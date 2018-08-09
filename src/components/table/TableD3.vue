@@ -46,8 +46,7 @@
                         return width;
                     });
                 const exitTh = updateTh.exit();
-
-                //updateTh.call(this.dragResize);
+                
                 //merge
                 const tr = updateTh.merge(enterTh)
                     .text(d => d);
@@ -57,12 +56,11 @@
             },
             renderTableBody(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
-                //var data = this.stateTreeData
+
                 //Maps all the tree data into it's own rows.
                 var rows_d3_map = table_d3.select('tbody')
                     .selectAll('tr')
                     .data(this.stateTreeData);
-                // console.log(this.stateTreeData);
 
                 if(rows_d3_map.length === 0) {
                     console.log("No new entering nodes");
@@ -70,10 +68,8 @@
                 }
                 //All the rows which are new. At first load it's all the rows from data.
                 var rows_entering = rows_d3_map.enter();
-                // console.log("Enter: ", rows_entering.size());
                 var rows_exiting = rows_d3_map.exit();
-                // console.log("Exit: ", rows_exiting.size());
-                // console.log(rows_d3_map);
+
                 //Modify the rows entering with appending html tags or modifying its style.
                 rows_entering = rows_entering.append('tr')
                     .style("opacity", 0);
@@ -86,16 +82,15 @@
                         <tr style="opacity: 0"></tr>
                     </tbody>
                  */
-                //console.log(rows_entering);
+
                 rows_entering.transition().duration(1000)
                     .style("opacity", 1);
                 rows_exiting.transition().duration(500)
                     .style("opacity", 0)
                     .remove();
 
-                // console.log(rows_entering.selectAll('tr'));
-
                 var tdHeight = this.rowHeight + 'px';
+
                 /*
                     selection.merge(other)
                 Returns a new selection merging this selection with the specified other selection.
@@ -111,7 +106,6 @@
                         });
                     });
 
-                // console.log(td_rows_map);
                 var td_entering = td_rows_map.enter();
                 td_entering = td_entering.append('td');
 
@@ -147,8 +141,6 @@
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
                 var marginTop = (this.marginTopY + this.paddingTopY - this.rowHeight)+"px";
-                // this.table.transition().duration(500)
-                //     .style("margin-top",marginTop);
                 this.tableHeader.transition().duration(500)
                     .style("margin-top",marginTop);
             },
@@ -176,10 +168,6 @@
                         this.paddingTopY = -diff;
                     }
                 }
-            },
-            handleScroll(event) {
-                var table1 = document.getElementById("table-wh");
-                if(table1 == null) return;
             }
         },
         computed: {
@@ -201,15 +189,11 @@
                     this.rowHeight = this.rowHeight * val.k;
                     this.setScroll(val);
                     this.setPadding(val);
-                    //console.log(this.rowHeight);
                     this.update();
                 },
             }
         },
         mounted() {
-            var elmnt = document.getElementById("table-wh");
-            if(elmnt == null) return;
-            elmnt.addEventListener('scroll', this.handleScroll)
             this.update();
         },
     }
