@@ -2,6 +2,9 @@ import * as types from '../types_tree';
 import axios from "axios/index";
 import util from "./util.js";
 
+// const SOLR_URL = 'http://localhost:8983/solr/panther/select';
+const SOLR_URL = 'http://34.209.91.189:8983/solr/panther/select';
+
 const state = {
     tree: {
         isLoading: false,
@@ -64,7 +67,7 @@ const actions = {
 
         axios({
             method: 'GET',
-            url: 'http://localhost:8983/solr/panther/select' +
+            url: SOLR_URL +
             '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
             '&fl=id,%20sf_names,%20family_name,%20node_types' +
             '&rows=' + context.state.tree.filters.rows +
@@ -104,7 +107,7 @@ const actions = {
 
         axios({
             method: 'GET',
-            url: 'http://localhost:8983/solr/panther/select' +
+            url: SOLR_URL +
                 '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
                 '&fl=id,%20sf_names,%20family_name,%20node_types' +
                 '&rows=' + context.state.tree.filters.rows +
