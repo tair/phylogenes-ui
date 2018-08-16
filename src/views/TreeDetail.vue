@@ -11,10 +11,11 @@
                         Branch Length: <span>{{branchLength}}</span>
                     </div>
                     <div class="tree-box">
-                        <treelayout :jsonData="jsonData"
-                                    v-on:updated-tree="onTreeUpdate"
-                                    v-on:mouse-over-link="onMouseOverLink"
-                                    v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>
+                        <!--<treelayout :jsonData="jsonData"-->
+                                    <!--v-on:updated-tree="onTreeUpdate"-->
+                                    <!--v-on:mouse-over-link="onMouseOverLink"-->
+                                    <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
+                        <treelayout2></treelayout2>
 
                     </div>
                 </div>
@@ -34,6 +35,7 @@
 
 <script>
     import treelayout from '../components/tree/TreeLayout';
+    import treelayout2 from '../components/tree/TreeLayout2';
     import tablelayout from '../components/table/TableD3';
 
     import * as d3 from 'd3';
@@ -44,7 +46,7 @@
     export default {
         name: "TreeDetail",
         components: {
-            treelayout: treelayout,
+            treelayout2: treelayout2,
             tablelayout: tablelayout
         },
         data() {
@@ -74,7 +76,7 @@
                 }
             },
             loadJson() {
-                d3.json("/panther.json", (err, data) => {
+                d3.json("/panther_simple.json", (err, data) => {
                     if(err) {
                         console.log(err);
                     } else {
