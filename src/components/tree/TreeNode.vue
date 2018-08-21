@@ -20,6 +20,7 @@
             }
         },
         mounted() {
+            // this.bus.$on('exit', this.onExit)
             if(this.content != null) {
                 this.el = d3.select(this.$el);
                 this.renderNode();
@@ -66,6 +67,17 @@
             getTextPosn() {
                 if(!this.content) return 13;
                 return this.content._children ? -13 : 13;
+            },
+            onExit(node) {
+                console.log("ON Exit ", node);
+                this.el.select('circle')
+                    .transition().duration(this.duration)
+                    .attr('r', 1e-6);
+                this.el.transition().duration(this.duration)
+                    .attr("transform", d => {
+                        return "translate(" + node.y + "," + node.x + ")";
+                    })
+                    .remove();
             }
         },
         watch: {

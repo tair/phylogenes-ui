@@ -7,9 +7,11 @@
                 </treelink>
             </g>
             <g class="nodes">
-                <treenode v-for="node in treenodes" :key="node.id"
+                <treenode v-for="node in treenodes" :id="node.id" :key="node.id"
+                          ref="treenode"
                           :content="node"
                           v-on:clicknode="onClick"></treenode>
+                <p v-for="node in tempnodes" :id="node.id"></p>
             </g>
         </g>
     </svg>
@@ -17,9 +19,10 @@
 
 <script>
     import * as d3 from 'd3';
-
+    import Vue from 'vue';
     import treenode from '../tree/TreeNode';
     import treelink from '../tree/TreeLink';
+
 
     export default {
         name: "treelayout2",
@@ -38,7 +41,17 @@
                             children: [
                                 {
                                     id: 111,
-                                    name: "OneOneOne"
+                                    name: "OneOneOne",
+                                    children: [
+                                        {
+                                            id: 1111,
+                                            name: "1111"
+                                        },
+                                        {
+                                            id: 1112,
+                                            name: "1112"
+                                        }
+                                    ]
                                 },
                                 {
                                     id: 112,
@@ -47,12 +60,21 @@
                             ]
                         },
                         {id: 12,
-                         name: "Twelve"},
+                         name: "Twelve",
+                         children: [
+                             {
+                                 id: 121,
+                                 name: "121"
+                             }
+                         ]
+                        },
                     ]
                 },
                 treenodes: [],
+                tempnodes: [],
                 treelinks: [],
                 rootNode: null,
+                oldIndexes: [],
                 duration: 750,
                 index: 0
             }
@@ -76,10 +98,30 @@
             });
 
             this.rootNode = nodes;
+
+            this.oldIndexes = [];
+            nodes.each(n => {
+                this.oldIndexes.push(n);
+            });
+
+            this.updateOldIndexes();
+
+            this.tempnodes = [{id: "0"}, {id: "1"}, {id: "2"}, {id: "3"}, {id: "4"}];
+
             this.initTree();
             this.updateTree(this.rootNode);
         },
         methods: {
+            cloneObject(obj) {
+                var clone = {};
+                for(var i in obj) {
+                    if(obj[i] != null &&  typeof(obj[i])=="object")
+                        clone[i] = this.cloneObject(obj[i]);
+                    else
+                        clone[i] = obj[i];
+                }
+                return clone;
+            },
             initTree() {
                 var treeLayout = d3.tree()
                     .size([700, 700]);
@@ -93,18 +135,53 @@
                     console.log("Id: " + n.id + " DataId: " + n.data.id);
                 }
             },
-            updateTree(source) {
+            updateOldIndexes() {
                 var nodes = this.rootNode.descendants();
 
-                this.renderLinks(nodes);
+                console.log("Old Index Length " + this.oldIndexes.length);
+            },
+            updateTree(source) {
+                // this.renderLinks(nodes);
+
+                d3.select('.nodes')
+                    .selectAll('g')
+                    .data(this.oldIndexes);
+
+                var nodes = this.rootNode.descendants();
 
                 var nodesData = d3.select('.nodes')
                     .selectAll('g')
-                    .data(nodes);
+                    .data(nodes, function(d) {
+                        // console.log(d.id);
+                        return d.id;
+                    });
+
+                console.log(nodesData);
 
                 const enteringNodes = nodesData.enter();
                 const exitingNodes = nodesData.exit();
                 const updatedNodes = enteringNodes.merge(nodesData);
+
+                // console.log(exitingNodes.nodes());
+                // exitingNodes.each(n => {
+                //     this.getLogs(n);
+                // });
+
+                if(this.$refs.treenode) {
+                    this.$refs.treenode.forEach(n => {
+                        // console.log(n.content.id);
+                        // n.onExit();
+                    });
+                }
+
+                // exitingNodes.nodes().forEach(n => {
+                //     if(n.__data__) {
+                //         var findNode = this.$refs.treenode.find(en => en.content.id == n.__data__.id);
+                //         console.log("Exit ", this.clickedNode.id);
+                //
+                //         findNode.onExit(this.clickedNode);
+                //     }
+                // });
 
                 exitingNodes.select('circle')
                     .transition().duration(this.duration)
@@ -124,32 +201,30 @@
                 setTimeout(() => {
                     this.treenodes.splice(0,  this.treenodes.length);
                     var tempArray = [];
-                    // console.log(updatedNodes.nodes());
-                    // updatedNodes.nodes().forEach(n => {
-                    //     console.log(n);
-                    // });
-                    enteringNodes.each(n => {
-                        if(this.clickedNode) {
-                            n.x0 = this.clickedNode.x;
-                            n.y0 = this.clickedNode.y;
-                        } else {
-                            n.x0 = n.x;
-                            n.y0 = n.y;
+                    updatedNodes.nodes().forEach(n => {
+                        var node_content = n.__data__;
+                        node_content.x0 = node_content.x;
+                        node_content.y0 = node_content.y;
+                        if(n.constructor && n.constructor.name === "EnterNode") {
+                            if(this.clickedNode) {
+                                // console.log("Click ", this.clickedNode.id);
+                                node_content.x0 = this.clickedNode.x;
+                                node_content.y0 = this.clickedNode.y;
+                            }
                         }
-                        tempArray.push(n);
+                        tempArray.push(node_content);
                     });
-                    updatedNodes.each(n => {
-                        var findNode = tempArray.find(en => en.id == n.id);
-                        if(!findNode) {
-                            n.x0 = n.x;
-                            n.y0 = n.y;
-                            tempArray.push(n);
-                        }
-                    });
+
                     tempArray.sort((a,b) => {
                        return b.id < a.id;
                     });
                     this.treenodes = tempArray;
+
+                    this.oldIndexes = [];
+                    nodes.forEach(n => {
+                       this.oldIndexes.push(n);
+                    });
+                    console.log("Index Size " + this.oldIndexes.length);
                 }, timeoutS);
             },
             renderLinks(nodes) {
@@ -163,8 +238,11 @@
 
                 exitingLinks.remove();
 
+                //Explain timeout
                 setTimeout(() => {
+                    // this.treelinks = [];
                     this.treelinks.splice(0,  this.treelinks.length);
+                    //Explain temp array
                     var tempArray = [];
                     enteringLinks.each(n => {
                         // console.log(n);
@@ -185,16 +263,39 @@
                             tempArray.push(n);
                         }
                     });
+
                     tempArray.sort((a,b) => {
                         return b.id < a.id;
                     });
                     this.treelinks = tempArray;
                 },10);
 
-                console.log(this.treelinks);
+                // console.log(this.treelinks);
             },
             onClick(source) {
+
+                var nodes = this.rootNode.descendants();
+                // nodes.forEach(n => {
+                //     this.getLogs(n);
+                // });
+
                 this.clickedNode = source;
+
+                // var oldData = [{id: "0"}, {id: "1"}, {id: "2"}, {id: "3"}, {id: "4"}];
+                //
+                // var dataSelection = d3.select(".nodes")
+                //     .selectAll("p")
+                //     .data(oldData);
+                //
+                // dataSelection = d3.select(".nodes")
+                //     .selectAll("p")
+                //     .data([{id: "2"}], function(d) {
+                //         console.log(d);
+                //         return d.id;
+                //     });
+                //
+                // console.log(dataSelection.exit().nodes());
+
                 this.updateTree(source);
             }
         }
