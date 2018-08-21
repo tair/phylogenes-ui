@@ -49,6 +49,15 @@
                     + " " + (s.y + d.y) / 2 + "," + d.x
                     + " " + d.y + "," + d.x;
                 return log;
+            },
+            onExit(node) {
+                // console.log("On exit ", node.x, node.y);
+                this.el.select('path')
+                    .transition().duration(this.duration)
+                    .attr('d', d => {
+                        var o = {x: node.x, y: node.y};
+                        return this.diagonal(o, o);
+                    });
             }
         },
         watch: {

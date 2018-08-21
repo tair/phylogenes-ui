@@ -20,7 +20,6 @@
             }
         },
         mounted() {
-            // this.bus.$on('exit', this.onExit)
             if(this.content != null) {
                 this.el = d3.select(this.$el);
                 this.renderNode();
@@ -36,11 +35,16 @@
                 this.el.attr("transform", d => {
                     return "translate(" + this.content.y0 + "," + this.content.x0 + ")";
                 });
+                this.el.select('text')
+                    .style('opacity', 0);
 
                 this.el.transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + this.content.y + "," + this.content.x + ")";
                     });
+                this.el.select('text')
+                    .transition().duration(this.duration)
+                    .style('opacity', 1);
             },
             clickNode() {
                 this.content = this.toggleChildren(this.content);
@@ -69,10 +73,13 @@
                 return this.content._children ? -13 : 13;
             },
             onExit(node) {
-                console.log("ON Exit ", node);
+                // console.log("ON Exit ", node);
                 this.el.select('circle')
                     .transition().duration(this.duration)
                     .attr('r', 1e-6);
+                this.el.select('text')
+                    .transition().duration(this.duration)
+                    .style('opacity', 0);
                 this.el.transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + node.y + "," + node.x + ")";
