@@ -4,7 +4,7 @@
     <banner></banner>
 
     <div class="container-fluid" style="max-width: 1600px">
-      <info-bar></info-bar>
+      <!--<info-bar></info-bar>-->
 
       <div class="row">
         <div class="col-sm-12 col-md-6 col-lg-5 mb-3 pr-3">
@@ -12,6 +12,7 @@
         </div>
         <div class="col-sm-12 col-md-6 col-lg-7 pr-4">
           <protein-sequence-list></protein-sequence-list>
+          <info-bar></info-bar>
           <video-card></video-card>
         </div>
       </div>

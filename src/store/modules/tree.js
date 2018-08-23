@@ -66,7 +66,7 @@ const actions = {
             method: 'GET',
             url: 'http://localhost:8983/solr/panther/select' +
             '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
-            '&fl=id,%20sf_names,%20family_name,%20node_types' +
+            '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
             '&rows=' + context.state.tree.filters.rows +
             '&start=' + context.state.tree.filters.startRow +
             '&q=' + q
@@ -106,7 +106,7 @@ const actions = {
             method: 'GET',
             url: 'http://localhost:8983/solr/panther/select' +
                 '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
-                '&fl=id,%20sf_names,%20family_name,%20node_types' +
+                '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
                 '&rows=' + context.state.tree.filters.rows +
                 '&start=' + context.state.tree.filters.startRow +
                 '&q=' + q

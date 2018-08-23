@@ -3,7 +3,6 @@
         <site-map :current-page="name"></site-map>
 
         <div class="p-3">
-            <!--{{ this.treeFilters }}-->
             <span v-for="species in this.treeFilters.species" class="badge badge-pill badge-danger mr-1 p-1">
                 {{ species }}
                 <a href="#" @click="removeFilter('species', species)" class="text-white"><i class="fas fa-times-circle"></i></a>
@@ -16,12 +15,10 @@
                 {{ nodeTypes }}
                 <a href="#" @click="removeFilter('nodeTypes', nodeTypes)" class="text-white"><i class="fas fa-times-circle"></i></a>
             </span>
-            <!--<span v-for="species in this.treeFilters.organisms" class="badge badge-pill badge-info mr-1">{{ species }}</span>-->
-            <!--<span v-for="species in this.treeFilters.nodeTypes" class="badge badge-pill badge-primary mr-1">{{ species }}</span>-->
         </div>
 
         <div class="row">
-            <div class="col-sm-12 col-md-4 col-lg-3 px-4" style="max-width: 350px; height: 100vh; overflow: auto; background: white;">
+            <div class="col-sm-12 col-md-4 col-lg-3 px-4 mb-sm-3" style="height: 100vh; overflow: auto; background: white;">
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
                 <div v-if="!this.stateTreeIsError && !this.stateTreeIsLoading">

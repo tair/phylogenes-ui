@@ -1,9 +1,5 @@
 <template>
     <div>
-        <!--<button class="btn btn-flat btn-danger mt-4" @click.prevent="onSearch()">Search</button>-->
-
-        <!--<span>Checked names: {{ treeFilters }}</span>-->
-
         <div class="h3 text-muted py-3">Search Filters</div>
 
         <form>
