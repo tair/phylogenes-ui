@@ -8,10 +8,14 @@
                 </treelink>
             </g>
             <g class="nodes">
-                <treenode v-for="node in treenodes" :id="node.id" :key="node.id"
+                <treenode v-for="node in treenodes" :id="node.id"
                           ref="treenode"
                           :content="node"
                           v-on:clicknode="onClick"></treenode>
+                <treenode2  v-for="node in treenodes2" :id="node.id"
+                            ref="treenode"
+                            :content="node"
+                            v-on:clicknode="onClick"></treenode2>
             </g>
         </g>
     </svg>
@@ -21,13 +25,15 @@
     import * as d3 from 'd3';
     import Vue from 'vue';
     import treenode from '../tree/TreeNode';
+    import treenode2 from '../tree/TreeNode2';
     import treelink from '../tree/TreeLink';
-
 
     export default {
         name: "treelayout2",
+        props: ['jsonData'],
         components: {
             'treenode': treenode,
+            'treenode2': treenode2,
             'treelink': treelink
         },
         data() {
@@ -71,11 +77,16 @@
                     ]
                 },
                 treenodes: [],
+                treenodes2: [],
                 treelinks: [],
                 rootNode: null,
                 oldIndexes: [],
+                scale: {x: 1.0, y: 1.0},
                 duration: 750,
-                index: 0
+                index: 0,
+                counter: 0,
+                topPaddingY: 120,
+                rowHeight: 40
             }
         },
         mounted() {
@@ -86,21 +97,25 @@
                     return "translate(" + 100 + "," + 0 + ")";
                 });
 
-            var nodes = d3.hierarchy(this.treeData, function(d) {
-                return d.children;
-            });
+            svg.call(this.setZoomListener(g));
 
-            nodes.each(n => {
-               if(!n.id) {
-                   n.id = this.index++;
-               }
-            });
+            // var nodes = d3.hierarchy(this.treeData, function(d) {
+            //     return d.children;
+            // });
+            //
+            // nodes.each(n => {
+            //    if(!n.id) {
+            //        n.id = this.index++;
+            //    }
+            // });
 
-            this.rootNode = nodes;
-            this.updateOldIndexes(this.rootNode.descendants());
-
-            this.initTree();
-            this.updateTree(this.rootNode);
+            if(this.jsonData != null) {
+                // this.rootNode = nodes;
+                // this.updateOldIndexes(this.rootNode.descendants());
+                //
+                // this.initTree();
+                // this.updateTree(this.rootNode);
+            }
         },
         methods: {
             cloneObject(obj) {
@@ -114,10 +129,39 @@
                 return clone;
             },
             initTree() {
+                this.rootNode = this.jsonData;
+
+                this.rootNode.each(n => {
+                    if(!n.id) {
+                        n.id = this.index++;
+                    }
+                    n.text = this.getText(n);
+                });
+
+                this.updateOldIndexes(this.rootNode.descendants());
+
                 var treeLayout = d3.tree()
-                    .size([700, 700]);
+                    .size([800, 800]);
 
                 treeLayout(this.rootNode);
+
+                this.updateTree(this.rootNode);
+            },
+            getText(d) {
+                var text = d.id;
+                text = "";
+                if(d.data.organism) {
+                    text += " " + d.data.organism;
+                } else if(d.data.accession) {
+                    text += " " + d.data.accession;
+                    if(d.data.reference_speciation_event) {
+                        text += " (" + d.data.reference_speciation_event + ")";
+                    }
+                }
+                return text;
+            },
+            getLogsForNodes(n) {
+
             },
             getLogs(n) {
                 if(!n) {
@@ -126,6 +170,18 @@
                     console.log("Id: " + n.id + " DataId: " + n.data.id);
                 }
             },
+            setZoomListener(g) {
+                return d3.zoom().scaleExtent([this.scale.x, this.scale.y])
+                    .on("zoom", () => {
+                        g.attr("transform", d3.event.transform);
+                    })
+                    .on("end", () => {
+                        // this.rootNodeX = d3.event.transform.x;
+                        // this.rootNodeY = d3.event.transform.y;
+                        // this.renderXAxis();
+                        // this.stateTreeZoom(d3.event.transform);
+                    })
+            },
             updateOldIndexes(nodes) {
                 this.oldIndexes = [];
                 nodes.forEach(n => {
@@ -133,17 +189,35 @@
                 });
                 // console.log("Index Size " + this.oldIndexes.length);
             },
+            updateAccordingToDepth(nodes, flag) {
+                this.counter = 0;
+                this.calculateDepthFirstIds(nodes[0]);
+                //Arrange nodes position by depth ids.
+                nodes.forEach(d => {
+                    this.setCustomPositionX(d);
+                });
+                // console.log(nodes[2]);
+            },
             updateTree(source) {
+
+                //Explain: why old Indexes?
                 d3.select('.nodes')
                     .selectAll('g')
                     .data(this.oldIndexes);
+                // console.log(this.oldIndexes);
 
                 var nodes = this.rootNode.descendants();
+                this.rootNode.xo = this.rootNode.x;
+                this.rootNode.yo = this.rootNode.y;
+                this.updateAccordingToDepth(nodes);
+                // console.log(nodes);
+
                 this.renderLinks(nodes);
 
                 var nodesData = d3.select('.nodes')
                     .selectAll('g')
                     .data(nodes, function(d) {
+                        // console.log(d.id);
                         return d.id;
                     });
                 // console.log(nodesData);
@@ -155,6 +229,7 @@
                 exitingNodes.nodes().forEach(n => {
                     if(n.__data__) {
                         var findNode = this.$refs.treenode.find(en => en.content.id == n.__data__.id);
+                        // console.log(this.clickedNode.id + "-" + this.clickedNode.x + "," + this.clickedNode.y);
                         findNode.onExit(this.clickedNode);
                     }
                 });
@@ -166,27 +241,40 @@
 
                 setTimeout(() => {
                     this.treenodes.splice(0,  this.treenodes.length);
-                    var tempArray = [];
-                    updatedNodes.nodes().forEach(n => {
-                        var node_content = n.__data__;
-                        node_content.x0 = node_content.x;
-                        node_content.y0 = node_content.y;
-                        if(n.constructor && n.constructor.name === "EnterNode") {
-                            if(this.clickedNode) {
-                                // console.log("Click ", this.clickedNode.id);
-                                node_content.x0 = this.clickedNode.x;
-                                node_content.y0 = this.clickedNode.y;
+                    this.treenodes2.splice(0,  this.treenodes2.length);
+                    setTimeout(() => {
+                        var tempArray = [];
+                        var tempArray2 = [];
+                        updatedNodes.nodes().forEach(n => {
+                            // console.log("N ", n.__data__);
+                            var node_content = n.__data__;
+                            // node_content.x0 = node_content.x;
+                            // node_content.y0 = node_content.y;
+                            if (n.constructor && n.constructor.name === "EnterNode") {
+                                if (this.clickedNode) {
+                                    // console.log("Click ", this.clickedNode.id);
+                                    node_content.xo = this.clickedNode.x;
+                                    node_content.yo = this.clickedNode.y;
+                                }
                             }
-                        }
-                        tempArray.push(node_content);
-                    });
+                            if(n.__data__.children == null) {
+                                tempArray2.push(node_content);
+                            } else {
+                                tempArray.push(node_content);
+                            }
 
-                    tempArray.sort((a,b) => {
-                       return b.id < a.id;
-                    });
-                    this.treenodes = tempArray;
+                        });
 
-                    this.updateOldIndexes(nodes);
+                        tempArray.sort((a, b) => {
+                            return b.id < a.id;
+                        });
+                        tempArray2.sort((a, b) => {
+                            return b.id < a.id;
+                        });
+                        this.treenodes = tempArray;
+                        this.treenodes2 = tempArray2;
+                        this.updateOldIndexes(nodes);
+                    }, 1);
                 }, timeoutS);
             },
             renderLinks(nodes) {
@@ -227,33 +315,77 @@
                 setTimeout(() => {
                     // this.treelinks = [];
                     this.treelinks.splice(0,  this.treelinks.length);
-                    //Explain temp array
-                    var tempArray = [];
-                    updatedLinks.nodes().forEach(n => {
-                        var node_content = n.__data__;
-                        node_content.x0 = node_content.x;
-                        node_content.y0 = node_content.y;
-                        if(n.constructor && n.constructor.name === "EnterNode") {
-                            if(this.clickedNode) {
-                                // console.log("Click ", this.clickedNode.id);
-                                node_content.x0 = this.clickedNode.x;
-                                node_content.y0 = this.clickedNode.y;
+                    setTimeout(() => {
+                        //Explain temp array
+                        var tempArray = [];
+                        // console.log(updatedLinks);
+                        updatedLinks.nodes().forEach(n => {
+                            var node_content = n.__data__;
+                            // console.log(node_content);
+                            // node_content.x0 = node_content.x;
+                            // node_content.y0 = node_content.y;
+                            node_content.enterLink = false;
+                            if (n.constructor && n.constructor.name === "EnterNode") {
+                                node_content.enterLink = true;
+                                // console.log(node_content);
+                                if (this.clickedNode) {
+                                    // console.log("Click ", this.clickedNode.id);
+                                    // node_content.x0 = this.clickedNode.x;
+                                    // node_content.y0 = this.clickedNode.y;
+                                }
                             }
-                        }
-                        tempArray.push(node_content);
-                    });
+                            tempArray.push(node_content);
+                        });
 
-                    tempArray.sort((a,b) => {
-                        return b.id < a.id;
-                    });
-                    this.treelinks = tempArray;
+                        tempArray.sort((a, b) => {
+                            return b.id < a.id;
+                        });
+                        this.treelinks = tempArray;
+                    }, 0);
                 },timeoutS);
-
                 // console.log(this.treelinks);
             },
+            calculateDepthFirstIds(d) {
+                if (d.children) {
+                    d.children.forEach(c => {
+                        this.counter++;
+                        c.dfId = this.counter;
+                        this.calculateDepthFirstIds(c, this.counter);
+                    });
+                }
+            },
+            setCustomPositionX(d) {
+                if (d.depth == 0) {
+                    d.x = this.topPaddingY + 0;
+                }
+                if (d.dfId) {
+                    var oldX = d.x;
+                    var oldY = d.y;
+                    var newX = this.topPaddingY + d.dfId * this.rowHeight;
+
+                    if(d.id == 1) {
+                        // console.log(d.id + " N : " + newX + " O: " + oldX);
+                    }
+                    //
+                    d.x = newX;
+                    d.xo = oldX;
+                    d.yo = oldY;
+                    // console.log(d);
+                }
+            },
             onClick(source) {
-                this.clickedNode = source;
+                // console.log(source.id + "-" + source.x + "," + source.y);
+                this.clickedNode = {id: source.id, x: source.x, y: source.y};
+
                 this.updateTree(source);
+            }
+        },
+        watch: {
+            jsonData: {
+                handler: function (val, oldVal) {
+                    // console.log(this.jsonData);
+                    this.initTree();
+                }
             }
         }
     }

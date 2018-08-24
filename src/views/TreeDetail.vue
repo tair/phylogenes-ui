@@ -15,7 +15,7 @@
                                     <!--v-on:updated-tree="onTreeUpdate"-->
                                     <!--v-on:mouse-over-link="onMouseOverLink"-->
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
-                        <treelayout2></treelayout2>
+                        <treelayout2  :jsonData="jsonData"></treelayout2>
 
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 <template>
     <g>
-        <circle r="10" @click="clickNode"></circle>
-        <text dy=".35em" :x="textPosn" y=-12>{{content.text}}</text>
+        <circle r="12" @click="clickNode"></circle>
+        <text dy=".35em" :x="textPosn" y=12>{{content.text}}</text>
     </g>
 </template>
 
@@ -9,7 +9,7 @@
     import * as d3 from 'd3';
 
     export default {
-        name: "treenode",
+        name: "treenode2",
         props: ["content"],
         data() {
             return {
@@ -107,7 +107,7 @@
 
 <style scoped>
     circle {
-        stroke: steelblue;
+        stroke: red;
         stroke-width: 2px;
         fill: #fff;
         cursor: pointer;

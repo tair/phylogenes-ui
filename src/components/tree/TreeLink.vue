@@ -1,5 +1,5 @@
 <template>
-    <g>
+    <g @mouseover="onMouseOver">
         <path></path>
     </g>
 </template>
@@ -30,15 +30,30 @@
         },
         methods: {
             renderLink() {
-                this.el.select('path').attr('d', d => {
-                    var o = {x: this.content.x0, y: this.content.y0}
-                   return this.diagonal(o, o);
-                });
-                this.el.select('path')
-                    .transition().duration(this.duration)
-                    .attr('d', d => {
-                        return this.diagonal(this.content, this.content.parent)
+                // console.log(this.content);
+                if(!this.content.enterLink) {
+                    this.el.select('path')
+                        .attr('d', d => {
+                            var d = {x: this.content.xo, y: this.content.yo};
+                            var s = {x: this.content.parent.xo, y: this.content.parent.yo};
+                            return this.diagonal(d, s);
+                        });
+                    this.el.select('path')
+                        .transition().duration(this.duration)
+                        .attr('d', d => {
+                            return this.diagonal(this.content, this.content.parent)
+                        });
+                } else {
+                    this.el.select('path').attr('d', d => {
+                        var o = {x: this.content.parent.xo, y: this.content.parent.yo}
+                        return this.diagonal(o, o);
                     });
+                    this.el.select('path')
+                        .transition().duration(this.duration)
+                        .attr('d', d => {
+                            return this.diagonal(this.content, this.content.parent)
+                        });
+                }
             },
             getPath() {
                 return this.diagonal(this.content, this.content.parent);
@@ -58,6 +73,9 @@
                         var o = {x: node.x, y: node.y};
                         return this.diagonal(o, o);
                     });
+            },
+            onMouseOver() {
+                // console.log("Mouse Over");
             }
         },
         watch: {
@@ -76,5 +94,9 @@
         fill: none;
         stroke: steelblue;
         stroke-width: 5;
+    },
+    path:hover {
+        cursor: pointer;
+        stroke: orange
     }
 </style>
