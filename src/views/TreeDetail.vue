@@ -25,7 +25,8 @@
             <div class="chart">
                 <div class="chart-menu"></div>
                 <div class="chart-content">
-                    <tablelayout></tablelayout>
+                    <!--<tablelayout></tablelayout>-->
+                    <intersect></intersect>
                 </div>
             </div>
         </div>
@@ -37,6 +38,7 @@
     import treelayout from '../components/tree/TreeLayout';
     import treelayout2 from '../components/tree/TreeLayout2';
     import tablelayout from '../components/table/TableD3';
+    import intersect from '../components/tree/Intersection';
 
     import * as d3 from 'd3';
     import {mapActions} from 'vuex';
@@ -47,7 +49,8 @@
         name: "TreeDetail",
         components: {
             treelayout2: treelayout2,
-            tablelayout: tablelayout
+            tablelayout: tablelayout,
+            intersect: intersect
         },
         data() {
             return {

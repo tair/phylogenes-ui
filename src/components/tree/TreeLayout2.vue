@@ -17,6 +17,8 @@
                             :content="node"
                             v-on:clicknode="onClick"></treenode2>
             </g>
+
+            <dragnode ref="nodeToAdd" :content="exampleNode"></dragnode>
         </g>
     </svg>
 </template>
@@ -26,6 +28,7 @@
     import Vue from 'vue';
     import treenode from '../tree/TreeNode';
     import treenode2 from '../tree/TreeNode2';
+    import dragnode from '../tree/DraggableTreeNode';
     import treelink from '../tree/TreeLink';
 
     export default {
@@ -34,6 +37,7 @@
         components: {
             'treenode': treenode,
             'treenode2': treenode2,
+            'dragnode': dragnode,
             'treelink': treelink
         },
         data() {
@@ -75,6 +79,14 @@
                          ]
                         },
                     ]
+                },
+                exampleNode: {
+                    id: 1,
+                    text: "Example",
+                    x: 400,
+                    y: 400,
+                    xo: 400,
+                    yo: 400
                 },
                 treenodes: [],
                 treenodes2: [],
