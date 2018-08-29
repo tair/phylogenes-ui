@@ -79,7 +79,7 @@
                 }
             },
             loadJson() {
-                d3.json("/panther_simple.json", (err, data) => {
+                d3.json("/panther.json", (err, data) => {
                     if(err) {
                         console.log(err);
                     } else {
@@ -93,7 +93,7 @@
                             return d.children;
                         });
 
-                        this.jsonData = nodes;
+                        this.jsonData = data;
                         console.log("Json loaded");
                         // console.log(nodes);
                     }

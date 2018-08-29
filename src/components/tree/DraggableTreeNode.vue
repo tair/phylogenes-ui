@@ -1,6 +1,6 @@
 <template>
     <g>
-        <circle r="10" @click="clickNode"></circle>
+        <circle :r="radius" @click="clickNode"></circle>
         <text dy=".35em" :x="textPosn" y=-12>{{content.text}}</text>
     </g>
 </template>
@@ -16,6 +16,8 @@
                 nodeId: "id",
                 duration: 750,
                 textPosn: 13,
+                radius: 15,
+                d3_circle: null,
                 el: null
             }
         },
@@ -39,19 +41,42 @@
                     this.el.select('text')
                         .style('opacity', 0);
                 }
-                this.el.attr("transform", d => {
-                    return "translate(" + this.content.yo + "," + this.content.xo + ")";
-                });
 
-                this.el.transition().duration(this.duration)
-                    .attr("transform", d => {
-                        return "translate(" + this.content.y + "," + this.content.x + ")";
-                    });
+                this.d3_circle = this.el.select('circle');
+                this.d3_circle
+                    .datum([this.content.x, this.content.y, this.radius]);
+
+                this.d3_circle
+                    .attr("cx", this.content.x)
+                    .attr("cy", this.content.y);
+                // this.el.attr("transform", d => {
+                //     return "translate(" + this.content.yo + "," + this.content.xo + ")";
+                // });
+                //
+                // this.el.transition().duration(this.duration)
+                //     .attr("transform", d => {
+                //         return "translate(" + this.content.y + "," + this.content.x + ")";
+                //     });
                 this.el.select('text')
                     .transition().duration(this.duration)
                     .style('opacity', 1);
 
-                this.el.call(this.setDragListener());
+                // this.el.call(this.setDragListener());
+                var self = this;
+                this.d3_circle.call(
+                    d3.drag()
+                        .on("drag", function(d) {
+                            d[0] = d3.event.x, d[1] = d3.event.y;
+                            d3.select(this)
+                                .attr("cx", function(d) { return d[0]; })
+                                .attr("cy", function(d) { return d[1]; });
+                            // console.log(self.d3_circle.datum());
+                            self.$emit("dragging", self.d3_circle.datum());
+                        })
+                        .on("end", function(d) {
+                            self.$emit("dragend");
+                        })
+                );
             },
             clickNode() {
                 this.content = this.toggleChildren(this.content);
@@ -108,11 +133,16 @@
                         this.el.attr("transform", d => {
                             return "translate(" + this.content.x + "," + this.content.y + ")";
                         });
+                        this.$emit('clicknode', this.content);
+
                     })
                     .on("end", () => {
                         // console.log(this.el.node());
                         this.changeFill(false);
                     });
+            },
+            onIntersect(flag) {
+                this.changeFill(flag);
             }
         },
         watch: {

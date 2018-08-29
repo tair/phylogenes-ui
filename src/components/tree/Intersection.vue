@@ -26,7 +26,7 @@
             var svg = d3.select("#intersect");
             var circle = svg.select("g.circle")
                 .select("circle")
-                .datum([900 / 2, 900 / 2, 120])
+                .datum([900 / 2, 900 / 2, 10])
                     .call(this.positionCircle)
                     .attr("r", function(d) { return d[2]; });
 
@@ -36,14 +36,15 @@
                 .call(this.positionPath);
 
             var polygon2 = svg.select('g.curved')
-                .datum([[200,200],[100,500]]);
+                .datum([[400,160], [0,120]]);
 
             polygon2.select('path')
                 .attr('d', d => {
                     var x2 = d[1][1];
                     var y2 = d[1][0];
-                    var d = {x: d[0][0], y: d[0][1]};
+                    var d = {x: d[0][1], y: d[0][0]};
                     var s = {x: x2, y: y2};
+                    console.log(d);
                     return this.diagonal(d, s);
                 });
 

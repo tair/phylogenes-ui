@@ -35,24 +35,28 @@
                 if(this.content.children == null) {
                     this.changeFill();
                 }
+
                 if(!this.content.enterLink) {
                     this.el.select('text')
                         .style('opacity', 1);
                 } else {
                     this.el.select('text')
                         .style('opacity', 0);
+                    this.el.select('text')
+                        .transition().duration(this.duration)
+                        .style('opacity', 1);
+                }
+
+                if(this.content.enterLink) {
+                    // console.log("Id: " + this.content.id + " Yo: " + this.content.yo + " Y: " + this.content.y);
                 }
                 this.el.attr("transform", d => {
                     return "translate(" + this.content.yo + "," + this.content.xo + ")";
                 });
-
                 this.el.transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + this.content.y + "," + this.content.x + ")";
                     });
-                this.el.select('text')
-                    .transition().duration(this.duration)
-                    .style('opacity', 1);
             },
             clickNode() {
                 this.content = this.toggleChildren(this.content);
