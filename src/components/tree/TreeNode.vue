@@ -1,5 +1,5 @@
 <template>
-    <g>
+    <g @contextmenu.prevent="openMenu($event)">
         <circle r="10" @click="clickNode"></circle>
         <text dy=".35em" :x="textPosn" y=-12>{{content.text}}</text>
     </g>
@@ -24,13 +24,15 @@
                 this.el = d3.select(this.$el);
                 this.renderNode();
             }
-
         },
         beforeDestroy() {
         },
         computed: {
         },
         methods: {
+            openMenu(evt) {
+                this.$parent.$refs.menu.open(evt, this.content.id);
+            },
             renderNode() {
                 if(this.content.children == null) {
                     this.changeFill();
@@ -48,8 +50,10 @@
                 }
 
                 if(this.content.enterLink) {
-                    // console.log("Id: " + this.content.id + " Yo: " + this.content.yo + " Y: " + this.content.y);
+
                 }
+                // console.log("Id: " + this.content.id + " Yo: " + this.content.yo + " Y: " + this.content.y);
+                // console.log("Id: " + this.content.id + " Xo: " + this.content.xo + " X: " + this.content.x);
                 this.el.attr("transform", d => {
                     return "translate(" + this.content.yo + "," + this.content.xo + ")";
                 });
@@ -86,6 +90,10 @@
             },
             onExit(node) {
                 // console.log("ON Exit ", node);
+                if(!node) {
+                    node = {x: this.content.x, y: this.content.y};
+                }
+
                 this.el.select('circle')
                     .transition().duration(this.duration)
                     .attr('r', 1e-6);

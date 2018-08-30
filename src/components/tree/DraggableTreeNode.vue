@@ -43,12 +43,8 @@
                 }
 
                 this.d3_circle = this.el.select('circle');
-                this.d3_circle
-                    .datum([this.content.x, this.content.y, this.radius]);
+                this.resetPosition();
 
-                this.d3_circle
-                    .attr("cx", this.content.x)
-                    .attr("cy", this.content.y);
                 // this.el.attr("transform", d => {
                 //     return "translate(" + this.content.yo + "," + this.content.xo + ")";
                 // });
@@ -70,6 +66,9 @@
                             d3.select(this)
                                 .attr("cx", function(d) { return d[0]; })
                                 .attr("cy", function(d) { return d[1]; });
+                            self.el.select('text').attr("transform", d => {
+                                return "translate(" + d3.event.x + "," + d3.event.y + ")";
+                            });
                             // console.log(self.d3_circle.datum());
                             self.$emit("dragging", self.d3_circle.datum());
                         })
@@ -143,6 +142,26 @@
             },
             onIntersect(flag) {
                 this.changeFill(flag);
+            },
+            resetPosition() {
+                this.d3_circle
+                    .datum([this.content.x, this.content.y, this.radius]);
+
+                this.el.select('text')
+                    .attr("transform", d => {
+                        return "translate(" + this.content.x + "," + this.content.y + ")";
+                    });
+
+                this.d3_circle
+                    .transition().duration(this.duration)
+                    .attr("cx", this.content.x)
+                    .attr("cy", this.content.y);
+
+                this.el.select('text')
+                    .transition().duration(this.duration)
+                    .attr("transform", d => {
+                        return "translate(" + this.content.x + "," + this.content.y + ")";
+                    });
             }
         },
         watch: {

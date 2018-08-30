@@ -15,7 +15,8 @@
                                     <!--v-on:updated-tree="onTreeUpdate"-->
                                     <!--v-on:mouse-over-link="onMouseOverLink"-->
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
-                        <treelayout2  :jsonData="jsonData"></treelayout2>
+                        <treelayout2  :jsonData="jsonData"
+                                      v-on:updated-tree="onTreeUpdate"></treelayout2>
 
                     </div>
                 </div>
@@ -25,8 +26,8 @@
             <div class="chart">
                 <div class="chart-menu"></div>
                 <div class="chart-content">
-                    <!--<tablelayout></tablelayout>-->
-                    <intersect></intersect>
+                    <tablelayout></tablelayout>
+                    <!--<intersect></intersect>-->
                 </div>
             </div>
         </div>
@@ -79,7 +80,7 @@
                 }
             },
             loadJson() {
-                d3.json("/panther.json", (err, data) => {
+                d3.json("/panther_simple.json", (err, data) => {
                     if(err) {
                         console.log(err);
                     } else {
@@ -128,7 +129,6 @@
                 });
                 this.stateSetTreeData(tabularData);
             }
-
         },
         watch: {
             '$route.params.id': function (id) {

@@ -1,28 +1,38 @@
 <template>
-    <svg id="treeSvg" width="100%" height="900">
-        <g id="wrapper" class="wrapper">
-            <g class="links">
-                <treelink v-for="link in treelinks" :key="link.id"
-                          ref="treelink"
-                          :content="link">
-                </treelink>
-            </g>
-            <g class="nodes">
-                <treenode v-for="node in treenodes" :id="node.id"
-                          ref="treenode"
-                          :content="node"
-                          v-on:clicknode="onClick"></treenode>
-                <treenode2 v-for="node in treenodes2" :id="node.id"
-                           ref="treenode"
-                           :content="node"
-                           v-on:clicknode="onClick"></treenode2>
-            </g>
+    <div>
+        <svg id="treeSvg" width="100%" height="900">
+            <g id="wrapper" class="wrapper">
+                <g class="links">
+                    <treelink v-for="link in treelinks" :key="link.id"
+                              ref="treelink"
+                              :content="link">
+                    </treelink>
+                </g>
+                <!--@contextmenu.prevent="$refs.menu.open($event, {foo: 'bar'})"-->
+                <g class="nodes">
+                    <treenode v-for="node in treenodes" :id="node.id"
+                              ref="treenode"
+                              :content="node"
+                              v-on:clicknode="onClick"></treenode>
+                    <treenode2 v-for="node in treenodes2" :id="node.id"
+                               ref="treenode"
+                               :content="node"
+                               v-on:clicknode="onClick"></treenode2>
+                </g>
 
-            <dragnode ref="nodeToAdd" :content="exampleNode"
-                      v-on:dragging="onDrag"
-                      v-on:dragend="onDragEnd"></dragnode>
-        </g>
-    </svg>
+                <dragnode ref="nodeToAdd" :content="exampleNode"
+                          v-on:dragging="onDrag"
+                          v-on:dragend="onDragEnd"></dragnode>
+            </g>
+        </svg>
+        <context-menu ref="menu">
+            <ul class="options" slot-scope="child">
+                <li @click="onMenuClick('Add')">Add</li>
+                <li @click="onMenuClick('Delete')">Delete</li>
+            </ul>
+        </context-menu>
+    </div>
+
 </template>
 
 <script>
@@ -33,6 +43,8 @@
     import dragnode from '../tree/DraggableTreeNode';
     import treelink from '../tree/TreeLink';
 
+    import contextMenu from '../menu/ContextMenu';
+
     export default {
         name: "treelayout2",
         props: ['jsonData'],
@@ -40,7 +52,8 @@
             'treenode': treenode,
             'treenode2': treenode2,
             'dragnode': dragnode,
-            'treelink': treelink
+            'treelink': treelink,
+            'context-menu': contextMenu
         },
         data() {
             return {
@@ -88,9 +101,9 @@
                     id: 1,
                     text: "Example",
                     x: 400,
-                    y: 400,
+                    y: 700,
                     xo: 400,
-                    yo: 400
+                    yo: 700
                 },
                 treenodes: [],
                 treenodes2: [],
@@ -100,6 +113,7 @@
                 oldIndexes: [],
                 scale: {x: 1.0, y: 1.0},
                 duration: 750,
+                duration2: 1,
                 index: 0,
                 counter: 0,
                 topPaddingY: 120,
@@ -120,20 +134,9 @@
             // var nodes = d3.hierarchy(this.treeData, function(d) {
             //     return d.children;
             // });
-            //
-            // nodes.each(n => {
-            //    if(!n.id) {
-            //        n.id = this.index++;
-            //    }
-            // });
 
             if (this.jsonData != null) {
                 this.initTree();
-                // this.rootNode = nodes;
-                // this.updateOldIndexes(this.rootNode.descendants());
-                //
-                // this.initTree();
-                // this.updateTree(this.rootNode);
             }
         },
         methods: {
@@ -147,6 +150,13 @@
                 }
                 return clone;
             },
+            // Reset the tree layout since the nodes have been updated.
+            resetTreeLayout() {
+                var treeLayout = d3.tree()
+                    .size([800, 800]);
+
+                treeLayout(this.rootNode);
+            },
             initTree() {
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = d3.hierarchy(this.jsonData, function (d) {
@@ -155,12 +165,9 @@
                 this.updateIdAndText();
                 this.updateOldIndexes(this.rootNode.descendants());
 
-                var treeLayout = d3.tree()
-                    .size([800, 800]);
+                this.resetTreeLayout();
 
-                treeLayout(this.rootNode);
-
-                this.updateTree(this.rootNode);
+                this.updateTree();
             },
             getText(d) {
                 var text = d.id;
@@ -195,6 +202,12 @@
                         // this.stateTreeZoom(d3.event.transform);
                     })
             },
+            updateIds() {
+                this.index = 0;
+                this.rootNode.each(n => {
+                    n.id = this.index++;
+                });
+            },
             updateIdAndText() {
                 this.index = 0;
                 this.rootNode.each(n => {
@@ -205,15 +218,7 @@
                         n.text = text;
                     }
                 });
-
-                var treeLayout = d3.tree()
-                    .size([800, 800]);
-
-                treeLayout(this.rootNode);
-                setTimeout(() => {
-                    // console.log(this.rootNode);
-
-                }, 1000);
+                this.resetTreeLayout();
             },
             updateOldIndexes(nodes) {
                 this.oldIndexes = [];
@@ -228,7 +233,21 @@
                     d.yo = d.y;
                 });
             },
-            updateTree(source) {
+            updateTree2() {
+                //Explain: why old Indexes?
+                d3.select('.nodes')
+                    .selectAll('g')
+                    .data(this.oldIndexes);
+                // console.log(this.oldIndexes);
+
+                var nodes = this.rootNode.descendants();
+                console.log(nodes);
+                this.updateAccordingToDepth(nodes);
+                this.saveOldPositions(this.rootNode);
+                this.renderLinks(nodes);
+                this.renderNodes(nodes);
+            },
+            updateTree() {
                 this.saveOldPositions(this.rootNode);
 
                 //Explain: why old Indexes?
@@ -239,10 +258,14 @@
 
                 var nodes = this.rootNode.descendants();
                 this.updateAccordingToDepth(nodes);
+                this.$emit('updated-tree', nodes);
+                // this.saveOldPositions(this.rootNode);
                 // console.log(nodes);
 
                 this.renderLinks(nodes);
-
+                this.renderNodes(nodes);
+            },
+            renderNodes(nodes){
                 var nodesData = d3.select('.nodes')
                     .selectAll('g')
                     .data(nodes, function (d) {
@@ -276,8 +299,6 @@
                         updatedNodes.nodes().forEach(n => {
                             // console.log("N ", n.__data__);
                             var node_content = n.__data__;
-                            // node_content.x0 = node_content.x;
-                            // node_content.y0 = node_content.y;
                             if (n.constructor && n.constructor.name === "EnterNode") {
                                 if (this.clickedNode) {
                                     // console.log("Click ", this.clickedNode.id);
@@ -286,7 +307,6 @@
                                 }
                             }
                             if (n.__data__.children == null) {
-                                // tempArray2.push(node_content);
                                 tempArray.push(node_content);
                             } else {
                                 tempArray.push(node_content);
@@ -304,7 +324,7 @@
                         this.treenodes2 = tempArray2;
                         this.updateOldIndexes(nodes);
                         this.addLinkDatums();
-                    }, 1);
+                    }, this.duration2);
                 }, timeoutS);
             },
             renderLinks(nodes) {
@@ -325,6 +345,7 @@
                 exitingLinks.nodes().forEach(n => {
                     if (n.__data__) {
                         var findLink = this.$refs.treelink.find(en => en.content.id == n.__data__.id);
+
                         findLink.onExit(this.clickedNode);
                     }
                 });
@@ -354,7 +375,7 @@
                             return b.id < a.id;
                         });
                         this.treelinks = tempArray;
-                    }, 1);
+                    }, this.duration2);
                 }, timeoutS);
                 // console.log(this.treelinks);
             },
@@ -412,7 +433,7 @@
             onClick(source) {
                 // console.log(source.id + "-" + source.x + "," + source.y);
                 this.clickedNode = {id: source.id, x: source.x, y: source.y};
-                this.updateTree(source);
+                this.updateTree();
             },
             onDrag(circle_datum) {
                 this.link_intersected = this.linkDatums.find(ld => {
@@ -430,11 +451,37 @@
             onDragEnd() {
                 if (this.link_intersected) {
                     const nn = this.addNewNodeBetweenLink(this.link_intersected);
+                    this.$refs.nodeToAdd.resetPosition();
                     this.updateIdAndText();
-                    this.updateTree(null);
+                    this.updateTree2();
+                }
+            },
+            onMenuClick(opt, data) {
+                // console.log(this.$refs.menu.userData);
+                var nodeId = this.$refs.menu.userData
+                if(opt === "Add") {
+                    this.addNewChildNode(nodeId);
+                    this.updateIdAndText();
+                    this.updateTree2();
+                }
+                if(opt === "Delete") {
+                    this.deleteNode(nodeId);
                 }
             },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            deleteNode(nodeId) {
+                var nodes = this.rootNode.descendants();
+                var nodeToDelete = nodes.find(n => n.id == nodeId);
+                if(nodeToDelete) {
+                    var parentChildren = nodeToDelete.parent.children;
+                    parentChildren = parentChildren.filter(pc => pc.id != nodeId);
+                    if(parentChildren.length == 0) parentChildren = null;
+                    nodeToDelete.parent.children = parentChildren;
+                    // console.log(nodes);
+                    this.updateIdAndText();
+                    this.updateTree2();
+                }
+            },
             addNewNodeBetweenLink(link) {
                 var nodes = this.rootNode.descendants();
                 /**
@@ -465,6 +512,26 @@
                     });
                 }
                 return nn;
+            },
+            addNewChildNode(nodeId) {
+                var nodes = this.rootNode.descendants();
+                var parentNode = nodes.find(n => n.id == nodeId);
+                if(parentNode) {
+                    var nn = {
+                        depth: parentNode.depth+1,
+                        text: "New Node",
+                        parent: parentNode,
+                        children: null,
+                        x: parentNode.x,
+                        y: parentNode.y
+                    }
+                    if(parentNode.children) {
+                        parentNode.children.push(nn);
+                    } else {
+                        parentNode.children = [];
+                        parentNode.children.push(nn);
+                    }
+                }
             },
             updateChildren(n) {
                 if(n.children) {

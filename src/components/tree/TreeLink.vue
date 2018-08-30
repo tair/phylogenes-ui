@@ -59,14 +59,21 @@
                 return this.diagonal(this.content, this.content.parent);
             },
             diagonal(s, d) {
-                var log = "M" + s.y + "," + s.x
-                    + "C" + (s.y + d.y) / 2 + "," + s.x
-                    + " " + (s.y + d.y) / 2 + "," + d.x
-                    + " " + d.y + "," + d.x;
+                // var log = "M" + s.y + "," + s.x
+                //     + "C" + (s.y + d.y) / 2 + "," + s.x
+                //     + " " + (s.y + d.y) / 2 + "," + d.x
+                //     + " " + d.y + "," + d.x;
+                var moveTo = "M"+ s.y + "," + s.x;
+                var verticalLineTo = "V" + d.x;
+                var horizontalLineto = "H" + d.y;
+                var log = moveTo + horizontalLineto + verticalLineTo;
+                // console.log(log);
                 return log;
             },
             onExit(node) {
-                // console.log("On exit ", node.x, node.y);
+                if(!node) {
+                    node = {x: this.content.x, y: this.content.y};
+                }
                 this.el.select('path')
                     .transition().duration(this.duration)
                     .attr('d', d => {

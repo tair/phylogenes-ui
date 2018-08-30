@@ -39,9 +39,12 @@
         },
         methods: {
             open (evt, userData) {
+                console.log(userData);
                 this.x = evt.pageX || evt.clientX;
                 this.y = evt.pageY || evt.clientY;
+
                 this.userData = userData;
+
                 //The element needs to have a tabindex for focus to work
                 Vue.nextTick(() => this.$el.focus());
             },
