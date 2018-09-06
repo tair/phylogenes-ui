@@ -14,15 +14,15 @@
                               ref="treenode"
                               :content="node"
                               v-on:clicknode="onClick"></treenode>
-                    <treenode2 v-for="node in treenodes2" :id="node.id"
-                               ref="treenode"
-                               :content="node"
-                               v-on:clicknode="onClick"></treenode2>
+                    <!--<treenode2 v-for="node in treenodes2" :id="node.id"-->
+                               <!--ref="treenode"-->
+                               <!--:content="node"-->
+                               <!--v-on:clicknode="onClick"></treenode2>-->
                 </g>
 
-                <dragnode ref="nodeToAdd" :content="exampleNode"
-                          v-on:dragging="onDrag"
-                          v-on:dragend="onDragEnd"></dragnode>
+                <!--<dragnode ref="nodeToAdd" :content="exampleNode"-->
+                          <!--v-on:dragging="onDrag"-->
+                          <!--v-on:dragend="onDragEnd"></dragnode>-->
             </g>
         </svg>
         <context-menu ref="menu">
@@ -31,6 +31,7 @@
                 <li @click="onMenuClick('Delete')">Delete</li>
             </ul>
         </context-menu>
+        <tree-legend></tree-legend>
     </div>
 
 </template>
@@ -38,12 +39,17 @@
 <script>
     import * as d3 from 'd3';
     import Vue from 'vue';
+    import {mapActions} from 'vuex';
+
+    import * as types from '../../store/types_treedata';
+    
     import treenode from '../tree/TreeNode';
     import treenode2 from '../tree/TreeNode2';
     import dragnode from '../tree/DraggableTreeNode';
     import treelink from '../tree/TreeLink';
 
     import contextMenu from '../menu/ContextMenu';
+    import treeLegend from '../tree/Legend';
 
     export default {
         name: "treelayout2",
@@ -53,7 +59,8 @@
             'treenode2': treenode2,
             'dragnode': dragnode,
             'treelink': treelink,
-            'context-menu': contextMenu
+            'context-menu': contextMenu,
+            'tree-legend': treeLegend
         },
         data() {
             return {
@@ -124,10 +131,10 @@
         mounted() {
             var svg = d3.select('#treeSvg');
             var g = svg.select("#wrapper");
-            // g.transition().duration(500)
-            //     .attr("transform", (d) => {
-            //         return "translate(" + 100 + "," + 0 + ")";
-            //     });
+            g.transition().duration(500)
+                .attr("transform", (d) => {
+                    return "translate(" + 100 + "," + 0 + ")";
+                });
 
             svg.call(this.setZoomListener(g));
 
@@ -140,6 +147,10 @@
             }
         },
         methods: {
+            ...mapActions({
+                stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
+                stateTreeNodes: types.TREE_ACTION_SET_NODES
+            }),
             cloneObject(obj) {
                 var clone = {};
                 for (var i in obj) {
@@ -169,19 +180,64 @@
 
                 this.updateTree();
             },
+            //TODO: Get this method out of this component
             getText(d) {
                 var text = d.id;
-                // text = "";
+                text = "";
                 if(!d.data) return null;
-                if (d.data.organism) {
-                    text += " " + d.data.organism;
-                } else if (d.data.accession) {
-                    text += " " + d.data.accession;
-                    if (d.data.reference_speciation_event) {
-                        text += " (" + d.data.reference_speciation_event + ")";
+                if(d.data.node_type) {
+                    if (d.data.node_type === "DUPLICATION") {
+                        if (d.data.reference_speciation_event) {
+                            text += d.data.reference_speciation_event;
+                        } else {
+                            text += this.getLeafNodeText(d);
+                        }
+                    } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
+
+                    }
+                    return text;
+                }
+                if (d.data.reference_speciation_event) {
+                    text += " (" + d.data.reference_speciation_event + ")";
+                }
+                if(!d.children) {
+                    if(d.data.gene_symbol) {
+                        text += " " + d.data.gene_symbol;
+                    }
+                    if(d.data.organism) {
+                        text += " -" + d.data.organism;
                     }
                 }
                 return text;
+            },
+            getLeafNodeText(d) {
+                if(d.children) {
+                    // console.log(d.children[0].data);
+                    return d.children[0].data.organism;
+                }
+                return "Leaf Node";
+            },
+            getNodeColor(d) {
+                if(d.data.sf_id) {
+                    return "#1b2ad8";
+                }
+                if(d.data.node_type) {
+                    if(d.data.node_type === "DUPLICATION") {
+                        return "#f4a460";
+                    } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
+                        return "aqua blue";
+                    }
+                }
+                return "#56c356";
+            },
+            getNodeType(d) {
+                if(d.data.sf_id) {
+                    return "Diamond";
+                }
+                if(!d.children) {
+                    return "None";
+                }
+              return "Circle";
             },
             getLogs(n) {
                 if (!n) {
@@ -199,7 +255,7 @@
                         // this.rootNodeX = d3.event.transform.x;
                         // this.rootNodeY = d3.event.transform.y;
                         // this.renderXAxis();
-                        // this.stateTreeZoom(d3.event.transform);
+                        this.stateTreeZoom(d3.event.transform);
                     })
             },
             updateIds() {
@@ -217,6 +273,11 @@
                     if (text != null) {
                         n.text = text;
                     }
+                    var fillColor = this.getNodeColor(n);
+                    if(fillColor) {
+                        n.fillColor = fillColor;
+                    }
+                    n.type = this.getNodeType(n);
                 });
                 this.resetTreeLayout();
             },

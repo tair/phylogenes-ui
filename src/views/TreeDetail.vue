@@ -80,15 +80,16 @@
                 }
             },
             loadJson() {
-                d3.json("/panther_simple.json", (err, data) => {
+                d3.json("/panther.json", (err, data) => {
                     if(err) {
                         console.log(err);
                     } else {
                         //console.log(data);
                         data = data.search.annotation_node;
                         this.formatJson(data);
+                        this.setNodeColor(data);
 
-                        // console.log(data);
+                        console.log(data);
                         //  assigns the data to a hierarchy using parent-child relationships
                         var nodes = d3.hierarchy(data, function(d) {
                             return d.children;
@@ -99,6 +100,9 @@
                         // console.log(nodes);
                     }
                 });
+            },
+            setNodeColor(data) {
+
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             onMouseOverLink(link) {
@@ -116,9 +120,12 @@
                 var sortedNodes = nodes.sort(function (a, b) {
                     return a.dfId - b.dfId;
                 });
+
+                var index = 0;
                 sortedNodes.forEach(n => {
                     var tableNode = {};
                     //console.log(n.data);
+                    tableNode["id"] = index++;
                     tableNode["Accession"] = n.data.accession;
                     tableNode["Gene Id"] = n.data.gene_id;
                     tableNode["Gene Name"] = n.data.gene_symbol;

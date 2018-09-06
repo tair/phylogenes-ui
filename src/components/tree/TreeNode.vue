@@ -1,6 +1,6 @@
 <template>
     <g @contextmenu.prevent="openMenu($event)">
-        <circle r="10" @click="clickNode"></circle>
+        <circle v-if="isCircle" r="10" @click="clickNode"></circle>
         <text dy=".35em" :x="textPosn" y=-12>{{content.text}}</text>
     </g>
 </template>
@@ -16,12 +16,32 @@
                 nodeId: "id",
                 duration: 750,
                 textPosn: 13,
+                isCircle: true,
                 el: null
             }
         },
         mounted() {
             if(this.content != null) {
                 this.el = d3.select(this.$el);
+
+                if(this.content.type === "Diamond") {
+                    this.isCircle = false;
+                    var symbolGenerator = d3.symbol()
+                        .size([400]);
+
+                    this.el.append('path')
+                        .attr('d', function(d) {
+                            symbolGenerator
+                                .type(d3.symbolDiamond);
+
+                            return symbolGenerator();
+                        })
+                        .style('fill', this.content.fillColor)
+                        .style('stroke', 'white')
+                        .style('stroke-width', '2px')
+                        .on("click", this.clickNode);
+                }
+
                 this.renderNode();
             }
         },
@@ -34,7 +54,8 @@
                 this.$parent.$refs.menu.open(evt, this.content.id);
             },
             renderNode() {
-                if(this.content.children == null) {
+                this.setFill();
+                if(this.content._children) {
                     this.changeFill();
                 }
 
@@ -77,11 +98,18 @@
                 }
                 return d;
             },
+            setFill() {
+                var el = d3.select(this.$el);
+                el.select('circle')
+                    .style("fill", d=> {
+                        return this.content.fillColor ? this.content.fillColor : "#fff";
+                    });
+            },
             changeFill() {
                 var el = d3.select(this.$el);
                 el.select('circle')
                     .style("fill", d=> {
-                        return this.content._children ? "black" : "#fff";
+                        return this.content._children ? "grey" : "#fff";
                     });
             },
             getTextPosn() {
