@@ -1,6 +1,7 @@
 <template>
     <g @contextmenu.prevent="openMenu($event)">
         <circle v-if="isCircle" r="10" @click="clickNode"></circle>
+        <path v-if="isDiamond" class="diamond" :d="diamondSymbol()" fill="red"></path>
         <text dy=".35em" :x="textPosn" y=-12>{{content.text}}</text>
     </g>
 </template>
@@ -17,6 +18,7 @@
                 duration: 750,
                 textPosn: 13,
                 isCircle: true,
+                isDiamond: false,
                 el: null
             }
         },
@@ -40,6 +42,8 @@
                         .style('stroke', 'white')
                         .style('stroke-width', '2px')
                         .on("click", this.clickNode);
+                } else if(this.content.type === "None") {
+                    this.isCircle = false;
                 }
 
                 this.renderNode();
@@ -109,7 +113,7 @@
                 var el = d3.select(this.$el);
                 el.select('circle')
                     .style("fill", d=> {
-                        return this.content._children ? "grey" : "#fff";
+                        return this.content._children ? "black" : "#fff";
                     });
             },
             getTextPosn() {
@@ -151,5 +155,10 @@
         stroke-width: 2px;
         fill: #fff;
         cursor: pointer;
+    }
+    .diamond {
+        stroke: white;
+        stroke-width: 2px;
+        fill: #1b2ad8
     }
 </style>

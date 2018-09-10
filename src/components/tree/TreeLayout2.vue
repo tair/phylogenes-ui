@@ -53,7 +53,7 @@
 
     export default {
         name: "treelayout2",
-        props: ['jsonData'],
+        props: ['jsonData', 'mappingData'],
         components: {
             'treenode': treenode,
             'treenode2': treenode2,
@@ -168,10 +168,13 @@
 
                 treeLayout(this.rootNode);
             },
-            initTree() {
-                //  assigns the data to a hierarchy using parent-child relationships
-                this.rootNode = d3.hierarchy(this.jsonData, function (d) {
-                    return d.children;
+            mapTree() {
+                this.rootNode.each(n => {
+                    // console.log(n.data.organism);
+                    if(n.data.organism) {
+                        var found_mapping = this.mappingData.find(o => o.Organism === n.data.organism);
+                        n.data.displayName = found_mapping.displayName;
+                    }
                 });
                 this.updateIdAndText();
                 this.updateOldIndexes(this.rootNode.descendants());
@@ -179,6 +182,12 @@
                 this.resetTreeLayout();
 
                 this.updateTree();
+            },
+            initTree() {
+                //  assigns the data to a hierarchy using parent-child relationships
+                this.rootNode = d3.hierarchy(this.jsonData, function (d) {
+                    return d.children;
+                });
             },
             //TODO: Get this method out of this component
             getText(d) {
@@ -204,8 +213,8 @@
                     if(d.data.gene_symbol) {
                         text += " " + d.data.gene_symbol;
                     }
-                    if(d.data.organism) {
-                        text += " -" + d.data.organism;
+                    if(d.data.displayName) {
+                        text += " -" + d.data.displayName;
                     }
                 }
                 return text;
@@ -653,6 +662,11 @@
                 handler: function (val, oldVal) {
                     // console.log(this.jsonData);
                     this.initTree();
+                }
+            },
+            mappingData: {
+                handler: function (val, oldVal) {
+                    this.mapTree();
                 }
             }
         }

@@ -15,7 +15,7 @@
                                     <!--v-on:updated-tree="onTreeUpdate"-->
                                     <!--v-on:mouse-over-link="onMouseOverLink"-->
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
-                        <treelayout2  :jsonData="jsonData"
+                        <treelayout2  :jsonData="jsonData" :mappingData="mappingData"
                                       v-on:updated-tree="onTreeUpdate"></treelayout2>
 
                     </div>
@@ -58,6 +58,7 @@
                 treeId: null,
                 branchLength: "N/A",
                 jsonData: null,
+                mappingData: null,
                 baseUrl: process.env.BASE_URL
             }
         },
@@ -98,6 +99,14 @@
                         this.jsonData = data;
                         console.log("Json loaded");
                         // console.log(nodes);
+                    }
+                });
+                d3.csv("/organism_to_display.csv", (err, data) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        // console.log(data);
+                        this.mappingData = data;
                     }
                 });
             },
