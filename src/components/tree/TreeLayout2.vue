@@ -187,7 +187,10 @@
                         text += " " + d.data.gene_symbol;
                     }
                     if(d.data.displayName) {
-                        text += " - " + d.data.displayName;
+                        if(d.data.gene_symbol) {
+                            text += " - ";
+                        }
+                        text += d.data.displayName;
                     }
                 }
                 return text;

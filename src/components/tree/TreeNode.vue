@@ -2,7 +2,7 @@
     <g @contextmenu.prevent="openMenu($event)">
         <circle v-if="isCircle" :r=radius @click="clickNode"></circle>
         <path v-if="isDiamond" class="diamond" :d="diamondSymbol()" fill="red"></path>
-        <text dy=".35em" :x="textPosn" y=-12>{{content.text}}</text>
+        <text dy=".35em" :x="textPosn" y=-10>{{content.text}}</text>
     </g>
 </template>
 
@@ -17,7 +17,7 @@
                 nodeId: "id",
                 duration: 750,
                 radius: 12,
-                textPosn: 13,
+                textPosn: 18,
                 isCircle: true,
                 isDiamond: false,
                 el: null
@@ -118,8 +118,8 @@
                     });
             },
             getTextPosn() {
-                if(!this.content) return 13;
-                return this.content._children ? -13 : 13;
+                if(!this.content) return 14;
+                return this.content._children ? -14 : 14;
             },
             onExit(node) {
                 // console.log("ON Exit ", node);
@@ -156,6 +156,11 @@
         stroke-width: 2px;
         fill: #fff;
         cursor: pointer;
+    }
+    text {
+        font-size: 16px;
+        font-family: "sans-serif";
+        font-weight: bold;
     }
     .diamond {
         stroke: white;
