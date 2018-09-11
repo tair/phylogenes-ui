@@ -6,7 +6,7 @@
                     <h4>Protein sequences</h4>
                     <p class="text-sm">Plant species</p>
                 </div>
-                <div class="list-group" style="max-height: 300px; overflow: auto">
+                <div class="list-group" style="max-height: 200px; overflow: auto">
                     <a href="#" class="list-group-item list-group-item-action borderless text-danger">soybean (Glycine max)</a>
                     <a href="#" class="list-group-item list-group-item-action borderless text-danger">poplar (Populus trichocarpa)</a>
                     <a href="#" class="list-group-item list-group-item-action borderless text-danger">grape (Vitis vinifera)</a>
@@ -26,7 +26,7 @@
                     <p class="text-sm">Non-plant species</p>
                 </div>
 
-                <div class="list-group" style="max-height: 300px; overflow: auto">
+                <div class="list-group" style="max-height: 200px; overflow: auto">
                     <a href="#" class="list-group-item list-group-item-action borderless text-info">worm (Caenorhabditis elegans)</a>
                     <a href="#" class="list-group-item list-group-item-action borderless text-info">human (Homo sapiens)</a>
                     <a href="#" class="list-group-item list-group-item-action borderless text-info">green algae (Chlamydomonas reinhardii)</a>

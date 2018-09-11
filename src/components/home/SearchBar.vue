@@ -68,6 +68,8 @@
             onSearch() {
 
                 this.treeFilters = {
+                    startRow: 0,
+                    rows: 10,
                     familyName: this.searchText,
                     uniprotId: null,
                     nodeTypes: [],
