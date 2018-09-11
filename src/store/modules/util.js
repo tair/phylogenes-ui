@@ -36,6 +36,13 @@ function buildSolrQuery(payload) {
     return q;
 }
 
+function getQueryForPantherId(id) {
+    var q = "";
+    q = "id: " + id;
+    return q;
+}
+
 module.exports = {
-    buildSolrQuery
+    buildSolrQuery,
+    getQueryForPantherId
 };

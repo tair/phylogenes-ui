@@ -45,7 +45,7 @@ const getters = {
     },
     [types.TREE_GET_FILTERS]: state => {
         return state.tree.filters;
-    }
+    },
 };
 
 const mutations = {
@@ -53,6 +53,7 @@ const mutations = {
 };
 
 const actions = {
+
     [types.TREE_ACTION_PAGINATE]: (context, payload) => {
 
         console.log('Payload: ' + JSON.stringify(payload));
@@ -115,7 +116,7 @@ const actions = {
                 '&q=' + q
         })
             .then(res => {
-
+                console.log(res);
                 // tree data
                 context.state.tree.data.results = res.data.response.docs;
                 context.state.tree.data.queryTime = res.data.responseHeader.QTime;

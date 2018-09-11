@@ -36,13 +36,13 @@
 </template>
 
 <script>
-    import treelayout from '../components/tree/TreeLayout';
     import treelayout2 from '../components/tree/TreeLayout2';
     import tablelayout from '../components/table/TableD3';
     import intersect from '../components/tree/Intersection';
 
     import * as d3 from 'd3';
     import {mapActions} from 'vuex';
+    import {mapGetters} from 'vuex';
 
     import * as types from '../store/types_treedata';
 
@@ -52,6 +52,11 @@
             treelayout2: treelayout2,
             tablelayout: tablelayout,
             intersect: intersect
+        },
+        computed: {
+            ...mapGetters({
+                stateTreeJson: types.TREE_GET_JSON,
+            })
         },
         data() {
             return {
@@ -63,13 +68,33 @@
             }
         },
         mounted() {
-            this.loadJson();
+            console.log(this.treeId);
+            this.stateTreeGetJson(this.treeId);
         },
         methods: {
             ...mapActions({
+                stateTreeGetJson: types.TREE_ACTION_GET_JSON,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
-                stateTreeZoom: types.TREE_ACTION_SET_ZOOM
+                stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
+            loadJson(jsonString) {
+                var treeJson = JSON.parse(jsonString);
+                treeJson = treeJson.search.annotation_node;
+                this.formatJson(treeJson);
+                this.processJson(treeJson);
+            },
+            processJson(treeJson) {
+                d3.csv("/organism_to_display.csv", (err, data) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        this.mappingData = data;
+                        this.mapOrganismToDisplayName(treeJson);
+                        // console.log(treeJson);
+                        this.jsonData = treeJson;
+                    }
+                });
+            },
             formatJson(data) {
                 if(data.children) {
                     if(data.children.annotation_node) {
@@ -80,39 +105,40 @@
                     }
                 }
             },
-            loadJson() {
-                d3.json("/panther.json", (err, data) => {
-                    if(err) {
-                        console.log(err);
-                    } else {
-                        //console.log(data);
-                        data = data.search.annotation_node;
-                        this.formatJson(data);
-                        this.setNodeColor(data);
-
-                        console.log(data);
-                        //  assigns the data to a hierarchy using parent-child relationships
-                        var nodes = d3.hierarchy(data, function(d) {
-                            return d.children;
-                        });
-
-                        this.jsonData = data;
-                        console.log("Json loaded");
-                        // console.log(nodes);
-                    }
-                });
-                d3.csv("/organism_to_display.csv", (err, data) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        // console.log(data);
-                        this.mappingData = data;
-                    }
-                });
+            mapOrganismToDisplayName(node) {
+                if(node.organism) {
+                    var found_mapping = this.mappingData.find(o => o.Organism === node.organism);
+                    node.displayName = found_mapping.displayName;
+                }
+                if(node.children) {
+                    node.children.forEach(d => {
+                        this.mapOrganismToDisplayName(d);
+                    });
+                }
             },
-            setNodeColor(data) {
+            // loadJson() {
+            //     d3.json("/panther.json", (err, data) => {
+            //         if(err) {
+            //             console.log(err);
+            //         } else {
+            //             //console.log(data);
+            //             data = data.search.annotation_node;
+            //             this.formatJson(data);
+            //             this.setNodeColor(data);
+            //
+            //             console.log(data);
+            //             //  assigns the data to a hierarchy using parent-child relationships
+            //             var nodes = d3.hierarchy(data, function(d) {
+            //                 return d.children;
+            //             });
+            //
+            //             this.jsonData = data;
+            //             console.log("Json loaded");
+            //             // console.log(nodes);
+            //         }
+            //     });
 
-            },
+            // },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             onMouseOverLink(link) {
                 this.branchLength = link.data.branch_length;
@@ -149,12 +175,19 @@
         watch: {
             '$route.params.id': function (id) {
                 this.treeId = id;
-                console.log('ID: ' + this.treeId);
+                // console.log('ID: ' + this.treeId);
+                this.stateTreeGetJson(this.treeId);
+            },
+            stateTreeJson: {
+                handler: function (val, oldVal) {
+                    // console.log("Watch ", val);
+                    this.loadJson(val);
+                }
             }
         },
         created() {
             this.treeId = this.$route.params.id;
-            console.log('ID1: ' + this.treeId);
+            // console.log('ID1: ' + this.treeId);
         }
     }
 </script>

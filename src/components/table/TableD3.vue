@@ -27,13 +27,7 @@
             return {
                 scrollVertical: true,
                 tableBody: null,
-                index: 0,
-                columns: [
-
-                ],
-                allItems: [
-
-                ]
+                index: 0
             }
         },
         computed: {
@@ -64,12 +58,12 @@
                 this.renderTableHeader(this.tableBody);
                 this.renderTableBody(this.tableBody);
             },
-            updateIds() {
-                this.index = 0;
-                this.stateTreeData.forEach(n => {
-                    n.id = this.index++;
-                });
-            },
+            // updateIds() {
+            //     this.index = 0;
+            //     this.stateTreeData.forEach(n => {
+            //         n.id = this.index++;
+            //     });
+            // },
             renderTableHeader(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
                 var t_head = table_d3.select('thead');
@@ -87,7 +81,6 @@
                 // exitTh.transition().duration(1000)
                 // .style("opacity", 0)
                 // .remove();
-
             },
             renderTableBody(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);

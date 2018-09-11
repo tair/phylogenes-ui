@@ -1,6 +1,6 @@
 <template>
     <g @contextmenu.prevent="openMenu($event)">
-        <circle v-if="isCircle" r="10" @click="clickNode"></circle>
+        <circle v-if="isCircle" :r=radius @click="clickNode"></circle>
         <path v-if="isDiamond" class="diamond" :d="diamondSymbol()" fill="red"></path>
         <text dy=".35em" :x="textPosn" y=-12>{{content.text}}</text>
     </g>
@@ -16,6 +16,7 @@
             return {
                 nodeId: "id",
                 duration: 750,
+                radius: 12,
                 textPosn: 13,
                 isCircle: true,
                 isDiamond: false,
@@ -113,7 +114,7 @@
                 var el = d3.select(this.$el);
                 el.select('circle')
                     .style("fill", d=> {
-                        return this.content._children ? "black" : "#fff";
+                        return this.content._children ? "grey" : "#fff";
                     });
             },
             getTextPosn() {

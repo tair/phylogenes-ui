@@ -5,14 +5,11 @@
             <div class="col-10">
                 <span class="pr-2 text-primary h5">{{ this.item.family_name[0] }}</span>
 
-
                 <router-link :to="{ path: '/tree/' + this.item.id }" tag="a">
                     <span class="badge badge-warning p-1">
                         {{ this.item.id }}
                      </span>
                 </router-link>
-
-
 
             </div>
             <div class="col-2">
@@ -28,6 +25,7 @@
 </template>
 
 <script>
+
     export default {
         name: "TreeResultItem",
         props: {
