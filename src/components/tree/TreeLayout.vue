@@ -618,7 +618,7 @@
     }
     .legend-box {
         position: absolute;
-        top: 70px;
+        top: 85px;
         right: 15px;
         width: 20%;
         float: left;

@@ -39,8 +39,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </template>
 
@@ -65,13 +63,3 @@
         overflow-y: scroll;
     }
 </style>
-
-
-http://localhost:8983/solr/panther/select?facet.field=node_types&
-facet.field=organisms&facet.field=species_list&facet=on&fl=id,%20sf_names,
-%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids&rows=undefined
-&start=0&q=family_name:%22protein%22
-
-
-Payload: {"startRow":0,"rows":10,"familyName":"protein","uniprotId":null,"nodeTypes":[],"organisms":[],"species":[]}
-Payload: {"startRow":0,"rows":10,"familyName":"protein","uniprotId":null,"nodeTypes":[],"organisms":[],"species":[]}

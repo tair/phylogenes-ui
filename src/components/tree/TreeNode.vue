@@ -159,7 +159,7 @@
         cursor: pointer;
     }
     text {
-        font-size: 16px;
+        font-size: 14px;
         font-family: "sans-serif";
         font-weight: bold;
     }
