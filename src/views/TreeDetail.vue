@@ -16,7 +16,8 @@
                                     <!--v-on:updated-tree="onTreeUpdate"-->
                                     <!--v-on:mouse-over-link="onMouseOverLink"-->
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
-                        <treelayout2  :jsonData="jsonData" :mappingData="mappingData" ref="treeLayout"
+                        <treelayout2  :jsonData="jsonData" :mappingData="mappingData"
+                                      ref="treeLayout"
                                       v-on:updated-tree="onTreeUpdate"></treelayout2>
 
                     </div>
@@ -37,7 +38,7 @@
 </template>
 
 <script>
-    import treelayout2 from '../components/tree/TreeLayout2';
+    import treelayout2 from '../components/tree/TreeLayout';
     import tablelayout from '../components/table/TableD3';
     import intersect from '../components/tree/Intersection';
 
@@ -56,7 +57,7 @@
         },
         computed: {
             ...mapGetters({
-                stateTreeJson: types.TREE_GET_JSON,
+                stateTreeJson: types.TREE_GET_JSON
             })
         },
         data() {
@@ -225,6 +226,7 @@
     }
     .col1 {
         width: 50%;
+        height: 80%;
         float: left;
     }
 </style>
