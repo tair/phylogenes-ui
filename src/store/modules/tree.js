@@ -2,6 +2,9 @@ import * as types from '../types_tree';
 import axios from "axios/index";
 import util from "./util.js";
 
+// const SOLR_URL = 'http://localhost:8983/solr/panther/select';
+const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
+
 const state = {
     tree: {
         isLoading: false,
@@ -42,7 +45,7 @@ const getters = {
     },
     [types.TREE_GET_FILTERS]: state => {
         return state.tree.filters;
-    }
+    },
 };
 
 const mutations = {
@@ -50,6 +53,7 @@ const mutations = {
 };
 
 const actions = {
+
     [types.TREE_ACTION_PAGINATE]: (context, payload) => {
 
         console.log('Payload: ' + JSON.stringify(payload));
@@ -64,7 +68,7 @@ const actions = {
 
         axios({
             method: 'GET',
-            url: 'http://localhost:8983/solr/panther/select' +
+            url: SOLR_URL +
             '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
             '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
             '&rows=' + context.state.tree.filters.rows +
@@ -104,7 +108,7 @@ const actions = {
 
         axios({
             method: 'GET',
-            url: 'http://localhost:8983/solr/panther/select' +
+            url: SOLR_URL +
                 '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
                 '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
                 '&rows=' + context.state.tree.filters.rows +
@@ -112,7 +116,6 @@ const actions = {
                 '&q=' + q
         })
             .then(res => {
-
                 // tree data
                 context.state.tree.data.results = res.data.response.docs;
                 context.state.tree.data.queryTime = res.data.responseHeader.QTime;

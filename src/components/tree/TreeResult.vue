@@ -108,6 +108,17 @@
                 type: Object,
                 required: true
             }
+        },
+        watch: {
+            treeData: {
+                immediate: true,
+                handler (val, oldVal) {
+                    if(val.numFound == 1) {
+                        // console.log();
+                        this.$router.push({path: 'tree/' + val.results[0].id})
+                    }
+                }
+            }
         }
     }
 

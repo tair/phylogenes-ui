@@ -23,7 +23,7 @@
             </a>
         </form>
 
-        <div class="text-bold text-danger py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Species</div>
+        <div class="text-bold text-danger py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Taxonomic Range</div>
         <div class="list-group" style="max-height: 200px; overflow: auto;">
             <div v-for="data in facets.species" class="list-group-item list-group-item-action borderless text-muted">
                 <input type="checkbox" :value="data.key" v-on:change="onSearch()" v-model="treeFilters.species">
@@ -41,14 +41,14 @@
             </div>
         </div>
 
-        <div class="text-bold text-primary py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Node Types</div>
-        <div class="list-group" style="max-height: 200px; overflow: auto;">
-            <div v-for="data in facets.nodeTypes" class="list-group-item list-group-item-action borderless text-muted">
-                <input type="checkbox" :value="data.key" v-on:change="onSearch()" v-model="treeFilters.nodeTypes">
-                <span class="pl-2 text-primary">{{ data.key }}</span>
-                <span class="float-right badge badge-pill badge-primary">{{ data.count }}</span>
-            </div>
-        </div>
+        <!--<div class="text-bold text-primary py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Node Types</div>-->
+        <!--<div class="list-group" style="max-height: 200px; overflow: auto;">-->
+            <!--<div v-for="data in facets.nodeTypes" class="list-group-item list-group-item-action borderless text-muted">-->
+                <!--<input type="checkbox" :value="data.key" v-on:change="onSearch()" v-model="treeFilters.nodeTypes">-->
+                <!--<span class="pl-2 text-primary">{{ data.key }}</span>-->
+                <!--<span class="float-right badge badge-pill badge-primary">{{ data.count }}</span>-->
+            <!--</div>-->
+        <!--</div>-->
     </div>
 </template>
 
