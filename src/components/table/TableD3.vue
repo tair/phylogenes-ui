@@ -231,6 +231,10 @@
         min-width: 20em;
         height: 40px;
         min-height: 40px;
+        max-height: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         padding: 0.3em;
         border: 1px solid #9CC255;
         background-color: white;

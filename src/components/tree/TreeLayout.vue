@@ -184,7 +184,9 @@
                             text += this.getLeafNodeText(d);
                         }
                     } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
-
+                        if (d.data.reference_speciation_event) {
+                            text += d.data.reference_speciation_event;
+                        }
                     }
                     return text;
                 }
@@ -219,7 +221,7 @@
                     if(d.data.node_type === "DUPLICATION") {
                         return "#f4a460";
                     } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
-                        return "aqua blue";
+                        return "steelblue";
                     }
                 }
                 return "#56c356";
