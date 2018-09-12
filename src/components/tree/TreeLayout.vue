@@ -132,6 +132,7 @@
                 this.resetRootPosition();
                 this.treelinks = [];
                 this.treenodes = [];
+                // this.$emit('updated-tree', []);
             },
             //Set the d3 svg to it's original position before moving around with mouse
             resetRootPosition() {
@@ -602,6 +603,7 @@
             jsonData: {
                 handler: function (val, oldVal) {
                     // console.log(this.jsonData);
+                    this.isLoading = true;
                     this.initTree();
                 }
             }
