@@ -1,15 +1,14 @@
 <template>
     <div>
-        <div class="col-sm-12">
-        tree details for <h3>{{ this.treeId }}</h3>
-        </div>
         <div class="col1">
             <div class="chart">
-                <div class="chart-menu"></div>
+                <div class="chart-menu">
+                    <span class="pt-5 text-primary h3">Tree details for {{ this.treeId }}</span>
+                </div>
                 <div class="chart-content">
-                    <div style="height: 20px">
-                        Branch Length: <span>{{branchLength}}</span>
-                        <button @click="expandAll">Expand All</button>
+                    <div>
+                        <!--Branch Length: <span>{{branchLength}}</span>-->
+                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1" @click="expandAll">Expand All</button>
                     </div>
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
