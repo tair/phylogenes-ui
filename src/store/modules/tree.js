@@ -3,7 +3,7 @@ import axios from "axios/index";
 import util from "./util.js";
 
 // const SOLR_URL = 'http://localhost:8983/solr/panther/select';
-const SOLR_URL = 'http://34.209.91.189:8983/solr/panther/select';
+const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
 
 const state = {
     tree: {
@@ -116,7 +116,6 @@ const actions = {
                 '&q=' + q
         })
             .then(res => {
-                console.log(res);
                 // tree data
                 context.state.tree.data.results = res.data.response.docs;
                 context.state.tree.data.queryTime = res.data.responseHeader.QTime;

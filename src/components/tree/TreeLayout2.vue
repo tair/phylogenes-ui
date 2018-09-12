@@ -1,7 +1,7 @@
 <template>
     <div>
         <svg id="treeSvg" width="100%" height="900">
-            <g id="wrapper" class="wrapper">
+            <g id="wrapper">
                 <g class="links">
                     <treelink v-for="link in treelinks" :key="link.id"
                               ref="treelink"
@@ -31,7 +31,9 @@
                 <li @click="onMenuClick('Delete')">Delete</li>
             </ul>
         </context-menu>
-        <tree-legend></tree-legend>
+        <div class="legend-box">
+            <tree-legend></tree-legend>
+        </div>
     </div>
 
 </template>
@@ -72,10 +74,10 @@
                 oldIndexes: [],
                 scale: {x: 1.0, y: 1.0},
                 duration: 750,
-                duration2: 1,
+                duration2: 0.1,
                 index: 0,
                 counter: 0,
-                topPaddingY: 120,
+                topPaddingY: 80,
                 rowHeight: 40,
                 link_intersected: null,
                 wrapper_d3: null
@@ -129,7 +131,7 @@
             resetRootPosition() {
                 this.wrapper_d3.transition().duration(500)
                     .attr("transform", (d) => {
-                        return "translate(" + 100 + "," + 0 + ")";
+                        return "translate(" + 80 + "," + 0 + ")";
                     });
             },
             //Convert json into d3 hierarchy which adds depth, height and parent variables to each node.
@@ -496,6 +498,15 @@
                     this.deleteNode(nodeId);
                 }
             },
+            onExpandAll() {
+                this.rootNode.each(d => {
+                   if(d._children) {
+                       d.children = d._children;
+                       d._children = null;
+                   }
+                });
+                this.updateTree();
+            },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ****************** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             deleteNode(nodeId) {
                 var nodes = this.rootNode.descendants();
@@ -628,6 +639,13 @@
 <style scoped>
     svg {
         background-color: #e8d5bf;
+    }
+    .legend-box {
+        position: absolute;
+        top: 70px;
+        right: 15px;
+        width: 20%;
+        float: left;
     }
 </style>
 

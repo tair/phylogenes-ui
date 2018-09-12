@@ -9,13 +9,14 @@
                 <div class="chart-content">
                     <div style="height: 20px">
                         Branch Length: <span>{{branchLength}}</span>
+                        <button @click="expandAll">Expand All</button>
                     </div>
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
                                     <!--v-on:updated-tree="onTreeUpdate"-->
                                     <!--v-on:mouse-over-link="onMouseOverLink"-->
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
-                        <treelayout2  :jsonData="jsonData" :mappingData="mappingData"
+                        <treelayout2  :jsonData="jsonData" :mappingData="mappingData" ref="treeLayout"
                                       v-on:updated-tree="onTreeUpdate"></treelayout2>
 
                     </div>
@@ -149,6 +150,9 @@
             onTreeUpdate(nodes) {
                 this.updateTableData(nodes);
             },
+            expandAll() {
+                this.$refs.treeLayout.onExpandAll();
+            },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
                 var tabularData = [];
@@ -160,13 +164,15 @@
                 sortedNodes.forEach(n => {
                     var tableNode = {};
                     //console.log(n.data);
-                    tableNode["id"] = index++;
-                    tableNode["Accession"] = n.data.accession;
-                    tableNode["Gene Id"] = n.data.gene_id;
+                    // tableNode["id"] = index++;
                     tableNode["Gene Name"] = n.data.gene_symbol;
+                    var geneId = n.data.gene_id;
+                    if(geneId) {
+                        geneId = geneId.split(':')[1];
+                    }
+                    tableNode["Gene Id"] = geneId;
                     tableNode["Organism"] = n.data.organism;
-                    tableNode["Definition"] = n.data.definition;
-                    tableNode["Subfamily Name"] = n.data.sf_name;
+                    tableNode["Protein function"] = n.data.definition;
                     tabularData.push(tableNode);
                 });
                 this.stateSetTreeData(tabularData);

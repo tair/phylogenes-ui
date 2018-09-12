@@ -42,6 +42,7 @@
                         .style('fill', this.content.fillColor)
                         .style('stroke', 'white')
                         .style('stroke-width', '2px')
+                        .style('cursor', 'pointer')
                         .on("click", this.clickNode);
                 } else if(this.content.type === "None") {
                     this.isCircle = false;
@@ -165,6 +166,7 @@
     .diamond {
         stroke: white;
         stroke-width: 2px;
-        fill: #1b2ad8
+        fill: #1b2ad8;
+        cursor: pointer;
     }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="legend" :style="style">
+    <div class="legend">
         <div class="title">LEGEND</div>
         <div class="content">
             <svg id="legendSvg" width="100%" height="200px">
@@ -77,9 +77,9 @@
         box-sizing: border-box;
         box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
 
-        position: fixed;
-        width: 200px;
-        height: 250px;
+        position: absolute;
+        /*width: 200px;*/
+        /*height: 250px;*/
         z-index: 999;
     }
 

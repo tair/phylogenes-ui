@@ -181,12 +181,14 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 100%;
-        border: 1px solid #ccc;
+        height: 840px;
+        border: 2px solid #9CC255;
         border-collapse: collapse;
         overflow: hidden;
         /* Use this to create a "dead" area color if table is too wide for cells */
-        background-color: #ccc;
+        background-color: #d6efb5fc;
+        font-size: 14px;
+        font-family: sans-serif;
     }
 
     thead {
@@ -233,15 +235,15 @@
     td, th {
         width: 20em;
         min-width: 20em;
-        height: 4em;
-        min-height: 2em;
+        height: 40px;
+        min-height: 40px;
         padding: 0.3em;
-        border: 1px solid #ddd;
+        border: 1px solid #9CC255;
         background-color: white;
     }
 
     th {
-        background-color: #f7f7f7;
+        background-color: #d6efb5fc;
     }
 
     td:first-child,
