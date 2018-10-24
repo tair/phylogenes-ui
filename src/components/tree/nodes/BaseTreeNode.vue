@@ -57,10 +57,6 @@ across all treenode types (eg. translate, exit movement).
             },
             onExit(node) {
                 // console.log("ON Exit ", node);
-                this.el.select('circle')
-                    .transition().duration(this.duration)
-                    .attr('r', 1e-6);
-
                 this.el.transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + node.y + "," + node.x + ")";
@@ -80,9 +76,6 @@ across all treenode types (eg. translate, exit movement).
                     .attr("transform", d => {
                         return "translate(" + this.content.y + "," + this.content.x + ")";
                     });
-
-                //Appearance
-
             },
             toggleChildren(d) {
                 if (d.children) {

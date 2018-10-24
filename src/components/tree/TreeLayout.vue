@@ -184,7 +184,6 @@
                 var nodesData = d3.select('.nodes')
                     .selectAll('g')
                     .data(nodes, function (d) {
-                        // console.log(d.id);
                         return d.id;
                     });
 
@@ -595,7 +594,6 @@
                 return newNode;
             },
             // ~~~~~~~~~~~~~~~~ ********************** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
             updateTree2() {
                 //Explain: why old Indexes?
                 // d3.select('.nodes')
@@ -610,7 +608,6 @@
                 // this.renderLinks(nodes);
                 // this.renderNodes(nodes);
             },
-
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Depth Position Logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateAccordingToDepth(nodes, flag) {
                 this.counter = 0;
@@ -619,11 +616,7 @@
                 nodes.forEach(d => {
                     this.setCustomPositionX(d);
                 });
-                // console.log(nodes[2]);
             },
-
-
-
         }
     }
 </script>
