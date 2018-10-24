@@ -71,7 +71,7 @@
 <style scoped>
     circle {
         stroke: steelblue;
-        stroke-width: 2px;
+        stroke-width: 1px;
         fill: #fff;
         cursor: pointer;
     }
