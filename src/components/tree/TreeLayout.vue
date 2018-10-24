@@ -4,17 +4,17 @@
         <svg id="treeSvg" width="100%" height="900">
             <g id="wrapper">
                 <g class="links">
-                    <treelink v-for="link in treelinks" :key="link.id"
-                              ref="treelink"
+                    <baselink v-for="link in treelinks"
+                              :key="link.id" ref="treelink"
                               :content="link">
-                    </treelink>
+                    </baselink>
                 </g>
                 <!--@contextmenu.prevent="$refs.menu.open($event, {foo: 'bar'})"-->
                 <g class="nodes">
-                    <treenode v-for="node in treenodes" :id="node.id"
-                              ref="treenode"
+                    <basenode v-for="node in treenodes"
+                              :id="node.id" :key="node.id" ref="treenode"
                               :content="node"
-                              v-on:clicknode="onClick"></treenode>
+                              v-on:clicknode="onClick"></basenode>
                 </g>
 
                 <!--<dragnode ref="nodeToAdd" :content="exampleNode"-->
@@ -44,8 +44,6 @@
 
     import baseNode from '../tree/nodes/BaseTreeNode';
     import baseLink from '../tree/links/BaseTreeLink';
-    import treenode from '../tree/TreeNode';
-    import treelink from '../tree/TreeLink';
 
     import contextMenu from '../menu/ContextMenu';
     import treeLegend from '../tree/Legend';
@@ -58,8 +56,6 @@
         components: {
             'basenode': baseNode,
             'baselink': baseLink,
-            'treenode': treenode,
-            'treelink': treelink,
             'context-menu': contextMenu,
             'tree-legend': treeLegend
         },
@@ -157,11 +153,12 @@
 
                 //Explain: why old Indexes?
                 d3.select('.nodes')
-                    .selectAll('g')
+                    .selectAll('g.shape')
                     .data(this.oldIndexes);
                 // console.log(this.oldIndexes);
 
                 var nodes = this.rootNode.descendants();
+                this.updateExtraInfo(nodes);
                 this.updateAccordingToDepth(nodes);
                 this.$emit('updated-tree', nodes);
                 // this.saveOldPositions(this.rootNode);
@@ -182,7 +179,7 @@
             // ~~~~~~~~~ Nodes
             renderNodes(nodes){
                 var nodesData = d3.select('.nodes')
-                    .selectAll('g')
+                    .selectAll('g.shape')
                     .data(nodes, function (d) {
                         return d.id;
                     });
@@ -251,6 +248,15 @@
                         n.fillColor = fillColor;
                     }
                     n.type = this.getNodeType(n);
+                });
+            },
+            updateExtraInfo(nodes) {
+                nodes.forEach(d => {
+                    if(d._children) {
+                        d.type = "Triangle";
+                    } else if(d.type == "Triangle") {
+                        d.type = "Circle";
+                    }
                 });
             },
             //Overwrite each Node positions with custom logic
@@ -435,25 +441,28 @@
             },
             getNodeColor(d) {
                 if(d.data.sf_id) {
-                    return "#1b2ad8";
+                    return "#0000FF";
                 }
                 if(d.data.node_type) {
                     if(d.data.node_type === "DUPLICATION") {
-                        return "#f4a460";
+                        return "#FFA500";
                     } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
-                        return "steelblue";
+                        return "#00FFFF";
                     }
                 }
-                return "#56c356";
+                return "#00FF00";
             },
             getNodeType(d) {
                 if(d.data.sf_id) {
                     return "Diamond";
                 }
                 if(!d.children) {
-                    return "None";
+                    return "Circle";
                 }
-              return "Circle";
+                if(d._children) {
+                    return "Triangle";
+                }
+                return "Circle";
             },
 
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//

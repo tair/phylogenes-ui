@@ -4,24 +4,24 @@
         <div class="content">
             <svg id="legendSvg" width="100%" height="200px">
                 <g>
-                    <circle r="12" cx="35" cy="20" fill="#56c356"></circle>
-                    <text x="60" y="23">Speciation Node</text>
+                    <circle r="7" cx="20" cy="20" fill="#00FF00"></circle>
+                    <text x="45" y="23">Speciation Node</text>
                 </g>
                 <g>
-                    <circle r="12" cx="35" cy="60" fill="#f4a460"></circle>
-                    <text x="60" y="63">Duplication Node</text>
+                    <circle r="7" cx="20" cy="60" fill="#FFA500"></circle>
+                    <text x="45" y="63">Duplication Node</text>
                 </g>
                 <g>
-                    <circle r="12" cx="35" cy="100" fill="steelblue"></circle>
-                    <text x="60" y="103">Horizontal Transfer</text>
+                    <circle r="7" cx="20" cy="100" fill="#00FFFF"></circle>
+                    <text x="45" y="103">Horizontal Transfer</text>
                 </g>
                 <g>
-                    <path class="diamond" :d="diamondSymbol()" transform="translate(35,142)" fill="red"></path>
-                    <text x="60" y="142">Subfamily Node</text>
+                    <path class="diamond" :d="diamondSymbol()" transform="translate(20,142)" fill="red"></path>
+                    <text x="45" y="142">Subfamily Node</text>
                 </g>
                 <g>
-                    <path class="triangle" :d="triangleSymbol()" transform="translate(35,182)" fill="grey"></path>
-                    <text x="60" y="182">Collapsed Node</text>
+                    <path class="triangle" :d="triangleSymbol()" transform="translate(20,182) rotate(-90)" fill="grey"></path>
+                    <text x="45" y="182">Collapsed Node</text>
                 </g>
             </svg>
         </div>
@@ -50,7 +50,7 @@
         methods: {
             diamondSymbol() {
                 var symbolGenerator = d3.symbol()
-                    .size([400]);
+                    .size([200]);
 
                 symbolGenerator
                     .type(d3.symbolDiamond);
@@ -65,6 +65,9 @@
                     .type(d3.symbolTriangle);
 
                 return symbolGenerator();
+            },
+            rotate() {
+                return "rotate(-90)";
             }
         }
     }
@@ -85,7 +88,7 @@
 
     .title{
         padding: 5px;
-       text-align: center;
+        text-align: center;
         font-weight: bold;
     }
 
@@ -95,12 +98,12 @@
 
     circle {
         stroke: steelblue;
-        stroke-width: 2px;
+        stroke-width: 0px;
     }
 
     .diamond {
         stroke: white;
-        stroke-width: 2px;
-        fill: #1b2ad8
+        stroke-width: 0px;
+        fill: #0000FF
     }
 </style>
