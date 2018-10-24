@@ -390,6 +390,9 @@
                 var text = d.id;
                 text = "";
                 if(!d.data) return null;
+                // if(!d._children && d.children) {
+                //     return null;
+                // }
                 if(d.data.node_type) {
                     if (d.data.node_type === "DUPLICATION") {
                         if (d.data.reference_speciation_event) {
@@ -410,12 +413,15 @@
                 if(!d.children) {
                     if(d.data.gene_symbol) {
                         text += " " + d.data.gene_symbol;
+                    } else {
+                        var geneId = d.data.gene_id;
+                        geneId = geneId.split(":")[1];
+                        text += " " + geneId;
                     }
                     if(d.data.displayName) {
-                        if(d.data.gene_symbol) {
-                            text += " - ";
-                        }
+                        text += " (";
                         text += d.data.displayName;
+                        text += ")";
                     }
                 }
                 return text;
