@@ -76,6 +76,7 @@
         data() {
             return {
                 isLoading: false,
+                layoutType: "Cluster", //"TopDown"
                 treenodes: [],
                 treelinks: [],
                 linkDatums: [],
@@ -140,9 +141,12 @@
                 this.resetTreeLayout();
 
                 this.updateOldIndexes(nodes);
+                //Update nodes dfid according to depth of nodes.
+                this.calculateDepthIds(nodes);
 
                 setTimeout(() => {
                     this.updateTree();
+                    this.adjustPosition(nodes);
                     this.isLoading = false;
                 }, 1000);
             },
@@ -159,9 +163,11 @@
 
                 var nodes = this.rootNode.descendants();
                 this.updateExtraInfo(nodes);
-                this.updateAccordingToDepth(nodes);
+
+                this.resetTreeLayout();
+
+                // this.updateAccordingToDepth(nodes);
                 this.$emit('updated-tree', nodes);
-                // this.saveOldPositions(this.rootNode);
                 // console.log(nodes);
 
                 this.renderNodes(nodes);
@@ -248,6 +254,11 @@
                         n.fillColor = fillColor;
                     }
                     n.type = this.getNodeType(n);
+                    if(!n.children) {
+                        n.hideShape = true;
+                    } else {
+                        n.hideShape = false;
+                    }
                 });
             },
             updateExtraInfo(nodes) {
@@ -256,6 +267,12 @@
                         d.type = "Triangle";
                     } else if(d.type == "Triangle") {
                         d.type = "Circle";
+                    }
+
+                    if(!d._children && d.children) {
+                        d.hideText = true;
+                    } else {
+                        d.hideText = false;
                     }
                 });
             },
@@ -275,6 +292,11 @@
             setBranchLength(nodes) {
               //If branch length enabled
             },
+            adjustPosition(nodes) {
+                var topNode = this.getTopmostNode(nodes);
+                this.moveTreeToNodePosition(topNode);
+            },
+
             // ~~~~~~~~~ Links
             renderLinks(nodes) {
                 d3.select('.links')
@@ -355,11 +377,28 @@
             resetTreeLayout() {
                 var treeLayout = d3.tree()
                     .size([800, 800]);
-
+                if(this.layoutType == "Cluster") {
+                    treeLayout = d3.cluster()
+                        .nodeSize([40,30])
+                        .separation((a, b) => {
+                            return (a.parent == b.parent ? 1 : 1) }
+                            );
+                }
                 treeLayout(this.rootNode);
             },
 
             // ~~~~~~~~~~~~~~~~ Tree Utilities ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            getTopmostNode(nodes) {
+                var nodesOrderedByDepth = nodes.sort((a, b) => a.dfId - b.dfId);
+
+                var topMostNode = null;
+                nodesOrderedByDepth.some(d => {
+                    // console.log(d.id + " - " + d.dfId + " - " + d.x);
+                    topMostNode = d;
+                    return !d.children;
+                });
+                return topMostNode;
+            },
             getLogs(n) {
                 if (!n) {
                     console.log("Undefined");
@@ -388,6 +427,19 @@
                     d.xo = d.x;
                     d.yo = d.y;
                 });
+            },
+            calculateDepthIds(nodes) {
+                this.counter = 0;
+                //Recursive method
+                this.calculateDepthFirstIds(nodes[0]);
+            },
+            moveTreeToNodePosition(node) {
+                let paddingTop = 50;
+                let nodePos = -1*node.x + paddingTop;
+                this.wrapper_d3
+                    .attr("transform", (d) => {
+                        return "translate(" + 0 + "," + nodePos + ")";
+                    });
             },
 
             // ~~~~~~~~~~~~~~~~ Methods for Additional Info for each Node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
