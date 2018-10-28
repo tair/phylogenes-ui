@@ -91,6 +91,7 @@
                 rowHeight: 40,
                 enableMenu: false,
                 showLegend: true,
+                showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null
             }
@@ -288,9 +289,25 @@
             },
             setCustomPositionY(d, tree_depth) {
                 // tree_depth required to divide 'y' equally  based on treeWidth and depth of tree.
+                var treeWidth = 800;
+                var defaultLength = treeWidth/tree_depth;
+                var branchScale = this.showBranchLength ? d.data.branch_length: 0.5;
+                var actualLength = defaultLength * branchScale;
+
+                // var text = d.text + " BS - " + branchScale;
+                // d.text = text;
+                if(actualLength < 20) actualLength = 10;
+                if(d.parent) {
+                    d.y = d.parent.y;
+                    d.y = d.y + actualLength;
+                }
             },
+            //Set link length (y) based on given scale
             setBranchLength(nodes) {
-              //If branch length enabled
+                var totalDepth = this.getTotalDepthofTree(nodes);
+                nodes.forEach(d => {
+                    this.setCustomPositionY(d, totalDepth);
+                });
             },
             adjustPosition(nodes) {
                 var topNode = this.getTopmostNode(nodes);
@@ -385,9 +402,22 @@
                             );
                 }
                 treeLayout(this.rootNode);
+
+                var nodes = this.rootNode.descendants();
+                this.setBranchLength(nodes);
             },
 
             // ~~~~~~~~~~~~~~~~ Tree Utilities ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            getTotalDepthofTree(nodes) {
+                var totalDepth = 1;
+                //Calculate depth of tree
+                nodes.forEach(d => {
+                    if(d.depth > totalDepth) {
+                        totalDepth = d.depth;
+                    }
+                });
+                return totalDepth;
+            },
             getTopmostNode(nodes) {
                 var nodesOrderedByDepth = nodes.sort((a, b) => a.dfId - b.dfId);
 
@@ -438,7 +468,7 @@
                 let nodePos = -1*node.x + paddingTop;
                 this.wrapper_d3
                     .attr("transform", (d) => {
-                        return "translate(" + 0 + "," + nodePos + ")";
+                        return "translate(" + 80 + "," + nodePos + ")";
                     });
             },
 
