@@ -500,7 +500,7 @@
                     return text;
                 }
                 if (d.data.reference_speciation_event) {
-                    text += " (" + d.data.reference_speciation_event + ")";
+                    text += d.data.reference_speciation_event;
                 }
                 if(!d.children) {
                     if(d.data.gene_symbol) {
