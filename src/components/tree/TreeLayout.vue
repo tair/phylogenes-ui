@@ -240,6 +240,7 @@
                 return tempArray;
             },
             // Add extra features to nodes of tree
+            // Use this function during init
             addExtraInfoToNodes() {
                 this.index = 0;
                 this.rootNode.each(n => {
@@ -261,20 +262,33 @@
                     }
                 });
             },
+            // Updates extra features
+            // Use this function during update
             updateExtraInfo(nodes) {
                 nodes.forEach(d => {
-                    if(d._children) {
-                        d.type = "Triangle";
-                    } else if(d.type == "Triangle") {
-                        d.type = "Circle";
-                    }
-
-                    if(!d._children && d.children) {
-                        d.hideText = true;
-                    } else {
-                        d.hideText = false;
-                    }
+                    this.updateNodeType(d);
+                    this.updateNodeText(d);
                 });
+            },
+            updateNodeType(d) {
+                if(d._children) {
+                    d.type = "Triangle";
+                } else if(d.type == "Triangle") {
+                    d.type = "Circle";
+                }
+            },
+            updateNodeText(d) {
+                if(!d._children && d.children) {
+                    d.hideText = true;
+                } else {
+                    d.hideText = false;
+                }
+                if(d._children) {
+                    var geneCount = this.getChildrenCount(d);
+                    var collapsedText = geneCount + " Genes ";
+                    collapsedText += "(" + d.text + ")";
+                    d.updatedText = collapsedText;
+                }
             },
             //Overwrite each Node positions with custom logic
             setCustomPositionX(d) {
@@ -399,6 +413,26 @@
                 });
                 return topMostNode;
             },
+            //Get total number of children for a node
+            getChildrenCount(node) {
+                var count = 0;
+                if(!node.children && !node._children) {
+                    count ++;
+                }
+                //Since the child node might be collapsed, we need to get cached children count too
+                if(node._children) {
+                    node._children.forEach(cn => {
+                        count += this.getChildrenCount(cn);
+                    });
+                }
+                if(node.children) {
+                    node.children.forEach(cn => {
+                        count += this.getChildrenCount(cn);
+                    });
+                }
+
+                return count;
+            },
             getLogs(n) {
                 if (!n) {
                     console.log("Undefined");
@@ -448,6 +482,9 @@
                 var text = d.id;
                 text = "";
                 if(!d.data) return null;
+                // if(!d._children && d.children) {
+                //     return null;
+                // }
                 if(d.data.node_type) {
                     if (d.data.node_type === "DUPLICATION") {
                         if (d.data.reference_speciation_event) {
@@ -463,17 +500,20 @@
                     return text;
                 }
                 if (d.data.reference_speciation_event) {
-                    text += " (" + d.data.reference_speciation_event + ")";
+                    text += d.data.reference_speciation_event;
                 }
                 if(!d.children) {
                     if(d.data.gene_symbol) {
                         text += " " + d.data.gene_symbol;
+                    } else {
+                        var geneId = d.data.gene_id;
+                        geneId = geneId.split(":")[1];
+                        text += " " + geneId;
                     }
                     if(d.data.displayName) {
-                        if(d.data.gene_symbol) {
-                            text += " - ";
-                        }
+                        text += " (";
                         text += d.data.displayName;
+                        text += ")";
                     }
                 }
                 return text;
@@ -571,6 +611,7 @@
                 this.updateTree();
             },
 
+            //Node Events
             deleteNode(nodeId) {
                 var nodes = this.rootNode.descendants();
                 var nodeToDelete = nodes.find(n => n.id == nodeId);
@@ -669,7 +710,6 @@
                 // this.renderLinks(nodes);
                 // this.renderNodes(nodes);
             },
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Depth Position Logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateAccordingToDepth(nodes, flag) {
                 this.counter = 0;
                 this.calculateDepthFirstIds(nodes[0]);
