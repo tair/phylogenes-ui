@@ -83,6 +83,7 @@
                 rootNode: null,
                 oldIndexes: [],
                 scale: {x: 1.0, y: 1.0},
+                currentPan: {x: 0.0, y:0.0},
                 duration: 750,
                 duration2: 0.1,
                 index: 0,
@@ -219,6 +220,9 @@
                     setTimeout(() => {
                         this.treenodes = tempArray;
                         this.updateOldIndexes(nodes);
+
+                        var topNode = this.getTopmostNode(nodes);
+                        this.moveTreeWithPadding(topNode, this.currentPan.y);
                     }, this.duration2);
                 }, timeoutS);
             },
@@ -514,6 +518,14 @@
                         return "translate(" + 80 + "," + nodePos + ")";
                     });
             },
+            moveTreeWithPadding(node, padding) {
+                let paddingTop = 50 + padding;
+                let nodePos = -1*node.x + paddingTop;
+                this.wrapper_d3
+                    .attr("transform", (d) => {
+                        return "translate(" + 80 + "," + nodePos + ")";
+                    });
+            },
 
             // ~~~~~~~~~~~~~~~~ Methods for Additional Info for each Node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             //TODO: Get this methods out of this component
@@ -620,6 +632,7 @@
                 var translateY = this.topMostNodePos.y + transform.y;
                 if(translateY < this.topMostNodePos.y) {
                     g.attr("transform", (d) => {
+                        this.currentPan = transform;
                         return "translate(" + transform.x + "," + translateY + ")";
                     });
                 } else {

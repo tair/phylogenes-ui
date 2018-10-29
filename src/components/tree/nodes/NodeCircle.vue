@@ -46,8 +46,6 @@
         },
         methods: {
             onClick() {
-                console.log("Clicked");
-                // this.content = this.toggleChildren(this.content);
                 // this.changeFill();
                 this.$emit('clicked', this.content);
             },
