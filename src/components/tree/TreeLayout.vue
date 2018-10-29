@@ -83,6 +83,7 @@
                 rootNode: null,
                 oldIndexes: [],
                 scale: {x: 1.0, y: 1.0},
+                currentPan: {x: 0.0, y:0.0},
                 duration: 750,
                 duration2: 0.1,
                 index: 0,
@@ -93,7 +94,8 @@
                 showLegend: true,
                 showBranchLength: true,
                 link_intersected: null,
-                wrapper_d3: null
+                wrapper_d3: null,
+                topMostNodePos: {x: 0.0, y: 0.0},
             }
         },
         mounted() {
@@ -167,6 +169,8 @@
 
                 this.resetTreeLayout();
 
+                var topNode = this.getTopmostNode(nodes);
+                this.setTopmostNodePos(topNode);
                 // this.updateAccordingToDepth(nodes);
                 this.$emit('updated-tree', nodes);
                 // console.log(nodes);
@@ -216,6 +220,9 @@
                     setTimeout(() => {
                         this.treenodes = tempArray;
                         this.updateOldIndexes(nodes);
+
+                        var topNode = this.getTopmostNode(nodes);
+                        this.moveTreeWithPadding(topNode, this.currentPan.y);
                     }, this.duration2);
                 }, timeoutS);
             },
@@ -325,6 +332,7 @@
             },
             adjustPosition(nodes) {
                 var topNode = this.getTopmostNode(nodes);
+                this.setTopmostNodePos(topNode);
                 this.moveTreeToNodePosition(topNode);
             },
 
@@ -443,6 +451,11 @@
                 });
                 return topMostNode;
             },
+            setTopmostNodePos(node) {
+                var paddingTop = 50;
+                this.topMostNodePos.y = -1 * node.x + paddingTop;
+                this.topMostNodePos.x = 80;
+            },
             //Get total number of children for a node
             getChildrenCount(node) {
                 var count = 0;
@@ -499,6 +512,14 @@
             },
             moveTreeToNodePosition(node) {
                 let paddingTop = 50;
+                let nodePos = -1*node.x + paddingTop;
+                this.wrapper_d3
+                    .attr("transform", (d) => {
+                        return "translate(" + 80 + "," + nodePos + ")";
+                    });
+            },
+            moveTreeWithPadding(node, padding) {
+                let paddingTop = 50 + padding;
                 let nodePos = -1*node.x + paddingTop;
                 this.wrapper_d3
                     .attr("transform", (d) => {
@@ -585,19 +606,41 @@
             setZoomListener(g) {
                 return d3.zoom().scaleExtent([this.scale.x, this.scale.y])
                     .on("zoom", () => {
-                        g.attr("transform", d3.event.transform);
+                        this.onPan(g, d3.event.transform);
                     })
                     .on("end", () => {
-                        // this.rootNodeX = d3.event.transform.x;
-                        // this.rootNodeY = d3.event.transform.y;
-                        // this.renderXAxis();
-                        this.stateTreeZoom(d3.event.transform);
+                        // this.stateTreeZoom(d3.event.transform);
+                        var translateY = this.topMostNodePos.y + d3.event.transform.y;
+                        if(translateY < this.topMostNodePos.y) {
+                            var origPan = {x: 0, y: d3.event.transform.y};
+                            // console.log(origPan);
+                            this.stateTreeZoom(origPan);
+
+                        } else {
+                            var origPan = {x: 0, y: 0};
+                            this.stateTreeZoom(origPan);
+                        }
                     })
             },
             onClick(source) {
                 // console.log(source.id + "-" + source.x + "," + source.y);
                 this.clickedNode = {id: source.id, x: source.x, y: source.y};
                 this.updateTree();
+            },
+            onPan(g, transform) {
+                // console.log(transform);
+                var translateY = this.topMostNodePos.y + transform.y;
+                if(translateY < this.topMostNodePos.y) {
+                    g.attr("transform", (d) => {
+                        this.currentPan = transform;
+                        return "translate(" + transform.x + "," + translateY + ")";
+                    });
+                } else {
+                    // console.log("Reset");
+                    g.attr("transform", (d) => {
+                        return "translate(" + transform.x + "," + this.topMostNodePos.y + ")";
+                    });
+                }
             },
             onDrag(circle_datum) {
                 this.link_intersected = this.linkDatums.find(ld => {

@@ -162,18 +162,20 @@
 
                 var index = 0;
                 sortedNodes.forEach(n => {
-                    var tableNode = {};
-                    //console.log(n.data);
-                    // tableNode["id"] = index++;
-                    tableNode["Gene Name"] = n.data.gene_symbol;
-                    var geneId = n.data.gene_id;
-                    if(geneId) {
-                        geneId = geneId.split(':')[1];
+                    if(!n.children) {
+                        var tableNode = {};
+                        //console.log(n.data);
+                        // tableNode["id"] = index++;
+                        tableNode["Gene name"] = n.data.gene_symbol;
+                        var geneId = n.data.gene_id;
+                        if (geneId) {
+                            geneId = geneId.split(':')[1];
+                        }
+                        tableNode["Gene ID"] = geneId;
+                        tableNode["Organism"] = n.data.organism;
+                        tableNode["Protein function"] = n.data.definition;
+                        tabularData.push(tableNode);
                     }
-                    tableNode["Gene Id"] = geneId;
-                    tableNode["Organism"] = n.data.organism;
-                    tableNode["Protein function"] = n.data.definition;
-                    tabularData.push(tableNode);
                 });
                 this.stateSetTreeData(tabularData);
             }

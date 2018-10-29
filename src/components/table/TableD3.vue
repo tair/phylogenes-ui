@@ -227,13 +227,14 @@
 
     /* The one caveat, a hard-set width is required. */
     td, th {
-        width: 20em;
-        min-width: 20em;
+        width: 300px;
+        min-width: 300px;
+        max-width: 300px;
         height: 40px;
         min-height: 40px;
         max-height: 40px;
         overflow: hidden;
-        text-overflow: ellipsis;
+        text-overflow: clip;
         white-space: nowrap;
         padding: 0.3em;
         border: 1px solid #9CC255;
@@ -246,8 +247,12 @@
 
     td:first-child,
     th:first-child {
+        width: 250px;
+        min-width: 250px;
+        max-width: 250px;
         position: sticky;
         position: -webkit-sticky;
         left:0;
+        box-shadow: 5px 0 2px -2px #888;
     }
 </style>
