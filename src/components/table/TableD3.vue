@@ -9,14 +9,16 @@
             <tbody id="mybody">
 
             </tbody>
-            </table>
+        </table>
     </div>
 </template>
 
 <script>
     import * as d3 from 'd3';
+    import _ from 'lodash';
+
     import * as types from '../../store/types_treedata';
-    import { mapGetters } from 'vuex';
+    import { mapGetters, mapActions } from 'vuex';
 
     export default {
         name: "tablelayout",
@@ -27,7 +29,9 @@
             return {
                 scrollVertical: true,
                 tableBody: null,
-                index: 0
+                index: 0,
+                rowHeight: 40,
+                scrollFromTree: false
             }
         },
         computed: {
@@ -53,6 +57,9 @@
             }
         },
         methods: {
+            ...mapActions({
+                stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL
+            }),
             update() {
                 this.tableBody = d3.select('table');
                 this.renderTableHeader(this.tableBody);
@@ -136,19 +143,37 @@
                 if(val.y > 0) {
                     tbody.scrollTop = 0;
                 } else {
-                    var treeBottomY = -val.y;
-                    tbody.scrollTop = treeBottomY;
+                    var rowNumber = -val.y/this.rowHeight;
+                    var padding = rowNumber/2;
+                    //padding required cuz as the row number increases,
+                    // the tree gets more misaligned
+                    tbody.scrollTop = 40*rowNumber + padding;
+                    this.scrollFromTree = true;
                 }
             },
             handleScroll() {
+                if(this.scrollFromTree) {
+                    this.scrollFromTree = false;
+                    return;
+                }
                 const thead = document.getElementById("myhead");
                 const tbodyScroll = document.getElementById("mybody").scrollLeft;
                 thead.scrollLeft = tbodyScroll;
+                const scrollTop = document.getElementById("mybody").scrollTop;
+
+                var rowNumber = scrollTop/this.rowHeight;
+                rowNumber = Math.round(rowNumber);
+                var geneId = this.stateTreeData[rowNumber]["Gene ID"];
+                var scroll = {i: rowNumber, id: geneId};
+                this.stateSetTableScroll(scroll);
             }
         },
         mounted: function () {
+            if(this.stateTreeData) {
+                this.update();
+            }
             const tbody = document.getElementById("mybody");
-            tbody.addEventListener('scroll', this.handleScroll);
+            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 1000));
         },
         created: function () {
             const tbody = document.getElementById("mybody");
@@ -236,7 +261,7 @@
         overflow: hidden;
         text-overflow: clip;
         white-space: nowrap;
-        padding: 0.3em;
+        padding: 5px;
         border: 1px solid #9CC255;
         background-color: white;
     }
