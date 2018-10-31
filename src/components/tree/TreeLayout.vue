@@ -62,6 +62,7 @@
         computed: {
             ...mapGetters({
                 // stateGetScrollY: types.GET_SCROLL_Y
+                stateTableScroll: types.TABLE_GET_SCROLL
             })
         },
         watch: {
@@ -70,6 +71,13 @@
                     // console.log(this.jsonData);
                     this.isLoading = true;
                     this.initTree();
+                }
+            },
+            stateTableScroll: {
+                handler: function (val, oldVal) {
+                    var nodes = this.rootNode.descendants();
+                    var treeNode = nodes.find(n => n.geneId == val.id);
+                    this.moveTreeToNodePosition(treeNode);
                 }
             }
         },
@@ -263,6 +271,7 @@
                         n.fillColor = fillColor;
                     }
                     n.type = this.getNodeType(n);
+                    n.geneId = this.getGeneId(n);
                     if(!n.children) {
                         n.hideShape = true;
                     } else {
@@ -517,6 +526,7 @@
                     .attr("transform", (d) => {
                         return "translate(" + 80 + "," + nodePos + ")";
                     });
+
             },
             moveTreeWithPadding(node, padding) {
                 let paddingTop = 50 + padding;
@@ -601,6 +611,15 @@
                 }
                 return "Circle";
             },
+            getGeneId(d) {
+                var geneId = d.data.gene_id;
+                if (geneId) {
+                    geneId = geneId.split(':')[1];
+                } else {
+                    geneId = null;
+                }
+                return geneId;
+            },
 
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setZoomListener(g) {
@@ -613,7 +632,7 @@
                         var translateY = this.topMostNodePos.y + d3.event.transform.y;
                         if(translateY < this.topMostNodePos.y) {
                             var origPan = {x: 0, y: d3.event.transform.y};
-                            // console.log(origPan);
+                            // console.log("Pan"+ origPan.y);
                             this.stateTreeZoom(origPan);
 
                         } else {
@@ -682,6 +701,9 @@
                     }
                 });
                 this.updateTree();
+            },
+            onShowLegend() {
+                this.showLegend = !this.showLegend;
             },
 
             //Node Events

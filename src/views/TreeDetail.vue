@@ -8,7 +8,10 @@
                 <div class="chart-content">
                     <div>
                         <!--Branch Length: <span>{{branchLength}}</span>-->
-                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1" @click="expandAll">Expand All</button>
+                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
+                                @click="expandAll">Expand All</button>
+                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
+                                @click="showLegend">Show Legend</button>
                     </div>
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
@@ -152,6 +155,9 @@
             },
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
+            },
+            showLegend() {
+                this.$refs.treeLayout.onShowLegend();
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {

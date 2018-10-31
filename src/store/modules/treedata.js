@@ -12,7 +12,8 @@ const state = {
         data: null,
         jsonString: null,
         nodes: null,
-        zoom: null
+        zoom: null,
+        scroll: null
     }
 };
 
@@ -29,6 +30,9 @@ const getters = {
     },
     [types.TREE_GET_ZOOM]: state => {
         return state.treedata.zoom;
+    },
+    [types.TABLE_GET_SCROLL]: state => {
+        return state.treedata.scroll;
     }
 };
 
@@ -44,6 +48,10 @@ const actions = {
     [types.TREE_ACTION_SET_ZOOM]: (context, payload) => {
         //console.log("Action" + payload);
         context.state.treedata.zoom = payload;
+    },
+    [types.TABLE_ACTION_SET_SCROLL]: (context, payload) => {
+        //console.log("Action" + payload);
+        context.state.treedata.scroll = payload;
     },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
         console.log('Payload: ' + JSON.stringify(payload));
