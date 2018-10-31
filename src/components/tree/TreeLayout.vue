@@ -519,6 +519,9 @@
                     });
             },
             moveTreeWithPadding(node, padding) {
+                //If the top node is within the screen range,
+                // padding should be 0, so that the tree doesn't move out of the screen
+                if(node.x <= 0 && node.x >= -100) padding = 0;
                 let paddingTop = 50 + padding;
                 let nodePos = -1*node.x + paddingTop;
                 this.wrapper_d3
