@@ -824,7 +824,7 @@
         position: absolute;
         top: 85px;
         right: 15px;
-        width: 20%;
+        width: 25%;
         float: left;
     }
 </style>

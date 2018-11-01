@@ -173,7 +173,7 @@
                 this.update();
             }
             const tbody = document.getElementById("mybody");
-            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 1000));
+            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 500));
         },
         created: function () {
             const tbody = document.getElementById("mybody");
@@ -191,7 +191,7 @@
         left: 1vw;
         top: 6vh;
         width: 48vw;
-        height: 75vh;
+        height: 800px;
         overflow: hidden;
     }
 
@@ -200,7 +200,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 840px;
+        height: 800px;
         border: 2px solid #9CC255;
         border-collapse: collapse;
         overflow: hidden;
