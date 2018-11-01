@@ -144,7 +144,7 @@
                     tbody.scrollTop = 0;
                 } else {
                     var rowNumber = -val.y/this.rowHeight;
-                    var padding = rowNumber/2;
+                    var padding = 0; //rowNumber/2;
                     //padding required cuz as the row number increases,
                     // the tree gets more misaligned
                     tbody.scrollTop = 40*rowNumber + padding;
