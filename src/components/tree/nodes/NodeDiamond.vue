@@ -64,7 +64,7 @@
             },
             diamondSymbol() {
                 var symbolGenerator = d3.symbol()
-                    .size([200]);
+                    .size([150]);
 
                 symbolGenerator
                     .type(d3.symbolDiamond);

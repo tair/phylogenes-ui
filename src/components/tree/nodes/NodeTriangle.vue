@@ -68,7 +68,7 @@
             },
             triangleSymbol() {
                 var symbolGenerator = d3.symbol()
-                    .size([300]);
+                    .size([225]);
 
                 symbolGenerator
                     .type(d3.symbolTriangle);

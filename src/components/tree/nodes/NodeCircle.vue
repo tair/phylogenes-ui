@@ -26,7 +26,7 @@
         },
         data() {
             return {
-                radius: 7,
+                radius: 5,
                 duration: 750,
                 el: null,
                 hideShape: false,

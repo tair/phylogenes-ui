@@ -94,7 +94,7 @@
     path {
         fill: none;
         stroke: steelblue;
-        stroke-width: 3;
+        stroke-width: 1.5;
     },
     path:hover {
         cursor: pointer;
