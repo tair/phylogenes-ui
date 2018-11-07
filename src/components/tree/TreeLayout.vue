@@ -546,15 +546,19 @@
                 var text = d.id;
                 text = "";
                 if(!d.data) return null;
-                
-                if(d.data.node_type) {
-                    if (d.data.node_type === "DUPLICATION") {
+
+                if(d.data.event_type) {
+                    if (d.data.event_type === "DUPLICATION") {
                         if (d.data.speciation_event) {
                             text += d.data.speciation_event;
                         } else {
                             text += this.getLeafNodeText(d);
                         }
-                    } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
+                    } else if(d.data.event_type === "SPECIATION") {
+                        if (d.data.speciation_event) {
+                            text += d.data.speciation_event;
+                        }
+                    } else if(d.data.event_type === "HORIZONTAL_TRANSFER") {
                         if (d.data.speciation_event) {
                             text += d.data.speciation_event;
                         }
@@ -591,10 +595,10 @@
                 if(d.data.sf_id) {
                     return "#0000FF";
                 }
-                if(d.data.node_type) {
-                    if(d.data.node_type === "DUPLICATION") {
+                if(d.data.event_type) {
+                    if(d.data.event_type === "DUPLICATION") {
                         return "#FFA500";
-                    } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
+                    } else if(d.data.event_type === "HORIZONTAL_TRANSFER") {
                         return "#00FFFF";
                     }
                 }
