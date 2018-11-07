@@ -546,25 +546,23 @@
                 var text = d.id;
                 text = "";
                 if(!d.data) return null;
-                // if(!d._children && d.children) {
-                //     return null;
-                // }
+                
                 if(d.data.node_type) {
                     if (d.data.node_type === "DUPLICATION") {
-                        if (d.data.reference_speciation_event) {
-                            text += d.data.reference_speciation_event;
+                        if (d.data.speciation_event) {
+                            text += d.data.speciation_event;
                         } else {
                             text += this.getLeafNodeText(d);
                         }
                     } else if(d.data.node_type === "HORIZONTAL_TRANSFER") {
-                        if (d.data.reference_speciation_event) {
-                            text += d.data.reference_speciation_event;
+                        if (d.data.speciation_event) {
+                            text += d.data.speciation_event;
                         }
                     }
                     return text;
                 }
-                if (d.data.reference_speciation_event) {
-                    text += d.data.reference_speciation_event;
+                if (d.data.speciation_event) {
+                    text += d.data.speciation_event;
                 }
                 if(!d.children) {
                     if(d.data.gene_symbol) {
