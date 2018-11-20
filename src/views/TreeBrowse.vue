@@ -34,7 +34,8 @@
             <div class="col-sm-12 col-md-8 col-lg-9 px-4" style="height: 100vh; overflow: auto;">
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-                <tree-result v-if="!this.stateTreeIsError && !this.stateTreeIsLoading" :treeData="stateTreeData"></tree-result>
+                <search-result v-if="showSearchResult()"
+                               :searchData="stateTreeData"></search-result>
                 <div v-if="this.stateTreeIsError" class="text-danger pt-4 h5">
                     Error occurred while reading data.
                 </div>
@@ -48,7 +49,7 @@
     import Relax from '@/views/Relax'
     import SiteMap from '@/components/SiteMap'
     import TreeFilter from '@/components/tree/TreeFilter'
-    import TreeResult from '@/components/tree/TreeResult'
+    import SearchResult from '@/components/search/SearchResult';
 
     import * as types from '../store/types_tree';
     import {mapGetters} from 'vuex';
@@ -59,7 +60,7 @@
             Relax,
             SiteMap,
             TreeFilter,
-            TreeResult
+            SearchResult
         },
         data() {
             return {
@@ -72,6 +73,9 @@
             this.stateTreeSearchByFilter(this.treeFilters);
         },
         methods: {
+            showSearchResult() {
+              return !this.stateTreeIsError && !this.stateTreeIsLoading;
+            },
             removeFilter(type, val) {
                 // console.log(type + ', ' + val);
 

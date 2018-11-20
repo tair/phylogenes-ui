@@ -24,6 +24,7 @@ const state = {
         filters: {
             startRow: 0,
             rows: 10,
+            searchText: null,
             familyName: null,
             uniprotId: null,
             nodeTypes: [],
@@ -97,6 +98,7 @@ const actions = {
         var q = "";
         if(payload != null) {
             context.state.tree.filters = payload;
+            context.state.tree.filters.searchText = payload.familyName;
             q = util.buildSolrQuery(payload);
             if(q == "")
                 q = "*:*";
