@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="h3 text-muted py-3">Search Filters</div>
+        <div class="h3 text-muted py-3">Search </div>
 
         <form>
             <div class="form-group mb-2">
