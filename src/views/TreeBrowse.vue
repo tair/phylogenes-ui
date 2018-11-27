@@ -22,9 +22,9 @@
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
                 <div v-if="!this.stateTreeIsError && !this.stateTreeIsLoading">
-                <tree-filter
+                <search-filter
                     :facets="stateTreeData.facets"
-                    ></tree-filter>
+                    ></search-filter>
                 </div>
                 <div v-if="this.stateTreeIsError" class="text-danger pt-4 h5">
                     Error occurred while reading data.
@@ -48,7 +48,7 @@
 <script>
     import Relax from '@/views/Relax'
     import SiteMap from '@/components/SiteMap'
-    import TreeFilter from '@/components/tree/TreeFilter'
+    import SearchFilter from '@/components/search/SearchFilter'
     import SearchResult from '@/components/search/SearchResult';
 
     import * as types from '../store/types_tree';
@@ -59,7 +59,7 @@
         components: {
             Relax,
             SiteMap,
-            TreeFilter,
+            SearchFilter,
             SearchResult
         },
         data() {
@@ -68,9 +68,15 @@
                 treeFilters: null
             }
         },
+        beforeRouteEnter (to, from, next) {
+            console.log("Route enter");
+            next(vm => {
+                vm.onSearch();
+            });
+        },
         created() {
             this.treeFilters = this.stateTreeFilters;
-            this.stateTreeSearchByFilter(this.treeFilters);
+            // this.stateTreeSearchByFilter(this.treeFilters);
         },
         methods: {
             showSearchResult() {
@@ -84,17 +90,23 @@
                 this.onSearch();
             },
             onSearch() {
-                this.stateTreeSearchByFilter(this.treeFilters);
+                console.log(this.stateSearchText);
+                var payload = {
+                    searchText: this.stateSearchText,
+                    filters: this.treeFilters
+                }
+
+                this.doSearch(payload);
+                // this.stateTreeSearchByFilter(this.treeFilters);
             },
             ...mapActions({
-                stateTreeSearchByFilter: types.TREE_ACTION_FILTER
-            }),
-            ...mapActions({
-                stateTreeSearchByFilter: types.TREE_ACTION_FILTER
+                stateTreeSearchByFilter: types.TREE_ACTION_FILTER,
+                doSearch: types.TREE_ACTION_DO_SEARCH
             })
         },
         computed: {
             ...mapGetters({
+                stateSearchText: types.TREE_GET_SEARCH_TEXT,
                 stateTreeData: types.TREE_GET_DATA,
                 stateTreeIsError: types.TREE_IS_ERROR,
                 stateTreeIsLoading: types.TREE_IS_LOADING,

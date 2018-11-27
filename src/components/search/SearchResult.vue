@@ -96,6 +96,7 @@
             },
             ...mapGetters({
                 stateTreeFilters: types.TREE_GET_FILTERS,
+                stateSearchText: types.TREE_GET_SEARCH_TEXT
             })
         },
         created() {
@@ -117,9 +118,9 @@
                 this.stateTreePaginate(this.treeFilters);
             },
             getRestatedText() {
-                console.log(this.stateTreeFilters.searchText);
-                var text = "You searched for '" + this.stateTreeFilters.searchText + "'.";
-                if(this.stateTreeFilters.searchText == null) {
+                // console.log(this.stateTreeFilters.payload.searchText);
+                var text = "You searched for '" + this.stateSearchText + "'.";
+                if(this.stateSearchText == null) {
                     text = "";
                 }
 

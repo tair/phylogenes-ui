@@ -1,19 +1,13 @@
 <template>
     <div>
-        <div class="h3 text-muted py-3">Search </div>
+        <!--<div class="h3 text-muted py-3">Search </div>-->
 
         <form>
             <div class="form-group mb-2">
-                <label for="famName" class="text-dark text-sm m-0">Family Name</label>
+                <label for="famName" class="text-dark text-sm m-0">Search</label>
                 <input class="form-control" id="famName"
-                       v-on:keyup.enter="onSearch()" v-model="treeFilters.familyName"
+                       v-on:keyup.enter="onSearch()" v-model="searchText"
                        aria-describedby="Family Name" placeholder="Eg: Protein">
-            </div>
-            <div class="form-group mb-2">
-                <label for="uniprotId" class="text-dark text-sm m-0">Uniprot ID</label>
-                <input class="form-control" id="uniprotId"
-                       v-on:keyup.enter="onSearch()" v-model="treeFilters.uniprotId"
-                       aria-describedby="Uniprot ID" placeholder="Eg: A0A0R0EIR6">
             </div>
 
             <!--<input type="text" class="form-control mb-1 form-control-sm" placeholder="Family name" v-on:keyup.enter="onSearch()" v-model="treeFilters.familyName">-->
@@ -58,10 +52,11 @@
     import {mapGetters} from 'vuex';
 
     export default {
-        name: "TreeFilter",
+        name: "SearchFilter",
         data() {
             return {
-                treeFilters: null
+                treeFilters: null,
+                searchText: null
             }
         },
         props: {
@@ -70,22 +65,33 @@
                 required: true
             }
         },
+
         created() {
-            this.treeFilters = this.stateTreeFilters;
-        },
-        mounted() {
+            this.treeFilters = this.stateSearchFilters;
+            this.searchText = this.stateSearchText;
+            // this.onSearch();
+            // console.log("ON search");
         },
         computed: {
             ...mapGetters({
-                stateTreeFilters: types.TREE_GET_FILTERS,
+                stateSearchFilters: types.TREE_GET_FILTERS,
+                stateSearchText: types.TREE_GET_SEARCH_TEXT
             })
         },
         methods: {
             ...mapActions({
-                stateTreeSearchByFilter: types.TREE_ACTION_FILTER
+                doSearch: types.TREE_ACTION_DO_SEARCH
             }),
             onSearch() {
-                this.stateTreeSearchByFilter(this.treeFilters);
+                console.log("Called search function");
+                var payload = {
+                    searchText: this.searchText,
+                    filters: this.treeFilters
+                };
+
+                this.doSearch(payload);
+                this.$router.push('tree');
+                this.searchText = null;
             }
         }
     }

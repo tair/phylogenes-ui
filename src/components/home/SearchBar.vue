@@ -49,36 +49,25 @@
         name: "SearchBar",
         data() {
             return {
-                treeFilters: null,
                 searchText: null
             }
         },
         created() {
-            this.treeFilters = this.stateTreeFilters;
         },
         computed: {
             ...mapGetters({
-                stateTreeFilters: types.TREE_GET_FILTERS,
+                // stateTreeFilters: types.TREE_GET_FILTERS,
             })
         },
         methods: {
             ...mapActions({
-                stateTreeSearchByFilter: types.TREE_ACTION_FILTER
+                setSearchText: types.TREE_ACTION_SET_SEARCH
             }),
             onSearch() {
 
-                this.treeFilters = {
-                    startRow: 0,
-                    rows: 10,
-                    familyName: this.searchText,
-                    uniprotId: null,
-                    nodeTypes: [],
-                    organisms: [],
-                    species: []
-                };
-
-                this.stateTreeSearchByFilter(this.treeFilters);
+                this.setSearchText(this.searchText);
                 this.$router.push('tree');
+                this.searchText = null;
             }
         }
     }

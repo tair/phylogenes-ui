@@ -1,4 +1,3 @@
-
 function buildSolrQuery(payload) {
     var q = "";
     if(payload.familyName != null && payload.familyName != '') {
@@ -36,6 +35,16 @@ function buildSolrQuery(payload) {
     return q;
 }
 
+function buildGeneralQuery(payload) {
+    var q = "";
+    q += " AND gene_symbols:\"" + payload.searchText + "\"^10";
+    q += " OR sf_names:\"" + payload.searchText + "\" ";
+    q += " OR uniprot_ids:\"" + payload.searchText + "\" ";
+    q += " OR family_name:\"" + payload.searchText + "\" ";
+    q = q.substr(5);
+    return q;
+}
+
 function getQueryForPantherId(id) {
     var q = "";
     q = "id: " + id;
@@ -44,5 +53,6 @@ function getQueryForPantherId(id) {
 
 module.exports = {
     buildSolrQuery,
+    buildGeneralQuery,
     getQueryForPantherId
 };

@@ -18,9 +18,10 @@
                     <li>
                         <form class="nav-link form-inline my-2 my-lg-0">
                             <input class="form-control mr-sm-2 form-control-sm"
+                                   v-model="searchText"
                                    style="background-color: #B9CDA0; border: none;"
                                    type="search" placeholder="Search" aria-label="Search">
-                            <a href="" class="btn p-0 m-0 pr-5 btn-flat"><i class="fa fa-search"></i></a>
+                            <a href="" class="btn p-0 m-0 pr-5 btn-flat" @click.prevent="onSearch()"><i class="fa fa-search"></i></a>
                         </form>
                     </li>
 
@@ -47,7 +48,7 @@
                         </div>
                     </li>
 
-                    <router-link to="/tree" tag="li">
+                    <router-link to="/tree" tag="li"  @click.native="initRoute()">
                         <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Explore trees">
                             <i class="fas fa-tree"></i>
                         </a>
@@ -83,3 +84,40 @@
         </nav>
     </div>
 </template>
+<script>
+    import * as types from '@/store/types_tree';
+    import {mapActions} from 'vuex';
+    import {mapGetters} from 'vuex';
+
+    export default {
+        name: "TopNavBar",
+        data() {
+            return {
+                treeFilters: null,
+                searchText: null
+            }
+        },
+        created() {
+            this.treeFilters = this.stateTreeFilters;
+        },
+        computed: {
+            ...mapGetters({
+                stateTreeFilters: types.TREE_GET_FILTERS,
+            })
+        },
+        methods: {
+            ...mapActions({
+                setSearchText: types.TREE_ACTION_SET_SEARCH,
+                resetSearchText: types.TREE_ACTION_RESET_SEARCH
+            }),
+            initRoute() {
+                this.resetSearchText();
+            },
+            onSearch() {
+                this.setSearchText(this.searchText);
+                this.$router.push('tree');
+                this.searchText = null;
+            }
+        }
+    }
+</script>
