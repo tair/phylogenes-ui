@@ -1,7 +1,7 @@
 <template>
     <div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <svg id="treeSvg" width="100%" height="800">
+        <svg id="treeSvg" width="100%" height="900">
             <g id="wrapper">
                 <g class="links">
                     <baselink v-for="link in treelinks"
@@ -16,12 +16,10 @@
                               :content="node"
                               v-on:clicknode="onClick"></basenode>
                 </g>
+
                 <!--<dragnode ref="nodeToAdd" :content="exampleNode"-->
-                          <!--v-on:dragging="onDrag"-->
-                          <!--v-on:dragend="onDragEnd"></dragnode>-->
-            </g>
-            <g id="svgBack">
-                <g class="rows"></g>
+                <!--v-on:dragging="onDrag"-->
+                <!--v-on:dragend="onDragEnd"></dragnode>-->
             </g>
         </svg>
         <context-menu v-if="enableMenu" ref="menu">
@@ -64,8 +62,7 @@
         computed: {
             ...mapGetters({
                 // stateGetScrollY: types.GET_SCROLL_Y
-                stateTableScroll: types.TABLE_GET_SCROLL,
-                stateTreeData: types.TREE_GET_DATA,
+                stateTableScroll: types.TABLE_GET_SCROLL
             })
         },
         watch: {
@@ -80,7 +77,7 @@
                 handler: function (val, oldVal) {
                     var nodes = this.rootNode.descendants();
                     var treeNode = nodes.find(n => n.geneId == val.id);
-                    // this.moveTreeToNodePosition(treeNode);
+                    this.moveTreeToNodePosition(treeNode);
                 }
             }
         },
@@ -102,31 +99,18 @@
                 topPaddingY: 80,
                 rowHeight: 40,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
-                svg_back: null,
-                topMostNodePos: {x: 0.0, y: 0.0}
+                topMostNodePos: {x: 0.0, y: 0.0},
             }
         },
         mounted() {
             this.isLoading = true;
             var svg = d3.select('#treeSvg');
             this.wrapper_d3 = svg.select("#wrapper");
-            this.svg_back = svg.select("#svgBack");
             svg.call(this.setZoomListener(this.wrapper_d3));
-
-            for(var i = 0; i < 30; i++) {
-                this.svg_back.select(".rows")
-                    .append('path')
-                    .attr('d', d => {
-                        var y = i * 40;
-                        var s = {x: 0, y: y};
-                        return this.straightLine(s);
-                    })
-                    .attr('stroke', 'red');
-            }
 
             this.resetRootPosition();
 
@@ -140,12 +124,6 @@
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 stateTreeNodes: types.TREE_ACTION_SET_NODES
             }),
-            straightLine(s) {
-                var moveTo = "M"+ s.x + "," + s.y;
-                var horiLineTo = "H" + 800;
-                var log = moveTo + horiLineTo;
-                return log;
-            },
             //Resets the d3 wrapper, empties the links and nodes array,
             // which removes the currently displayed tree and all it's components
             refresh() {
@@ -156,10 +134,10 @@
             },
             //Set the d3 svg to it's original position before moving around with mouse
             resetRootPosition() {
-                // this.wrapper_d3.transition().duration(500)
-                //     .attr("transform", (d) => {
-                //         return "translate(" + 80 + "," + 0 + ")";
-                //     });
+                this.wrapper_d3.transition().duration(500)
+                    .attr("transform", (d) => {
+                        return "translate(" + 80 + "," + 0 + ")";
+                    });
             },
             //Initialize Tree at the time of Mounted() or jsonData has been updated.
             initTree() {
@@ -252,7 +230,7 @@
                         this.updateOldIndexes(nodes);
 
                         var topNode = this.getTopmostNode(nodes);
-                        // this.moveTreeWithPadding(topNode, this.currentPan.y);
+                        this.moveTreeWithPadding(topNode, this.currentPan.y);
                     }, this.duration2);
                 }, timeoutS);
             },
@@ -363,19 +341,8 @@
             },
             adjustPosition(nodes) {
                 var topNode = this.getTopmostNode(nodes);
-                // console.log(this.stateTreeData.length);
-                var totalRows = this.stateTreeData.length;
-                var totalHeight = totalRows * this.rowHeight;
-                var midPoint = totalHeight/2 - this.rowHeight/2;
-                console.log(this.wrapper_d3.node().getBoundingClientRect());
-                var final = totalHeight/2 + 12.5;
-                console.log("TH: " + final);
-                console.log("TN: " + topNode.x*-1);
-                var diff = topNode.x*-1 - final;
-
                 this.setTopmostNodePos(topNode);
                 this.moveTreeToNodePosition(topNode);
-                // this.moveWrapperToPosition({x: 0, y: final});
             },
 
             // ~~~~~~~~~ Links
@@ -463,7 +430,7 @@
                         .nodeSize([40,30])
                         .separation((a, b) => {
                             return (a.parent == b.parent ? 1 : 1) }
-                            );
+                        );
                 }
                 treeLayout(this.rootNode);
 
@@ -552,15 +519,9 @@
                 //Recursive method
                 this.calculateDepthFirstIds(nodes[0]);
             },
-            moveWrapperToPosition(pos) {
-                this.wrapper_d3
-                    .attr("transform", (d) => {
-                        return "translate(" + pos.x + "," + pos.y + ")";
-                    });
-            },
             moveTreeToNodePosition(node) {
-                var rowsDown = 1 * this.rowHeight + this.rowHeight/2;
-                let nodePos = -1*node.x + rowsDown;
+                let paddingTop = 50;
+                let nodePos = -1*node.x + paddingTop;
                 this.wrapper_d3
                     .attr("transform", (d) => {
                         return "translate(" + 80 + "," + nodePos + ")";
@@ -863,11 +824,6 @@
 <style scoped>
     svg {
         background-color: #e8d5bf;
-    }
-    .my_path {
-        stroke-width: 1.5;
-        stroke: red;
-        fill: none;
     }
     .legend-box {
         position: absolute;
