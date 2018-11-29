@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="row">
+        <div class="row p-2">
             <div class="col text-sm">
                 <div class="text-muted">Query time: {{ searchData.queryTime }} ms</div>
             </div>
@@ -47,10 +47,27 @@
                 </ul>
             </div>
         </div>
-        <div class="text-primary h5"> {{getRestatedText()}}</div>
-        <div v-for="data in searchData.results">
+
+        <div class="bg-gray-light elevation-2 mb-2 p-1">
+            <div class="row pb-1">
+                <div class="col-6">
+                    <span class="text-bold text-sm">Gene family</span>
+                </div>
+                <div class="col">
+                    <span class="text-bold text-sm">Matched field</span>
+                </div>
+                <div class="col">
+                    <span class="text-bold text-sm">Number of genes</span>
+                </div>
+            </div>
+        </div>
+        <div v-for="(data, i) in searchData.results"
+             v-bind:class="[i%2==0 ? whiteBg : grayBg]"
+             class="elevation-0 mb-0 p-2">
             <result-item :item="data"></result-item>
         </div>
+
+        <div class="bg-black elevation-4 mb-2 p-1 text-center h5"> {{getRestatedText()}}</div>
     </div>
 </template>
 
@@ -81,7 +98,9 @@
         },
         data() {
             return {
-                treeFilters: null
+                treeFilters: null,
+                whiteBg: 'bg-white',
+                grayBg: 'bg-gray-light'
             }
         },
         computed: {
@@ -113,7 +132,6 @@
 
                 console.log('Current page: ' + this.currentPage);
                 console.log('Goto page: ' + page);
-
                 this.treeFilters.startRow = (page - 1) * this.treeFilters.rows;
                 this.stateTreePaginate(this.treeFilters);
             },

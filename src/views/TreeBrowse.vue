@@ -1,8 +1,8 @@
 <template>
-    <div>
+    <div class="browse">
         <site-map :current-page="name"></site-map>
 
-        <div class="p-3">
+        <div v-if="showFilters()" class="p-3" style="background: #F1F7EE;">
             <span v-for="species in this.treeFilters.species" class="badge badge-pill badge-danger mr-1 p-1">
                 {{ species }}
                 <a href="#" @click="removeFilter('species', species)" class="text-white"><i class="fas fa-times-circle"></i></a>
@@ -18,11 +18,11 @@
         </div>
 
         <div class="row">
-            <div class="col-sm-12 col-md-4 col-lg-3 px-4 mb-sm-3" style="height: 100vh; overflow: auto; background: white;">
+            <div class="col-sm-12 col-md-4 col-lg-3 px-4 mb-sm-3" style="height: 100vh; overflow: auto; background: #F1F7EE;">
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
                 <div v-if="!this.stateTreeIsError && !this.stateTreeIsLoading">
-                <search-filter
+                <search-filter ref="sf"
                     :facets="stateTreeData.facets"
                     ></search-filter>
                 </div>
@@ -31,7 +31,7 @@
                 </div>
             </div>
 
-            <div class="col-sm-12 col-md-8 col-lg-9 px-4" style="height: 100vh; overflow: auto;">
+            <div class="col-sm-12 col-md-8 col-lg-9 px-4" style="height: 100vh; overflow: auto; background: white;">
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
                 <search-result v-if="showSearchResult()"
@@ -69,9 +69,9 @@
             }
         },
         beforeRouteEnter (to, from, next) {
-            console.log("Route enter");
             next(vm => {
-                vm.onSearch();
+                vm.$refs.sf.resetFilters();
+                vm.doSearch();
             });
         },
         created() {
@@ -84,24 +84,32 @@
             },
             removeFilter(type, val) {
                 // console.log(type + ', ' + val);
-
                 var arr = this.treeFilters[type];
                 arr.splice(arr.indexOf(val), 1);
-                this.onSearch();
+                this.stateAction_setSearchFilters(this.treeFilters);
+                this.doSearch();
             },
-            onSearch() {
-                console.log(this.stateSearchText);
+            doSearch() {
                 var payload = {
                     searchText: this.stateSearchText,
-                    filters: this.treeFilters
+                    filters: this.stateTreeFilters
                 }
-
-                this.doSearch(payload);
+                console.log(payload);
+                this.stateAction_doSearch(payload);
                 // this.stateTreeSearchByFilter(this.treeFilters);
             },
+            showFilters() {
+                if(this.stateTreeFilters.organisms.length > 0) {
+                    return true;
+                }
+                if(this.stateTreeFilters.species.length > 0) {
+                    return true;
+                }
+              return false;
+            },
             ...mapActions({
-                stateTreeSearchByFilter: types.TREE_ACTION_FILTER,
-                doSearch: types.TREE_ACTION_DO_SEARCH
+                stateAction_setSearchFilters: types.TREE_ACTION_SET_FILTER,
+                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH
             })
         },
         computed: {
@@ -117,5 +125,7 @@
 </script>
 
 <style scoped>
-
+    .browse {
+        background-color: #C0DEAD;
+    }
 </style>

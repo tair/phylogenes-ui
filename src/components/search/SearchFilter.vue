@@ -1,37 +1,43 @@
 <template>
-    <div>
+    <div class="filter">
         <!--<div class="h3 text-muted py-3">Search </div>-->
 
-        <form>
+        <div>
+            <label for="famName" class="text-dark text-md-left m-1">Search</label>
             <div class="form-group mb-2">
-                <label for="famName" class="text-dark text-sm m-0">Search</label>
-                <input class="form-control" id="famName"
-                       v-on:keyup.enter="onSearch()" v-model="searchText"
-                       aria-describedby="Family Name" placeholder="Eg: Protein">
+
+                <div class="form-inline my-lg-0">
+                    <input class="form-control input-lg" id="famName"
+                           v-on:keyup.enter="doSearch()" v-model="searchText"
+                           aria-describedby="Family Name" placeholder="Eg: Protein">
+                    <a href="#" class="btn p-2 m-0 pr-5 btn-flat" @click.prevent="doSearch()">
+                        <i class="fas fa-search"></i>
+                    </a>
+                </div>
             </div>
 
             <!--<input type="text" class="form-control mb-1 form-control-sm" placeholder="Family name" v-on:keyup.enter="onSearch()" v-model="treeFilters.familyName">-->
             <!--<input type="text" class="form-control mb-1 form-control-sm" placeholder="Uniport ID" v-on:keyup.enter="onSearch()" v-model="treeFilters.uniprotId">-->
-            <a href="#" class="float-right text-success" @click.prevent="onSearch()">
-                <i class="fas fa-search"></i> Search
-            </a>
-        </form>
-
-        <div class="text-bold text-danger py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Taxonomic Range</div>
-        <div class="list-group" style="max-height: 200px; overflow: auto;">
-            <div v-for="data in facets.species" class="list-group-item list-group-item-action borderless text-muted">
-                <input type="checkbox" :value="data.key" v-on:change="onSearch()" v-model="treeFilters.species">
-                <span class="pl-2 text-danger">{{ data.key }}</span>
-                <span class="float-right badge badge-pill badge-danger">{{ data.count }}</span>
-            </div>
         </div>
 
-        <div class="text-bold text-info py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Organisms</div>
-        <div class="list-group" style="max-height: 200px; overflow: auto;">
-            <div v-for="data in facets.organisms" class="list-group-item list-group-item-action borderless text-muted">
-                <input type="checkbox" :value="data.key" v-on:change="onSearch()" v-model="treeFilters.organisms">
-                <span class="pl-2 text-info">{{ data.key }}</span>
-                <span class="float-right badge badge-pill badge-info">{{ data.count }}</span>
+        <div>
+            <label for="famName" class="text-dark text-md-left m-1">Filters</label>
+            <div class="text-bold text-info py-2 pt-0" style="border-bottom: 1px solid #dfdfdf">Taxonomic Range</div>
+            <div class="list-group" style="max-height: 200px; overflow: auto;">
+                <div v-for="data in facets.species" class="list-group-item list-group-item-action borderless text-muted">
+                    <input type="checkbox" :value="data.key" v-on:change="onFiltersChange()" v-model="treeFilters.species">
+                    <span class="pl-2 text-info">{{ data.key }}</span>
+                    <span class="float-right badge badge-pill badge-danger">{{ data.count }}</span>
+                </div>
+            </div>
+
+            <div class="text-bold text-info py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Organisms</div>
+            <div class="list-group" style="max-height: 200px; overflow: auto;">
+                <div v-for="data in facets.organisms" class="list-group-item list-group-item-action borderless text-muted">
+                    <input type="checkbox" :value="data.key" v-on:change="onFiltersChange()" v-model="treeFilters.organisms">
+                    <span class="pl-2 text-info">{{ data.key }}</span>
+                    <span class="float-right badge badge-pill badge-danger">{{ data.count }}</span>
+                </div>
             </div>
         </div>
 
@@ -65,12 +71,9 @@
                 required: true
             }
         },
-
         created() {
             this.treeFilters = this.stateSearchFilters;
             this.searchText = this.stateSearchText;
-            // this.onSearch();
-            // console.log("ON search");
         },
         computed: {
             ...mapGetters({
@@ -80,24 +83,34 @@
         },
         methods: {
             ...mapActions({
-                doSearch: types.TREE_ACTION_DO_SEARCH
+                stateAction_setSearchFilters: types.TREE_ACTION_SET_FILTER,
+                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH
             }),
-            onSearch() {
-                console.log("Called search function");
+            onFiltersChange() {
+              this.stateAction_setSearchFilters(this.treeFilters);
+              this.doSearch();
+            },
+            doSearch() {
                 var payload = {
                     searchText: this.searchText,
-                    filters: this.treeFilters
+                    filters: this.stateSearchFilters
                 };
-
-                this.doSearch(payload);
-                this.$router.push('tree');
-                this.searchText = null;
+                this.stateAction_doSearch(payload);
+            },
+            resetFilters() {
+                this.treeFilters.organisms = [];
+                this.treeFilters.species = [];
+                this.stateAction_setSearchFilters(this.treeFilters);
+                this.searchText = this.stateSearchText;
             }
         }
     }
 </script>
 
 <style scoped>
+    .filter {
+        background-color: #F1F7EE;
+    }
     .list-group-item {
         padding-left: 0px;
         padding-right: 15px;

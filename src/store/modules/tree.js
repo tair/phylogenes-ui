@@ -19,7 +19,8 @@ const state = {
                 nodeTypes: [],
                 organisms: [],
                 species: []
-            }
+            },
+            highlighted: null
         },
         payload: {
             searchText: null,
@@ -74,24 +75,23 @@ const actions = {
         };
 
         context.state.tree.payload = payload;
-        console.log("reset search text");
+    },
+    [types.TREE_ACTION_SET_FILTER]: (context, payload) => {
+        context.state.tree.payload.filters = payload;
     },
     [types.TREE_ACTION_SET_SEARCH]: (context, payload) => {
         context.state.tree.payload.searchText = payload;
     },
     [types.TREE_ACTION_DO_SEARCH]: (context, payload) => {
-
-        console.log('TREE_ACTION_SEARCH Payload: ' + JSON.stringify(payload));
-
-        var q = "";
+        // console.log(payload);
+        var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload = payload;
             q = util.buildGeneralQuery(context.state.tree.payload);
-            if(q == "")
-                q = "*:*";
+            fq = util.buildFieldQuery(context.state.tree.payload);
         }
-        console.log('QQQQ: ' + q);
 
+        console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
         axios({
             method: 'GET',
             url: SOLR_URL +
@@ -99,7 +99,9 @@ const actions = {
             '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
             '&rows=' + context.state.tree.payload.filters.rows +
             '&start=' + context.state.tree.payload.filters.startRow +
-            '&q=' + q
+            '&q=' + q +
+            '&fq=' + fq +
+            '&hl=on&hl.fl=sf_names,%20gene_symbols,%20family_name'
         })
             .then(res => {
                 // tree data
@@ -141,6 +143,19 @@ const actions = {
                     }
                 }
                 //////////////////////////////////////
+                // Highlighted Fields ///////////////////////////////
+                if(res.data.highlighting) {
+                    // console.log("High ", Object.keys(res.data.highlighting));
+                    var highlightArr = Object.keys(res.data.highlighting).map((key) => {
+                        return [key, res.data.highlighting[key]];
+                    });
+                    // console.log("High:", highlightArr);
+                    context.state.tree.data.results.forEach((r, i) => {
+                      r.hl = highlightArr[i];
+                    });
+                }
+
+                //////////////////////////////////////
 
                 context.state.tree.isLoading = false;
             })
@@ -154,24 +169,26 @@ const actions = {
 
     [types.TREE_ACTION_PAGINATE]: (context, payload) => {
 
-        console.log('Payload: ' + JSON.stringify(payload));
+        // console.log('Payload: ' + JSON.stringify(payload));
 
-        var q = "";
+        var q = "", fq = "";
         if(payload != null) {
-            q = util.buildSolrQuery(context.state.tree.filters);
-            if(q == "")
-                q = "*:*";
+            context.state.tree.payload.filters = payload;
+            q = util.buildGeneralQuery(context.state.tree.payload);
+            fq = util.buildFieldQuery(context.state.tree.payload);
         }
-        console.log('QQQQ: ' + q);
+        console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
 
         axios({
             method: 'GET',
             url: SOLR_URL +
             '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
             '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
-            '&rows=' + context.state.tree.filters.rows +
-            '&start=' + context.state.tree.filters.startRow +
-            '&q=' + q
+            '&rows=' + context.state.tree.payload.filters.rows +
+            '&start=' + context.state.tree.payload.filters.startRow +
+            '&q=' + q +
+            '&fq=' + fq +
+            '&hl=on&hl.fl=sf_names,%20gene_symbols,%20family_name'
         })
             .then(res => {
 
@@ -181,6 +198,18 @@ const actions = {
                 context.state.tree.data.rows = res.data.responseHeader.params.rows;
                 context.state.tree.data.startRow = res.data.response.start;
 
+                // Highlighted Fields ///////////////////////////////
+                if(res.data.highlighting) {
+                    // console.log("High ", Object.keys(res.data.highlighting));
+                    var highlightArr = Object.keys(res.data.highlighting).map((key) => {
+                        return [key, res.data.highlighting[key]];
+                    });
+                    // console.log("High:", highlightArr);
+                    context.state.tree.data.results.forEach((r, i) => {
+                        r.hl = highlightArr[i];
+                    });
+                }
+                //////////////////////////////////////
             })
             .catch(error => {
                 console.log('Error while reading data (E8273): ' + JSON.stringify(error));
@@ -190,8 +219,7 @@ const actions = {
     [types.TREE_ACTION_FILTER]: (context, payload) => {
 
         payload.startRow = 0;
-        console.log('Payload: ' + JSON.stringify(payload));
-
+        // console.log('Payload: ' + JSON.stringify(payload));
         // var q = "";
         // if(payload != null) {
         //     context.state.tree.payload.filters = payload;
