@@ -34,7 +34,7 @@
             <div class="col-sm-12 col-md-8 col-lg-9 px-4" style="height: 100vh; overflow: auto; background: white;">
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-                <search-result v-if="showSearchResult()"
+                <search-result v-if="showSearchResult()" ref="sr"
                                :searchData="stateTreeData"></search-result>
                 <div v-if="this.stateTreeIsError" class="text-danger pt-4 h5">
                     Error occurred while reading data.
@@ -76,14 +76,12 @@
         },
         created() {
             this.treeFilters = this.stateTreeFilters;
-            // this.stateTreeSearchByFilter(this.treeFilters);
         },
         methods: {
             showSearchResult() {
               return !this.stateTreeIsError && !this.stateTreeIsLoading;
             },
             removeFilter(type, val) {
-                // console.log(type + ', ' + val);
                 var arr = this.treeFilters[type];
                 arr.splice(arr.indexOf(val), 1);
                 this.stateAction_setSearchFilters(this.treeFilters);
@@ -94,9 +92,8 @@
                     searchText: this.stateSearchText,
                     filters: this.stateTreeFilters
                 }
-                console.log(payload);
                 this.stateAction_doSearch(payload);
-                // this.stateTreeSearchByFilter(this.treeFilters);
+                this.$refs.sr.newSearch();
             },
             showFilters() {
                 if(this.stateTreeFilters.organisms.length > 0) {

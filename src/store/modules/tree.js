@@ -92,6 +92,7 @@ const actions = {
         }
 
         console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
+        context.state.tree.isLoading = true;
         axios({
             method: 'GET',
             url: SOLR_URL +

@@ -125,13 +125,17 @@
             ...mapActions({
                 stateTreePaginate: types.TREE_ACTION_PAGINATE
             }),
+            newSearch() {
+              console.log(this.searchData);
+              this.gotoPage(1);
+            },
             gotoPage(page) {
 
                 if(page === 0 || page > this.noPages || this.currentPage === page)
                     return;
 
-                console.log('Current page: ' + this.currentPage);
-                console.log('Goto page: ' + page);
+                // console.log('Current page: ' + this.currentPage);
+                // console.log('Goto page: ' + page);
                 this.treeFilters.startRow = (page - 1) * this.treeFilters.rows;
                 this.stateTreePaginate(this.treeFilters);
             },
