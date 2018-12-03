@@ -81,7 +81,7 @@ function getQueryForPantherId(id) {
     return q;
 }
 
-module.exports = {
+export default {
     buildSolrQuery,
     buildGeneralQuery,
     buildFieldQuery,
