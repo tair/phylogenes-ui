@@ -16,11 +16,11 @@
                 <ul class="navbar-nav ml-auto">
 
                     <li>
-                        <form class="nav-link form-inline my-2 my-lg-0">
+                        <form class="nav-link form-inline my-2 my-lg-0" v-on:submit.prevent="onSearch()">
                             <input class="form-control mr-sm-2 form-control-sm"
                                    v-model="searchText"
                                    style="background-color: #B9CDA0; border: none;"
-                                   type="search" placeholder="Search" aria-label="Search">
+                                   type="text" placeholder="Search" aria-label="Search">
                             <a href="" class="btn p-0 m-0 pr-5 btn-flat" @click.prevent="onSearch()"><i class="fa fa-search"></i></a>
                         </form>
                     </li>
