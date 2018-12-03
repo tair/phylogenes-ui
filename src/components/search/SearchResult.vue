@@ -1,13 +1,13 @@
 <template>
     <div>
-        <div class="row">
+        <div class="row p-2">
             <div class="col text-sm">
-                <div class="text-muted">Query time: {{ treeData.queryTime }} ms</div>
+                <div class="text-muted">Query time: {{ searchData.queryTime }} ms</div>
             </div>
             <div class="col">
 
                 <ul class="pagination pagination-sm justify-content-end">
-                    <div class="text-primary p-1 pr-3 text-sm">Results found: {{ treeData.numFound }}</div>
+                    <div class="text-primary p-1 pr-3 text-sm">Results found: {{ searchData.numFound }}</div>
 
                     <li :class="['page-item', {'disabled': currentPage == 1}]">
                         <a class="page-link" href="#" @click="gotoPage(1)">
@@ -47,38 +47,76 @@
                 </ul>
             </div>
         </div>
-
-        <div v-for="data in treeData.results">
+        <div class="alert elevation-2 mb-2 p-1 text-center h5" role="alert"
+             :class="getAlertClass()">
+                {{getRestatedText()}}
+        </div>
+        <div class="bg-gray-light elevation-2 mb-2 p-1">
+            <div class="row pb-1">
+                <div class="col-6">
+                    <span class="text-bold text-sm">Gene family</span>
+                </div>
+                <div class="col">
+                    <span class="text-bold text-sm">Matched field</span>
+                </div>
+                <div class="col">
+                    <span class="text-bold text-sm">Number of genes</span>
+                </div>
+            </div>
+        </div>
+        <div v-for="(data, i) in searchData.results"
+             v-bind:class="[i%2==0 ? whiteBg : grayBg]"
+             class="elevation-0 mb-0 p-2">
             <result-item :item="data"></result-item>
         </div>
     </div>
 </template>
 
 <script>
-    import ResultItem from '@/components/tree/TreeResultItem'
+    import ResultItem from '@/components/search/SearchResultItem'
 
     import * as types from '../../store/types_tree';
     import {mapActions} from 'vuex';
     import {mapGetters} from 'vuex';
 
     export default {
+        props: {
+            searchData: {
+                type: Object,
+                required: true
+            }
+        },
+        watch: {
+            searchData: {
+                immediate: true,
+                handler (val, oldVal) {
+                    if(val.numFound == 1) {
+                        // console.log();
+                        this.$router.push({path: 'tree/' + val.results[0].id})
+                    }
+                }
+            }
+        },
         data() {
             return {
-                treeFilters: null
+                treeFilters: null,
+                whiteBg: 'bg-white',
+                grayBg: 'bg-gray-light'
             }
         },
         computed: {
             noPages() {
-                return Math.ceil(this.treeData.numFound / this.treeData.rows);
+                return Math.ceil(this.searchData.numFound / this.searchData.rows);
             },
             currentPage() {
-                if(this.treeData.startRow == 0)
+                if(this.searchData.startRow == 0)
                     return 1;
 
-                return Math.floor(this.treeData.startRow / this.treeData.rows) + 1;
+                return Math.floor(this.searchData.startRow / this.searchData.rows) + 1;
             },
             ...mapGetters({
                 stateTreeFilters: types.TREE_GET_FILTERS,
+                stateSearchText: types.TREE_GET_SEARCH_TEXT
             })
         },
         created() {
@@ -88,37 +126,40 @@
             ...mapActions({
                 stateTreePaginate: types.TREE_ACTION_PAGINATE
             }),
+            newSearch() {
+              console.log(this.searchData);
+              this.gotoPage(1);
+            },
             gotoPage(page) {
 
                 if(page === 0 || page > this.noPages || this.currentPage === page)
                     return;
 
-                console.log('Current page: ' + this.currentPage);
-                console.log('Goto page: ' + page);
-
                 this.treeFilters.startRow = (page - 1) * this.treeFilters.rows;
                 this.stateTreePaginate(this.treeFilters);
+            },
+            getRestatedText() {
+                var text = "You searched for '" + this.stateSearchText + "'.";
+                if(this.stateSearchText == null) {
+                    text = "";
+                }
+
+                if(this.searchData.numFound == 0) {
+                    text += " No Result. Please check spelling.";
+                } else {
+                    text += " " + this.searchData.numFound + " gene families found.";
+                }
+                return text;
+            },
+            getAlertClass() {
+                if(this.searchData.numFound == 0) {
+                    return "alert-danger";
+                }
+                return "alert-success";
             }
         },
         components: {
             ResultItem
-        },
-        props: {
-            treeData: {
-                type: Object,
-                required: true
-            }
-        },
-        watch: {
-            treeData: {
-                immediate: true,
-                handler (val, oldVal) {
-                    if(val.numFound == 1) {
-                        // console.log();
-                        this.$router.push({path: 'tree/' + val.results[0].id})
-                    }
-                }
-            }
         }
     }
 

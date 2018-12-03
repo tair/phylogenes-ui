@@ -1,6 +1,6 @@
 import * as types from '../types_tree';
 import axios from "axios/index";
-import util from "./util.js";
+import util from "./util";
 
 // const SOLR_URL = 'http://localhost:8983/solr/panther/select';
 const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
@@ -19,16 +19,20 @@ const state = {
                 nodeTypes: [],
                 organisms: [],
                 species: []
-            }
+            },
+            highlighted: null
         },
-        filters: {
-            startRow: 0,
-            rows: 10,
-            familyName: null,
-            uniprotId: null,
-            nodeTypes: [],
-            organisms: [],
-            species: []
+        payload: {
+            searchText: null,
+            filters: {
+                startRow: 0,
+                rows: 10,
+                familyName: null,
+                uniprotId: null,
+                nodeTypes: [],
+                organisms: [],
+                species: []
+            }
         }
     }
 };
@@ -40,11 +44,14 @@ const getters = {
     [types.TREE_IS_LOADING]: state => {
         return state.tree.isLoading;
     },
+    [types.TREE_GET_SEARCH_TEXT]: state => {
+        return state.tree.payload.searchText;
+    },
     [types.TREE_GET_DATA]: state => {
         return state.tree.data;
     },
     [types.TREE_GET_FILTERS]: state => {
-        return state.tree.filters;
+        return state.tree.payload.filters;
     },
 };
 
@@ -53,67 +60,48 @@ const mutations = {
 };
 
 const actions = {
+    [types.TREE_ACTION_RESET_SEARCH]: (context, payload) => {
+        var payload = {
+            searchText: null,
+            filters: {
+                startRow: 0,
+                rows: 10,
+                familyName: null,
+                uniprotId: null,
+                nodeTypes: [],
+                organisms: [],
+                species: []
+            }
+        };
 
-    [types.TREE_ACTION_PAGINATE]: (context, payload) => {
-
-        console.log('Payload: ' + JSON.stringify(payload));
-
-        var q = "";
+        context.state.tree.payload = payload;
+    },
+    [types.TREE_ACTION_SET_FILTER]: (context, payload) => {
+        context.state.tree.payload.filters = payload;
+    },
+    [types.TREE_ACTION_SET_SEARCH]: (context, payload) => {
+        context.state.tree.payload.searchText = payload;
+    },
+    [types.TREE_ACTION_DO_SEARCH]: (context, payload) => {
+        var q = "", fq = "";
         if(payload != null) {
-            q = util.buildSolrQuery(context.state.tree.filters);
-            if(q == "")
-                q = "*:*";
+            context.state.tree.payload = payload;
+            q = util.buildGeneralQuery(context.state.tree.payload);
+            fq = util.buildFieldQuery(context.state.tree.payload);
         }
-        console.log('QQQQ: ' + q);
 
+        console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
+        context.state.tree.isLoading = true;
         axios({
             method: 'GET',
             url: SOLR_URL +
             '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
             '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
-            '&rows=' + context.state.tree.filters.rows +
-            '&start=' + context.state.tree.filters.startRow +
-            '&q=' + q
-        })
-            .then(res => {
-
-                // tree data
-                context.state.tree.data.results = res.data.response.docs;
-                context.state.tree.data.queryTime = res.data.responseHeader.QTime;
-                context.state.tree.data.rows = res.data.responseHeader.params.rows;
-                context.state.tree.data.startRow = res.data.response.start;
-
-            })
-            .catch(error => {
-                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-            })
-    },
-
-    [types.TREE_ACTION_FILTER]: (context, payload) => {
-
-        payload.startRow = 0;
-        console.log('Payload: ' + JSON.stringify(payload));
-
-        var q = "";
-        if(payload != null) {
-            context.state.tree.filters = payload;
-            q = util.buildSolrQuery(payload);
-            if(q == "")
-                q = "*:*";
-        }
-        console.log('QQQQ: ' + q);
-
-        context.state.tree.isLoading = true;
-        context.state.tree.isError = false;
-
-        axios({
-            method: 'GET',
-            url: SOLR_URL +
-                '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
-                '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
-                '&rows=' + context.state.tree.filters.rows +
-                '&start=' + context.state.tree.filters.startRow +
-                '&q=' + q
+            '&rows=' + context.state.tree.payload.filters.rows +
+            '&start=' + context.state.tree.payload.filters.startRow +
+            '&q=' + q +
+            '&fq=' + fq +
+            '&hl=on&hl.fl=sf_names,%20gene_symbols,%20family_name'
         })
             .then(res => {
                 // tree data
@@ -155,6 +143,18 @@ const actions = {
                     }
                 }
                 //////////////////////////////////////
+                // Highlighted Fields ///////////////////////////////
+                if(res.data.highlighting) {
+                    var highlightArr = Object.keys(res.data.highlighting).map((key) => {
+                        return [key, res.data.highlighting[key]];
+                    });
+
+                    context.state.tree.data.results.forEach((r, i) => {
+                      r.hl = highlightArr[i];
+                    });
+                }
+
+                //////////////////////////////////////
 
                 context.state.tree.isLoading = false;
             })
@@ -162,6 +162,55 @@ const actions = {
                 context.state.tree.isLoading = false;
                 context.state.tree.isError = true;
 
+                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+            })
+    },
+
+    [types.TREE_ACTION_PAGINATE]: (context, payload) => {
+
+        // console.log('Payload: ' + JSON.stringify(payload));
+
+        var q = "", fq = "";
+        if(payload != null) {
+            context.state.tree.payload.filters = payload;
+            q = util.buildGeneralQuery(context.state.tree.payload);
+            fq = util.buildFieldQuery(context.state.tree.payload);
+        }
+        console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
+
+        axios({
+            method: 'GET',
+            url: SOLR_URL +
+            '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
+            '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
+            '&rows=' + context.state.tree.payload.filters.rows +
+            '&start=' + context.state.tree.payload.filters.startRow +
+            '&q=' + q +
+            '&fq=' + fq +
+            '&hl=on&hl.fl=sf_names,%20gene_symbols,%20family_name'
+        })
+            .then(res => {
+
+                // tree data
+                context.state.tree.data.results = res.data.response.docs;
+                context.state.tree.data.queryTime = res.data.responseHeader.QTime;
+                context.state.tree.data.rows = res.data.responseHeader.params.rows;
+                context.state.tree.data.startRow = res.data.response.start;
+
+                // Highlighted Fields ///////////////////////////////
+                if(res.data.highlighting) {
+                    // console.log("High ", Object.keys(res.data.highlighting));
+                    var highlightArr = Object.keys(res.data.highlighting).map((key) => {
+                        return [key, res.data.highlighting[key]];
+                    });
+                    // console.log("High:", highlightArr);
+                    context.state.tree.data.results.forEach((r, i) => {
+                        r.hl = highlightArr[i];
+                    });
+                }
+                //////////////////////////////////////
+            })
+            .catch(error => {
                 console.log('Error while reading data (E8273): ' + JSON.stringify(error));
             })
     }

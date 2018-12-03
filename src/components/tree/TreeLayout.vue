@@ -18,8 +18,8 @@
                 </g>
 
                 <!--<dragnode ref="nodeToAdd" :content="exampleNode"-->
-                          <!--v-on:dragging="onDrag"-->
-                          <!--v-on:dragend="onDragEnd"></dragnode>-->
+                <!--v-on:dragging="onDrag"-->
+                <!--v-on:dragend="onDragEnd"></dragnode>-->
             </g>
         </svg>
         <context-menu v-if="enableMenu" ref="menu">
@@ -430,7 +430,7 @@
                         .nodeSize([40,30])
                         .separation((a, b) => {
                             return (a.parent == b.parent ? 1 : 1) }
-                            );
+                        );
                 }
                 treeLayout(this.rootNode);
 
