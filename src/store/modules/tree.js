@@ -83,7 +83,6 @@ const actions = {
         context.state.tree.payload.searchText = payload;
     },
     [types.TREE_ACTION_DO_SEARCH]: (context, payload) => {
-        // console.log(payload);
         var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload = payload;
@@ -146,11 +145,10 @@ const actions = {
                 //////////////////////////////////////
                 // Highlighted Fields ///////////////////////////////
                 if(res.data.highlighting) {
-                    // console.log("High ", Object.keys(res.data.highlighting));
                     var highlightArr = Object.keys(res.data.highlighting).map((key) => {
                         return [key, res.data.highlighting[key]];
                     });
-                    // console.log("High:", highlightArr);
+
                     context.state.tree.data.results.forEach((r, i) => {
                       r.hl = highlightArr[i];
                     });
@@ -215,82 +213,6 @@ const actions = {
             .catch(error => {
                 console.log('Error while reading data (E8273): ' + JSON.stringify(error));
             })
-    },
-
-    [types.TREE_ACTION_FILTER]: (context, payload) => {
-
-        payload.startRow = 0;
-        // console.log('Payload: ' + JSON.stringify(payload));
-        // var q = "";
-        // if(payload != null) {
-        //     context.state.tree.payload.filters = payload;
-        //     q = util.buildSolrQuery(payload);
-        //     if(q == "")
-        //         q = "*:*";
-        // }
-        // console.log('QQQQ: ' + q);
-        //
-        // context.state.tree.isLoading = true;
-        // context.state.tree.isError = false;
-
-        // axios({
-        //     method: 'GET',
-        //     url: SOLR_URL +
-        //         '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
-        //         '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
-        //         '&rows=' + context.state.tree.filters.rows +
-        //         '&start=' + context.state.tree.filters.startRow +
-        //         '&q=' + q
-        // })
-        //     .then(res => {
-        //         // tree data
-        //         context.state.tree.data.results = res.data.response.docs;
-        //         context.state.tree.data.queryTime = res.data.responseHeader.QTime;
-        //         context.state.tree.data.numFound = res.data.response.numFound;
-        //         context.state.tree.data.rows = res.data.responseHeader.params.rows;
-        //         context.state.tree.data.startRow = res.data.response.start;
-        //
-        //         // tree facets ///////////////////////
-        //         context.state.tree.data.facets.nodeTypes = [];
-        //         context.state.tree.data.facets.organisms = [];
-        //         context.state.tree.data.facets.species = [];
-        //
-        //         if(res.data.facet_counts.facet_fields.node_types != null) {
-        //             for(var i = 0; i < res.data.facet_counts.facet_fields.node_types.length;) {
-        //                 var jsonData = {};
-        //                 jsonData['key'] = res.data.facet_counts.facet_fields.node_types[i++];
-        //                 jsonData['count'] = res.data.facet_counts.facet_fields.node_types[i++];
-        //                 context.state.tree.data.facets.nodeTypes.push(jsonData);
-        //             }
-        //         }
-        //
-        //         if(res.data.facet_counts.facet_fields.organisms != null) {
-        //             for(var i = 0; i < res.data.facet_counts.facet_fields.organisms.length;) {
-        //                 var jsonData = {};
-        //                 jsonData['key'] = res.data.facet_counts.facet_fields.organisms[i++];
-        //                 jsonData['count'] = res.data.facet_counts.facet_fields.organisms[i++];
-        //                 context.state.tree.data.facets.organisms.push(jsonData);
-        //             }
-        //         }
-        //
-        //         if(res.data.facet_counts.facet_fields.species_list != null) {
-        //             for(var i = 0; i < res.data.facet_counts.facet_fields.species_list.length;) {
-        //                 var jsonData = {};
-        //                 jsonData['key'] = res.data.facet_counts.facet_fields.species_list[i++];
-        //                 jsonData['count'] = res.data.facet_counts.facet_fields.species_list[i++];
-        //                 context.state.tree.data.facets.species.push(jsonData);
-        //             }
-        //         }
-        //         //////////////////////////////////////
-        //
-        //         context.state.tree.isLoading = false;
-        //     })
-        //     .catch(error => {
-        //         context.state.tree.isLoading = false;
-        //         context.state.tree.isError = true;
-        //
-        //         console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-        //     })
     }
 };
 

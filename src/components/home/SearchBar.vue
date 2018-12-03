@@ -56,7 +56,7 @@
         },
         computed: {
             ...mapGetters({
-                // stateTreeFilters: types.TREE_GET_FILTERS,
+
             })
         },
         methods: {

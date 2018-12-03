@@ -11,6 +11,5 @@ export const TREE_ACTION_SET_SEARCH = 'tree/setSearchText';
 export const TREE_ACTION_RESET_SEARCH = 'tree/resetSearchText';
 export const TREE_ACTION_SET_FILTER = 'tree/setFilters';
 export const TREE_ACTION_DO_SEARCH = 'tree/doSearch';
-export const TREE_ACTION_FILTER = 'tree/filters';
 export const TREE_ACTION_PAGINATE = 'tree/paginate';
 
