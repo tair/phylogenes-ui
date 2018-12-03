@@ -2,10 +2,10 @@
     <div>
         <div class="row pb-1">
             <div class="col-6">
-                <span class="text-dark h6">{{ this.item.family_name[0] }}</span>
                 <router-link :to="{ path: '/tree/' + this.item.id }" tag="a">
                     <span class="text-danger h-75"> [{{ this.item.id }}]</span>
                 </router-link>
+                <span class="text-dark h6"> {{ this.item.family_name[0] }}</span>
             </div>
             <div class="col">
                 <span class="text-dark h-75">{{getHighlightedFields()}}</span>
@@ -15,27 +15,6 @@
             </div>
         </div>
     </div>
-
-    <!--<div class="row pt-2">-->
-    <!--<div class="col-sm-12 col-md-6">-->
-    <!--<div class="text-danger text-bold text-sm">Sub Families</div>-->
-    <!--<div class="p-2 gray-box">-->
-    <!--<div v-for="sf_name in this.item.sf_names" class="text-muted text-sm mr-2">{{ sf_name }}</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--<div class="col-sm-12 col-md-3">-->
-    <!--<div class="text-danger text-bold text-sm">Gene Symbols</div>-->
-    <!--<div class="p-2 gray-box" style="width: 150px">-->
-    <!--<div v-for="gene_symbol in this.item.gene_symbols" class="text-muted text-sm mr-2">{{ gene_symbol }}</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--<div class="col-sm-12 col-md-3">-->
-    <!--<div class="text-danger text-bold text-sm">Uniprot IDs</div>-->
-    <!--<div class="p-2 gray-box" style="width: 150px">-->
-    <!--<div v-for="uniprot_id in this.item.uniprot_ids" class="text-muted text-sm mr-2">{{ uniprot_id }}</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
 </template>
 
 <script>
@@ -58,10 +37,14 @@
 
                 if(this.item.hl[0] != this.item.id) {
                     console.log("Error");
+                    return fl;
                 }
                 let keys = Object.keys(this.item.hl[1]);
                 if(keys.length > 0) {
+                    var names = "";
                     keys.forEach((key, i) => {
+                        names += this.item.hl[1][key];
+                        names += ", ";
                         fl += this.mapFieldToDisplayName(key);
                         if(keys.length > 1) {
                             if(i != keys.length - 1) {
@@ -69,6 +52,7 @@
                             }
                         }
                     });
+                    console.log(names);
                 }
                 return fl;
             },

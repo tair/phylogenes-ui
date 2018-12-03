@@ -47,7 +47,10 @@
                 </ul>
             </div>
         </div>
-
+        <div class="alert elevation-2 mb-2 p-1 text-center h5" role="alert"
+             :class="getAlertClass()">
+                {{getRestatedText()}}
+        </div>
         <div class="bg-gray-light elevation-2 mb-2 p-1">
             <div class="row pb-1">
                 <div class="col-6">
@@ -66,8 +69,6 @@
              class="elevation-0 mb-0 p-2">
             <result-item :item="data"></result-item>
         </div>
-
-        <div class="bg-black elevation-4 mb-2 p-1 text-center h5"> {{getRestatedText()}}</div>
     </div>
 </template>
 
@@ -134,13 +135,10 @@
                 if(page === 0 || page > this.noPages || this.currentPage === page)
                     return;
 
-                // console.log('Current page: ' + this.currentPage);
-                // console.log('Goto page: ' + page);
                 this.treeFilters.startRow = (page - 1) * this.treeFilters.rows;
                 this.stateTreePaginate(this.treeFilters);
             },
             getRestatedText() {
-                // console.log(this.stateTreeFilters.payload.searchText);
                 var text = "You searched for '" + this.stateSearchText + "'.";
                 if(this.stateSearchText == null) {
                     text = "";
@@ -152,6 +150,12 @@
                     text += " " + this.searchData.numFound + " gene families found.";
                 }
                 return text;
+            },
+            getAlertClass() {
+                if(this.searchData.numFound == 0) {
+                    return "alert-danger";
+                }
+                return "alert-success";
             }
         },
         components: {
