@@ -20,8 +20,8 @@
                         </a>
                     </li>
 
-                    <li v-if="currentPage == noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  4)">{{ currentPage -  4 }}</a></li>
-                    <li v-if="currentPage == noPages || currentPage == noPages - 1" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  3)">{{ currentPage -  3 }}</a></li>
+                    <li v-if="currentPage == noPages && currentPage - 4 > 0" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  4)">{{ currentPage -  4 }}</a></li>
+                    <li v-if="(currentPage == noPages || currentPage == noPages - 1) && currentPage - 3 > 0" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  3)">{{ currentPage -  3 }}</a></li>
 
                     <li v-if="currentPage - 2 > 0" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  2)">{{ currentPage -  2 }}</a></li>
                     <li v-if="currentPage - 1 > 0" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  1)">{{ currentPage -  1 }}</a></li>
@@ -31,8 +31,8 @@
                     <li v-if="currentPage + 1 <= noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage +  1)">{{ currentPage +  1 }}</a></li>
                     <li v-if="currentPage + 2 <= noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage +  2)">{{ currentPage +  2}}</a></li>
 
-                    <li v-if="currentPage == 1 || currentPage == 2" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage + 3)">{{ currentPage +  3 }}</a></li>
-                    <li v-if="currentPage == 1" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage + 4)">{{ currentPage + 4 }}</a></li>
+                    <li v-if="(currentPage == 1 || currentPage == 2) && currentPage + 3 <= noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage + 3)">{{ currentPage +  3 }}</a></li>
+                    <li v-if="currentPage == 1 && currentPage + 4 <= noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage + 4)">{{ currentPage + 4 }}</a></li>
 
                     <li :class="['page-item', {'disabled': currentPage == noPages}]" class="page-item">
                         <a class="page-link" href="#" @click="gotoPage(currentPage + 1)" aria-label="Next">
