@@ -11,7 +11,7 @@
                         <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
                                 @click="expandAll">Expand All</button>
                         <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
-                                @click="showLegend">Show Legend</button>
+                                @click="showLegend">{{showLegendButtonText}}</button>
                     </div>
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
@@ -60,7 +60,10 @@
         computed: {
             ...mapGetters({
                 stateTreeJson: types.TREE_GET_JSON
-            })
+            }),
+            showLegendButtonText(){
+                return this.legend?'Show Legend':'Hide Legend';
+            }
         },
         data() {
             return {
@@ -68,7 +71,8 @@
                 branchLength: "N/A",
                 jsonData: null,
                 mappingData: null,
-                baseUrl: process.env.BASE_URL
+                baseUrl: process.env.BASE_URL,
+                legend: true
             }
         },
         mounted() {
@@ -158,6 +162,7 @@
             },
             showLegend() {
                 this.$refs.treeLayout.onShowLegend();
+                this.legend = !this.legend;
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
