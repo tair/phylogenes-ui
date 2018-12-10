@@ -8,10 +8,25 @@
                 <div class="chart-content">
                     <div>
                         <!--Branch Length: <span>{{branchLength}}</span>-->
-                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
-                                @click="expandAll">Expand All</button>
-                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
-                                @click="showLegend">Show Legend</button>
+                        <div class="container-fluid">
+                            <search-box v-on:search="onSearch"></search-box>
+                            <!--<div class="input-group mb-0">-->
+                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"-->
+                                        <!--@click="expandAll">Expand All</button>-->
+                                <!--<div class="input-group-prepend">-->
+                                    <!--<span class="input-group-text" id="inputGroup-sizing-lg">Large</span>-->
+                                <!--</div>-->
+                                <!--<input type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm">-->
+                                <!--<a href="" class="btn p-1 m-0 pr-5 btn-flat" @click.prevent="onSearch()">-->
+                                    <!--<i class="fa fa-search"></i>-->
+                                <!--</a>-->
+                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
+                                        <!--@click="showLegend">Show Legend</button>-->
+                            <!--</div>-->
+                            <!--<input class="mr-sm-0"-->
+                                   <!--v-model="searchText"-->
+                                   <!--type="text" placeholder="Search" aria-label="Search">-->
+                        </div>
                     </div>
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
@@ -19,6 +34,7 @@
                                     <!--v-on:mouse-over-link="onMouseOverLink"-->
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
                         <treelayout2  :jsonData="jsonData" :mappingData="mappingData"
+                                      :matchedNodes="matchNodes"
                                       ref="treeLayout"
                                       v-on:updated-tree="onTreeUpdate"></treelayout2>
 
@@ -43,6 +59,7 @@
     import treelayout2 from '../components/tree/TreeLayout';
     import tablelayout from '../components/table/TableD3';
     import intersect from '../components/tree/Intersection';
+    import searchBox from '@/components/search/SearchBox';
 
     import * as d3 from 'd3';
     import {mapActions} from 'vuex';
@@ -55,20 +72,25 @@
         components: {
             treelayout2: treelayout2,
             tablelayout: tablelayout,
-            intersect: intersect
+            intersect: intersect,
+            searchBox: searchBox
         },
         computed: {
             ...mapGetters({
-                stateTreeJson: types.TREE_GET_JSON
+                stateTreeJson: types.TREE_GET_JSON,
+                stateTreeData: types.TREE_GET_DATA
             })
         },
         data() {
             return {
                 treeId: null,
                 branchLength: "N/A",
+                completeData: null,
                 jsonData: null,
                 mappingData: null,
-                baseUrl: process.env.BASE_URL
+                baseUrl: process.env.BASE_URL,
+                searchText: "",
+                matchNodes: []
             }
         },
         mounted() {
@@ -78,9 +100,25 @@
         methods: {
             ...mapActions({
                 stateTreeGetJson: types.TREE_ACTION_GET_JSON,
+                store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
+            onSearch(text) {
+                if(text != null) {
+                    var d = this.completeData.filter(t => {
+                        var geneName = "";
+                        if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
+                            geneName = t["Gene name"].toLowerCase();
+                        }
+                        return geneName === text.toLowerCase();
+                    });
+                    this.matchNodes = d;
+                } else {
+                    this.matchNodes = [];
+                }
+                this.store_setMatchedNodes(this.matchNodes);
+            },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
                 treeJson = treeJson.search.annotation_node;
@@ -184,6 +222,9 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
+                if(this.completeData == null) {
+                    this.completeData = this.stateTreeData;
+                }
             }
         },
         watch: {

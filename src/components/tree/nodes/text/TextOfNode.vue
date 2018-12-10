@@ -1,6 +1,6 @@
 <template>
     <g>
-        <text dy=".35em" :x="textPosn.x" :y="textPosn.y">{{getText()}}</text>
+        <text dy=".35em" :x="textPosn.x" :y="textPosn.y" :fill="color">{{getText()}}</text>
     </g>
 </template>
 
@@ -14,7 +14,7 @@
             content: {
                 handler: function (val, oldVal) {
                     // console.log(val);
-                    // this.renderNode();
+                    this.renderText();
                 }
             }
         },
@@ -24,30 +24,33 @@
                 textPosn: {
                     x: 15,
                     y: 0
-                }
+                },
+                color: 'black'
             }
         },
         mounted() {
             // console.log(this.content.text);
             if(this.content != null) {
                 this.el = d3.select(this.$el);
-                // this.renderNode();
+                this.renderText();
             }
         },
         computed: {
 
         },
         methods: {
-            renderNode() {
-
+            renderText() {
                 //Appearance
-                // this.setFill();
+                this.setFill();
             },
             getText() {
                 if(this.content.updatedText) {
                     return this.content.updatedText;
                 }
                 return this.content.text;
+            },
+            setFill() {
+                this.color = this.content.textColor;
             }
         }
     }

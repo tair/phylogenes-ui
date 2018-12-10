@@ -32,7 +32,6 @@
             <tree-legend></tree-legend>
         </div>
     </div>
-
 </template>
 
 <script>
@@ -52,7 +51,7 @@
 
     export default {
         name: "treelayout2",
-        props: ['jsonData', 'mappingData'],
+        props: ['jsonData', 'mappingData', 'matchedNodes'],
         components: {
             'basenode': baseNode,
             'baselink': baseLink,
@@ -71,6 +70,36 @@
                     // console.log(this.jsonData);
                     this.isLoading = true;
                     this.initTree();
+                }
+            },
+            matchedNodes: {
+                handler: function (val, oldVal) {
+                    var nodes = this.rootNode.descendants();
+
+                    nodes.forEach(d => {
+                        d.matched = false;
+                        if(d._children) {
+                            var foundAny = this.findIfChildren(d, val);
+                            if(foundAny) {
+                                console.log("Found Any");
+                                d.children = d._children;
+                                d._children = null;
+                            }
+                        }
+                        var geneId = d.data.gene_id;
+                        if (geneId) {
+                            geneId = geneId.split(':')[1];
+                        }
+                        if(val != null) {
+                            val.forEach(v => {
+                                if(geneId === v["Gene ID"]) {
+                                    d.matched = true;
+                                }
+                            });
+                        }
+                    });
+                    // console.log(foundNodes);
+                    this.updateTree();
                 }
             },
             stateTableScroll: {
@@ -99,7 +128,7 @@
                 topPaddingY: 80,
                 rowHeight: 40,
                 enableMenu: false,
-                showLegend: true,
+                showLegend: false,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
@@ -124,6 +153,33 @@
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 stateTreeNodes: types.TREE_ACTION_SET_NODES
             }),
+            findIfChildren(d, val) {
+                var foundAny = false;
+                if(d.children) {
+                    d.children.forEach(d => {
+                       var found = val.find(v => v["Gene ID"] === d.geneId);
+                       if(found) {
+                           console.log("Found ", d.geneId);
+                           d.matched = true;
+                           foundAny = true;
+                       }
+                       var ff = this.findIfChildren(d, val);
+                       if(ff) {
+                           foundAny = true;
+                       }
+                    });
+                }
+                if(d._children) {
+                    d._children.forEach(dc => {
+                       // console.log(dc.geneId);
+                        var ff = this.findIfChildren(dc, val);
+                        if(ff) {
+                            foundAny = true;
+                        }
+                    });
+                }
+                return foundAny;
+            },
             //Resets the d3 wrapper, empties the links and nodes array,
             // which removes the currently displayed tree and all it's components
             refresh() {
@@ -305,6 +361,11 @@
                     var collapsedText = geneCount + " Genes ";
                     collapsedText += "(" + d.text + ")";
                     d.updatedText = collapsedText;
+                }
+                if(d.matched) {
+                    d.textColor = "red";
+                } else {
+                    d.textColor = "black";
                 }
             },
             //Overwrite each Node positions with custom logic
@@ -823,7 +884,7 @@
 </script>
 <style scoped>
     svg {
-        background-color: #e8d5bf;
+        background-color: white;
     }
     .legend-box {
         position: absolute;
