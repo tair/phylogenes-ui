@@ -94,8 +94,10 @@
             }
         },
         mounted() {
-            console.log(this.treeId);
+            // console.log(this.treeId);
             this.stateTreeGetJson(this.treeId);
+            this.searchText = "";
+            this.matchNodes = [];
         },
         methods: {
             ...mapActions({
@@ -209,7 +211,7 @@
                     if(!n.children) {
                         var tableNode = {};
                         //console.log(n.data);
-                        // tableNode["id"] = index++;
+                        tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
                         var geneId = n.data.gene_id;
                         if (geneId) {

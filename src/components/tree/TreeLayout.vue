@@ -74,38 +74,51 @@
             },
             matchedNodes: {
                 handler: function (val, oldVal) {
-                    var nodes = this.rootNode.descendants();
+                    this.processMatchedNodes(val);
 
-                    nodes.forEach(d => {
-                        d.matched = false;
-                        if(d._children) {
-                            var foundAny = this.findIfChildren(d, val);
-                            if(foundAny) {
-                                console.log("Found Any");
-                                d.children = d._children;
-                                d._children = null;
-                            }
-                        }
-                        var geneId = d.data.gene_id;
-                        if (geneId) {
-                            geneId = geneId.split(':')[1];
-                        }
-                        if(val != null) {
-                            val.forEach(v => {
-                                if(geneId === v["Gene ID"]) {
-                                    d.matched = true;
-                                }
-                            });
-                        }
-                    });
-                    // console.log(foundNodes);
-                    this.updateTree();
+                    // this.moveTreeToNodePosition(nodes[15]);
+                    // if(!this.rootNode) return;
+                    // var nodes = this.rootNode.descendants();
+                    // var firstMatchedNode = null;
+                    // nodes.forEach(d => {
+                    //     d.matched = false;
+                    //     if(d._children) {
+                    //         var foundAny = this.findIfChildren(d, val);
+                    //         if(foundAny) {
+                    //             console.log("Found Any");
+                    //             d.children = d._children;
+                    //             d._children = null;
+                    //         }
+                    //     }
+                    //     var geneId = d.data.gene_id;
+                    //     if (geneId) {
+                    //         geneId = geneId.split(':')[1];
+                    //     }
+                    //     if(val != null) {
+                    //         val.forEach(v => {
+                    //             if(geneId === v["Gene ID"]) {
+                    //                 d.matched = true;
+                    //                 if(firstMatchedNode == null) {
+                    //                     firstMatchedNode = d;
+                    //                 }
+                    //             }
+                    //         });
+                    //     }
+                    // });
+                    // // console.log(val);
+                    // // console.log(foundNodes);
+                    // this.updateTree();
+                    // setTimeout(() => {
+                    //     this.moveTreeToNodePosition(firstMatchedNode);
+                    //     console.log("Move Tree");
+                    // }, 2000);
                 }
             },
             stateTableScroll: {
                 handler: function (val, oldVal) {
                     var nodes = this.rootNode.descendants();
                     var treeNode = nodes.find(n => n.geneId == val.id);
+
                     this.moveTreeToNodePosition(treeNode);
                 }
             }
@@ -133,6 +146,8 @@
                 link_intersected: null,
                 wrapper_d3: null,
                 topMostNodePos: {x: 0.0, y: 0.0},
+                currentTopNodePos: {x: 0.0, y: 0.0},
+                tableScrollY: 0
             }
         },
         mounted() {
@@ -150,6 +165,7 @@
         },
         methods: {
             ...mapActions({
+                store_setCenterNode: types.TREE_ACTION_SET_CENTER_NODE,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 stateTreeNodes: types.TREE_ACTION_SET_NODES
             }),
@@ -217,6 +233,19 @@
                     this.isLoading = false;
                 }, 1000);
             },
+            updateTreeOnlyRendering() {
+                //Explain: why old Indexes?
+                // Needed as renderNodes will throw 'id not defined' error without this step.
+                d3.select('.nodes')
+                    .selectAll('g.shape')
+                    .data(this.oldIndexes);
+
+                var nodes = this.rootNode.descendants();
+                this.updateExtraInfo(nodes);
+
+                this.renderNodes(nodes, false);
+                this.renderLinks(nodes);
+            },
             //Update Tree during every interaction with tree
             // which modifies the tree structure (eg. toggleNode)
             updateTree() {
@@ -233,13 +262,11 @@
 
                 this.resetTreeLayout();
 
-                var topNode = this.getTopmostNode(nodes);
-                this.setTopmostNodePos(topNode);
                 // this.updateAccordingToDepth(nodes);
                 this.$emit('updated-tree', nodes);
                 // console.log(nodes);
 
-                this.renderNodes(nodes);
+                this.renderNodes(nodes, true);
                 this.renderLinks(nodes);
             },
             //Convert json into d3 hierarchy which adds depth, height and
@@ -249,10 +276,40 @@
                     return d.children;
                 });
             },
+            processMatchedNodes(matNodes) {
+                if(!this.rootNode) return;
+                var firstMatchedNode = null; //Used for centering the tree panel to this matched node
+                var allNodes = this.rootNode.descendants();
+                console.log(matNodes);
+
+                allNodes.forEach(d => {
+                    d.matched = false; //Init all matched vars to false
+                    var geneId = d.data.gene_id;
+                    if (geneId) {
+                        geneId = geneId.split(':')[1];
+                    }
+
+                    if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
+                        firstMatchedNode = d;
+                        console.log(geneId);
+                    }
+
+                    matNodes.forEach(v => {
+                        if(geneId === v["Gene ID"]) {
+                            d.matched = true;
+                        }
+                    });
+
+                });
+
+                //Center Tree panel to first matched node
+                this.centerTreeToGivenNode(firstMatchedNode);
+                this.updateTreeOnlyRendering();
+            },
 
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             // ~~~~~~~~~ Nodes
-            renderNodes(nodes){
+            renderNodes(nodes, updatePos){
                 var nodesData = d3.select('.nodes')
                     .selectAll('g.shape')
                     .data(nodes, function (d) {
@@ -285,8 +342,12 @@
                         this.treenodes = tempArray;
                         this.updateOldIndexes(nodes);
 
-                        var topNode = this.getTopmostNode(nodes);
-                        this.moveTreeWithPadding(topNode, this.currentPan.y);
+                        if(updatePos) {
+                            var topNode = this.getTopmostNode(nodes);
+                            this.setTopmostNodePos(topNode);
+                            this.moveTreeToNodePosition(topNode);
+                        }
+
                     }, this.duration2);
                 }, timeoutS);
             },
@@ -400,6 +461,7 @@
                     this.setCustomPositionY(d, totalDepth);
                 });
             },
+            //Set position to top-most node during init
             adjustPosition(nodes) {
                 var topNode = this.getTopmostNode(nodes);
                 this.setTopmostNodePos(topNode);
@@ -580,14 +642,34 @@
                 //Recursive method
                 this.calculateDepthFirstIds(nodes[0]);
             },
-            moveTreeToNodePosition(node) {
-                let paddingTop = 50;
-                let nodePos = -1*node.x + paddingTop;
+            centerTreeToGivenNode(node) {
+                if(node == null) return;
+                var topPadding = 40;
+                let nodePos = -1*node.x + topPadding;
                 this.wrapper_d3
+                    .transition().duration(1000)
                     .attr("transform", (d) => {
                         return "translate(" + 80 + "," + nodePos + ")";
                     });
 
+                this.currentTopNodePos.y = nodePos;
+                this.tableScrollY = this.topMostNodePos.y - this.currentTopNodePos.y;
+                // console.log(nodePos);
+                this.store_setCenterNode(node);
+            },
+            moveTreeToNodePosition(node) {
+                if(node == null) return;
+                let paddingTop = 50;
+                let nodePos = -1*node.x + paddingTop;
+
+                this.wrapper_d3
+                    .attr("transform", (d) => {
+                        return "translate(" + 80 + "," + nodePos + ")";
+                    });
+                this.currentTopNodePos.x = 80;
+                this.currentTopNodePos.y = nodePos;
+                // console.log(this.currentTopNodePos.y);
+                this.tableScrollY = this.topMostNodePos.y - this.currentTopNodePos.y;
             },
             moveTreeWithPadding(node, padding) {
                 //If the top node is within the screen range,
@@ -640,7 +722,7 @@
                     if(d.data.displayName) {
                         text += " (";
                         text += d.data.displayName;
-                        text += ")";
+                        text += ") " + d.id;
                     }
                 }
                 return text;
@@ -689,22 +771,20 @@
 
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setZoomListener(g) {
+                var startY = 0;
                 return d3.zoom().scaleExtent([this.scale.x, this.scale.y])
+                    .on("start", () => {
+                        startY = d3.event.transform.y;
+                    })
                     .on("zoom", () => {
-                        this.onPan(g, d3.event.transform);
+                        var diff = d3.event.transform.y - startY;
+                        this.onPan(g, diff);
                     })
                     .on("end", () => {
-                        // this.stateTreeZoom(d3.event.transform);
-                        var translateY = this.topMostNodePos.y + d3.event.transform.y;
-                        if(translateY < this.topMostNodePos.y) {
-                            var origPan = {x: 0, y: d3.event.transform.y};
-                            // console.log("Pan"+ origPan.y);
-                            this.stateTreeZoom(origPan);
-
-                        } else {
-                            var origPan = {x: 0, y: 0};
-                            this.stateTreeZoom(origPan);
-                        }
+                        var diffEnd = d3.event.transform.y - startY;
+                        this.currentTopNodePos.y += diffEnd;
+                        var distanceMoved = this.topMostNodePos.y - this.currentTopNodePos.y;
+                        this.stateTreeZoom({x: 0, y: distanceMoved});
                     })
             },
             onClick(source) {
@@ -713,19 +793,12 @@
                 this.updateTree();
             },
             onPan(g, transform) {
-                // console.log(transform);
-                var translateY = this.topMostNodePos.y + transform.y;
-                if(translateY < this.topMostNodePos.y) {
-                    g.attr("transform", (d) => {
-                        this.currentPan = transform;
-                        return "translate(" + transform.x + "," + translateY + ")";
-                    });
-                } else {
-                    // console.log("Reset");
-                    g.attr("transform", (d) => {
-                        return "translate(" + transform.x + "," + this.topMostNodePos.y + ")";
-                    });
-                }
+                var currPos = this.currentTopNodePos.y;
+
+                var translateY = currPos + transform;
+                g.attr("transform", (d) => {
+                    return "translate(" + 80 + "," + translateY + ")";
+                });
             },
             onDrag(circle_datum) {
                 this.link_intersected = this.linkDatums.find(ld => {

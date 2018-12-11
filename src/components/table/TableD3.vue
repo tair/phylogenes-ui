@@ -37,7 +37,8 @@
         computed: {
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
-                stateTreeZoomX: types.TREE_GET_ZOOM
+                stateTreeZoomX: types.TREE_GET_ZOOM,
+                store_getCenterNode: types.TREE_GET_CENTER_NODE
             })
         },
         watch: {
@@ -48,12 +49,21 @@
             },
             stateTreeZoomX: {
                 handler: function (val, oldVal) {
-                    // this.rowHeight = 40;
-                    // this.rowHeight = this.rowHeight * val.k;
+                    // console.log(val);
                     this.setScroll(val);
                     // this.setPadding(val);
                     // this.update();
                 },
+            },
+            store_getCenterNode: {
+                handler: function (val, oldVal) {
+                    console.log("From Tree ", val);
+                    var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
+                    console.log(foundRow);
+                    if(foundRow) {
+                        this.setScrollToRow(foundRow.id);
+                    }
+                }
             }
         },
         methods: {
@@ -138,12 +148,18 @@
                         .style("opacity", 0)
                         .remove();
             },
+            setScrollToRow(num) {
+                const tbody = document.getElementById("mybody");
+                tbody.scrollTop = 40*num;
+                this.scrollFromTree = true;
+            },
             setScroll(val) {
                 const tbody = document.getElementById("mybody");
-                if(val.y > 0) {
+                if(val.y < 0) {
                     tbody.scrollTop = 0;
                 } else {
-                    var rowNumber = -val.y/this.rowHeight;
+                    var rowNumber = val.y/this.rowHeight;
+                    // console.log(rowNumber);
                     var padding = 0; //rowNumber/2;
                     //padding required cuz as the row number increases,
                     // the tree gets more misaligned
