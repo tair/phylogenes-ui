@@ -65,14 +65,14 @@
             currentPage: {
                 handler (val, oldVal){
                     this.treeFilters.startRow = (this.currentPage -1)*this.treeFilters.rows
-                    this.setFilter(treeFilters);
+                    this.setFilter(this.treeFilters);
                 }
             },
             perPage: {
                 handler (val, oldVal){
                     this.currentPage = 1;
                     this.treeFilters.rows = val;
-                    this.setFilter(treeFilters);
+                    this.setFilter(this.treeFilters);
                 }
             },
             stateTreeFilters: {
