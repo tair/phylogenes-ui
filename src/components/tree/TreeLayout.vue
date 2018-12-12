@@ -265,7 +265,6 @@
                     if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
                         if(firstMatchedNode == null) {
                             firstMatchedNode = d;
-                            console.log(firstMatchedNode);
                         }
                     }
 
@@ -495,6 +494,8 @@
                 var topNode = this.getTopmostNode(nodes);
                 this.setTopmostNodePos(topNode);
                 this.moveTreeToNodePosition(topNode);
+                this.setCurrentTopNode({x: this.topMostNodePos.x, y: this.topMostNodePos.y});
+                this.stateTreeZoom({x:0, y:0});
             },
 
             // ~~~~~~~~~ Links
@@ -696,15 +697,13 @@
             moveTreeToNodePosition(node) {
                 if(node == null) return;
                 let paddingTop = 50;
-                let nodePos = -1*node.x + paddingTop;
+                let finalPosn = -1*node.x + paddingTop;
 
                 this.wrapper_d3
                     .attr("transform", (d) => {
-                        return "translate(" + 80 + "," + nodePos + ")";
+                        return "translate(" + 80 + "," + finalPosn + ")";
                     });
-                this.currentTopNodePos.x = 80;
-                this.currentTopNodePos.y = nodePos;
-                // console.log(this.currentTopNodePos.y);
+                this.setCurrentTopNode({x: 80, y: finalPosn});
                 this.tableScrollY = this.topMostNodePos.y - this.currentTopNodePos.y;
             },
             moveTreeWithPadding(node, padding) {
@@ -902,6 +901,9 @@
             },
 
             //Node Events
+            setCurrentTopNode(pos) {
+                this.currentTopNodePos = pos;
+            },
             deleteNode(nodeId) {
                 var nodes = this.rootNode.descendants();
                 var nodeToDelete = nodes.find(n => n.id == nodeId);

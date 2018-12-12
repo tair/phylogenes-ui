@@ -9,23 +9,13 @@
                     <div>
                         <!--Branch Length: <span>{{branchLength}}</span>-->
                         <div class="container-fluid">
-                            <search-box v-on:search="onSearch"></search-box>
-                            <!--<div class="input-group mb-0">-->
-                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"-->
-                                        <!--@click="expandAll">Expand All</button>-->
-                                <!--<div class="input-group-prepend">-->
-                                    <!--<span class="input-group-text" id="inputGroup-sizing-lg">Large</span>-->
-                                <!--</div>-->
-                                <!--<input type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm">-->
-                                <!--<a href="" class="btn p-1 m-0 pr-5 btn-flat" @click.prevent="onSearch()">-->
-                                    <!--<i class="fa fa-search"></i>-->
-                                <!--</a>-->
-                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
-                                        <!--@click="showLegend">Show Legend</button>-->
-                            <!--</div>-->
-                            <!--<input class="mr-sm-0"-->
-                                   <!--v-model="searchText"-->
-                                   <!--type="text" placeholder="Search" aria-label="Search">-->
+                            <div class="input-group mb-0">
+                                <search-box v-on:search="onSearch"></search-box>
+                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
+                                        @click="expandAll">Expand All</button>
+                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
+                                        @click="showLegend">Show Legend</button>
+                            </div>
                         </div>
                     </div>
                     <div class="tree-box">
