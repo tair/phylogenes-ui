@@ -169,33 +169,6 @@
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 stateTreeNodes: types.TREE_ACTION_SET_NODES
             }),
-            findIfChildren(d, val) {
-                var foundAny = false;
-                if(d.children) {
-                    d.children.forEach(d => {
-                       var found = val.find(v => v["Gene ID"] === d.geneId);
-                       if(found) {
-                           console.log("Found ", d.geneId);
-                           d.matched = true;
-                           foundAny = true;
-                       }
-                       var ff = this.findIfChildren(d, val);
-                       if(ff) {
-                           foundAny = true;
-                       }
-                    });
-                }
-                if(d._children) {
-                    d._children.forEach(dc => {
-                       // console.log(dc.geneId);
-                        var ff = this.findIfChildren(dc, val);
-                        if(ff) {
-                            foundAny = true;
-                        }
-                    });
-                }
-                return foundAny;
-            },
             //Resets the d3 wrapper, empties the links and nodes array,
             // which removes the currently displayed tree and all it's components
             refresh() {
@@ -278,20 +251,29 @@
             },
             processMatchedNodes(matNodes) {
                 if(!this.rootNode) return;
-                var firstMatchedNode = null; //Used for centering the tree panel to this matched node
-                var allNodes = this.rootNode.descendants();
-                console.log(matNodes);
+                let firstMatchedNode = null; //Used for centering the tree panel to this matched node
+                let allNodes = this.rootNode.descendants();
+                let foundAnyInHidden = false;
 
                 allNodes.forEach(d => {
-                    d.matched = false; //Init all matched vars to false
+                    d.matched = false; //Init all matched flags to false
                     var geneId = d.data.gene_id;
                     if (geneId) {
                         geneId = geneId.split(':')[1];
                     }
 
                     if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
-                        firstMatchedNode = d;
-                        console.log(geneId);
+                        if(firstMatchedNode == null) {
+                            firstMatchedNode = d;
+                            console.log(firstMatchedNode);
+                        }
+                    }
+
+                    if(d._children) {
+                        foundAnyInHidden = this.findMatNodesInChildren(d, matNodes, firstMatchedNode);
+                        if(foundAnyInHidden) {
+                            this.expandAllFromNode(d);
+                        }
                     }
 
                     matNodes.forEach(v => {
@@ -299,12 +281,56 @@
                             d.matched = true;
                         }
                     });
-
                 });
 
                 //Center Tree panel to first matched node
                 this.centerTreeToGivenNode(firstMatchedNode);
-                this.updateTreeOnlyRendering();
+                this.updateTree();
+
+                if(foundAnyInHidden && firstMatchedNode == null) {
+                    setTimeout(() => {
+                        allNodes = this.rootNode.descendants();
+                        allNodes.forEach(d => {
+                            var geneId = d.data.gene_id;
+                            if (geneId) {
+                                geneId = geneId.split(':')[1];
+                            }
+                            if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
+                                this.centerTreeToGivenNode(d);
+                            }
+                        });
+                    }, 1000);
+                }
+            },
+            findMatNodesInChildren(d, matNodes) {
+                var foundAny = false;
+                if(d.children) {
+                    d.children.forEach(dc => {
+                        var found = matNodes.find(v => v["Gene ID"] === dc.geneId);
+                        if(found) {
+                            dc.matched = true;
+                            foundAny = true;
+                        }
+                        var ff = this.findMatNodesInChildren(dc, matNodes);
+                        if(ff) {
+                            foundAny = true;
+                        }
+                    });
+                }
+                if(d._children) {
+                    d._children.forEach(dc => {
+                        var found = matNodes.find(v => v["Gene ID"] === dc.geneId);
+                        if(found) {
+                            dc.matched = true;
+                            foundAny = true;
+                        }
+                        var ff = this.findMatNodesInChildren(dc, matNodes);
+                        if(ff) {
+                            foundAny = true;
+                        }
+                    });
+                }
+                return foundAny;
             },
 
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -343,9 +369,12 @@
                         this.updateOldIndexes(nodes);
 
                         if(updatePos) {
-                            var topNode = this.getTopmostNode(nodes);
-                            this.setTopmostNodePos(topNode);
-                            this.moveTreeToNodePosition(topNode);
+                            var distanceMoved = this.topMostNodePos.y - this.currentTopNodePos.y;
+                            if(distanceMoved < 1000) {
+                                var topNode = this.getTopmostNode(nodes);
+                                this.setTopmostNodePos(topNode);
+                                this.moveTreeToNodePosition(topNode);
+                            }
                         }
 
                     }, this.duration2);
@@ -643,18 +672,25 @@
                 this.calculateDepthFirstIds(nodes[0]);
             },
             centerTreeToGivenNode(node) {
-                if(node == null) return;
-                var topPadding = 40;
-                let nodePos = -1*node.x + topPadding;
+                if(node == null) {
+                    this.store_setCenterNode(node);
+                    return;
+                }
+                let nodePosition = -1*node.x;
+                let displayedRows = 18;
+                let topPadding = 40 * displayedRows/2;
+                let finalPosition = nodePosition + topPadding;
+                if(finalPosition > 1500) {
+                    finalPosition = nodePosition + 40;
+                }
                 this.wrapper_d3
                     .transition().duration(1000)
                     .attr("transform", (d) => {
-                        return "translate(" + 80 + "," + nodePos + ")";
+                        return "translate(" + 80 + "," + finalPosition + ")";
                     });
 
-                this.currentTopNodePos.y = nodePos;
+                this.currentTopNodePos.y = finalPosition;
                 this.tableScrollY = this.topMostNodePos.y - this.currentTopNodePos.y;
-                // console.log(nodePos);
                 this.store_setCenterNode(node);
             },
             moveTreeToNodePosition(node) {
@@ -782,9 +818,18 @@
                     })
                     .on("end", () => {
                         var diffEnd = d3.event.transform.y - startY;
-                        this.currentTopNodePos.y += diffEnd;
-                        var distanceMoved = this.topMostNodePos.y - this.currentTopNodePos.y;
-                        this.stateTreeZoom({x: 0, y: distanceMoved});
+                        var distanceMoved = this.topMostNodePos.y - (this.currentTopNodePos.y+diffEnd);
+
+                        if(distanceMoved < 0) {
+                            g.transition().duration(500)
+                                .attr("transform", (d) => {
+                                    return "translate(" + 80 + "," + this.topMostNodePos.y + ")";
+                                });
+                            this.stateTreeZoom({x: 0, y: distanceMoved});
+                        } else {
+                            this.currentTopNodePos.y += diffEnd;
+                            this.stateTreeZoom({x: 0, y: distanceMoved});
+                        }
                     })
             },
             onClick(source) {
@@ -830,6 +875,17 @@
                 }
                 if(opt === "Delete") {
                     this.deleteNode(nodeId);
+                }
+            },
+            expandAllFromNode(givenNode) {
+                if(givenNode._children) {
+                    givenNode.children = givenNode._children;
+                    givenNode._children = null;
+                }
+                if(givenNode.children) {
+                    givenNode.children.forEach(n => {
+                        this.expandAllFromNode(n);
+                    });
                 }
             },
             onExpandAll() {

@@ -49,17 +49,13 @@
             },
             stateTreeZoomX: {
                 handler: function (val, oldVal) {
-                    // console.log(val);
                     this.setScroll(val);
-                    // this.setPadding(val);
-                    // this.update();
                 },
             },
             store_getCenterNode: {
                 handler: function (val, oldVal) {
-                    console.log("From Tree ", val);
+                    if(val == null) return;
                     var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
-                    console.log(foundRow);
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
                     }
@@ -149,8 +145,9 @@
                         .remove();
             },
             setScrollToRow(num) {
+                var centerRow = num-8;
                 const tbody = document.getElementById("mybody");
-                tbody.scrollTop = 40*num;
+                tbody.scrollTop = 40*centerRow;
                 this.scrollFromTree = true;
             },
             setScroll(val) {
