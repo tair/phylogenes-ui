@@ -1,51 +1,17 @@
 <template>
     <div>
-        <div class="row p-2">
-            <div class="col text-sm">
-                <div class="text-muted">Query time: {{ searchData.queryTime }} ms</div>
-            </div>
-            <div class="col">
-
-                <ul class="pagination pagination-sm justify-content-end">
-                    <div class="text-primary p-1 pr-3 text-sm">Results found: {{ searchData.numFound }}</div>
-
-                    <li :class="['page-item', {'disabled': currentPage == 1}]">
-                        <a class="page-link" href="#" @click="gotoPage(1)">
-                            <i class="fas fa-angle-double-left"></i>
-                        </a>
-                    </li>
-                    <li :class="['page-item', {'disabled': currentPage == 1}]">
-                        <a class="page-link" href="#" @click="gotoPage(currentPage - 1)">
-                            <i class="fas fa-angle-left"></i>
-                        </a>
-                    </li>
-
-                    <li v-if="currentPage == noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  4)">{{ currentPage -  4 }}</a></li>
-                    <li v-if="currentPage == noPages || currentPage == noPages - 1" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  3)">{{ currentPage -  3 }}</a></li>
-
-                    <li v-if="currentPage - 2 > 0" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  2)">{{ currentPage -  2 }}</a></li>
-                    <li v-if="currentPage - 1 > 0" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage -  1)">{{ currentPage -  1 }}</a></li>
-
-                    <li class="page-item active"><a class="page-link" href="#">{{ currentPage }}</a></li>
-
-                    <li v-if="currentPage + 1 <= noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage +  1)">{{ currentPage +  1 }}</a></li>
-                    <li v-if="currentPage + 2 <= noPages" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage +  2)">{{ currentPage +  2}}</a></li>
-
-                    <li v-if="currentPage == 1 || currentPage == 2" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage + 3)">{{ currentPage +  3 }}</a></li>
-                    <li v-if="currentPage == 1" class="page-item"><a class="page-link" href="#" @click="gotoPage(currentPage + 4)">{{ currentPage + 4 }}</a></li>
-
-                    <li :class="['page-item', {'disabled': currentPage == noPages}]" class="page-item">
-                        <a class="page-link" href="#" @click="gotoPage(currentPage + 1)" aria-label="Next">
-                            <i class="fas fa-angle-right"></i>
-                        </a>
-                    </li>
-                    <li :class="['page-item', {'disabled': currentPage == noPages}]" class="page-item">
-                        <a class="page-link" href="#" @click="gotoPage(noPages)" aria-label="Next">
-                            <i class="fas fa-angle-double-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <div class="row p-2 align-items-center">
+                <div class="text-muted text-sm mr-auto">Query time: {{ searchData.queryTime }} ms</div>
+                <div class="text-primary text-sm">Results found: {{ searchData.numFound }}</div>
+                <div class="col-sm-2">
+                    <b-input-group size="sm">
+                        <b-form-select v-model="perPage" :options="options"/>
+                    </b-input-group>
+                </div>
+                <!-- <div class="col-sm-3"> -->
+                    <b-pagination class="mt-3" size="sm" align="center" :total-rows="searchData.numFound" v-model="currentPage" :per-page="perPage">
+                    </b-pagination>
+                <!-- </div> -->
         </div>
         <div class="alert elevation-2 mb-2 p-1 text-center h5" role="alert"
              :class="getAlertClass()">
@@ -95,25 +61,43 @@
                         this.$router.push({path: 'tree/' + val.results[0].id})
                     }
                 }
+            },
+            currentPage: {
+                handler (val, oldVal){
+                    this.treeFilters.startRow = (this.currentPage -1)*this.treeFilters.rows
+                    this.setFilter(this.treeFilters);
+                }
+            },
+            perPage: {
+                handler (val, oldVal){
+                    this.currentPage = 1;
+                    this.treeFilters.rows = val;
+                    this.setFilter(this.treeFilters);
+                }
+            },
+            stateTreeFilters: {
+                deep: true,
+                handler (val, oldVal) {
+                    this.stateTreePaginate(val);
+                }
             }
         },
         data() {
             return {
                 treeFilters: null,
                 whiteBg: 'bg-white',
-                grayBg: 'bg-gray-light'
+                grayBg: 'bg-gray-light',
+                currentPage: 1,
+                perPage: 10,
+                options: [
+                    { value: 5, text: '5 per page' },
+                    { value: 10, text: '10 per page' },
+                    { value: 20, text: '20 per page' },
+                    { value: 50, text: '50 per page' }
+                ]
             }
         },
         computed: {
-            noPages() {
-                return Math.ceil(this.searchData.numFound / this.searchData.rows);
-            },
-            currentPage() {
-                if(this.searchData.startRow == 0)
-                    return 1;
-
-                return Math.floor(this.searchData.startRow / this.searchData.rows) + 1;
-            },
             ...mapGetters({
                 stateTreeFilters: types.TREE_GET_FILTERS,
                 stateSearchText: types.TREE_GET_SEARCH_TEXT
@@ -121,10 +105,12 @@
         },
         created() {
             this.treeFilters = this.stateTreeFilters;
+            this.perPage = this.treeFilters.rows;
         },
         methods: {
             ...mapActions({
-                stateTreePaginate: types.TREE_ACTION_PAGINATE
+                stateTreePaginate: types.TREE_ACTION_PAGINATE,
+                setFilter: types.TREE_ACTION_SET_FILTER
             }),
             newSearch() {
               console.log(this.searchData);
