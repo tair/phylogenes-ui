@@ -6,13 +6,27 @@
                     <span class="pt-5 text-primary h3">Tree details for {{ this.treeId }}</span>
                 </div>
                 <div class="chart-content">
-                    <div>
-                        <!--Branch Length: <span>{{branchLength}}</span>-->
-                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
-                                @click="expandAll">Expand All</button>
-                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
-                                @click="showLegend">{{showLegendButtonText}}</button>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm">
+                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
+                                        @click="expandAll">Expand All</button>
+                            </div>
+                            <div class="col-sm-7">
+                                <search-box v-on:search="onSearch"></search-box>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
+                                        @click="showLegend">{{showLegendButtonText}}</button>
+                            </div>
+                        </div>
                     </div>
+                    <!--<div class="tree-panel-menu">-->
+                            <!--&lt;!&ndash;Branch Length: <span>{{branchLength}}</span>&ndash;&gt;-->
+
+                            <!--<search-box></search-box>-->
+
+                    <!--</div>-->
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
                                     <!--v-on:updated-tree="onTreeUpdate"-->
@@ -43,6 +57,7 @@
     import treelayout2 from '../components/tree/TreeLayout';
     import tablelayout from '../components/table/TableD3';
     import intersect from '../components/tree/Intersection';
+    import searchBox from '../components/search/SearchBox';
 
     import * as d3 from 'd3';
     import {mapActions} from 'vuex';
@@ -55,11 +70,13 @@
         components: {
             treelayout2: treelayout2,
             tablelayout: tablelayout,
-            intersect: intersect
+            intersect: intersect,
+            searchBox: searchBox
         },
         computed: {
             ...mapGetters({
-                stateTreeJson: types.TREE_GET_JSON
+                stateTreeJson: types.TREE_GET_JSON,
+                stateTreeData: types.TREE_GET_DATA
             }),
             showLegendButtonText(){
                 return this.legend?'Show Legend':'Hide Legend';
@@ -69,22 +86,43 @@
             return {
                 treeId: null,
                 branchLength: "N/A",
+                completeData: null,
                 jsonData: null,
                 mappingData: null,
                 baseUrl: process.env.BASE_URL,
+                searchText: "",
+                matchNodes: [],
                 legend: false
             }
         },
         mounted() {
             console.log(this.treeId);
             this.stateTreeGetJson(this.treeId);
+            this.searchText = "";
+            this.matchNodes = [];
         },
         methods: {
             ...mapActions({
                 stateTreeGetJson: types.TREE_ACTION_GET_JSON,
+                store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
+            onSearch(text) {
+                if(text != null) {
+                    var d = this.completeData.filter(t => {
+                        var geneName = "";
+                        if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
+                            geneName = t["Gene name"].toLowerCase();
+                        }
+                        return geneName === text.toLowerCase();
+                    });
+                    this.matchNodes = d;
+                } else {
+                    this.matchNodes = [];
+                }
+                this.store_setMatchedNodes(this.matchNodes);
+            },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
                 treeJson = treeJson.search.annotation_node;
@@ -176,7 +214,7 @@
                     if(!n.children) {
                         var tableNode = {};
                         //console.log(n.data);
-                        // tableNode["id"] = index++;
+                        tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
                         var geneId = n.data.gene_id;
                         if (geneId) {
@@ -189,6 +227,10 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
+                if(this.completeData == null) {
+                    this.completeData = this.stateTreeData;
+                }
+
             }
         },
         watch: {
@@ -235,6 +277,11 @@
         height: 900px;
         padding: 15px;
         overflow: hidden;
+    }
+    .tree-panel-menu {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     .col1 {
         width: 50%;

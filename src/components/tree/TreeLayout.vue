@@ -60,7 +60,7 @@
         },
         computed: {
             ...mapGetters({
-                // stateGetScrollY: types.GET_SCROLL_Y
+                store_matchedNodes: types.TREE_GET_MATCHED_NODES,
                 stateTableScroll: types.TABLE_GET_SCROLL
             })
         },
@@ -72,46 +72,9 @@
                     this.initTree();
                 }
             },
-            matchedNodes: {
+            store_matchedNodes: {
                 handler: function (val, oldVal) {
                     this.processMatchedNodes(val);
-
-                    // this.moveTreeToNodePosition(nodes[15]);
-                    // if(!this.rootNode) return;
-                    // var nodes = this.rootNode.descendants();
-                    // var firstMatchedNode = null;
-                    // nodes.forEach(d => {
-                    //     d.matched = false;
-                    //     if(d._children) {
-                    //         var foundAny = this.findIfChildren(d, val);
-                    //         if(foundAny) {
-                    //             console.log("Found Any");
-                    //             d.children = d._children;
-                    //             d._children = null;
-                    //         }
-                    //     }
-                    //     var geneId = d.data.gene_id;
-                    //     if (geneId) {
-                    //         geneId = geneId.split(':')[1];
-                    //     }
-                    //     if(val != null) {
-                    //         val.forEach(v => {
-                    //             if(geneId === v["Gene ID"]) {
-                    //                 d.matched = true;
-                    //                 if(firstMatchedNode == null) {
-                    //                     firstMatchedNode = d;
-                    //                 }
-                    //             }
-                    //         });
-                    //     }
-                    // });
-                    // // console.log(val);
-                    // // console.log(foundNodes);
-                    // this.updateTree();
-                    // setTimeout(() => {
-                    //     this.moveTreeToNodePosition(firstMatchedNode);
-                    //     console.log("Move Tree");
-                    // }, 2000);
                 }
             },
             stateTableScroll: {
@@ -251,6 +214,7 @@
             },
             processMatchedNodes(matNodes) {
                 if(!this.rootNode) return;
+
                 let firstMatchedNode = null; //Used for centering the tree panel to this matched node
                 let allNodes = this.rootNode.descendants();
                 let foundAnyInHidden = false;
