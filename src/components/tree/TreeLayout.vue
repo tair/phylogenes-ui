@@ -31,6 +31,7 @@
         <div v-if="showLegend" class="legend-box">
             <tree-legend></tree-legend>
         </div>
+
     </div>
 </template>
 
@@ -92,6 +93,8 @@
                 layoutType: "Cluster", //"TopDown"
                 treenodes: [],
                 treelinks: [],
+                leafNodesByDepth: [],
+                rowsScrolledUp: 0,
                 linkDatums: [],
                 rootNode: null,
                 oldIndexes: [],
@@ -110,7 +113,6 @@
                 wrapper_d3: null,
                 topMostNodePos: {x: 0.0, y: 0.0},
                 currentTopNodePos: {x: 0.0, y: 0.0},
-                tableScrollY: 0
             }
         },
         mounted() {
@@ -204,6 +206,8 @@
 
                 this.renderNodes(nodes, true);
                 this.renderLinks(nodes);
+
+                this.setLeafNodesByDepth(nodes);
             },
             //Convert json into d3 hierarchy which adds depth, height and
             // parent variables to each node.
@@ -260,6 +264,7 @@
                             }
                             if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
                                 this.centerTreeToGivenNode(d);
+                                this.alignNodes();
                             }
                         });
                     }, 1000);
@@ -330,16 +335,7 @@
                     setTimeout(() => {
                         this.treenodes = tempArray;
                         this.updateOldIndexes(nodes);
-
-                        if(updatePos) {
-                            var distanceMoved = this.topMostNodePos.y - this.currentTopNodePos.y;
-                            if(distanceMoved < 1000) {
-                                var topNode = this.getTopmostNode(nodes);
-                                this.setTopmostNodePos(topNode);
-                                this.moveTreeToNodePosition(topNode);
-                            }
-                        }
-
+                        this.alignNodes();
                     }, this.duration2);
                 }, timeoutS);
             },
@@ -641,34 +637,15 @@
                     this.store_setCenterNode(node);
                     return;
                 }
-                let nodePosition = -1*node.x;
-                let displayedRows = 18;
-                let topPadding = 40 * displayedRows/2;
-                let finalPosition = nodePosition + topPadding;
-                if(finalPosition > 1500) {
-                    finalPosition = nodePosition + 40;
-                }
-                this.wrapper_d3
-                    .transition().duration(1000)
-                    .attr("transform", (d) => {
-                        return "translate(" + 80 + "," + finalPosition + ")";
-                    });
-
-                this.currentTopNodePos.y = finalPosition;
-                this.tableScrollY = this.topMostNodePos.y - this.currentTopNodePos.y;
-                this.store_setCenterNode(node);
+                let leafNodes = this.getLeafNodesByDepth();
+                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
+                this.rowsScrolledUp = foundNodeIdx-8;
             },
             moveTreeToNodePosition(node) {
-                if(node == null) return;
-                let paddingTop = 50;
-                let finalPosn = -1*node.x + paddingTop;
-
-                this.wrapper_d3
-                    .attr("transform", (d) => {
-                        return "translate(" + 80 + "," + finalPosn + ")";
-                    });
-                this.setCurrentTopNode({x: 80, y: finalPosn});
-                this.tableScrollY = this.topMostNodePos.y - this.currentTopNodePos.y;
+                let leafNodes = this.getLeafNodesByDepth();
+                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
+                this.rowsScrolledUp = foundNodeIdx;
+                this.alignNodes();
             },
             moveTreeWithPadding(node, padding) {
                 //If the top node is within the screen range,
@@ -780,19 +757,21 @@
                         this.onPan(g, diff);
                     })
                     .on("end", () => {
+                        // var diffEnd = d3.event.transform.y - startY;
+                        // var distanceMoved = this.topMostNodePos.y - (this.currentTopNodePos.y+diffEnd);
+                        //
+                        // if(distanceMoved < 0) {
+                        //     g.transition().duration(500)
+                        //         .attr("transform", (d) => {
+                        //             return "translate(" + 80 + "," + this.topMostNodePos.y + ")";
+                        //         });
+                        //     this.stateTreeZoom({x: 0, y: distanceMoved});
+                        // } else {
+                        //     this.currentTopNodePos.y += diffEnd;
+                        //     this.stateTreeZoom({x: 0, y: distanceMoved});
+                        // }
                         var diffEnd = d3.event.transform.y - startY;
-                        var distanceMoved = this.topMostNodePos.y - (this.currentTopNodePos.y+diffEnd);
-
-                        if(distanceMoved < 0) {
-                            g.transition().duration(500)
-                                .attr("transform", (d) => {
-                                    return "translate(" + 80 + "," + this.topMostNodePos.y + ")";
-                                });
-                            this.stateTreeZoom({x: 0, y: distanceMoved});
-                        } else {
-                            this.currentTopNodePos.y += diffEnd;
-                            this.stateTreeZoom({x: 0, y: distanceMoved});
-                        }
+                        this.onPanEnd(diffEnd);
                     })
             },
             onClick(source) {
@@ -807,6 +786,40 @@
                 g.attr("transform", (d) => {
                     return "translate(" + 80 + "," + translateY + ")";
                 });
+            },
+            onPanEnd(diffEnd) {
+                if(diffEnd < 0) {
+                    let rowNum = Math.round(diffEnd/40*-1);
+                    this.rowsScrolledUp += rowNum;
+                } else {
+                    let rowNum = Math.round(diffEnd/40);
+                    this.rowsScrolledUp -= rowNum;
+                }
+
+                this.alignNodes();
+            },
+            alignNodes() {
+                let leafNodes = this.getLeafNodesByDepth();
+                if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
+
+                var currTopNode = leafNodes[this.rowsScrolledUp];
+                // console.log(currTopNode);
+                var topNodePosY = -1*currTopNode.x + 45;
+
+                this.wrapper_d3.transition().duration(500)
+                    .attr("transform", (d) => {
+                        this.setCurrentTopNode({x: 80, y: topNodePosY});
+                        return "translate(" + 80 + "," +  topNodePosY+ ")";
+                    });
+                let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
+                this.store_setCenterNode(currCenterNode);
+            },
+            getLeafNodesByDepth() {
+                return this.leafNodesByDepth;
+            },
+            setLeafNodesByDepth(nodes) {
+                this.leafNodesByDepth = nodes.sort((a, b) => a.dfId - b.dfId)
+                    .filter(n => !n.children);
             },
             onDrag(circle_datum) {
                 this.link_intersected = this.linkDatums.find(ld => {

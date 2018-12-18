@@ -152,17 +152,22 @@
             },
             setScroll(val) {
                 const tbody = document.getElementById("mybody");
-                if(val.y < 0) {
-                    tbody.scrollTop = 0;
-                } else {
-                    var rowNumber = val.y/this.rowHeight;
-                    // console.log(rowNumber);
-                    var padding = 0; //rowNumber/2;
-                    //padding required cuz as the row number increases,
-                    // the tree gets more misaligned
-                    tbody.scrollTop = 40*rowNumber + padding;
-                    this.scrollFromTree = true;
-                }
+                // if(val.y < 0) {
+                //     tbody.scrollTop = 0;
+                // } else {
+                //     var rowNumber = val.y/this.rowHeight;
+                //     // console.log(rowNumber);
+                //     var padding = 0; //rowNumber/2;
+                //     //padding required cuz as the row number increases,
+                //     // the tree gets more misaligned
+                //     tbody.scrollTop = 40*rowNumber + padding;
+                //     this.scrollFromTree = true;
+                // }
+                // var rowNumber = Math.round(val);
+                // console.log("rowNumber"+ rowNumber);
+                // var padding = 0;
+                // tbody.scrollTop = 40*rowNumber + padding;
+                // this.scrollFromTree = true;
             },
             handleScroll() {
                 if(this.scrollFromTree) {

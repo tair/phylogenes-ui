@@ -128,6 +128,7 @@
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
+                this.completeData = null;
             },
             processJson(treeJson) {
                 d3.csv("/organism_to_display.csv", (err, data) => {
