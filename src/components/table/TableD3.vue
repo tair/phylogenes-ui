@@ -73,6 +73,7 @@
             },
             renderTableHeader(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
+                titles = titles.splice(1);
                 var t_head = table_d3.select('thead');
                 const updateTh = t_head.select('tr')
                                         .selectAll('th')
@@ -91,10 +92,14 @@
             },
             renderTableBody(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
-                // console.log(titles);
+                titles = titles.splice(1);
                 var t_body = table_d3.select('tbody');
                 //Maps all the tree data into it's own rows.
                 // console.log(this.stateTreeData);
+                let renderData = [];
+                this.stateTreeData.forEach(d => {
+                    renderData["Gene name"] = d["Gene name"];
+                });
                 var rows_d3_map = t_body
                         .selectAll('tr')
                         .data(this.stateTreeData);

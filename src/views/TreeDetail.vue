@@ -12,7 +12,7 @@
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
                                         @click="expandAll">Expand All</button>
                             </div>
-                            <div class="col-sm-7">
+                            <div class="col-auto">
                                 <search-box v-on:search="onSearch"></search-box>
                             </div>
                             <div class="col-sm">
@@ -23,9 +23,6 @@
                     </div>
                     <!--<div class="tree-panel-menu">-->
                             <!--&lt;!&ndash;Branch Length: <span>{{branchLength}}</span>&ndash;&gt;-->
-
-                            <!--<search-box></search-box>-->
-
                     <!--</div>-->
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
@@ -79,7 +76,7 @@
                 stateTreeData: types.TREE_GET_DATA
             }),
             showLegendButtonText(){
-                return this.legend?'Show Legend':'Hide Legend';
+                return this.legend?'Hide Legend':'Show Legend';
             }
         },
         data() {
@@ -115,7 +112,16 @@
                         if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
                             geneName = t["Gene name"].toLowerCase();
                         }
-                        return geneName === text.toLowerCase();
+                        var geneId = "";
+                        if(t["Gene ID"] != null && typeof t["Gene ID"] != 'number') {
+                            geneId = t["Gene ID"].toLowerCase();
+                        }
+                        var uniprotId = "";
+                        if(t["Uniprot ID"] != null && typeof t["Uniprot ID"] != 'number') {
+                            uniprotId = t["Uniprot ID"].toLowerCase();
+                        }
+                        text = text.toLowerCase();
+                        return geneName === text || geneId === text || uniprotId === text;
                     });
                     this.matchNodes = d;
                 } else {
@@ -147,6 +153,11 @@
                     if(data.children.annotation_node) {
                         data.children = data.children.annotation_node;
                         data.children.forEach(d => {
+                            if(d.node_name) {
+                                var uniprotId = d.node_name;
+                                uniprotId = uniprotId.split("UniProtKB=")[1];
+                                d.uniprotId = uniprotId;
+                            }
                             this.formatJson(d);
                         });
                     }
@@ -214,7 +225,6 @@
                 sortedNodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
-                        //console.log(n.data);
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
                         var geneId = n.data.gene_id;
@@ -224,6 +234,7 @@
                         tableNode["Gene ID"] = geneId;
                         tableNode["Organism"] = n.data.organism;
                         tableNode["Protein function"] = n.data.definition;
+                        tableNode["Uniprot ID"] = n.data.uniprotId;
                         tabularData.push(tableNode);
                     }
                 });

@@ -230,6 +230,12 @@
                         geneId = geneId.split(':')[1];
                     }
 
+                    matNodes.forEach(v => {
+                        if(geneId === v["Gene ID"]) {
+                            d.matched = true;
+                        }
+                    });
+
                     if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
                         if(firstMatchedNode == null) {
                             firstMatchedNode = d;
@@ -237,17 +243,12 @@
                     }
 
                     if(d._children) {
-                        foundAnyInHidden = this.findMatNodesInChildren(d, matNodes, firstMatchedNode);
-                        if(foundAnyInHidden) {
+                        let tempFound = this.findMatNodesInChildren(d, matNodes, firstMatchedNode);
+                        if(!foundAnyInHidden && tempFound) {
+                            foundAnyInHidden = true;
                             this.expandAllFromNode(d);
                         }
                     }
-
-                    matNodes.forEach(v => {
-                        if(geneId === v["Gene ID"]) {
-                            d.matched = true;
-                        }
-                    });
                 });
 
                 //Center Tree panel to first matched node
@@ -257,12 +258,14 @@
                 if(foundAnyInHidden && firstMatchedNode == null) {
                     setTimeout(() => {
                         allNodes = this.rootNode.descendants();
+                        console.log(allNodes.length);
                         allNodes.forEach(d => {
                             var geneId = d.data.gene_id;
                             if (geneId) {
                                 geneId = geneId.split(':')[1];
                             }
                             if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
+                                console.log(d);
                                 this.centerTreeToGivenNode(d);
                                 this.alignNodes();
                             }
@@ -698,7 +701,7 @@
                     if(d.data.displayName) {
                         text += " (";
                         text += d.data.displayName;
-                        text += ") " + d.id;
+                        text += ") ";
                     }
                 }
                 return text;
@@ -747,31 +750,16 @@
 
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setZoomListener(g) {
-                var startY = 0;
+                let startTransform = {x:0, y:0};
                 return d3.zoom().scaleExtent([this.scale.x, this.scale.y])
                     .on("start", () => {
-                        startY = d3.event.transform.y;
+                        startTransform = d3.event.transform;
                     })
                     .on("zoom", () => {
-                        var diff = d3.event.transform.y - startY;
-                        this.onPan(g, diff);
+                        this.onPan(g, startTransform);
                     })
                     .on("end", () => {
-                        // var diffEnd = d3.event.transform.y - startY;
-                        // var distanceMoved = this.topMostNodePos.y - (this.currentTopNodePos.y+diffEnd);
-                        //
-                        // if(distanceMoved < 0) {
-                        //     g.transition().duration(500)
-                        //         .attr("transform", (d) => {
-                        //             return "translate(" + 80 + "," + this.topMostNodePos.y + ")";
-                        //         });
-                        //     this.stateTreeZoom({x: 0, y: distanceMoved});
-                        // } else {
-                        //     this.currentTopNodePos.y += diffEnd;
-                        //     this.stateTreeZoom({x: 0, y: distanceMoved});
-                        // }
-                        var diffEnd = d3.event.transform.y - startY;
-                        this.onPanEnd(diffEnd);
+                        this.onPanEnd(startTransform);
                     })
             },
             onClick(source) {
@@ -780,14 +768,15 @@
                 this.updateTree();
             },
             onPan(g, transform) {
-                var currPos = this.currentTopNodePos.y;
-
-                var translateY = currPos + transform;
+                var diff = d3.event.transform.y - transform.y;
+                let translateX = this.currentTopNodePos.x + (d3.event.transform.x - transform.x);
+                var translateY = this.currentTopNodePos.y + diff;
                 g.attr("transform", (d) => {
-                    return "translate(" + 80 + "," + translateY + ")";
+                    return "translate(" + translateX + "," + translateY + ")";
                 });
             },
-            onPanEnd(diffEnd) {
+            onPanEnd(transform) {
+                var diffEnd = d3.event.transform.y - transform.y;
                 if(diffEnd < 0) {
                     let rowNum = Math.round(diffEnd/40*-1);
                     this.rowsScrolledUp += rowNum;
@@ -796,6 +785,7 @@
                     this.rowsScrolledUp -= rowNum;
                 }
 
+                this.currentTopNodePos.x += d3.event.transform.x - transform.x;
                 this.alignNodes();
             },
             alignNodes() {
@@ -805,11 +795,12 @@
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 // console.log(currTopNode);
                 var topNodePosY = -1*currTopNode.x + 45;
+                var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)
                     .attr("transform", (d) => {
-                        this.setCurrentTopNode({x: 80, y: topNodePosY});
-                        return "translate(" + 80 + "," +  topNodePosY+ ")";
+                        this.setCurrentTopNode({x: topNodePosX, y: topNodePosY});
+                        return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
                 this.store_setCenterNode(currCenterNode);
