@@ -258,14 +258,12 @@
                 if(foundAnyInHidden && firstMatchedNode == null) {
                     setTimeout(() => {
                         allNodes = this.rootNode.descendants();
-                        console.log(allNodes.length);
                         allNodes.forEach(d => {
                             var geneId = d.data.gene_id;
                             if (geneId) {
                                 geneId = geneId.split(':')[1];
                             }
                             if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
-                                console.log(d);
                                 this.centerTreeToGivenNode(d);
                                 this.alignNodes();
                             }
@@ -794,7 +792,7 @@
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 // console.log(currTopNode);
-                var topNodePosY = -1*currTopNode.x + 45;
+                var topNodePosY = -1*currTopNode.x + 40;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)

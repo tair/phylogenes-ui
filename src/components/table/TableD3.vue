@@ -196,7 +196,7 @@
                 this.update();
             }
             const tbody = document.getElementById("mybody");
-            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 500));
+            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 100));
         },
         created: function () {
             const tbody = document.getElementById("mybody");

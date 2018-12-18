@@ -3,7 +3,9 @@
         <div class="col1">
             <div class="chart">
                 <div class="chart-menu">
-                    <span class="pt-5 text-primary h3">Tree details for {{ this.treeId }}</span>
+                    <span class="d-block p-2 bg-secondary text-dark">Tree Panel for
+                        <span class="font-weight-bold">{{ this.treeId }}</span>
+                    </span>
                 </div>
                 <div class="chart-content">
                     <div class="container">
@@ -39,7 +41,11 @@
         </div>
         <div class="col1">
             <div class="chart">
-                <div class="chart-menu"></div>
+                <div class="chart-menu">
+                    <span class="d-block p-2 bg-secondary text-dark">Table Panel for
+                       <span class="font-weight-bold">{{ this.treeId }}</span>
+                    </span>
+                </div>
                 <div class="chart-content">
                     <tablelayout></tablelayout>
                     <!--<intersect></intersect>-->
@@ -268,7 +274,7 @@
 <style scoped>
     .chart {
         /*background-color: #ffffff;*/
-        border-color: #f4a460!important;
+        border-color: /*#f4a460*/ #fff !important;
         border: 1px solid;
         box-sizing: border-box;
         box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
@@ -279,11 +285,11 @@
     }
     div.chart-menu {
         width: 100%;
-        height: 35px;
+        height: 40px;
         padding: 2px;
         margin: 0;
         box-sizing: border-box;
-        background-color: #f4a460;
+        background-color: #6C757E;
     }
     div.chart-content {
         height: 900px;
