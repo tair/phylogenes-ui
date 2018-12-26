@@ -13,11 +13,11 @@
                     </b-pagination>
                 <!-- </div> -->
         </div>
-        <div class="alert elevation-2 mb-2 p-1 text-center h5" role="alert"
+        <div class="alert elevation-0 mb-2 p-1 text-center text-sm" role="alert"
              :class="getAlertClass()">
                 {{getRestatedText()}}
         </div>
-        <div class="bg-gray-light elevation-2 mb-2 p-1">
+        <div class="bg-gray elevation-0 mb-2 p-1">
             <div class="row pb-1">
                 <div class="col-6">
                     <span class="text-bold text-sm">Gene family</span>

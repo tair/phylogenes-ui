@@ -3,16 +3,29 @@
         <div class="col1">
             <div class="chart">
                 <div class="chart-menu">
-                    <span class="pt-5 text-primary h3">Tree details for {{ this.treeId }}</span>
+                    <span class="d-block p-2 bg-secondary text-dark">Tree Panel for
+                        <span class="font-weight-bold">{{ this.treeId }}</span>
+                    </span>
                 </div>
                 <div class="chart-content">
-                    <div>
-                        <!--Branch Length: <span>{{branchLength}}</span>-->
-                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
-                                @click="expandAll">Expand All</button>
-                        <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
-                                @click="showLegend">{{showLegendButtonText}}</button>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm">
+                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
+                                        @click="expandAll">Expand All</button>
+                            </div>
+                            <div class="col-auto">
+                                <search-box v-on:search="onSearch"></search-box>
+                            </div>
+                            <div class="col-sm">
+                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
+                                        @click="showLegend">{{showLegendButtonText}}</button>
+                            </div>
+                        </div>
                     </div>
+                    <!--<div class="tree-panel-menu">-->
+                            <!--&lt;!&ndash;Branch Length: <span>{{branchLength}}</span>&ndash;&gt;-->
+                    <!--</div>-->
                     <div class="tree-box">
                         <!--<treelayout :jsonData="jsonData"-->
                                     <!--v-on:updated-tree="onTreeUpdate"-->
@@ -28,7 +41,11 @@
         </div>
         <div class="col1">
             <div class="chart">
-                <div class="chart-menu"></div>
+                <div class="chart-menu">
+                    <span class="d-block p-2 bg-secondary text-dark">Table Panel for
+                       <span class="font-weight-bold">{{ this.treeId }}</span>
+                    </span>
+                </div>
                 <div class="chart-content">
                     <tablelayout></tablelayout>
                     <!--<intersect></intersect>-->
@@ -43,6 +60,7 @@
     import treelayout2 from '../components/tree/TreeLayout';
     import tablelayout from '../components/table/TableD3';
     import intersect from '../components/tree/Intersection';
+    import searchBox from '../components/search/SearchBox';
 
     import * as d3 from 'd3';
     import {mapActions} from 'vuex';
@@ -55,41 +73,74 @@
         components: {
             treelayout2: treelayout2,
             tablelayout: tablelayout,
-            intersect: intersect
+            intersect: intersect,
+            searchBox: searchBox
         },
         computed: {
             ...mapGetters({
-                stateTreeJson: types.TREE_GET_JSON
+                stateTreeJson: types.TREE_GET_JSON,
+                stateTreeData: types.TREE_GET_DATA
             }),
             showLegendButtonText(){
-                return this.legend?'Show Legend':'Hide Legend';
+                return this.legend?'Hide Legend':'Show Legend';
             }
         },
         data() {
             return {
                 treeId: null,
                 branchLength: "N/A",
+                completeData: null,
                 jsonData: null,
                 mappingData: null,
                 baseUrl: process.env.BASE_URL,
+                searchText: "",
+                matchNodes: [],
                 legend: false
             }
         },
         mounted() {
             console.log(this.treeId);
             this.stateTreeGetJson(this.treeId);
+            this.searchText = "";
+            this.matchNodes = [];
         },
         methods: {
             ...mapActions({
                 stateTreeGetJson: types.TREE_ACTION_GET_JSON,
+                store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
+            onSearch(text) {
+                if(text != null) {
+                    var d = this.completeData.filter(t => {
+                        var geneName = "";
+                        if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
+                            geneName = t["Gene name"].toLowerCase();
+                        }
+                        var geneId = "";
+                        if(t["Gene ID"] != null && typeof t["Gene ID"] != 'number') {
+                            geneId = t["Gene ID"].toLowerCase();
+                        }
+                        var uniprotId = "";
+                        if(t["Uniprot ID"] != null && typeof t["Uniprot ID"] != 'number') {
+                            uniprotId = t["Uniprot ID"].toLowerCase();
+                        }
+                        text = text.toLowerCase();
+                        return geneName === text || geneId === text || uniprotId === text;
+                    });
+                    this.matchNodes = d;
+                } else {
+                    this.matchNodes = [];
+                }
+                this.store_setMatchedNodes(this.matchNodes);
+            },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
+                this.completeData = null;
             },
             processJson(treeJson) {
                 d3.csv("/organism_to_display.csv", (err, data) => {
@@ -108,6 +159,11 @@
                     if(data.children.annotation_node) {
                         data.children = data.children.annotation_node;
                         data.children.forEach(d => {
+                            if(d.node_name) {
+                                var uniprotId = d.node_name;
+                                uniprotId = uniprotId.split("UniProtKB=")[1];
+                                d.uniprotId = uniprotId;
+                            }
                             this.formatJson(d);
                         });
                     }
@@ -175,8 +231,7 @@
                 sortedNodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
-                        //console.log(n.data);
-                        // tableNode["id"] = index++;
+                        tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
                         var geneId = n.data.gene_id;
                         if (geneId) {
@@ -185,10 +240,15 @@
                         tableNode["Gene ID"] = geneId;
                         tableNode["Organism"] = n.data.organism;
                         tableNode["Protein function"] = n.data.definition;
+                        tableNode["Uniprot ID"] = n.data.uniprotId;
                         tabularData.push(tableNode);
                     }
                 });
                 this.stateSetTreeData(tabularData);
+                if(this.completeData == null) {
+                    this.completeData = this.stateTreeData;
+                }
+
             }
         },
         watch: {
@@ -214,7 +274,7 @@
 <style scoped>
     .chart {
         /*background-color: #ffffff;*/
-        border-color: #f4a460!important;
+        border-color: /*#f4a460*/ #fff !important;
         border: 1px solid;
         box-sizing: border-box;
         box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
@@ -225,16 +285,21 @@
     }
     div.chart-menu {
         width: 100%;
-        height: 35px;
+        height: 40px;
         padding: 2px;
         margin: 0;
         box-sizing: border-box;
-        background-color: #f4a460;
+        background-color: #6C757E;
     }
     div.chart-content {
         height: 900px;
         padding: 15px;
         overflow: hidden;
+    }
+    .tree-panel-menu {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     .col1 {
         width: 50%;

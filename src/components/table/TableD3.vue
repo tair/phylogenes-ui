@@ -37,7 +37,8 @@
         computed: {
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
-                stateTreeZoomX: types.TREE_GET_ZOOM
+                stateTreeZoomX: types.TREE_GET_ZOOM,
+                store_getCenterNode: types.TREE_GET_CENTER_NODE
             })
         },
         watch: {
@@ -48,12 +49,17 @@
             },
             stateTreeZoomX: {
                 handler: function (val, oldVal) {
-                    // this.rowHeight = 40;
-                    // this.rowHeight = this.rowHeight * val.k;
                     this.setScroll(val);
-                    // this.setPadding(val);
-                    // this.update();
                 },
+            },
+            store_getCenterNode: {
+                handler: function (val, oldVal) {
+                    if(val == null) return;
+                    var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
+                    if(foundRow) {
+                        this.setScrollToRow(foundRow.id);
+                    }
+                }
             }
         },
         methods: {
@@ -67,6 +73,7 @@
             },
             renderTableHeader(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
+                titles = titles.splice(1);
                 var t_head = table_d3.select('thead');
                 const updateTh = t_head.select('tr')
                                         .selectAll('th')
@@ -85,10 +92,14 @@
             },
             renderTableBody(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
-                // console.log(titles);
+                titles = titles.splice(1);
                 var t_body = table_d3.select('tbody');
                 //Maps all the tree data into it's own rows.
                 // console.log(this.stateTreeData);
+                let renderData = [];
+                this.stateTreeData.forEach(d => {
+                    renderData["Gene name"] = d["Gene name"];
+                });
                 var rows_d3_map = t_body
                         .selectAll('tr')
                         .data(this.stateTreeData);
@@ -138,18 +149,30 @@
                         .style("opacity", 0)
                         .remove();
             },
+            setScrollToRow(num) {
+                var centerRow = num-8;
+                const tbody = document.getElementById("mybody");
+                tbody.scrollTop = 40*centerRow;
+                this.scrollFromTree = true;
+            },
             setScroll(val) {
                 const tbody = document.getElementById("mybody");
-                if(val.y > 0) {
-                    tbody.scrollTop = 0;
-                } else {
-                    var rowNumber = -val.y/this.rowHeight;
-                    var padding = 0; //rowNumber/2;
-                    //padding required cuz as the row number increases,
-                    // the tree gets more misaligned
-                    tbody.scrollTop = 40*rowNumber + padding;
-                    this.scrollFromTree = true;
-                }
+                // if(val.y < 0) {
+                //     tbody.scrollTop = 0;
+                // } else {
+                //     var rowNumber = val.y/this.rowHeight;
+                //     // console.log(rowNumber);
+                //     var padding = 0; //rowNumber/2;
+                //     //padding required cuz as the row number increases,
+                //     // the tree gets more misaligned
+                //     tbody.scrollTop = 40*rowNumber + padding;
+                //     this.scrollFromTree = true;
+                // }
+                // var rowNumber = Math.round(val);
+                // console.log("rowNumber"+ rowNumber);
+                // var padding = 0;
+                // tbody.scrollTop = 40*rowNumber + padding;
+                // this.scrollFromTree = true;
             },
             handleScroll() {
                 if(this.scrollFromTree) {
@@ -173,7 +196,7 @@
                 this.update();
             }
             const tbody = document.getElementById("mybody");
-            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 500));
+            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 100));
         },
         created: function () {
             const tbody = document.getElementById("mybody");
