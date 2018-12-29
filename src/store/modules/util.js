@@ -38,10 +38,11 @@ function buildSolrQuery(payload) {
 function buildGeneralQuery(payload) {
     var q = "";
     if(payload.searchText != null && payload.searchText != "") {
-        q += " AND gene_symbols:\"" + payload.searchText + "\"^10";
-        q += " OR sf_names:\"" + payload.searchText + "\"~10^10";
-        q += " OR uniprot_ids:\"" + payload.searchText + "\" ";
+        q += " AND exactMatch:\"" + payload.searchText + "\"^10";
+        q += " OR gene_symbols:\"" + payload.searchText + "\"";
         q += " OR family_name:\"" + payload.searchText + "\"~10";
+        q += " OR sf_names:\"" + payload.searchText + "\"~10";
+        q += " OR uniprot_ids:\"" + payload.searchText + "\" ";
     }
     q = q.substr(5);
     if(q == "")
