@@ -11,9 +11,9 @@
             </span>
 
             <span class="float-right">
-                <img src="../../src/assets/img/nsf-logo.png" alt="" height="35px;" class="mr-5">
-                <img src="../../src/assets/img/usc-logo.png" alt="" height="35px" class="mr-5">
-                <img src="../../src/assets/img/pb-logo.png" alt="" height="35px">
+                <a href="https://www.nsf.gov/"><img src="../../src/assets/img/nsf-logo.png" alt="" height="35px;" class="mr-5"></a>
+                <a href="https://www.usc.edu/"><img src="../../src/assets/img/usc-logo.png" alt="" height="35px" class="mr-5"></a>
+                <a href="http://www.phoenixbioinformatics.org/"><img src="../../src/assets/img/pb-logo.png" alt="" height="35px"></a>
             </span>
         </div>
     </footer>

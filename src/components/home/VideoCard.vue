@@ -9,7 +9,7 @@
             <p class="card-text text-danger">2 minute video on how to get started with PhyloGenes.</p>
         </div>
         <ul class="list-group list-group-flush">
-            <li class="list-group-item text-right">
+            <li class="list-group-item">
                 <a href="">
                     Getting Started With PhyloGenes
                     <i class="far fa-file ml-1"></i>
