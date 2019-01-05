@@ -15,23 +15,13 @@
 
                 <ul class="navbar-nav ml-auto">
 
-                    <li>
-                        <form class="nav-link form-inline my-2 my-lg-0" v-on:submit.prevent="onSearch()">
-                            <input class="form-control mr-sm-2 form-control-sm"
-                                   v-model="searchText"
-                                   style="background-color: #B9CDA0; border: none;"
-                                   type="text" placeholder="Search" aria-label="Search">
-                            <a href="" class="btn p-0 m-0 pr-5 btn-flat" @click.prevent="onSearch()"><i class="fa fa-search"></i></a>
-                        </form>
-                    </li>
-
                     <router-link to="/" tag="li">
                         <a class="nav-link pr-3 active" style="font-size: 15px"  data-toggle="tooltip" title="Home">
-                            <i class="fas fa-home"></i>
+                            Home
                         </a>
                     </router-link>
 
-                    <li class="nav-item dropdown pr-2">
+<!--                     <li class="nav-item dropdown pr-2">
                         <a class="nav-link dropdown-toggle" style="font-size: 15px" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-cogs"></i>
                         </a>
@@ -46,37 +36,51 @@
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#">Something else here</a>
                         </div>
-                    </li>
-
-                    <router-link to="/tree" tag="li"  @click.native="initRoute()">
-                        <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Explore trees">
-                            <i class="fas fa-tree"></i>
-                        </a>
-                    </router-link>
+                    </li> -->
 
                     <router-link to="/about" tag="li">
                         <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="About Us">
-                            <i class="fas fa-users"></i>
+                            About
                         </a>
                     </router-link>
 
                     <router-link to="/help" tag="li">
                         <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Help">
-                            <i class="fas fa-question-circle"></i>
+                            Help
                         </a>
                     </router-link>
+
+<!--                     <router-link to="/tree" tag="li">
+                        <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Explore trees">
+                            <i class="fas fa-tree"></i>
+                        </a>
+                    </router-link> -->
 
                     <router-link to="/contact" tag="li">
                         <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Contact Us">
-                            <i class="fas fa-address-card"></i>
+                            Contact
                         </a>
                     </router-link>
 
-                    <router-link to="/login" tag="li">
+                    <li>
+                        <form class="nav-link form-inline my-2 my-lg-0" v-on:submit.prevent="onSearch()">
+                            <input class="form-control mr-sm-2 form-control-sm"
+                                   v-model="searchText"
+                                   style="background-color: #B9CDA0; border: none;"
+                                   type="text" placeholder="search by UniProt ID, gene ID, gene symbol or keyword" aria-label="Search">
+                            <button class="btn btn-sm btn-success mx-2" @click.prevent="onSearch()">
+                                Go
+                            </button>
+                            <button class="btn btn-sm btn-success" @click.prevent="onReset()">
+                                Reset
+                            </button>
+                        </form>
+                    </li>
+<!--                     <router-link to="/login" tag="li">
                         <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Login with ORCID">
                             <i class="fas fa-sign-in-alt"></i>
                         </a>
-                    </router-link>
+                    </router-link> -->
 
                 </ul>
 
@@ -116,6 +120,9 @@
             onSearch() {
                 this.setSearchText(this.searchText);
                 this.$router.push('tree');
+                this.searchText = null;
+            },
+            onReset() {
                 this.searchText = null;
             }
         }
