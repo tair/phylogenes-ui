@@ -170,15 +170,92 @@
                 }
             },
             mapOrganismToDisplayName(node) {
+                //Set organism name from mapping data
                 if(node.organism) {
                     var found_mapping = this.mappingData.find(o => o.Organism === node.organism);
                     node.displayName = found_mapping.displayName;
+                }
+                //Set Text for each node if present
+                let text = this.getText(node);
+                if (text != null) {
+                    node.text = text;
+                }
+                //Set fill color for each node
+                let fillColor = this.getNodeColor(node);
+                if(fillColor) {
+                    node.fillColor = fillColor;
                 }
                 if(node.children) {
                     node.children.forEach(d => {
                         this.mapOrganismToDisplayName(d);
                     });
                 }
+            },
+
+            //Set Text for nodes based on event type
+            getText(d) {
+                var text = d.id;
+                text = "";
+                if(!d) return null;
+
+                if(d.event_type) {
+                    if (d.event_type === "DUPLICATION") {
+                        if (d.speciation_event) {
+                            text += d.speciation_event;
+                        } else {
+                            text += this.getLeafNodeText(d);
+                        }
+                    } else if(d.event_type === "SPECIATION") {
+                        if (d.speciation_event) {
+                            text += d.speciation_event;
+                        }
+                    } else if(d.event_type === "HORIZONTAL_TRANSFER" ||
+                        d.event_type === "HORIZ_TRANSFER") {
+                        if (d.speciation_event) {
+                            text += d.speciation_event;
+                        }
+                    }
+                    return text;
+                }
+                if (d.speciation_event) {
+                    text += d.speciation_event;
+                }
+                if(!d.children) {
+                    if(d.gene_symbol) {
+                        text += " " + d.gene_symbol;
+                    } else {
+                        var geneId = d.gene_id;
+                        geneId = geneId.split(":")[1];
+                        text += " " + geneId;
+                    }
+                    if(d.displayName) {
+                        text += " (";
+                        text += d.displayName;
+                        text += ") ";
+                    }
+                }
+                return text;
+            },
+            getLeafNodeText(d) {
+                if(d.children) {
+                    // console.log(d.children[0].data);
+                    return d.children[0].organism;
+                }
+                return "Leaf Node";
+            },
+            getNodeColor(d) {
+                if(d.sf_id) {
+                    return "#0000FF";
+                }
+                if(d.event_type) {
+                    if(d.event_type === "DUPLICATION") {
+                        return "#FFA500";
+                    } else if(d.event_type === "HORIZONTAL_TRANSFER" ||
+                        d.event_type === "HORIZ_TRANSFER") {
+                        return "#00FFFF";
+                    }
+                }
+                return "#00FF00";
             },
             // loadJson() {
             //     d3.json("/panther.json", (err, data) => {
