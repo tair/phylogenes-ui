@@ -53,6 +53,7 @@
             onSearch() {
 
                 this.setSearchText(this.searchText);
+
                 this.$router.push('tree');
             },
             onReset() {

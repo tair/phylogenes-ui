@@ -70,7 +70,9 @@
         },
         beforeRouteEnter (to, from, next) {
             next(vm => {
-                vm.$refs.sf.resetFilters();
+                if(vm.$refs.sf) {
+                    vm.$refs.sf.resetFilters();
+                }
                 vm.doSearch();
             });
         },
@@ -93,7 +95,9 @@
                     filters: this.stateTreeFilters
                 }
                 this.stateAction_doSearch(payload);
-                this.$refs.sr.newSearch();
+                if(this.$refs.sr) {
+                    this.$refs.sr.newSearch();
+                }
             },
             showFilters() {
                 if(this.stateTreeFilters.organisms.length > 0) {
@@ -117,7 +121,15 @@
                 stateTreeIsLoading: types.TREE_IS_LOADING,
                 stateTreeFilters: types.TREE_GET_FILTERS,
             })
+        },
+        watch: {
+            stateSearchText: {
+                handler: function (val, oldVal) {
+                    this.doSearch();
+                }
+            }
         }
+
     }
 </script>
 
