@@ -984,10 +984,11 @@
         background-color: white;
     }
     .legend-box {
+        background-color: #9E9E9E;
         position: absolute;
         top: 85px;
-        right: 15px;
-        width: 25%;
+        right: 5px;
+        width: 230px;
         float: left;
     }
 </style>
