@@ -988,7 +988,7 @@
         position: absolute;
         top: 85px;
         right: 5px;
-        width: 220px;
+        width: 230px;
         float: left;
     }
 </style>
