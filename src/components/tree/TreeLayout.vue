@@ -397,7 +397,11 @@
                 if(d._children) {
                     d.type = "Triangle";
                 } else if(d.type == "Triangle") {
-                    d.type = "Circle";
+                    if(d.data.sf_id) {
+                        d.type = "Diamond";
+                    } else {
+                        d.type = "Circle";
+                    }
                 }
             },
             updateNodeText(d) {
