@@ -140,6 +140,7 @@
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
+                this.stateSetTreeData([]);
                 this.completeData = null;
             },
             processJson(treeJson) {
