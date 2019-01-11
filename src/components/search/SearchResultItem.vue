@@ -52,7 +52,6 @@
                             }
                         }
                     });
-                    console.log(names);
                 }
                 return fl;
             },

@@ -51,7 +51,6 @@
                 setSearchText: types.TREE_ACTION_SET_SEARCH
             }),
             onSearch() {
-
                 this.setSearchText(this.searchText);
                 this.$router.push('tree');
             },

@@ -119,7 +119,14 @@
             },
             onSearch() {
                 this.setSearchText(this.searchText);
-                this.$router.push('tree');
+                if(this.$router.currentRoute.params.id) {
+                    this.$router.back();
+                } else {
+                    this.$router.push('tree');
+                }
+
+
+
                 this.searchText = null;
             },
             onReset() {
