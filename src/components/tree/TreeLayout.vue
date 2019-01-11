@@ -368,13 +368,13 @@
                 this.rootNode.each(n => {
                     n.id = this.index++;
                     // console.log(n.id + " X: " + n.x);
-                    var text = this.getText(n);
-                    if (text != null) {
-                        n.text = text;
+
+                    //Check if the node data contains a text we can use
+                    if(n.data.text) {
+                        n.text = n.data.text;
                     }
-                    var fillColor = this.getNodeColor(n);
-                    if(fillColor) {
-                        n.fillColor = fillColor;
+                    if(n.data.fillColor) {
+                        n.fillColor = n.data.fillColor;
                     }
                     n.type = this.getNodeType(n);
                     n.geneId = this.getGeneId(n);
@@ -397,7 +397,11 @@
                 if(d._children) {
                     d.type = "Triangle";
                 } else if(d.type == "Triangle") {
-                    d.type = "Circle";
+                    if(d.data.sf_id) {
+                        d.type = "Diamond";
+                    } else {
+                        d.type = "Circle";
+                    }
                 }
             },
             updateNodeText(d) {
@@ -661,69 +665,6 @@
             },
 
             // ~~~~~~~~~~~~~~~~ Methods for Additional Info for each Node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            //TODO: Get this methods out of this component
-            getText(d) {
-                var text = d.id;
-                text = "";
-                if(!d.data) return null;
-
-                if(d.data.event_type) {
-                    if (d.data.event_type === "DUPLICATION") {
-                        if (d.data.speciation_event) {
-                            text += d.data.speciation_event;
-                        } else {
-                            text += this.getLeafNodeText(d);
-                        }
-                    } else if(d.data.event_type === "SPECIATION") {
-                        if (d.data.speciation_event) {
-                            text += d.data.speciation_event;
-                        }
-                    } else if(d.data.event_type === "HORIZONTAL_TRANSFER") {
-                        if (d.data.speciation_event) {
-                            text += d.data.speciation_event;
-                        }
-                    }
-                    return text;
-                }
-                if (d.data.speciation_event) {
-                    text += d.data.speciation_event;
-                }
-                if(!d.children) {
-                    if(d.data.gene_symbol) {
-                        text += " " + d.data.gene_symbol;
-                    } else {
-                        var geneId = d.data.gene_id;
-                        geneId = geneId.split(":")[1];
-                        text += " " + geneId;
-                    }
-                    if(d.data.displayName) {
-                        text += " (";
-                        text += d.data.displayName;
-                        text += ") ";
-                    }
-                }
-                return text;
-            },
-            getLeafNodeText(d) {
-                if(d.children) {
-                    // console.log(d.children[0].data);
-                    return d.children[0].data.organism;
-                }
-                return "Leaf Node";
-            },
-            getNodeColor(d) {
-                if(d.data.sf_id) {
-                    return "#0000FF";
-                }
-                if(d.data.event_type) {
-                    if(d.data.event_type === "DUPLICATION") {
-                        return "#FFA500";
-                    } else if(d.data.event_type === "HORIZONTAL_TRANSFER") {
-                        return "#00FFFF";
-                    }
-                }
-                return "#00FF00";
-            },
             getNodeType(d) {
                 if(d.data.sf_id) {
                     return "Diamond";
