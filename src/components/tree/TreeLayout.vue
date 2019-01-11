@@ -107,7 +107,7 @@
                 topPaddingY: 80,
                 rowHeight: 40,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
