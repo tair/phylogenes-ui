@@ -95,7 +95,7 @@
                 baseUrl: process.env.BASE_URL,
                 searchText: "",
                 matchNodes: [],
-                legend: false
+                legend: true
             }
         },
         mounted() {

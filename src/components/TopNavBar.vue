@@ -3,9 +3,8 @@
 
         <!-- Fixed navbar -->
         <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-success">
-            <a class="navbar-brand" href="#">
-                <i class="fab fa-pagelines fa-2x ml-3 mr-2"></i>
-                Phylogenes
+            <a class="my-logo" href="#">
+                <img width="75" height="48" src="../../src/assets/img/phy-logo2.png" alt="">
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -124,9 +123,6 @@
                 } else {
                     this.$router.push('tree');
                 }
-
-
-
                 this.searchText = null;
             },
             onReset() {
@@ -135,3 +131,9 @@
         }
     }
 </script>
+<style scoped>
+    .my-logo {
+        position: absolute;
+        padding: 10px;
+    }
+</style>
