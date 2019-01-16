@@ -103,6 +103,14 @@
                 this.stateAction_setSearchFilters(this.treeFilters);
                 this.searchText = this.stateSearchText;
             }
+        },
+        watch: {
+            stateSearchFilters:{
+                deep: true,
+                handler (val, oldVal){
+                    this.treeFilters = this.stateSearchFilters;
+                }
+            }
         }
     }
 </script>

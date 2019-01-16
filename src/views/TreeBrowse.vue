@@ -70,9 +70,9 @@
         },
         beforeRouteEnter (to, from, next) {
             next(vm => {
-                if(vm.$refs.sf) {
-                    vm.$refs.sf.resetFilters();
-                }
+                // if(vm.$refs.sf) {
+                //     vm.$refs.sf.resetFilters();
+                // }
                 vm.doSearch();
             });
         },
@@ -126,6 +126,12 @@
             stateSearchText: {
                 handler: function (val, oldVal) {
                     this.doSearch();
+                }
+            },
+            stateTreeFilters: {
+                deep: true,
+                handler: function (val, oldVal) {
+                    this.treeFilters = this.stateTreeFilters;
                 }
             }
         }
