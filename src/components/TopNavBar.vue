@@ -63,7 +63,7 @@
                     </router-link>
 
                     <li>
-                        <form class="nav-link form-inline my-2 my-lg-0" v-on:submit.prevent="onSearch()">
+                        <form class="nav-link form-inline my-2 my-lg-0" @submit.prevent="onSearch()">
                             <input class="form-control mr-sm-2 form-control-sm"
                                    v-model="searchText"
                                    style="background-color: #B9CDA0; border: none;"
@@ -112,12 +112,10 @@
         methods: {
             ...mapActions({
                 setSearchText: types.TREE_ACTION_SET_SEARCH,
-                resetSearchText: types.TREE_ACTION_RESET_SEARCH
+                resetFilter: types.TREE_ACTION_RESET_FILTER
             }),
-            initRoute() {
-                this.resetSearchText();
-            },
             onSearch() {
+                this.resetFilter();
                 this.setSearchText(this.searchText);
                 if(this.$router.currentRoute.params.id) {
                     this.$router.back();
