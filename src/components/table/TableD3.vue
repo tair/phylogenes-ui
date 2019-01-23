@@ -1,5 +1,17 @@
 <template>
     <div id="parent">
+        <!--<button id="show-modal" @click="showModal = true">Show Modal</button>-->
+        <modal v-if="showModal" @close="showModal = false">
+            <div slot="header">{{modalHeader}}</div>
+            <div slot="body">
+                <table class="popupTable">
+                    <tr>
+                        <th>Col1</th>
+                        <th>Col2</th>
+                    </tr>
+                </table>
+            </div>
+        </modal>
         <table>
             <thead id="myhead">
                 <tr>
@@ -19,11 +31,12 @@
 
     import * as types from '../../store/types_treedata';
     import { mapGetters, mapActions } from 'vuex';
+    import customModal from '@/components/modal/CustomModal';
 
     export default {
         name: "tablelayout",
         components: {
-
+            'modal': customModal
         },
         data() {
             return {
@@ -31,7 +44,9 @@
                 tableBody: null,
                 index: 0,
                 rowHeight: 40,
-                scrollFromTree: false
+                scrollFromTree: false,
+                showModal: false,
+                modalHeader: ""
             }
         },
         computed: {
@@ -104,6 +119,7 @@
                         .selectAll('tr')
                         .data(this.stateTreeData);
 
+
                 if(rows_d3_map.length === 0) {
                     console.log("No new entering nodes");
                     return;
@@ -148,6 +164,21 @@
                 rows_exiting.transition().duration(500)
                         .style("opacity", 0)
                         .remove();
+
+                this.tableBody.selectAll("tr")
+                    .on("mouseover", function() {
+                        d3.select(this).selectAll('td')
+                            .style('background-color', "orange")
+                            .style('cursor', "pointer");
+                    })
+                    .on("mouseleave", function() {
+                        d3.select(this).selectAll('td')
+                            .style('background-color', "white");
+                    })
+                    .on("click", (d) => {
+                        this.showModal = true;
+                        this.modalHeader = "Uniprot ID: " + d["Uniprot ID"];
+                    })
             },
             setScrollToRow(num) {
                 var centerRow = num-8;
@@ -189,6 +220,12 @@
                 var geneId = this.stateTreeData[rowNumber]["Gene ID"];
                 var scroll = {i: rowNumber, id: geneId};
                 this.stateSetTableScroll(scroll);
+            },
+            handleMouseOver(d, i) {
+                console.log(i);
+                // d3.select(this).style({
+                //     "background-color": "orange"
+                // });
             }
         },
         mounted: function () {
@@ -231,6 +268,14 @@
         background-color: #d6efb5fc;
         font-size: 14px;
         font-family: sans-serif;
+    }
+
+    .popupTable {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100px;
+        height: 200px;
     }
 
     thead {
