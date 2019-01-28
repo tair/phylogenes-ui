@@ -36,7 +36,13 @@ export default new Router({
     },
     {
         path: '/tree',
-        component: TreeBrowse
+        component: TreeBrowse,
+        pathToRegexpOptions: {strict: true}
+    },
+    {
+        path: '/tree/',
+        redirect: '/tree',
+        pathToRegexpOptions: {strict: true}
     },
     {
         path: '/tree/:id',

@@ -174,7 +174,9 @@
                 //Set organism name from mapping data
                 if(node.organism) {
                     var found_mapping = this.mappingData.find(o => o.Organism === node.organism);
-                    node.displayName = found_mapping.displayName;
+                    if(found_mapping) {
+                        node.displayName = found_mapping.displayName;
+                    }
                 }
                 //Set Text for each node if present
                 let text = this.getText(node);

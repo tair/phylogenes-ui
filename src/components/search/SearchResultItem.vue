@@ -5,7 +5,7 @@
                 <router-link :to="{ path: '/tree/' + this.item.id }" tag="a">
                     <span class="text-danger h-75"> [{{ this.item.id }}]</span>
                 </router-link>
-                <span class="text-dark h6"> {{ this.item.family_name[0] }}</span>
+                <span class="text-dark h6"> {{ getFamilyName() }}</span>
             </div>
             <div class="col">
                 <span class="text-dark h-75">{{getHighlightedFields()}}</span>
@@ -71,6 +71,13 @@
                         console.log("Error! Unknown field name matched");
                 }
                 return displayName;
+            },
+            getFamilyName() {
+                if(this.item.family_name) {
+                    return this.item.family_name[0];
+                } else {
+                    return "";
+                }
             }
         }
     }
