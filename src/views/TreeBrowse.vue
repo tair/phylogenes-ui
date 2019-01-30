@@ -70,9 +70,6 @@
         },
         beforeRouteEnter (to, from, next) {
             next(vm => {
-                // if(vm.$refs.sf) {
-                //     vm.$refs.sf.resetFilters();
-                // }
                 vm.doSearch();
             });
         },
