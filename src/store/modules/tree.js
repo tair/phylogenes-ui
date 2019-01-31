@@ -76,6 +76,19 @@ const actions = {
 
         context.state.tree.payload = payload;
     },
+    [types.TREE_ACTION_RESET_FILTER]: (context) => {
+        var filters= {
+                startRow: 0,
+                rows: 10,
+                familyName: null,
+                uniprotId: null,
+                nodeTypes: [],
+                organisms: [],
+                species: []
+        };
+
+        context.state.tree.payload.filters = filters;
+    },
     [types.TREE_ACTION_SET_FILTER]: (context, payload) => {
         context.state.tree.payload.filters = payload;
     },
