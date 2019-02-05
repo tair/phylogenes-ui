@@ -116,11 +116,7 @@
             onSearch() {
                 this.resetFilter();
                 this.setSearchText(this.searchText);
-                if(this.$router.currentRoute.params.id) {
-                    this.$router.back();
-                } else {
-                    this.$router.push('tree');
-                }
+                this.$router.replace('/tree');
                 this.searchText = null;
             },
             onReset() {
