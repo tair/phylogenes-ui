@@ -141,6 +141,7 @@
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
                 this.stateSetTreeData([]);
+                this.store_setMatchedNodes([-1]);
                 this.completeData = null;
             },
             processJson(treeJson) {
@@ -325,10 +326,7 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
-                if(this.completeData == null) {
-                    this.completeData = this.stateTreeData;
-                }
-
+                this.completeData = this.stateTreeData;
             }
         },
         watch: {
