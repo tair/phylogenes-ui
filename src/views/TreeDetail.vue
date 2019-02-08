@@ -99,14 +99,13 @@
             }
         },
         mounted() {
-            console.log(this.treeId);
-            this.stateTreeGetJson(this.treeId);
+            this.loadJsonFromDB(this.treeId);
             this.searchText = "";
             this.matchNodes = [];
         },
         methods: {
             ...mapActions({
-                stateTreeGetJson: types.TREE_ACTION_GET_JSON,
+                loadJsonFromDB: types.TREE_ACTION_GET_JSON,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
@@ -334,19 +333,17 @@
         watch: {
             '$route.params.id': function (id) {
                 this.treeId = id;
-                // console.log('ID: ' + this.treeId);
-                this.stateTreeGetJson(this.treeId);
+                this.loadJsonFromDB(this.treeId);
+                this.jsonData = null;
             },
             stateTreeJson: {
                 handler: function (val, oldVal) {
-                    // console.log("Watch ", val);
                     this.loadJson(val);
                 }
             }
         },
         created() {
             this.treeId = this.$route.params.id;
-            // console.log('ID1: ' + this.treeId);
         }
     }
 </script>
