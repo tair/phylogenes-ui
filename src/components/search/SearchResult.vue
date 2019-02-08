@@ -113,7 +113,6 @@
                 setFilter: types.TREE_ACTION_SET_FILTER
             }),
             newSearch() {
-              console.log(this.searchData);
               this.gotoPage(1);
             },
             gotoPage(page) {

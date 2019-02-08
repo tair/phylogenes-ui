@@ -153,6 +153,9 @@
             initTree() {
                 this.refresh();
 
+                if(this.jsonData == null) {
+                    return;
+                }
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
