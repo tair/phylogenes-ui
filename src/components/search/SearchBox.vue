@@ -47,6 +47,9 @@ watch: {
           if(this.isSearched) {
               this.matchText = val.length + " Matched";
           }
+          if(val[0] == -1) {
+              this.onReset();
+          }
       }
   }
 },
