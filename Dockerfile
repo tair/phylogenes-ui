@@ -1,13 +1,23 @@
-# build stage
-FROM node:lts-alpine as build-stage
-WORKDIR /app
+# install node.js
+FROM node
+
+# install Vue CLI
+RUN npm install -g @vue/cli
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
 COPY package*.json ./
 RUN npm install
+RUN npm audit fix
+
+# Bundle app source
 COPY . .
+
 RUN npm run build
 
-# production stage
-FROM nginx:stable-alpine as production-stage
-COPY --from=build-stage /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 8080
+CMD [ "npm", "run", "serve" ]
