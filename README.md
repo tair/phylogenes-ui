@@ -23,9 +23,9 @@ For detailed explanation on how things work, consult the [docs for vue-loader](h
 
 ``` bash
 # build the Docker image for the Vue JS app
-docker build -t phylogenes/dockerize-vuejs-app .
+docker build -t phx/phylogenes-app .
 
 # run our Vue.js app in a Docker container
-docker run -it -p 8080:80 --rm --name phylogenes-app phylogenes/dockerize-vuejs-app
+docker container run -it -p 8080:8080 --name phylogenes-app phx/phylogenes-app
 ```
 Visit the application at http://localhost:8080
