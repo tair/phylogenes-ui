@@ -1,113 +1,41 @@
 ﻿Organism,displayName
-Amborella trichopoda,A. trichopoda
-Anopheles gambiae,mosquito
-Aquifex aeolicus,A. aeolicus
-Arabidopsis thaliana,A. thaliana
-Ashbya gossypii,A. gossypii
-Bacillus cereus,B. cereus
-Bacillus subtilis,B. subtilis
-Bacteroides thetaiotaomicron,B. thetaiotaomicron
-Batrachochytrium dendrobatidis,B. dendrobatidis
-Bos taurus,cow
-Brachypodium distachyon,B. distachyon
-Bradyrhizobium diazoefficiens,B. diazoefficiens
-Branchiostoma floridae,B. floridae
-Caenorhabditis briggsae,C. briggsae
-Caenorhabditis elegans,C. elegans
-Candida albicans,C. albicans
-Canis lupus familiaris,dog
-Chlamydia trachomatis,C. trachomatis
-Chlamydomonas reinhardtii,C. reinhardtii
-Chloroflexus aurantiacus,C. aurantiacus
-Ciona intestinalis,C. intestinalis
-Clostridium botulinum,C. botulinum
-Coxiella burnetii,C. burnetii
-Cryptococcus neoformans,C. neoformans
-Danio rerio,zebrafish
-Daphnia pulex,water flea
-Deinococcus radiodurans,D. radiodurans
-Dictyoglomus turgidum,D. turgidum
-Dictyostelium discoideum,D. discoideum
-Dictyostelium purpureum,D. purpureum
-Drosophila melanogaster,fruit fly
-Emericella nidulans,E. nidulans
-Entamoeba histolytica,E. histolytica
-Equus caballus,horse
-Escherichia coli,E. coli
-Felis catus,cat
-Fusobacterium nucleatum,F. nucleatum
-Gallus gallus,chicken
-Geobacter sulfurreducens,G. sulfurreducens
-Giardia intestinalis,G. intestinalis
-Gloeobacter violaceus,G. violaceus
-Glycine max,soybean
-Gorilla gorilla gorilla,gorilla
-Haemophilus influenzae,H. influenzae
-Halobacterium salinarum,H. salinarum
-Helicobacter pylori,H. pylori
-Homo sapiens,human
-Ixodes scapularis,tick
-Korarchaeum cryptofilum,K. cryptofilum
-Leishmania major,L. major
-Leptospira interrogans,L. interrogans
-Listeria monocytogenes,L. monocytogenes
-Macaca mulatta,macacque
-Methanocaldococcus jannaschii,M. jannaschii
-Methanosarcina acetivorans,M. acetivorans
-Monodelphis domestica,opossum
-Monosiga brevicollis,M. brevicollis
-Mus musculus,mouse
-Mycobacterium tuberculosis,M. tuberculosis
-Neisseria meningitidis serogroup b,meningococcus
-Nematostella vectensis,N. vectensis
-Neosartorya fumigata,N. fumigata
-Neurospora crassa,N. crassa
-Nitrosopumilus maritimus,N. maritimus
-Ornithorhynchus anatinus,platypus
-Oryza sativa,rice
-Oryzias latipes,O. latipes
-Pan troglodytes,chimpanzee
-Paramecium tetraurelia,P. tetraurelia
-Phaeosphaeria nodorum,P. nodorum
-Physcomitrella patens,P. patens
-Phytophthora ramorum,P. ramorum
-Plasmodium falciparum,P. falciparum
-Populus trichocarpa,black cottonwood
-Pristionchus pacificus,P. pacificus
-Pseudomonas aeruginosa,P. aeruginosa
-Puccinia graminis,P. graminis
-Pyrobaculum aerophilum,P. aerophilum
-Rattus norvegicus,rat
-Rhodopirellula baltica,R. baltica
-Saccharomyces cerevisiae,budding yeast
-Salmonella typhimurium,S. typhimurium
-Schizosaccharomyces pombe,fission yeast
-Sclerotinia sclerotiorum,S. sclerotiorum
-Shewanella oneidensis,S. oneidensis
-Solanum lycopersicum,tomato
-Staphylococcus aureus,S. aureus
-Streptococcus pneumoniae,S. pneumoniae
-Streptomyces coelicolor,S. coelicolor
-Strongylocentrotus purpuratus,sea urchin
-Sulfolobus solfataricus,S. solfataricus
-Sus scrofa,pig
-Synechocystis,synechocystis
-Thalassiosira pseudonana,T. pseudonana
-Thermococcus kodakaraensis,T. kodakaraensis
-Thermodesulfovibrio yellowstonii,T. yellowstonii
-Thermotoga maritima,T. maritima
-Tribolium castaneum,T. castaneum
-Trichomonas vaginalis,T. vaginalis
-Trichoplax adhaerens,T. adhaerens
-Trypanosoma brucei,T. brucei
-Ustilago maydis,U. maydis
-Vibrio cholerae,V. cholerae
-Vitis vinifera,grape
-Xanthomonas campestris,X. campestris
-Xenopus tropicalis,frog
-Yarrowia lipolytica,Y. lipolytica
-Yersinia pestis,Y. pestis
-Zea mays,corn
-helobdella robusta,H. robusta
-lepisosteus oculatus,L. oculatus
-mycoplasma genitalium,M. genitalium
+Amborella trichopoda,	A. trichopoda
+Arabidopsis thaliana,	A. thaliana
+Brachypodium distachyon,	B. distachyon
+Brassica rapa subsp. Pekinensis,	Chinese cabbage
+Chlamydomonas reinhardtii,	C. reinhardtii
+Citrus sinensis,	orange
+Cucumis sativus,	cucumber
+Erythranthe guttata,	E. guttata
+Glycine max,	soybean
+Gossypium hirsutum,	cotton
+Helianthus annuus,	sunflower
+Hordeum vulgare subsp. vulgare,	barley
+Medicago truncatula,	M. truncatula
+Musa acuminata subsp. malaccensis,	banana
+Nicotiana tabacum,	tobacco
+Oryza sativa,	rice
+Ostreococcus tauri,	O. tauri
+Phoenix dactylifera,	date palm
+Physcomitrella patens,	P. patens
+Populus trichocarpa,	black cottonwood
+Prunus persica,	peach
+Ricinus communis,	castor bean
+Setaria italica,	foxtail millet
+Solanum lycopersicum,	tomato
+Sorghum bicolor,	sorghum
+Theobroma cacao,	cocoa
+Triticum aestivum,	wheat
+Vitis vinifera,	grape
+Zea mays,	corn
+Zostera marina,	eelgrass
+Caenorhabditis elegans,	C. elegans
+Danio rerio,	zebrafish
+Dictyostelium discoideum,	D. discoideum
+Drosophila melanogaster,	fruit fly
+Escherichia coli,	E. coli
+Homo sapiens,	human
+Mus musculus,	mouse
+Rattus norvegicus,	rat
+Saccharomyces cerevisiae,	budding yeast
+Schizosaccharomyces pombe,	fission yeast

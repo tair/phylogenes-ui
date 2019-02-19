@@ -107,7 +107,7 @@
                 topPaddingY: 80,
                 rowHeight: 40,
                 enableMenu: false,
-                showLegend: true,
+                showLegend: false,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
@@ -153,6 +153,9 @@
             initTree() {
                 this.refresh();
 
+                if(this.jsonData == null) {
+                    return;
+                }
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();

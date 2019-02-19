@@ -14,8 +14,18 @@
         </modal>
         <table>
             <thead id="myhead">
-                <tr>
-
+                <col>
+                <colgroup :span="tableSpanCols.length"></colgroup>
+                <tr id="par">
+                    <th colspan="1"></th>
+                    <th colspan="1"></th>
+                    <th :colspan="tableSpanCols.length" scope="colgroup">Known Function</th>
+                </tr>
+                <tr id="main">
+                    <th>{{tableCols[0]}}</th>
+                    <th>{{tableCols[1]}}</th>
+                    <th id="anno" scope="col" v-for="(col, i) in tableSpanCols">{{col}}</th>
+                    <th v-for="(col, i) in tableCols" v-if="i>1">{{col}}</th>
                 </tr>
             </thead>
             <tbody id="mybody">
@@ -41,6 +51,8 @@
         data() {
             return {
                 scrollVertical: true,
+                tableCols: [],
+                tableSpanCols: [],
                 tableBody: null,
                 index: 0,
                 rowHeight: 40,
@@ -89,16 +101,28 @@
             renderTableHeader(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
-                var t_head = table_d3.select('thead');
-                const updateTh = t_head.select('tr')
-                                        .selectAll('th')
-                                        .data(titles);
+                console.log(titles);
+                if(titles.length > 0) {
+                    this.tableCols.push(titles[0]);
+                    this.tableCols.push(titles[1]);
+                    this.tableSpanCols.push(titles[2]);
+                    this.tableSpanCols.push(titles[3]);
+                    this.tableCols.push(titles[4]);
+                    this.tableCols.push(titles[5]);
+                    this.tableCols.push(titles[6]);
+                    this.tableCols.push(titles[7]);
+                }
 
-                const enterTh = updateTh.enter()
-                                    .append("th");
-
-                updateTh.merge(enterTh)
-                        .text(d => d);
+                // var t_head = table_d3.select('thead');
+                // const updateTh = t_head.select('tr.main')
+                //                         .selectAll('th')
+                //                         .data(titles);
+                //
+                // const enterTh = updateTh.enter()
+                //                     .append("th");
+                //
+                // updateTh.merge(enterTh)
+                //         .text(d => d);
 
                 // const exitTh = updateTh.exit();
                 // exitTh.transition().duration(1000)
@@ -108,6 +132,13 @@
             renderTableBody(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
+                if(titles.length == 0) {
+                    t_body
+                        .selectAll('tr')
+                        .data([]);
+
+                    return;
+                }
                 var t_body = table_d3.select('tbody');
                 //Maps all the tree data into it's own rows.
                 // console.log(this.stateTreeData);
@@ -168,12 +199,12 @@
                 this.tableBody.selectAll("tr")
                     .on("mouseover", function() {
                         d3.select(this).selectAll('td')
-                            .style('background-color', "orange")
+                            // .style('background-color', "orange")
                             .style('cursor', "pointer");
                     })
                     .on("mouseleave", function() {
-                        d3.select(this).selectAll('td')
-                            .style('background-color', "white");
+                        // d3.select(this).selectAll('td')
+                        //     .style('background-color', "white");
                     })
                     .on("click", (d) => {
                         this.showModal = true;
@@ -250,7 +281,7 @@
         position: absolute;
         left: 1vw;
         top: 6vh;
-        width: 48vw;
+        width: 90%;
         height: 800px;
         overflow: hidden;
     }
@@ -261,11 +292,11 @@
         flex: 1 1 auto;
         width: 100%;
         height: 800px;
-        border: 2px solid #9CC255;
+        border: 0px solid #9CC255;
         border-collapse: collapse;
         overflow: hidden;
         /* Use this to create a "dead" area color if table is too wide for cells */
-        background-color: #d6efb5fc;
+        background-color: #d6daeb;
         font-size: 14px;
         font-family: sans-serif;
     }
@@ -320,9 +351,9 @@
 
     /* The one caveat, a hard-set width is required. */
     td, th {
-        width: 300px;
-        min-width: 300px;
-        max-width: 300px;
+        width: 200px;
+        min-width: 200px;
+        max-width: 200px;
         height: 40px;
         min-height: 40px;
         max-height: 40px;
@@ -330,22 +361,35 @@
         text-overflow: clip;
         white-space: nowrap;
         padding: 5px;
-        border: 1px solid #9CC255;
-        background-color: white;
+        border: 1px solid #f1f1f0;
+    }
+
+    /*th#anno {*/
+        /*width: 100px;*/
+        /*min-width: 100px;*/
+        /*max-width: 100px;*/
+    /*}*/
+
+    tr:nth-child(even) {
+        background-color: #d6daeb;
+    }
+    tr:nth-child(odd) {
+        background-color: #eceef6;
     }
 
     th {
-        background-color: #d6efb5fc;
+        background-color: #e1e7f3;
     }
 
     td:first-child,
     th:first-child {
-        width: 250px;
-        min-width: 250px;
-        max-width: 250px;
+        width: 200px;
+        min-width: 200px;
+        max-width: 200px;
         position: sticky;
         position: -webkit-sticky;
         left:0;
-        box-shadow: 5px 0 2px -2px #888;
+        box-shadow: 5px 0 2px -2px #f1f1f0;
+        background-color: #d6daeb;
     }
 </style>

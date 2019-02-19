@@ -24,7 +24,6 @@ const getters = {
         return state.treedata.data;
     },
     [types.TREE_GET_JSON]: state => {
-        // console.log(state.treedata);
         return state.treedata.jsonString;
     },
     [types.TREE_GET_NODES]: state => {
@@ -69,8 +68,6 @@ const actions = {
         context.state.treedata.scroll = payload;
     },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
-        console.log('Payload: ' + JSON.stringify(payload));
-
         var q = "";
         if(payload != null) {
             q = util.getQueryForPantherId(payload);

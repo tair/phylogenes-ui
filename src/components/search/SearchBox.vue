@@ -13,7 +13,10 @@
       </div>
       <div class="col-auto">
           <button type="submit" class="btn btn-inline" @click="onSearch()">
-            <i :class="getSearchIcon()"></i>
+            <i class="fa fa-search"></i>
+          </button>
+          <button v-if="isSearched" type="submit" class="btn btn-inline" @click="onReset()">
+            <i class="fa fa-times"></i>
           </button>
       </div>
     </div>
@@ -44,29 +47,25 @@ watch: {
           if(this.isSearched) {
               this.matchText = val.length + " Matched";
           }
+          if(val[0] == -1) {
+              this.onReset();
+          }
       }
   }
 },
 methods: {
   onSearch() {
-      if(!this.isSearched && this.searchText !== "") {
+      if(this.searchText !== "") {
           this.isSearched = true;
           this.$emit('search', this.searchText);
-      } else {
-          this.searchText = "";
-          this.isSearched = false;
-          this.matchText = "";
-          this.$emit('search', null);
       }
-
   },
-  getSearchIcon() {
-      if(this.isSearched) {
-          return 'fa fa-times';
-      } else {
-          return 'fa fa-search';
-      }
-  }
+  onReset() {
+      this.searchText = "";
+      this.isSearched = false;
+      this.matchText = "";
+      this.$emit('search', null);
+  },
 }
 }
 </script>

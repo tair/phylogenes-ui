@@ -39,9 +39,10 @@ function buildGeneralQuery(payload) {
     var q = "";
     if(payload.searchText != null && payload.searchText != "") {
         q += " AND exactMatch:\"" + payload.searchText + "\"^10";
-        q += " OR gene_symbols:\"" + payload.searchText + "\"";
+        // q += " OR gene_symbols:\"" + payload.searchText + "\""; //phg-83
         q += " OR family_name:\"" + payload.searchText + "\"~10";
         q += " OR sf_names:\"" + payload.searchText + "\"~10";
+        q += " OR gene_ids:\"" + payload.searchText + "\" ";
         q += " OR uniprot_ids:\"" + payload.searchText + "\" ";
     }
     q = q.substr(5);

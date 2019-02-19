@@ -5,6 +5,7 @@
                 <div class="d-flex flex-column"><p>Search for gene trees by ID, symbol or keyword</p></div>
                 <div class="d-flex flex-column pl-3"><a href="#"><i class="fas fa-info-circle fa-lg" v-b-popover="'info text'"></i></a></div>
             </div>
+            <form @submit.prevent="onSearch()">
             <div class="d-flex flex-row">
                 <div class="input-group-prepend">
                     <span class="input-group-text" id="basic-addon1">
@@ -24,6 +25,7 @@
                     Reset
                 </button>
             </div>
+            </form>
         </div>
 </template>
 
@@ -48,9 +50,11 @@
         },
         methods: {
             ...mapActions({
-                setSearchText: types.TREE_ACTION_SET_SEARCH
+                setSearchText: types.TREE_ACTION_SET_SEARCH,
+                resetFilter: types.TREE_ACTION_RESET_FILTER,
             }),
             onSearch() {
+                this.resetFilter();
                 this.setSearchText(this.searchText);
                 this.$router.push('tree');
             },

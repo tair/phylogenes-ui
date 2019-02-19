@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <div class="col1">
+        <div class="col2">
             <div class="chart">
                 <div class="chart-menu">
                     <span class="d-block p-2 bg-secondary text-dark">Table Panel for
@@ -99,14 +99,13 @@
             }
         },
         mounted() {
-            console.log(this.treeId);
-            this.stateTreeGetJson(this.treeId);
+            this.loadJsonFromDB(this.treeId);
             this.searchText = "";
             this.matchNodes = [];
         },
         methods: {
             ...mapActions({
-                stateTreeGetJson: types.TREE_ACTION_GET_JSON,
+                loadJsonFromDB: types.TREE_ACTION_GET_JSON,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
@@ -141,6 +140,7 @@
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
                 this.stateSetTreeData([]);
+                this.store_setMatchedNodes([-1]);
                 this.completeData = null;
             },
             processJson(treeJson) {
@@ -173,8 +173,10 @@
             mapOrganismToDisplayName(node) {
                 //Set organism name from mapping data
                 if(node.organism) {
-                    var found_mapping = this.mappingData.find(o => o.Organism === node.organism);
-                    node.displayName = found_mapping.displayName;
+                    var found_mapping = this.mappingData.find(o => o.Organism.toLowerCase() === node.organism.toLowerCase());
+                    if(found_mapping) {
+                        node.displayName = found_mapping.displayName.trim();
+                    }
                 }
                 //Set Text for each node if present
                 let text = this.getText(node);
@@ -315,36 +317,33 @@
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
-                        tableNode["Gene ID"] = geneId;
                         tableNode["Organism"] = n.data.organism;
+                        tableNode["Anno1"] = "None";
+                        tableNode["Anno2"] = "None";
+                        tableNode["Gene ID"] = geneId;
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tabularData.push(tableNode);
                     }
                 });
                 this.stateSetTreeData(tabularData);
-                if(this.completeData == null) {
-                    this.completeData = this.stateTreeData;
-                }
-
+                this.completeData = this.stateTreeData;
             }
         },
         watch: {
             '$route.params.id': function (id) {
                 this.treeId = id;
-                // console.log('ID: ' + this.treeId);
-                this.stateTreeGetJson(this.treeId);
+                this.loadJsonFromDB(this.treeId);
+                this.jsonData = null;
             },
             stateTreeJson: {
                 handler: function (val, oldVal) {
-                    // console.log("Watch ", val);
                     this.loadJson(val);
                 }
             }
         },
         created() {
             this.treeId = this.$route.params.id;
-            // console.log('ID1: ' + this.treeId);
         }
     }
 </script>
@@ -380,7 +379,12 @@
         align-items: center;
     }
     .col1 {
-        width: 50%;
+        width: 25%;
+        height: 80%;
+        float: left;
+    }
+    .col2 {
+        width: 75%;
         height: 80%;
         float: left;
     }
