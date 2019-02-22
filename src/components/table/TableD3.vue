@@ -16,16 +16,14 @@
             <thead id="myhead">
                 <col>
                 <colgroup :span="tableSpanCols.length"></colgroup>
-                <tr id="par">
+                <tr id="par" v-if="tableSpanCols.length > 0">
                     <th colspan="1"></th>
                     <th colspan="1"></th>
                     <th :colspan="tableSpanCols.length" scope="colgroup">Known Function</th>
                 </tr>
                 <tr id="main">
-                    <th>{{tableCols[0]}}</th>
-                    <th>{{tableCols[1]}}</th>
-                    <th id="anno" scope="col" v-for="(col, i) in tableSpanCols">{{col}}</th>
-                    <th v-for="(col, i) in tableCols" v-if="i>1">{{col}}</th>
+                    <!--<th id="anno" scope="col" v-for="(col, i) in tableSpanCols">{{col}}</th>-->
+                    <th v-for="(col, i) in tableCols" :scope="getScope">{{col}}</th>
                 </tr>
             </thead>
             <tbody id="mybody">
@@ -53,6 +51,9 @@
                 scrollVertical: true,
                 tableCols: [],
                 tableSpanCols: [],
+                popUpTableData: {
+
+                },
                 tableBody: null,
                 index: 0,
                 rowHeight: 40,
@@ -65,13 +66,19 @@
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
                 stateTreeZoomX: types.TREE_GET_ZOOM,
-                store_getCenterNode: types.TREE_GET_CENTER_NODE
+                store_getCenterNode: types.TREE_GET_CENTER_NODE,
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING
             })
         },
         watch: {
             stateTreeData: {
                 handler: function (val, oldVal) {
                     this.update();
+                }
+            },
+            store_annoMapping: {
+                handler: function(val, oldVal) {
+                    // console.log("Anno ", val);
                 }
             },
             stateTreeZoomX: {
@@ -101,16 +108,13 @@
             renderTableHeader(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
-                console.log(titles);
+                // console.log(titles);
+                // console.log(this.store_annoMapping);
+
+                this.tableCols = [];
+                this.tableSpanCols = this.store_annoMapping.headers;
                 if(titles.length > 0) {
-                    this.tableCols.push(titles[0]);
-                    this.tableCols.push(titles[1]);
-                    this.tableSpanCols.push(titles[2]);
-                    this.tableSpanCols.push(titles[3]);
-                    this.tableCols.push(titles[4]);
-                    this.tableCols.push(titles[5]);
-                    this.tableCols.push(titles[6]);
-                    this.tableCols.push(titles[7]);
+                    this.tableCols = titles;
                 }
 
                 // var t_head = table_d3.select('thead');
@@ -129,9 +133,13 @@
                 // .style("opacity", 0)
                 // .remove();
             },
+            getScope() {
+              return "col";
+            },
             renderTableBody(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
+                var t_body = table_d3.select('tbody');
                 if(titles.length == 0) {
                     t_body
                         .selectAll('tr')
@@ -139,7 +147,6 @@
 
                     return;
                 }
-                var t_body = table_d3.select('tbody');
                 //Maps all the tree data into it's own rows.
                 // console.log(this.stateTreeData);
                 let renderData = [];
@@ -150,7 +157,6 @@
                         .selectAll('tr')
                         .data(this.stateTreeData);
 
-
                 if(rows_d3_map.length === 0) {
                     console.log("No new entering nodes");
                     return;
@@ -160,7 +166,8 @@
                 var rows_entering = rows_d3_map.enter();
                 var rows_exiting = rows_d3_map.exit();
 
-                // console.log(rows_entering);
+                // console.log(rows_entering.size());
+                // console.log(rows_exiting.size());
             //Modify the rows entering with appending html tags or modifying its style.
                 rows_entering = rows_entering.append('tr')
                             .style("opacity", 0);
@@ -184,15 +191,42 @@
                                 });
 
                 var td_entering = td_rows_map.enter();
-                td_entering = td_entering.append('td');
+                var td_exiting = td_rows_map.exit();
+                // console.log(td_entering.size());
+                td_entering = td_entering.append('td').attr('class','my-col');
+                                            // .append('text')
+                // td_entering.append('circle').classed("anno_circle", true);
+                // td_entering.append(function(d) {
+                //     var div = document.createElement("div");
+                //     // var d3Ele = d3.select(this);
+                //     // var svg = d3Ele.append("svg").style("width", 200 + 'px').style("height", 25 + 'px');
+                //     // if(d.value === "*") {
+                //     //     svg.append("circle").classed("anno_circle", true)
+                //     //         .attr("cx", 85).attr("cy", 15);
+                //     // } else {
+                //     //     svg.append("text").text(d.value).attr("font-size", "14px").attr("x",5).attr("y",20);
+                //     // }
+                //     return div;
+                // });
 
                 td_rows_map = td_rows_map.merge(td_entering);
+
                 td_rows_map = td_rows_map
                                 .attr('data-th', d => d.name)
-                                .text(d => d.value)
-                                .attr('class','my-col');
+                    // .append('svg').style("width", 200 + 'px').style("height", 25 + 'px')
+                    // .append("text").text("R").attr("font-size", "14px").attr("x",5).attr("y",20)
+                                .text(d => d.value);
+                // td_rows_map.selectAll('text').text(function(d,i){
+                //     return d.value;
+                // });
+                // .selectAll('text').each(function(d,i) {
+                //    console.log(d);
+                // });
+                // .select("text").text(d.value)
+                // .text(d => d.value)
+                // ;
 
-                rows_exiting.transition().duration(500)
+                rows_exiting.transition().duration(5000)
                         .style("opacity", 0)
                         .remove();
 
@@ -253,7 +287,6 @@
                 this.stateSetTableScroll(scroll);
             },
             handleMouseOver(d, i) {
-                console.log(i);
                 // d3.select(this).style({
                 //     "background-color": "orange"
                 // });
@@ -305,8 +338,12 @@
         display: flex;
         flex-direction: column;
         flex: 1 1 auto;
-        width: 100px;
+        width: 400px;
         height: 200px;
+    }
+
+    .popupTable th {
+        width: 30px;
     }
 
     thead {
@@ -391,5 +428,12 @@
         left:0;
         box-shadow: 5px 0 2px -2px #f1f1f0;
         background-color: #d6daeb;
+    }
+
+    .anno_circle {
+        r: 8;
+        fill: #ff0;
+        stroke: steelblue;
+        stroke-width: 2px;
     }
 </style>

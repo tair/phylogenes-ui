@@ -79,7 +79,8 @@
         computed: {
             ...mapGetters({
                 stateTreeJson: types.TREE_GET_JSON,
-                stateTreeData: types.TREE_GET_DATA
+                stateTreeData: types.TREE_GET_DATA,
+                stateTreeAnnotations: types.TREE_GET_ANNOTATIONS
             }),
             showLegendButtonText(){
                 return this.legend?'Hide Legend':'Show Legend';
@@ -95,18 +96,26 @@
                 baseUrl: process.env.BASE_URL,
                 searchText: "",
                 matchNodes: [],
+                orig_nodes: null,
+                anno_mapping: {},
+                anno_headers: [],
                 legend: true
             }
         },
         mounted() {
             this.loadJsonFromDB(this.treeId);
+            // this.loadJsonFromFile();
+            this.loadAnnotationsFromDB(this.treeId);
             this.searchText = "";
             this.matchNodes = [];
         },
         methods: {
             ...mapActions({
                 loadJsonFromDB: types.TREE_ACTION_GET_JSON,
+                loadAnnotationsFromDB: types.TREE_ACTION_GET_ANNOTATIONS,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
+                store_getAnnotations: types.TREE_ACTION_GET_ANNOTATIONS,
+                store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
@@ -142,6 +151,45 @@
                 this.stateSetTreeData([]);
                 this.store_setMatchedNodes([-1]);
                 this.completeData = null;
+            },
+            loadJsonFromFile(fileName) {
+              d3.json("/sam_annotations_simple.json", (err, data) => {
+                  if (err) {
+                      console.log(err);
+                  } else {
+                      this.loadAnnotations(data);
+                  }
+              });
+            },
+            loadAnnotations(annotations) {
+                // console.log(annotations);
+                // annotations.forEach(a => {
+                //     this.anno_mapping[a.uniprot_id] = a.go_annotations;
+                //     a.go_annotations.forEach(g => {
+                //         if(!this.anno_headers.includes(g.goName)) {
+                //             this.anno_headers.push(g.goName);
+                //         }
+                //     });
+                // });
+
+                //Actual code
+                annotations.forEach(a => {
+                    var uni_mapping = JSON.parse(a);
+                    var uniprotId = uni_mapping.uniprot_id;
+                    // console.log("UniID ", uniprotId);
+                    var annotationsList = JSON.parse(uni_mapping.go_annotations);
+                    // console.log("Anno_Map ", annotationsList);
+                    this.anno_mapping[uniprotId] = annotationsList;
+                    annotationsList.forEach(singleAnno => {
+                        if(!this.anno_headers.includes(singleAnno.goName)) {
+                           this.anno_headers.push(singleAnno.goName);
+                       }
+                    });
+                });
+
+                setTimeout(() => {
+                    this.refreshTable();
+                }, 2000);
             },
             processJson(treeJson) {
                 d3.csv("/organism_to_display.csv", (err, data) => {
@@ -301,7 +349,18 @@
                 this.legend = !this.legend;
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            refreshTable() {
+                var annoObj = {
+                    headers: this.anno_headers,
+                    annoMap: this.anno_mapping
+                }
+
+                this.store_setAnnoMapping(annoObj);
+                if(this.orig_nodes == null) return;
+                this.updateTableData(this.orig_nodes);
+            },
             updateTableData(nodes) {
+                this.orig_nodes = nodes;
                 var tabularData = [];
                 var sortedNodes = nodes.sort(function (a, b) {
                     return a.dfId - b.dfId;
@@ -318,8 +377,21 @@
                             geneId = geneId.split(':')[1];
                         }
                         tableNode["Organism"] = n.data.organism;
-                        tableNode["Anno1"] = "None";
-                        tableNode["Anno2"] = "None";
+                        this.anno_headers.forEach(a => {
+                            tableNode[a] = "";
+                            // console.log(this.anno_mapping[n.data.uniprotId]);
+                            if(n.data.uniprotId) {
+                                let uniprotId = n.data.uniprotId.toLowerCase();
+                                if(this.anno_mapping[uniprotId]) {
+                                    let currAnno = this.anno_mapping[uniprotId];
+                                    currAnno.forEach(c => {
+                                        if(c.goName === a) {
+                                            tableNode[a] = "*";
+                                        }
+                                    });
+                                }
+                            }
+                        });
                         tableNode["Gene ID"] = geneId;
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
@@ -339,6 +411,12 @@
             stateTreeJson: {
                 handler: function (val, oldVal) {
                     this.loadJson(val);
+                }
+            },
+            stateTreeAnnotations: {
+                handler: function (val, oldVal) {
+                    console.log("Anno ", val);
+                    this.loadAnnotations(val);
                 }
             }
         },
