@@ -4,15 +4,26 @@
         <modal v-if="showModal" @close="showModal = false">
             <div slot="header">{{modalHeader}}</div>
             <div slot="body">
-                <table class="popupTable">
+                <table v-if="popUpTableData.length > 0" class="popupTable">
                     <tr>
-                        <th>Col1</th>
-                        <th>Col2</th>
+                        <th>GO term</th>
+                        <th>Evidence description</th>
+                        <th>Reference</th>
+                        <th>With/From</th>
+                        <th>Source</th>
+                    </tr>
+                    <tr v-for="a in popUpTableData">
+                        <td>{{a.goTerm}}</td>
+                        <td>{{a.code}}</td>
+                        <td><a v-for="ref in a.reference" v-bind:href="ref.link">{{ref.count}}, </a></td>
+                        <td></td>
+                        <td><a v-bind:href="a.sourceLink">{{a.source}}</a></td>
                     </tr>
                 </table>
+                <div v-if="popUpTableData.length===0"><i>No Go Annotations for this gene!</i></div>
             </div>
         </modal>
-        <table>
+        <table class="mainTable">
             <thead id="myhead">
                 <col>
                 <colgroup :span="tableSpanCols.length"></colgroup>
@@ -51,9 +62,7 @@
                 scrollVertical: true,
                 tableCols: [],
                 tableSpanCols: [],
-                popUpTableData: {
-
-                },
+                popUpTableData: [],
                 tableBody: null,
                 index: 0,
                 rowHeight: 40,
@@ -65,7 +74,6 @@
         computed: {
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
-                stateTreeZoomX: types.TREE_GET_ZOOM,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING
             })
@@ -80,11 +88,6 @@
                 handler: function(val, oldVal) {
                     // console.log("Anno ", val);
                 }
-            },
-            stateTreeZoomX: {
-                handler: function (val, oldVal) {
-                    this.setScroll(val);
-                },
             },
             store_getCenterNode: {
                 handler: function (val, oldVal) {
@@ -242,33 +245,61 @@
                     })
                     .on("click", (d) => {
                         this.showModal = true;
-                        this.modalHeader = "Uniprot ID: " + d["Uniprot ID"];
+                        let uniprotId = d["Uniprot ID"];
+                        if(uniprotId) {
+                            uniprotId = uniprotId.toLowerCase();
+                        } else {
+                            uniprotId = "N/A";
+                        }
+                        this.modalHeader = "Uniprot ID: " + uniprotId.toUpperCase();
+
+                        this.popUpTableData = this.getFormattedAnnotationsList(uniprotId);
                     })
+            },
+            getFormattedAnnotationsList(uniprotId) {
+                var annosForGene = this.store_annoMapping.annoMap[uniprotId];
+                // console.log(annosForGene);
+                var annoList = [];
+                if(!annosForGene) return annoList;
+                annosForGene.forEach(a => {
+                    var id = a.goId;
+                    var code = a.evidenceCode.split(",")[2];
+                    var refCode = a.reference.split(":")[0];
+                    var refId = a.reference.split(":")[1];
+                    var refLink = "https://www.ncbi.nlm.nih.gov/pubmed/" + refId;
+                    if(refCode == "GO_REF") {
+                        refLink = "https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-"
+                            +refId+".md";
+                    }
+
+                    var findGoId = annoList.find(a => {return a.goId === id;});
+                    if(!findGoId) {
+                        annoList.push({
+                            goId: a.goId,
+                            goTerm: a.goName,
+                            code: code,
+                            reference: [{
+                                count: 1,
+                                link: refLink
+                            }],
+                            source: "QuickGO",
+                            sourceLink: "https://www.ebi.ac.uk/QuickGO/term/" + a.goId
+                        });
+                    } else {
+                        findGoId.reference.push({
+                            count: findGoId.reference.length + 1,
+                            link: refLink
+                        })
+                    }
+                });
+                // console.log(annoList);
+                return annoList;
             },
             setScrollToRow(num) {
                 var centerRow = num-8;
                 const tbody = document.getElementById("mybody");
                 tbody.scrollTop = 40*centerRow;
                 this.scrollFromTree = true;
-            },
-            setScroll(val) {
-                const tbody = document.getElementById("mybody");
-                // if(val.y < 0) {
-                //     tbody.scrollTop = 0;
-                // } else {
-                //     var rowNumber = val.y/this.rowHeight;
-                //     // console.log(rowNumber);
-                //     var padding = 0; //rowNumber/2;
-                //     //padding required cuz as the row number increases,
-                //     // the tree gets more misaligned
-                //     tbody.scrollTop = 40*rowNumber + padding;
-                //     this.scrollFromTree = true;
-                // }
-                // var rowNumber = Math.round(val);
-                // console.log("rowNumber"+ rowNumber);
-                // var padding = 0;
-                // tbody.scrollTop = 40*rowNumber + padding;
-                // this.scrollFromTree = true;
             },
             handleScroll() {
                 if(this.scrollFromTree) {
@@ -332,18 +363,6 @@
         background-color: #d6daeb;
         font-size: 14px;
         font-family: sans-serif;
-    }
-
-    .popupTable {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 auto;
-        width: 400px;
-        height: 200px;
-    }
-
-    .popupTable th {
-        width: 30px;
     }
 
     thead {
@@ -418,8 +437,8 @@
         background-color: #e1e7f3;
     }
 
-    td:first-child,
-    th:first-child {
+    .mainTable td:first-child,
+    .mainTable th:first-child {
         width: 200px;
         min-width: 200px;
         max-width: 200px;
@@ -428,6 +447,44 @@
         left:0;
         box-shadow: 5px 0 2px -2px #f1f1f0;
         background-color: #d6daeb;
+    }
+
+    .mainTable td:first-child, .mainTable th:first-child {
+        width: 200px;
+        min-width: 200px;
+        max-width: 200px;
+        box-shadow: 5px 0 2px -2px #f1f1f0;
+        background-color: #d6daeb;
+    }
+
+    .popupTable {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 200px;
+        overflow: scroll;
+    }
+
+    .popupTable th, th:first-child {
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+        height:40px;
+        max-height: 100px;
+        word-wrap: break-word;
+        white-space: normal;
+        background-color: #c5dcf0;
+        box-shadow: 2px 0 2px -2px #f1f1f0;
+    }
+
+    .popupTable td, td:first-child {
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+        word-wrap: break-word;
+        white-space: normal;
+        box-shadow: 2px 0 2px -2px #f1f1f0;
     }
 
     .anno_circle {
