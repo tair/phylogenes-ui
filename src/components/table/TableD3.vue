@@ -341,84 +341,84 @@
 
 </script>
 <style>
-    #parent {
-        position: absolute;
-        left: 1vw;
-        top: 6vh;
-        width: 90%;
-        height: 800px;
-        overflow: hidden;
-    }
+    /*#parent {*/
+        /*position: absolute;*/
+        /*left: 1vw;*/
+        /*top: 6vh;*/
+        /*width: 90%;*/
+        /*height: 800px;*/
+        /*overflow: hidden;*/
+    /*}*/
 
-    table {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 auto;
-        width: 100%;
-        height: 800px;
-        border: 0px solid #9CC255;
-        border-collapse: collapse;
-        overflow: hidden;
-        /* Use this to create a "dead" area color if table is too wide for cells */
-        background-color: #d6daeb;
-        font-size: 14px;
-        font-family: sans-serif;
-    }
+    /*table {*/
+        /*display: flex;*/
+        /*flex-direction: column;*/
+        /*flex: 1 1 auto;*/
+        /*width: 100%;*/
+        /*height: 800px;*/
+        /*border: 0px solid #9CC255;*/
+        /*border-collapse: collapse;*/
+        /*overflow: hidden;*/
+        /*!* Use this to create a "dead" area color if table is too wide for cells *!*/
+        /*background-color: #d6daeb;*/
+        /*font-size: 14px;*/
+        /*font-family: sans-serif;*/
+    /*}*/
 
-    thead {
-        /*
-        Grow thead automatically to fit content, don't shrink it
-        proportionately to the body.
-        */
-        flex: 0 0 auto;
-        display: block;
-        /* x-scrolling will be managed via JS */
-        overflow-x: hidden;
-        /*
-        Keep header columns aligned with useless scrollbar.
-        For IE11, use "dead area" color to hide scrollbar functions
-        */
-        overflow-y: scroll;
-        scrollbar-base-color: #ccc;
-        scrollbar-face-color: #ccc;
-        scrollbar-highlight-color: #ccc;
-        scrollbar-track-color: #ccc;
-        scrollbar-arrow-color: #ccc;
-        scrollbar-shadow-color: #ccc;
-        scrollbar-dark-shadow-color: #ccc;
-    }
+    /*thead {*/
+        /*!**/
+        /*Grow thead automatically to fit content, don't shrink it*/
+        /*proportionately to the body.*/
+        /**!*/
+        /*flex: 0 0 auto;*/
+        /*display: block;*/
+        /*!* x-scrolling will be managed via JS *!*/
+        /*overflow-x: hidden;*/
+        /*!**/
+        /*Keep header columns aligned with useless scrollbar.*/
+        /*For IE11, use "dead area" color to hide scrollbar functions*/
+        /**!*/
+        /*overflow-y: scroll;*/
+        /*scrollbar-base-color: #ccc;*/
+        /*scrollbar-face-color: #ccc;*/
+        /*scrollbar-highlight-color: #ccc;*/
+        /*scrollbar-track-color: #ccc;*/
+        /*scrollbar-arrow-color: #ccc;*/
+        /*scrollbar-shadow-color: #ccc;*/
+        /*scrollbar-dark-shadow-color: #ccc;*/
+    /*}*/
 
     /*
     For Webkit, use "dead area" color to hide scrollbar functions
     TODO: on Chrome/Safari for Mac, scrollbars are not shown anyway and
     this creates an extra block. No impact on iOS Safari.
     */
-    thead::-webkit-scrollbar { display: block; background-color: #ccc; }
-    thead::-webkit-scrollbar-track { background-color: #ccc; }
+    /*thead::-webkit-scrollbar { display: block; background-color: #ccc; }*/
+    /*thead::-webkit-scrollbar-track { background-color: #ccc; }*/
 
-    /* Scroll the actual tbody (second child on all browsers) */
-    tbody {
-        display: block;
-        overflow: scroll;
-    }
+    /*!* Scroll the actual tbody (second child on all browsers) *!*/
+    /*tbody {*/
+        /*display: block;*/
+        /*overflow: scroll;*/
+    /*}*/
 
     /* IE11 adds an extra tbody, have to hide it */
-    tbody:nth-child(3) { display: none; }
+    /*tbody:nth-child(3) { display: none; }*/
 
-    /* The one caveat, a hard-set width is required. */
-    td, th {
-        width: 200px;
-        min-width: 200px;
-        max-width: 200px;
-        height: 40px;
-        min-height: 40px;
-        max-height: 40px;
-        overflow: hidden;
-        text-overflow: clip;
-        white-space: nowrap;
-        padding: 5px;
-        border: 1px solid #f1f1f0;
-    }
+    /*!* The one caveat, a hard-set width is required. *!*/
+    /*td, th {*/
+        /*width: 200px;*/
+        /*min-width: 200px;*/
+        /*max-width: 200px;*/
+        /*height: 40px;*/
+        /*min-height: 40px;*/
+        /*max-height: 40px;*/
+        /*overflow: hidden;*/
+        /*text-overflow: clip;*/
+        /*white-space: nowrap;*/
+        /*padding: 5px;*/
+        /*border: 1px solid #f1f1f0;*/
+    /*}*/
 
     /*th#anno {*/
         /*width: 100px;*/
@@ -426,71 +426,64 @@
         /*max-width: 100px;*/
     /*}*/
 
-    tr:nth-child(even) {
-        background-color: #d6daeb;
-    }
-    tr:nth-child(odd) {
-        background-color: #eceef6;
-    }
+    /*tr:nth-child(even) {*/
+        /*background-color: #d6daeb;*/
+    /*}*/
+    /*tr:nth-child(odd) {*/
+        /*background-color: #eceef6;*/
+    /*}*/
 
-    th {
-        background-color: #e1e7f3;
-    }
+    /*th {*/
+        /*background-color: #e1e7f3;*/
+    /*}*/
 
-    .mainTable td:first-child,
-    .mainTable th:first-child {
-        width: 200px;
-        min-width: 200px;
-        max-width: 200px;
-        position: sticky;
-        position: -webkit-sticky;
-        left:0;
-        box-shadow: 5px 0 2px -2px #f1f1f0;
-        background-color: #d6daeb;
-    }
+    /*.mainTable td:first-child,*/
+    /*.mainTable th:first-child {*/
+        /*width: 200px;*/
+        /*min-width: 200px;*/
+        /*max-width: 200px;*/
+        /*position: sticky;*/
+        /*position: -webkit-sticky;*/
+        /*left:0;*/
+        /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
+        /*background-color: #d6daeb;*/
+    /*}*/
 
-    .mainTable td:first-child, .mainTable th:first-child {
-        width: 200px;
-        min-width: 200px;
-        max-width: 200px;
-        box-shadow: 5px 0 2px -2px #f1f1f0;
-        background-color: #d6daeb;
-    }
+    /*.mainTable td:first-child, .mainTable th:first-child {*/
+        /*width: 200px;*/
+        /*min-width: 200px;*/
+        /*max-width: 200px;*/
+        /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
+        /*background-color: #d6daeb;*/
+    /*}*/
 
-    .popupTable {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 auto;
-        width: 100%;
-        height: 200px;
-        overflow: scroll;
-    }
+    /*.popupTable {*/
+        /*display: flex;*/
+        /*flex-direction: column;*/
+        /*flex: 1 1 auto;*/
+        /*width: 100%;*/
+        /*height: 200px;*/
+        /*overflow: scroll;*/
+    /*}*/
 
-    .popupTable th, th:first-child {
-        width: 100px;
-        min-width: 100px;
-        max-width: 100px;
-        height:40px;
-        max-height: 100px;
-        word-wrap: break-word;
-        white-space: normal;
-        background-color: #c5dcf0;
-        box-shadow: 2px 0 2px -2px #f1f1f0;
-    }
+    /*.popupTable th, th:first-child {*/
+        /*width: 100px;*/
+        /*min-width: 100px;*/
+        /*max-width: 100px;*/
+        /*height:40px;*/
+        /*max-height: 100px;*/
+        /*word-wrap: break-word;*/
+        /*white-space: normal;*/
+        /*background-color: #c5dcf0;*/
+        /*box-shadow: 2px 0 2px -2px #f1f1f0;*/
+    /*}*/
 
-    .popupTable td, td:first-child {
-        width: 100px;
-        min-width: 100px;
-        max-width: 100px;
-        word-wrap: break-word;
-        white-space: normal;
-        box-shadow: 2px 0 2px -2px #f1f1f0;
-    }
-
-    .anno_circle {
-        r: 8;
-        fill: #ff0;
-        stroke: steelblue;
-        stroke-width: 2px;
-    }
+    /*.popupTable td, td:first-child {*/
+        /*width: 100px;*/
+        /*min-width: 100px;*/
+        /*max-width: 100px;*/
+        /*word-wrap: break-word;*/
+        /*white-space: normal;*/
+        /*box-shadow: 2px 0 2px -2px #f1f1f0;*/
+    /*}*/
 </style>

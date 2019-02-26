@@ -47,7 +47,8 @@
                     </span>
                 </div>
                 <div class="chart-content">
-                    <tablelayout></tablelayout>
+                    <!--<tablelayout></tablelayout>-->
+                    <tablelayout2></tablelayout2>
                     <!--<intersect></intersect>-->
                 </div>
             </div>
@@ -59,6 +60,7 @@
 <script>
     import treelayout2 from '../components/tree/TreeLayout';
     import tablelayout from '../components/table/TableD3';
+    import tablelayout2 from '../components/table/TableD32';
     import intersect from '../components/tree/Intersection';
     import searchBox from '../components/search/SearchBox';
 
@@ -73,6 +75,7 @@
         components: {
             treelayout2: treelayout2,
             tablelayout: tablelayout,
+            tablelayout2: tablelayout2,
             intersect: intersect,
             searchBox: searchBox
         },
@@ -162,6 +165,7 @@
               });
             },
             loadAnnotations(annotations) {
+                if(!annotations) return;
                 // console.log(annotations);
                 // annotations.forEach(a => {
                 //     this.anno_mapping[a.uniprot_id] = a.go_annotations;
@@ -457,12 +461,12 @@
         align-items: center;
     }
     .col1 {
-        width: 25%;
+        width: 50%;
         height: 80%;
         float: left;
     }
     .col2 {
-        width: 75%;
+        width: 50%;
         height: 80%;
         float: left;
     }
