@@ -3,15 +3,15 @@
         <div class="row pb-1">
             <div class="col-6">
                 <router-link :to="{ path: '/tree/' + this.item.id }" tag="a">
-                    <span class="text-danger h-75"> [{{ this.item.id }}]</span>
+                    <span class="text-danger h6"> {{ getFamilyName() }}</span>
                 </router-link>
-                <span class="text-dark h6"> {{ getFamilyName() }}</span>
+                <span class="text-dark h-75"> [{{ item.id }}]</span>
             </div>
             <div class="col">
                 <span class="text-dark h-75">{{getHighlightedFields()}}</span>
             </div>
             <div class="col">
-                <span>{{this.item.uniprot_ids.length}}</span>
+                <span>{{this.item.uniprot_ids?this.item.uniprot_ids.length:0}}</span>
             </div>
         </div>
     </div>
@@ -76,7 +76,7 @@
                 if(this.item.family_name) {
                     return this.item.family_name[0];
                 } else {
-                    return "";
+                    return "FAMILY NOT NAMED";
                 }
             }
         }

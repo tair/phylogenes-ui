@@ -1,24 +1,23 @@
 <template>
-    <div class="row">
-      <div class="col-auto">
-          <b-container fluid>
-              <b-input-group size="sm" v-b-tooltip.hover :title=placeholder>
-                  <input id="search" type="text" class="my-input" placeholder="Gene name, Gene ID, Uniprot ID"
+    <div class="row bg-mblue">
+      <b-input-group class="my-2">
+        <b-input-group-prepend class="mx-2">
+          Search within tree
+        </b-input-group-prepend>
+        <input id="search" type="text" class="my-input" placeholder="Gene name, Gene ID, Uniprot ID"
                          v-model="searchText">
-              </b-input-group>
-          </b-container>
-      </div>
-      <div class="col-auto my-text">
+        <div class="col-auto my-text">
           {{matchText}}
-      </div>
-      <div class="col-auto">
-          <button type="submit" class="btn btn-inline" @click="onSearch()">
+        </div>
+        <b-input-group-append>
+          <button type="submit" class="btn btn-inline bg-mblue" @click="onSearch()">
             <i class="fa fa-search"></i>
           </button>
-          <button v-if="isSearched" type="submit" class="btn btn-inline" @click="onReset()">
+          <button v-if="isSearched" type="submit" class="btn btn-inline bg-mblue" @click="onReset()">
             <i class="fa fa-times"></i>
           </button>
-      </div>
+        </b-input-group-append>
+      </b-input-group>
     </div>
 </template>
 <script>
@@ -72,7 +71,6 @@ methods: {
 <style scoped>
     .my-input {
         display: block;
-        width: 100%;
         padding: 0.375rem 0.75rem;
         font-size: 0.8rem;
         line-height: 1.5;
@@ -80,6 +78,11 @@ methods: {
         background-color: #ffffff;
         background-clip: padding-box;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+    }
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus{
+      transition: background-color 5000s ease-in-out 0s;
     }
     input {
         border: 1px solid white;
@@ -99,7 +102,10 @@ methods: {
         color: white;
     }
     .my-text {
-        padding-top: 8px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        background-color: #ffffff;
         font-size: small;
         color: gray;
     }

@@ -2,7 +2,7 @@
     <div>
 
         <!-- Fixed navbar -->
-        <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-success">
+        <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-dblue">
             <a class="my-logo" href="#">
                 <img width="75" height="48" src="../../src/assets/img/phy-logo2.png" alt="">
             </a>
@@ -65,13 +65,13 @@
                         <form class="nav-link form-inline my-2 my-lg-0" @submit.prevent="onSearch()">
                             <input class="form-control mr-sm-2 form-control-sm"
                                    v-model="searchText"
-                                   style="background-color: #B9CDA0; border: none;"
+                                   style="border: none;width:305px"
                                    type="text" placeholder="search by UniProt ID, gene ID, gene symbol or keyword" aria-label="Search">
-                            <button class="btn btn-sm btn-success mx-2" @click.prevent="onSearch()">
-                                Go
+                            <button class="btn btn-sm btn-pggrey mx-2" @click.prevent="onSearch()">
+                                <i class="fa fa-search"></i>
                             </button>
-                            <button class="btn btn-sm btn-success" @click.prevent="onReset()">
-                                Reset
+                            <button class="btn btn-sm btn-pggrey" @click.prevent="onReset()">
+                                <i class="fa fa-times"></i>
                             </button>
                         </form>
                     </li>
