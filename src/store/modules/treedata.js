@@ -120,7 +120,7 @@ const actions = {
             if(q == "")
                 q = "*:*";
         }
-        console.log('QQQQ: ' + q);
+        // console.log('QQQQ: ' + q);
 
         axios({
             method: 'GET',

@@ -419,7 +419,6 @@
             },
             stateTreeAnnotations: {
                 handler: function (val, oldVal) {
-                    console.log("Anno ", val);
                     this.loadAnnotations(val);
                 }
             }
@@ -462,12 +461,12 @@
     }
     .col1 {
         width: 50%;
-        height: 80%;
+        height: 100%;
         float: left;
     }
     .col2 {
         width: 50%;
-        height: 80%;
+        height: 100%;
         float: left;
     }
 </style>
