@@ -105,7 +105,7 @@
                 index: 0,
                 counter: 0,
                 topPaddingY: 80,
-                rowHeight: 40,
+                rowHeight: 41,
                 enableMenu: false,
                 showLegend: false,
                 showBranchLength: true,
@@ -736,7 +736,7 @@
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 // console.log(currTopNode);
-                var topNodePosY = -1*currTopNode.x + 40;
+                var topNodePosY = -1*currTopNode.x + 35 + 35;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)

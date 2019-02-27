@@ -65,7 +65,7 @@
                 popUpTableData: [],
                 tableBody: null,
                 index: 0,
-                rowHeight: 40,
+                rowHeight: 38,
                 scrollFromTree: false,
                 showModal: false,
                 modalHeader: ""

@@ -11,7 +11,7 @@
             <thead id="head">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
-                <tr id="par" v-if="extraCols.length > 0" style="background-color: transparent">
+                <tr id="secTr" v-if="extraCols.length > 0">
                     <th colspan="2" class="noDisplay"></th>
                     <th :colspan="extraCols.length" scope="colgroup" class="speTr">Known Function</th>
                     <th colspan="3" style="background-color: transparent"></th>
@@ -103,6 +103,7 @@
             }
             const tbody = document.getElementById("body");
             tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
+            this.extraCols = this.store_annoMapping.headers;
         },
         methods: {
             ...mapActions({
@@ -138,9 +139,10 @@
                 this.stateSetTableScroll(scroll);
             },
             setScrollToRow(num) {
+                console.log(num);
                 var centerRow = num-8;
                 const tbody = document.getElementById("body");
-                tbody.scrollTop = 40*centerRow;
+                tbody.scrollTop = 41*centerRow;
                 this.scrollFromTree = true;
             },
             rowClicked(d) {
@@ -231,6 +233,17 @@
     }
     #mainTr {
         border-bottom: 3px solid #f1f1f0;
+        filter: brightness(100%) !important;
+        cursor: default !important;
+    }
+    #secTr {
+        height: 35px;
+        max-height: 35px;
+        min-height: 35px;
+        filter: brightness(100%) !important;
+        cursor: default !important;
+        border-bottom: 3px solid #f1f1f0;
+        background-color: transparent;
     }
     .mainTable tbody {
         overflow: scroll;
@@ -256,8 +269,8 @@
         min-width: 200px;
         width: 200px;
         max-width: 200px;
-        min-height: 35px;
-        max-height: 35px;
+        min-height: 40px;
+        max-height: 40px;
 
         border: 1px solid #f1f1f0;
         /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
