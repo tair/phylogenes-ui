@@ -67,8 +67,8 @@
         },
         watch: {
             jsonData: {
+                deep: true,
                 handler: function (val, oldVal) {
-                    // console.log(this.jsonData);
                     this.isLoading = true;
                     this.initTree();
                 }
@@ -112,7 +112,7 @@
                 link_intersected: null,
                 wrapper_d3: null,
                 topMostNodePos: {x: 0.0, y: 0.0},
-                currentTopNodePos: {x: 0.0, y: 0.0},
+                currentTopNodePos: {x: 0.0, y: 0.0}
             }
         },
         mounted() {
@@ -124,7 +124,6 @@
             this.resetRootPosition();
 
             if (this.jsonData != null) {
-                // console.log(this.jsonData);
                 this.initTree();
             }
         },
@@ -169,6 +168,7 @@
                 this.calculateDepthIds(nodes);
 
                 setTimeout(() => {
+                    // console.log("From init tree");
                     this.updateTree();
                     this.adjustPosition(nodes);
                     this.isLoading = false;
@@ -190,6 +190,7 @@
             //Update Tree during every interaction with tree
             // which modifies the tree structure (eg. toggleNode)
             updateTree() {
+                // console.log("Update tree");
                 this.saveOldPositions(this.rootNode);
 
                 //Explain: why old Indexes?
@@ -256,6 +257,7 @@
 
                 //Center Tree panel to first matched node
                 this.centerTreeToGivenNode(firstMatchedNode);
+                // console.log("From matched nodes");
                 this.updateTree();
 
                 if(foundAnyInHidden && firstMatchedNode == null) {
@@ -346,11 +348,9 @@
             getTempArrayForNodes(updatedNodes) {
                 var tempArray = [];
                 updatedNodes.nodes().forEach(n => {
-                    // console.log("N ", n.__data__);
                     var node_content = n.__data__;
                     if (n.constructor && n.constructor.name === "EnterNode") {
                         if (this.clickedNode) {
-                            // console.log("Click ", this.clickedNode.id);
                             node_content.xo = this.clickedNode.x;
                             node_content.yo = this.clickedNode.y;
                         }
@@ -728,6 +728,10 @@
                 }
 
                 this.currentTopNodePos.x += d3.event.transform.x - transform.x;
+                this.alignNodes();
+            },
+            moveUp() {
+                this.rowsScrolledUp=this.rowsScrolledUp+5;
                 this.alignNodes();
             },
             alignNodes() {

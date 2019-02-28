@@ -20,6 +20,8 @@
                             <div class="col-sm">
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
                                         @click="showLegend">{{showLegendButtonText}}</button>
+                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
+                                        <!--@click="moveUp">Move UP</button>-->
                             </div>
                         </div>
                     </div>
@@ -47,8 +49,7 @@
                     </span>
                 </div>
                 <div class="chart-content">
-                    <!--<tablelayout></tablelayout>-->
-                    <tablelayout2></tablelayout2>
+                    <tablelayout></tablelayout>
                     <!--<intersect></intersect>-->
                 </div>
             </div>
@@ -60,7 +61,6 @@
 <script>
     import treelayout2 from '../components/tree/TreeLayout';
     import tablelayout from '../components/table/TableD3';
-    import tablelayout2 from '../components/table/TableD32';
     import intersect from '../components/tree/Intersection';
     import searchBox from '../components/search/SearchBox';
 
@@ -75,7 +75,6 @@
         components: {
             treelayout2: treelayout2,
             tablelayout: tablelayout,
-            tablelayout2: tablelayout2,
             intersect: intersect,
             searchBox: searchBox
         },
@@ -108,16 +107,13 @@
         mounted() {
             this.loadJsonFromDB(this.treeId);
             // this.loadJsonFromFile();
-            this.loadAnnotationsFromDB(this.treeId);
             this.searchText = "";
             this.matchNodes = [];
         },
         methods: {
             ...mapActions({
                 loadJsonFromDB: types.TREE_ACTION_GET_JSON,
-                loadAnnotationsFromDB: types.TREE_ACTION_GET_ANNOTATIONS,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
-                store_getAnnotations: types.TREE_ACTION_GET_ANNOTATIONS,
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
@@ -165,24 +161,23 @@
               });
             },
             loadAnnotations(annotations) {
-                if(!annotations) return;
-                // console.log(annotations);
-                // annotations.forEach(a => {
-                //     this.anno_mapping[a.uniprot_id] = a.go_annotations;
-                //     a.go_annotations.forEach(g => {
-                //         if(!this.anno_headers.includes(g.goName)) {
-                //             this.anno_headers.push(g.goName);
-                //         }
-                //     });
-                // });
+                if(!annotations) {
+                    this.anno_mapping = {};
+                    this.anno_headers = [];
+                    var annoObj = {
+                        headers: this.anno_headers,
+                        annoMap: this.anno_mapping
+                    }
+
+                    this.store_setAnnoMapping(annoObj);
+                    return;
+                }
 
                 //Actual code
                 annotations.forEach(a => {
                     var uni_mapping = JSON.parse(a);
                     var uniprotId = uni_mapping.uniprot_id;
-                    // console.log("UniID ", uniprotId);
                     var annotationsList = JSON.parse(uni_mapping.go_annotations);
-                    // console.log("Anno_Map ", annotationsList);
                     this.anno_mapping[uniprotId] = annotationsList;
                     annotationsList.forEach(singleAnno => {
                         if(!this.anno_headers.includes(singleAnno.goName)) {
@@ -352,6 +347,9 @@
                 this.$refs.treeLayout.onShowLegend();
                 this.legend = !this.legend;
             },
+            moveUp() {
+                this.$refs.treeLayout.moveUp();
+            },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             refreshTable() {
                 var annoObj = {
@@ -383,7 +381,6 @@
                         tableNode["Organism"] = n.data.organism;
                         this.anno_headers.forEach(a => {
                             tableNode[a] = "";
-                            // console.log(this.anno_mapping[n.data.uniprotId]);
                             if(n.data.uniprotId) {
                                 let uniprotId = n.data.uniprotId.toLowerCase();
                                 if(this.anno_mapping[uniprotId]) {
@@ -409,8 +406,8 @@
         watch: {
             '$route.params.id': function (id) {
                 this.treeId = id;
-                this.loadJsonFromDB(this.treeId);
                 this.jsonData = null;
+                this.loadJsonFromDB(this.treeId);
             },
             stateTreeJson: {
                 handler: function (val, oldVal) {

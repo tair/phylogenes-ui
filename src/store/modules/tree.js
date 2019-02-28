@@ -103,7 +103,7 @@ const actions = {
             fq = util.buildFieldQuery(context.state.tree.payload);
         }
 
-        console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
+        // console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
         context.state.tree.isLoading = true;
         axios({
             method: 'GET',

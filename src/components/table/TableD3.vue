@@ -1,44 +1,38 @@
 <template>
     <div id="parent">
-        <!--<button id="show-modal" @click="showModal = true">Show Modal</button>-->
-        <modal v-if="showModal" @close="showModal = false">
-            <div slot="header">{{modalHeader}}</div>
-            <div slot="body">
-                <table v-if="popUpTableData.length > 0" class="popupTable">
-                    <tr>
-                        <th>GO term</th>
-                        <th>Evidence description</th>
-                        <th>Reference</th>
-                        <th>With/From</th>
-                        <th>Source</th>
-                    </tr>
-                    <tr v-for="a in popUpTableData">
-                        <td>{{a.goTerm}}</td>
-                        <td>{{a.code}}</td>
-                        <td><a v-for="ref in a.reference" v-bind:href="ref.link">{{ref.count}}, </a></td>
-                        <td></td>
-                        <td><a v-bind:href="a.sourceLink">{{a.source}}</a></td>
-                    </tr>
-                </table>
-                <div v-if="popUpTableData.length===0"><i>No Go Annotations for this gene!</i></div>
-            </div>
+        <modal v-if="showPopup" @close="showPopup = false">
+            <div slot="header">{{popupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
+                <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
+            </template>
         </modal>
-        <table class="mainTable">
-            <thead id="myhead">
+        <table class="mainTable" :style="{marginTop: topMargin+'px'}">
+            <thead id="head">
                 <col>
-                <colgroup :span="tableSpanCols.length"></colgroup>
-                <tr id="par" v-if="tableSpanCols.length > 0">
-                    <th colspan="1"></th>
-                    <th colspan="1"></th>
-                    <th :colspan="tableSpanCols.length" scope="colgroup">Known Function</th>
+                <colgroup :span="extraCols.length-5"></colgroup>
+                <tr id="secTr" v-if="extraCols.length > 0">
+                    <th colspan="2" class="noDisplay"></th>
+                    <th :colspan="extraCols.length" scope="colgroup" class="speTr">Known Function</th>
+                    <th colspan="3" style="background-color: transparent"></th>
                 </tr>
-                <tr id="main">
-                    <!--<th id="anno" scope="col" v-for="(col, i) in tableSpanCols">{{col}}</th>-->
-                    <th v-for="(col, i) in tableCols" :scope="getScope">{{col}}</th>
+                <tr id="mainTr">
+                    <th v-for="col in cols">{{col}}</th>
                 </tr>
             </thead>
-            <tbody id="mybody">
-
+            <tbody id="body">
+                <tr v-for="entry in data" @click="rowClicked(entry)">
+                    <td v-for="key in cols">
+                        <svg :width=tdWidth :height=tdHeight>
+                            <g>
+                                <text v-if="entry[key] != '*'"
+                                      dy=".35em" x=5 y=20>{{entry[key]}}</text>
+                                <circle v-if="entry[key] == '*'" class="anno_circle"
+                                      cx="100" cy="18"></circle>
+                            </g>
+                        </svg>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -50,25 +44,30 @@
 
     import * as types from '../../store/types_treedata';
     import { mapGetters, mapActions } from 'vuex';
+
+    import popupTable from './PopupTable';
     import customModal from '@/components/modal/CustomModal';
 
     export default {
         name: "tablelayout",
         components: {
+            popupTable: popupTable,
             'modal': customModal
         },
         data() {
             return {
-                scrollVertical: true,
-                tableCols: [],
-                tableSpanCols: [],
-                popUpTableData: [],
-                tableBody: null,
-                index: 0,
-                rowHeight: 38,
+                cols: [],
+                data: [],
+                extraCols: [],
+                tdWidth: '190px',
+                tdHeight: '30px',
+                rowHeight: 40,
                 scrollFromTree: false,
-                showModal: false,
-                modalHeader: ""
+                showPopup: false,
+                popupHeader: "",
+                popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
+                popupData: [],
+                topMargin: 0
             }
         },
         computed: {
@@ -84,11 +83,6 @@
                     this.update();
                 }
             },
-            store_annoMapping: {
-                handler: function(val, oldVal) {
-                    // console.log("Anno ", val);
-                }
-            },
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null) return;
@@ -97,173 +91,86 @@
                         this.setScrollToRow(foundRow.id);
                     }
                 }
+            },
+            store_annoMapping: {
+                handler: function (val, oldVal) {
+                    this.extraCols = val.headers;
+                    if(this.extraCols.length == 0) {
+                        this.topMargin = 35;
+                    } else {
+                        this.topMargin = 0;
+                    }
+                }
             }
+        },
+        mounted: function () {
+            if (this.stateTreeData) {
+                this.update();
+            }
+            const tbody = document.getElementById("body");
+            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
+            this.extraCols = this.store_annoMapping.headers;
         },
         methods: {
             ...mapActions({
                 stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL
             }),
+            //Is called on every change to the store data
             update() {
-                this.tableBody = d3.select('table');
-                this.renderTableHeader(this.tableBody);
-                this.renderTableBody(this.tableBody);
-            },
-            renderTableHeader(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
-                // console.log(titles);
-                // console.log(this.store_annoMapping);
-
-                this.tableCols = [];
-                this.tableSpanCols = this.store_annoMapping.headers;
-                if(titles.length > 0) {
-                    this.tableCols = titles;
-                }
-
-                // var t_head = table_d3.select('thead');
-                // const updateTh = t_head.select('tr.main')
-                //                         .selectAll('th')
-                //                         .data(titles);
-                //
-                // const enterTh = updateTh.enter()
-                //                     .append("th");
-                //
-                // updateTh.merge(enterTh)
-                //         .text(d => d);
-
-                // const exitTh = updateTh.exit();
-                // exitTh.transition().duration(1000)
-                // .style("opacity", 0)
-                // .remove();
+                this.cols = titles;
+                this.data = this.stateTreeData;
             },
-            getScope() {
-              return "col";
-            },
-            renderTableBody(table_d3) {
-                var titles = d3.keys(this.stateTreeData[0]);
-                titles = titles.splice(1);
-                var t_body = table_d3.select('tbody');
-                if(titles.length == 0) {
-                    t_body
-                        .selectAll('tr')
-                        .data([]);
-
+            handleScroll() {
+                //If scrolling is from tree, we don't need to update the table scroll again
+                if(this.scrollFromTree) {
+                    this.scrollFromTree = false;
                     return;
                 }
-                //Maps all the tree data into it's own rows.
-                // console.log(this.stateTreeData);
-                let renderData = [];
-                this.stateTreeData.forEach(d => {
-                    renderData["Gene name"] = d["Gene name"];
-                });
-                var rows_d3_map = t_body
-                        .selectAll('tr')
-                        .data(this.stateTreeData);
-
-                if(rows_d3_map.length === 0) {
-                    console.log("No new entering nodes");
-                    return;
+                let tbodyScrollL = document.getElementById("body").scrollLeft;
+                this.scrollTableHeader(tbodyScrollL);
+                let tBodyScrollT = document.getElementById("body").scrollTop;
+                this.scrollTreeFromTable(tBodyScrollT);
+            },
+            scrollTableHeader(amount) {
+                let thead = document.getElementById("head");
+                thead.scrollLeft = amount;
+            },
+            scrollTreeFromTable(amount) {
+                var rowNumber = amount/this.rowHeight;
+                rowNumber = Math.round(rowNumber);
+                var geneId = this.stateTreeData[rowNumber]["Gene ID"];
+                var scroll = {i: rowNumber, id: geneId};
+                this.stateSetTableScroll(scroll);
+            },
+            setScrollToRow(num) {
+                var centerRow = num-8;
+                const tbody = document.getElementById("body");
+                tbody.scrollTop = 40*centerRow;
+                this.scrollFromTree = true;
+            },
+            rowClicked(d) {
+                this.showPopup = true;
+                let uniprotId = d["Uniprot ID"];
+                if(uniprotId) {
+                    uniprotId = uniprotId.toLowerCase();
+                } else {
+                    uniprotId = "N/A";
                 }
-
-            //All the rows which are new. At first load it's all the rows from data.
-                var rows_entering = rows_d3_map.enter();
-                var rows_exiting = rows_d3_map.exit();
-
-                // console.log(rows_entering.size());
-                // console.log(rows_exiting.size());
-            //Modify the rows entering with appending html tags or modifying its style.
-                rows_entering = rows_entering.append('tr')
-                            .style("opacity", 0);
-                rows_entering.transition().duration(1000)
-                            .style("opacity", 1);
-
-                /*
-                    selection.merge(other)
-                Returns a new selection merging this selection with the specified other selection.
-                The returned selection has the same number of groups and the same parents as this selection.
-                commonly used to merge the enter and update selections after a data-join.
-                */
-                var td_rows_map = rows_d3_map.merge(rows_entering);
-
-                td_rows_map = td_rows_map
-                                .selectAll('td')
-                                .data((d) => {
-                                    return titles.map((k) => {
-                                        return { 'value': d[k], 'name': k};
-                                    });
-                                });
-
-                var td_entering = td_rows_map.enter();
-                var td_exiting = td_rows_map.exit();
-                // console.log(td_entering.size());
-                td_entering = td_entering.append('td').attr('class','my-col');
-                                            // .append('text')
-                // td_entering.append('circle').classed("anno_circle", true);
-                // td_entering.append(function(d) {
-                //     var div = document.createElement("div");
-                //     // var d3Ele = d3.select(this);
-                //     // var svg = d3Ele.append("svg").style("width", 200 + 'px').style("height", 25 + 'px');
-                //     // if(d.value === "*") {
-                //     //     svg.append("circle").classed("anno_circle", true)
-                //     //         .attr("cx", 85).attr("cy", 15);
-                //     // } else {
-                //     //     svg.append("text").text(d.value).attr("font-size", "14px").attr("x",5).attr("y",20);
-                //     // }
-                //     return div;
-                // });
-
-                td_rows_map = td_rows_map.merge(td_entering);
-
-                td_rows_map = td_rows_map
-                                .attr('data-th', d => d.name)
-                    // .append('svg').style("width", 200 + 'px').style("height", 25 + 'px')
-                    // .append("text").text("R").attr("font-size", "14px").attr("x",5).attr("y",20)
-                                .text(d => d.value);
-                // td_rows_map.selectAll('text').text(function(d,i){
-                //     return d.value;
-                // });
-                // .selectAll('text').each(function(d,i) {
-                //    console.log(d);
-                // });
-                // .select("text").text(d.value)
-                // .text(d => d.value)
-                // ;
-
-                rows_exiting.transition().duration(5000)
-                        .style("opacity", 0)
-                        .remove();
-
-                this.tableBody.selectAll("tr")
-                    .on("mouseover", function() {
-                        d3.select(this).selectAll('td')
-                            // .style('background-color', "orange")
-                            .style('cursor', "pointer");
-                    })
-                    .on("mouseleave", function() {
-                        // d3.select(this).selectAll('td')
-                        //     .style('background-color', "white");
-                    })
-                    .on("click", (d) => {
-                        this.showModal = true;
-                        let uniprotId = d["Uniprot ID"];
-                        if(uniprotId) {
-                            uniprotId = uniprotId.toLowerCase();
-                        } else {
-                            uniprotId = "N/A";
-                        }
-                        this.modalHeader = "Uniprot ID: " + uniprotId.toUpperCase();
-
-                        this.popUpTableData = this.getFormattedAnnotationsList(uniprotId);
-                    })
+                this.popupHeader = "Uniprot ID: " + uniprotId.toUpperCase();
+                this.popupData = this.getFormattedAnnotationsList(uniprotId);
             },
             getFormattedAnnotationsList(uniprotId) {
                 var annosForGene = this.store_annoMapping.annoMap[uniprotId];
-                // console.log(annosForGene);
                 var annoList = [];
                 if(!annosForGene) return annoList;
                 annosForGene.forEach(a => {
                     var id = a.goId;
-                    var code = a.evidenceCode.split(",")[2];
+                    var code = "";
+                    if(a.evidenceCode) {
+                        code = a.evidenceCode.split(",")[2];
+                    }
                     var refCode = a.reference.split(":")[0];
                     var refId = a.reference.split(":")[1];
                     var refLink = "https://www.ncbi.nlm.nih.gov/pubmed/" + refId;
@@ -292,198 +199,115 @@
                         })
                     }
                 });
-                // console.log(annoList);
                 return annoList;
-            },
-            setScrollToRow(num) {
-                var centerRow = num-8;
-                const tbody = document.getElementById("mybody");
-                tbody.scrollTop = 40*centerRow;
-                this.scrollFromTree = true;
-            },
-            handleScroll() {
-                if(this.scrollFromTree) {
-                    this.scrollFromTree = false;
-                    return;
-                }
-                const thead = document.getElementById("myhead");
-                const tbodyScroll = document.getElementById("mybody").scrollLeft;
-                thead.scrollLeft = tbodyScroll;
-                const scrollTop = document.getElementById("mybody").scrollTop;
-
-                var rowNumber = scrollTop/this.rowHeight;
-                rowNumber = Math.round(rowNumber);
-                var geneId = this.stateTreeData[rowNumber]["Gene ID"];
-                var scroll = {i: rowNumber, id: geneId};
-                this.stateSetTableScroll(scroll);
-            },
-            handleMouseOver(d, i) {
-                // d3.select(this).style({
-                //     "background-color": "orange"
-                // });
             }
-        },
-        mounted: function () {
-            if(this.stateTreeData) {
-                this.update();
-            }
-            const tbody = document.getElementById("mybody");
-            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 100));
-        },
-        created: function () {
-            const tbody = document.getElementById("mybody");
-            // tbody.addEventListener('scroll', this.handleScroll);
         },
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll);
         }
     }
-
 </script>
-<style>
-    /*#parent {*/
-        /*position: absolute;*/
-        /*left: 1vw;*/
-        /*top: 6vh;*/
-        /*width: 90%;*/
-        /*height: 800px;*/
-        /*overflow: hidden;*/
-    /*}*/
-
-    /*table {*/
-        /*display: flex;*/
-        /*flex-direction: column;*/
-        /*flex: 1 1 auto;*/
-        /*width: 100%;*/
-        /*height: 800px;*/
-        /*border: 0px solid #9CC255;*/
-        /*border-collapse: collapse;*/
-        /*overflow: hidden;*/
-        /*!* Use this to create a "dead" area color if table is too wide for cells *!*/
+<style scoped>
+    #parent {
+        position: absolute;
+        width: 95%;
+        height: 800px;
+        overflow: hidden;
+    }
+    .mainTable {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 800px;
+        border: 0px solid #9CC255;
+        border-collapse: collapse;
+        overflow: hidden;
+        /* Use this to create a "dead" area color if table is too wide for cells */
         /*background-color: #d6daeb;*/
-        /*font-size: 14px;*/
-        /*font-family: sans-serif;*/
-    /*}*/
-
-    /*thead {*/
-        /*!**/
-        /*Grow thead automatically to fit content, don't shrink it*/
-        /*proportionately to the body.*/
-        /**!*/
-        /*flex: 0 0 auto;*/
-        /*display: block;*/
-        /*!* x-scrolling will be managed via JS *!*/
-        /*overflow-x: hidden;*/
-        /*!**/
-        /*Keep header columns aligned with useless scrollbar.*/
-        /*For IE11, use "dead area" color to hide scrollbar functions*/
-        /**!*/
-        /*overflow-y: scroll;*/
-        /*scrollbar-base-color: #ccc;*/
-        /*scrollbar-face-color: #ccc;*/
-        /*scrollbar-highlight-color: #ccc;*/
-        /*scrollbar-track-color: #ccc;*/
-        /*scrollbar-arrow-color: #ccc;*/
-        /*scrollbar-shadow-color: #ccc;*/
-        /*scrollbar-dark-shadow-color: #ccc;*/
-    /*}*/
-
-    /*
-    For Webkit, use "dead area" color to hide scrollbar functions
-    TODO: on Chrome/Safari for Mac, scrollbars are not shown anyway and
-    this creates an extra block. No impact on iOS Safari.
-    */
-    /*thead::-webkit-scrollbar { display: block; background-color: #ccc; }*/
-    /*thead::-webkit-scrollbar-track { background-color: #ccc; }*/
-
-    /*!* Scroll the actual tbody (second child on all browsers) *!*/
-    /*tbody {*/
-        /*display: block;*/
-        /*overflow: scroll;*/
-    /*}*/
-
-    /* IE11 adds an extra tbody, have to hide it */
-    /*tbody:nth-child(3) { display: none; }*/
-
-    /*!* The one caveat, a hard-set width is required. *!*/
-    /*td, th {*/
-        /*width: 200px;*/
-        /*min-width: 200px;*/
-        /*max-width: 200px;*/
-        /*height: 40px;*/
-        /*min-height: 40px;*/
-        /*max-height: 40px;*/
-        /*overflow: hidden;*/
-        /*text-overflow: clip;*/
-        /*white-space: nowrap;*/
-        /*padding: 5px;*/
-        /*border: 1px solid #f1f1f0;*/
-    /*}*/
-
-    /*th#anno {*/
-        /*width: 100px;*/
-        /*min-width: 100px;*/
-        /*max-width: 100px;*/
-    /*}*/
-
-    /*tr:nth-child(even) {*/
-        /*background-color: #d6daeb;*/
-    /*}*/
-    /*tr:nth-child(odd) {*/
-        /*background-color: #eceef6;*/
-    /*}*/
-
-    /*th {*/
+        font-size: 14px;
+        font-family: sans-serif;
+    }
+    .mainTable thead {
+        flex: 0 0 auto;
+        display: block;
+        /* required for programmatic scrolling of header */
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+    #mainTr {
+        border-bottom: 3px solid #f1f1f0;
+        filter: brightness(100%) !important;
+        cursor: default !important;
+    }
+    #secTr {
+        height: 35px;
+        max-height: 35px;
+        min-height: 35px;
+        filter: brightness(100%) !important;
+        cursor: default !important;
+        border-bottom: 3px solid #f1f1f0;
+        background-color: transparent;
+    }
+    .mainTable tbody {
+        overflow: scroll;
+    }
+    .mainTable tr:nth-child(even) {
+        background-color: #d6daeb;
+    }
+    .mainTable tr:nth-child(odd) {
+        background-color: #eceef6;
+    }
+    .mainTable tr:hover {
+        filter: brightness(85%);
+    }
+    .mainTable th {
+        background-color: #e1e7f3;
+        text-align: center;
+    }
+    .mainTable .thHide {
+        visibility: hidden;
+    }
+    .mainTable th, .mainTable td {
         /*background-color: #e1e7f3;*/
-    /*}*/
-
-    /*.mainTable td:first-child,*/
-    /*.mainTable th:first-child {*/
-        /*width: 200px;*/
-        /*min-width: 200px;*/
-        /*max-width: 200px;*/
-        /*position: sticky;*/
-        /*position: -webkit-sticky;*/
-        /*left:0;*/
+        min-width: 200px;
+        width: 200px;
+        max-width: 200px;
+        min-height: 40px;
+        max-height: 40px;
+        height: 40px;
+        border: 1px solid #f1f1f0;
         /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
-        /*background-color: #d6daeb;*/
-    /*}*/
 
-    /*.mainTable td:first-child, .mainTable th:first-child {*/
-        /*width: 200px;*/
-        /*min-width: 200px;*/
-        /*max-width: 200px;*/
-        /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
-        /*background-color: #d6daeb;*/
-    /*}*/
+        word-wrap: break-word;
+        cursor: pointer;
+    }
+    .mainTable td:first-child,
+    .mainTable th:first-child {
+        position: sticky;
+        position: -webkit-sticky;
+        left:0;
+        box-shadow: 5px 0 2px -2px #f1f1f0;
+        background-color: #d6daeb;
+    }
 
-    /*.popupTable {*/
-        /*display: flex;*/
-        /*flex-direction: column;*/
-        /*flex: 1 1 auto;*/
-        /*width: 100%;*/
-        /*height: 200px;*/
-        /*overflow: scroll;*/
-    /*}*/
+    .speTr {
+        background-color: #6687c6 !important;
+        color: white;
+        text-align: left !important;
+        text-indent: 50px;
+    }
 
-    /*.popupTable th, th:first-child {*/
-        /*width: 100px;*/
-        /*min-width: 100px;*/
-        /*max-width: 100px;*/
-        /*height:40px;*/
-        /*max-height: 100px;*/
-        /*word-wrap: break-word;*/
-        /*white-space: normal;*/
-        /*background-color: #c5dcf0;*/
-        /*box-shadow: 2px 0 2px -2px #f1f1f0;*/
-    /*}*/
+    .noDisplay {
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
 
-    /*.popupTable td, td:first-child {*/
-        /*width: 100px;*/
-        /*min-width: 100px;*/
-        /*max-width: 100px;*/
-        /*word-wrap: break-word;*/
-        /*white-space: normal;*/
-        /*box-shadow: 2px 0 2px -2px #f1f1f0;*/
-    /*}*/
+    .anno_circle {
+        r: 8;
+        fill: #ff0;
+        stroke: steelblue;
+        stroke-width: 2px;
+    }
 </style>
+

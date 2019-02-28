@@ -17,9 +17,6 @@
     </div>
 </template>
 <script>
-    import * as types from '../../store/types_treedata';
-    import { mapGetters, mapActions } from 'vuex';
-
     export default {
         name: "popupTable",
         props: ['cols', 'data'],
@@ -31,8 +28,7 @@
             }
         },
         mounted() {
-            // console.log("Cols ", this.cols);
-            // console.log("Data ", this.data);
+
         },
         data() {
             return {
