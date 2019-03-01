@@ -10,7 +10,7 @@
                 <td>{{a.goTerm}}</td>
                 <td>{{a.code}}</td>
                 <td><a v-for="ref in a.reference" v-bind:href="ref.link">{{ref.count}}, </a></td>
-                <td></td>
+                <td><a v-for="wf in a.withFrom" v-bind:href="wf.link">{{wf.name}},</a></td>
                 <td><a v-bind:href="a.sourceLink">{{a.source}}</a></td>
             </tr>
         </table>
@@ -47,7 +47,7 @@
         overflow: scroll;
     }
 
-    .popupTable th, th:first-child {
+    .popupTable th {
         width: 100px;
         min-width: 100px;
         max-width: 100px;
@@ -57,15 +57,18 @@
         white-space: normal;
         background-color: #c5dcf0;
         box-shadow: 2px 0 2px -2px #f1f1f0;
+        text-align: center;
     }
 
-    .popupTable td, td:first-child {
+    .popupTable td {
         width: 100px;
         min-width: 100px;
         max-width: 100px;
         word-wrap: break-word;
         white-space: normal;
         box-shadow: 2px 0 2px -2px #f1f1f0;
+        padding-left: 5px;
+        padding-top: 5px;
     }
 </style>
 

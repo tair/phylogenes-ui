@@ -161,6 +161,49 @@
                 this.popupHeader = "Uniprot ID: " + uniprotId.toUpperCase();
                 this.popupData = this.getFormattedAnnotationsList(uniprotId);
             },
+            getDBLink(r) {
+                let link = "";
+                switch(r.id){
+                    case 'UniProtKB':
+                        link =  'https://www.uniprot.org/uniprot/'+r.id;
+                        break;
+                    case 'AGI_LocusCode':
+                        link =  'https://www.arabidopsis.org/servlets/TairObject?type=locus&name='+r.id;
+                        break;
+                    case 'ComplexPortal':
+                        link = 'https://www.ebi.ac.uk/complexportal/complex/'+r.id;
+                    case 'EMBL':
+                        link = 'https://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&Submit=Go&id='+r.id;
+                    case 'EcoGene':
+                        link = 'http://www.ecogene.org/geneInfo.php?eg_id='+r.id;
+                    case 'FB':
+                        link = 'http://flybase.org/reports/'+r.id;
+                    case 'GeneDB':
+                        link = 'http://www.genedb.org/gene/'+r.id;
+                    case 'NCBI_gi':
+                        link = 'https://www.ncbi.nlm.nih.gov/protein/'+r.id;
+                    case 'PomBase':
+                        link = 'https://www.pombase.org/gene/'+r.id;
+                    case 'RGD':
+                        link = 'https://rgd.mcw.edu/rgdweb/report/gene/main.html?id='+r.id;
+                    case 'RefSeq':
+                        link = 'https://www.ncbi.nlm.nih.gov/nuccore/'+r.id;
+                    case 'SGD':
+                        link = 'https://www.yeastgenome.org/locus/'+r.id;
+                    case 'TAIR':
+                        link = 'https://www.arabidopsis.org/servlets/TairObject?accession='+r.id;
+                    case 'WB':
+                        link = 'https://wormbase.org/db/gene/gene?name='+r.id;
+                    case 'ZFIN':
+                        link = 'http://zfin.org/'+r.id;
+                    case 'dictyBase':
+                        link = ' http://dictybase.org/gene/'+r.id;
+                    default:
+                        console.log("DB Id not recognized:", r)
+                        break;
+                }
+                return link;
+            },
             getFormattedAnnotationsList(uniprotId) {
                 var annosForGene = this.store_annoMapping.annoMap[uniprotId];
                 var annoList = [];
@@ -178,6 +221,14 @@
                         refLink = "https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-"
                             +refId+".md";
                     }
+                    let withFromList = [];
+                    if(a.withFrom) {
+                        a.withFrom.forEach(r => {
+                            withFromList.push(
+                                {name: r.db+":"+r.id,
+                                 link: this.getDBLink(r)});
+                        });
+                    }
 
                     var findGoId = annoList.find(a => {return a.goId === id;});
                     if(!findGoId) {
@@ -189,6 +240,7 @@
                                 count: 1,
                                 link: refLink
                             }],
+                            withFrom: withFromList,
                             source: "QuickGO",
                             sourceLink: "https://www.ebi.ac.uk/QuickGO/term/" + a.goId
                         });
