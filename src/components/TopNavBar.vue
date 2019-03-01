@@ -3,7 +3,7 @@
 
         <!-- Fixed navbar -->
         <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-success">
-            <a class="my-logo" href="#">
+            <a class="my-logo" href="/">
                 <img width="75" height="48" src="../../src/assets/img/phy-logo2.png" alt="">
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
