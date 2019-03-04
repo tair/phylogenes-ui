@@ -163,7 +163,7 @@
             },
             getDBLink(r) {
                 let link = "";
-                switch(r.id){
+                switch(r.db){
                     case 'UniProtKB':
                         link =  'https://www.uniprot.org/uniprot/'+r.id;
                         break;
@@ -172,32 +172,46 @@
                         break;
                     case 'ComplexPortal':
                         link = 'https://www.ebi.ac.uk/complexportal/complex/'+r.id;
+                        break;
                     case 'EMBL':
                         link = 'https://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&Submit=Go&id='+r.id;
+                        break;
                     case 'EcoGene':
                         link = 'http://www.ecogene.org/geneInfo.php?eg_id='+r.id;
+                        break;
                     case 'FB':
                         link = 'http://flybase.org/reports/'+r.id;
+                        break;
                     case 'GeneDB':
                         link = 'http://www.genedb.org/gene/'+r.id;
+                        break;
                     case 'NCBI_gi':
                         link = 'https://www.ncbi.nlm.nih.gov/protein/'+r.id;
+                        break;
                     case 'PomBase':
                         link = 'https://www.pombase.org/gene/'+r.id;
+                        break;
                     case 'RGD':
                         link = 'https://rgd.mcw.edu/rgdweb/report/gene/main.html?id='+r.id;
+                        break;
                     case 'RefSeq':
                         link = 'https://www.ncbi.nlm.nih.gov/nuccore/'+r.id;
+                        break;
                     case 'SGD':
                         link = 'https://www.yeastgenome.org/locus/'+r.id;
+                        break;
                     case 'TAIR':
                         link = 'https://www.arabidopsis.org/servlets/TairObject?accession='+r.id;
+                        break;
                     case 'WB':
                         link = 'https://wormbase.org/db/gene/gene?name='+r.id;
+                        break;
                     case 'ZFIN':
                         link = 'http://zfin.org/'+r.id;
+                        break;
                     case 'dictyBase':
                         link = ' http://dictybase.org/gene/'+r.id;
+                        break;
                     default:
                         console.log("DB Id not recognized:", r)
                         break;
@@ -226,7 +240,8 @@
                         a.withFrom.forEach(r => {
                             withFromList.push(
                                 {name: r.db+":"+r.id,
-                                 link: this.getDBLink(r)});
+                                 link: this.getDBLink(r)
+                                });
                         });
                     }
 

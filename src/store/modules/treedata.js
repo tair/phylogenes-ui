@@ -115,29 +115,29 @@ const actions = {
             })
     },
     [types.TREE_ACTION_GET_ANNOTATIONS]: (context, payload) => {
-        // var q = "";
-        // if(payload != null) {
-        //     q = util.getQueryForPantherId(payload);
-        //     if(q == "")
-        //         q = "*:*";
-        // }
-        // // console.log('QQQQ: ' + q);
-        //
-        // axios({
-        //     method: 'GET',
-        //     url: SOLR_URL +
-        //     '?fl=' + 'go_annotations' +
-        //     '&rows=1' + '&start=0' +
-        //     '&q=' + q
-        // })
-        //     .then(res => {
-        //         if(res.data.response.docs.length > 0) {
-        //             context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
-        //         }
-        //     })
-        //     .catch(error => {
-        //         console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-        //     })
+        var q = "";
+        if(payload != null) {
+            q = util.getQueryForPantherId(payload);
+            if(q == "")
+                q = "*:*";
+        }
+        // console.log('QQQQ: ' + q);
+
+        axios({
+            method: 'GET',
+            url: SOLR_URL +
+            '?fl=' + 'go_annotations' +
+            '&rows=1' + '&start=0' +
+            '&q=' + q
+        })
+            .then(res => {
+                if(res.data.response.docs.length > 0) {
+                    context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                }
+            })
+            .catch(error => {
+                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+            })
     }
 };
 
