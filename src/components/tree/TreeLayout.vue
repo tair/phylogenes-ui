@@ -107,7 +107,7 @@
                 topPaddingY: 80,
                 rowHeight: 41,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
@@ -168,7 +168,6 @@
                 this.calculateDepthIds(nodes);
 
                 setTimeout(() => {
-                    // console.log("From init tree");
                     this.updateTree();
                     this.adjustPosition(nodes);
                     this.isLoading = false;
@@ -190,14 +189,12 @@
             //Update Tree during every interaction with tree
             // which modifies the tree structure (eg. toggleNode)
             updateTree() {
-                // console.log("Update tree");
                 this.saveOldPositions(this.rootNode);
 
                 //Explain: why old Indexes?
                 d3.select('.nodes')
                     .selectAll('g.shape')
                     .data(this.oldIndexes);
-                // console.log(this.oldIndexes);
 
                 var nodes = this.rootNode.descendants();
                 this.updateExtraInfo(nodes);
@@ -206,7 +203,6 @@
 
                 // this.updateAccordingToDepth(nodes);
                 this.$emit('updated-tree', nodes);
-                // console.log(nodes);
 
                 this.renderNodes(nodes, true);
                 this.renderLinks(nodes);
@@ -257,7 +253,6 @@
 
                 //Center Tree panel to first matched node
                 this.centerTreeToGivenNode(firstMatchedNode);
-                // console.log("From matched nodes");
                 this.updateTree();
 
                 if(foundAnyInHidden && firstMatchedNode == null) {
@@ -323,7 +318,6 @@
                 exitingNodes.nodes().forEach(n => {
                     if (n.__data__) {
                         var findNode = this.$refs.treenode.find(en => en.content.id == n.__data__.id);
-                        // console.log(this.clickedNode.id + "-" + this.clickedNode.x + "," + this.clickedNode.y);
                         findNode.onExit(this.clickedNode);
                     }
                 });
@@ -370,7 +364,6 @@
                 this.index = 0;
                 this.rootNode.each(n => {
                     n.id = this.index++;
-                    // console.log(n.id + " X: " + n.x);
 
                     //Check if the node data contains a text we can use
                     if(n.data.text) {
@@ -540,7 +533,6 @@
                         });
                     }
                 });
-                // console.log("Datum Length ", this.linkDatums);
             },
             // Reset the tree layout since the nodes have been updated.
             resetTreeLayout() {
@@ -575,7 +567,6 @@
 
                 var topMostNode = null;
                 nodesOrderedByDepth.some(d => {
-                    // console.log(d.id + " - " + d.dfId + " - " + d.x);
                     topMostNode = d;
                     return !d.children;
                 });
@@ -627,7 +618,6 @@
                 nodes.forEach(n => {
                     this.oldIndexes.push(n);
                 });
-                // console.log("Index Size " + this.oldIndexes.length);
             },
             saveOldPositions(root) {
                 root.each(d => {
@@ -705,7 +695,6 @@
                     })
             },
             onClick(source) {
-                // console.log(source.id + "-" + source.x + "," + source.y);
                 this.clickedNode = {id: source.id, x: source.x, y: source.y};
                 this.updateTree();
             },
@@ -739,7 +728,6 @@
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
-                // console.log(currTopNode);
                 var topNodePosY = -1*currTopNode.x + 35 + 35;
                 var topNodePosX = this.currentTopNodePos.x;
 
@@ -765,7 +753,6 @@
                     }
                 });
                 if (this.link_intersected) {
-                    // console.log(link_intersected);
                     this.$refs.nodeToAdd.onIntersect(true);
                 } else {
                     this.$refs.nodeToAdd.onIntersect(false);
@@ -779,7 +766,6 @@
                 }
             },
             onMenuClick(opt, data) {
-                // console.log(this.$refs.menu.userData);
                 var nodeId = this.$refs.menu.userData
                 if(opt === "Add") {
                     this.addNewChildNode(nodeId);
@@ -826,7 +812,6 @@
                     parentChildren = parentChildren.filter(pc => pc.id != nodeId);
                     if(parentChildren.length == 0) parentChildren = null;
                     nodeToDelete.parent.children = parentChildren;
-                    // console.log(nodes);
                     this.updateTree2();
                 }
             },
@@ -903,18 +888,7 @@
             },
             // ~~~~~~~~~~~~~~~~ ********************** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTree2() {
-                //Explain: why old Indexes?
-                // d3.select('.nodes')
-                //     .selectAll('g')
-                //     .data(this.oldIndexes);
-                // // console.log(this.oldIndexes);
-                //
-                // var nodes = this.rootNode.descendants();
-                // // console.log(nodes);
-                // this.updateAccordingToDepth(nodes);
-                // this.saveOldPositions(this.rootNode);
-                // this.renderLinks(nodes);
-                // this.renderNodes(nodes);
+
             },
             updateAccordingToDepth(nodes, flag) {
                 this.counter = 0;

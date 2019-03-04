@@ -106,7 +106,6 @@
         },
         mounted() {
             this.loadJsonFromDB(this.treeId);
-            // this.loadJsonFromFile();
             this.searchText = "";
             this.matchNodes = [];
         },
@@ -197,7 +196,6 @@
                     } else {
                         this.mappingData = data;
                         this.mapOrganismToDisplayName(treeJson);
-                        // console.log(treeJson);
                         this.jsonData = treeJson;
                     }
                 });
@@ -288,7 +286,6 @@
             },
             getLeafNodeText(d) {
                 if(d.children) {
-                    // console.log(d.children[0].data);
                     return d.children[0].organism;
                 }
                 return "Leaf Node";
@@ -307,6 +304,7 @@
                 }
                 return "#00FF00";
             },
+            //For testing
             // loadJson() {
             //     d3.json("/panther.json", (err, data) => {
             //         if(err) {

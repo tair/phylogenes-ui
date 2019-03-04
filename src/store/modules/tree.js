@@ -103,7 +103,6 @@ const actions = {
             fq = util.buildFieldQuery(context.state.tree.payload);
         }
 
-        // console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
         context.state.tree.isLoading = true;
         axios({
             method: 'GET',
@@ -180,9 +179,6 @@ const actions = {
     },
 
     [types.TREE_ACTION_PAGINATE]: (context, payload) => {
-
-        // console.log('Payload: ' + JSON.stringify(payload));
-
         var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload.filters = payload;
@@ -212,11 +208,9 @@ const actions = {
 
                 // Highlighted Fields ///////////////////////////////
                 if(res.data.highlighting) {
-                    // console.log("High ", Object.keys(res.data.highlighting));
                     var highlightArr = Object.keys(res.data.highlighting).map((key) => {
                         return [key, res.data.highlighting[key]];
                     });
-                    // console.log("High:", highlightArr);
                     context.state.tree.data.results.forEach((r, i) => {
                         r.hl = highlightArr[i];
                     });
