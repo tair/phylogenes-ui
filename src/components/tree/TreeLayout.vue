@@ -727,6 +727,7 @@
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
+                if(!currTopNode) return;
                 var topNodePosY = -1*currTopNode.x + 35 + this.topPaddingY;
                 var topNodePosX = this.currentTopNodePos.x;
 
