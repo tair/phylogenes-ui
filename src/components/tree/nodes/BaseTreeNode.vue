@@ -56,6 +56,7 @@ across all treenode types (eg. translate, exit movement).
                 this.$emit('clicknode', this.content);
             },
             onExit(node) {
+                if(!node) return;
                 // console.log("ON Exit ", node);
                 this.el.transition().duration(this.duration)
                     .attr("transform", d => {
@@ -67,7 +68,6 @@ across all treenode types (eg. translate, exit movement).
                 }
             },
             renderNode() {
-                // console.log(this.el);
                 //Position
                 this.el.attr("transform", d => {
                     return "translate(" + this.content.yo + "," + this.content.xo + ")";

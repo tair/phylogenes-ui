@@ -1,13 +1,38 @@
 <template>
     <div id="parent">
-        <table>
-            <thead id="myhead">
-                <tr>
-
+        <modal v-if="showPopup" @close="showPopup = false">
+            <div slot="header">{{popupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
+                <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
+            </template>
+        </modal>
+        <table class="mainTable" :style="{marginTop: topMargin+'px'}">
+            <thead id="head" ref="thead">
+                <col>
+                <colgroup :span="extraCols.length-5"></colgroup>
+                <tr id="secTr" v-if="extraCols.length > 0">
+                    <th colspan="2" class="noDisplay"></th>
+                    <th :colspan="extraCols.length" scope="colgroup" class="speTr">Known Function</th>
+                    <th colspan="3" style="background-color: transparent"></th>
+                </tr>
+                <tr id="mainTr">
+                    <th v-for="col in cols">{{col}}</th>
                 </tr>
             </thead>
-            <tbody id="mybody">
-
+            <tbody id="body">
+                <tr v-for="entry in data" @click="rowClicked(entry)">
+                    <td v-for="key in cols">
+                        <svg :width=tdWidth :height=tdHeight>
+                            <g>
+                                <text v-if="entry[key] != '*'"
+                                      dy=".35em" x=5 y=20>{{entry[key]}}</text>
+                                <circle v-if="entry[key] == '*'" class="anno_circle"
+                                      cx="100" cy="18"></circle>
+                            </g>
+                        </svg>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -20,25 +45,36 @@
     import * as types from '../../store/types_treedata';
     import { mapGetters, mapActions } from 'vuex';
 
+    import popupTable from './PopupTable';
+    import customModal from '@/components/modal/CustomModal';
+
     export default {
         name: "tablelayout",
         components: {
-
+            popupTable: popupTable,
+            'modal': customModal
         },
         data() {
             return {
-                scrollVertical: true,
-                tableBody: null,
-                index: 0,
+                cols: [],
+                data: [],
+                extraCols: [],
+                tdWidth: '190px',
+                tdHeight: '30px',
                 rowHeight: 40,
-                scrollFromTree: false
+                scrollFromTree: false,
+                showPopup: false,
+                popupHeader: "",
+                popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
+                popupData: [],
+                topMargin: 0
             }
         },
         computed: {
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
-                stateTreeZoomX: types.TREE_GET_ZOOM,
-                store_getCenterNode: types.TREE_GET_CENTER_NODE
+                store_getCenterNode: types.TREE_GET_CENTER_NODE,
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING
             })
         },
         watch: {
@@ -46,11 +82,6 @@
                 handler: function (val, oldVal) {
                     this.update();
                 }
-            },
-            stateTreeZoomX: {
-                handler: function (val, oldVal) {
-                    this.setScroll(val);
-                },
             },
             store_getCenterNode: {
                 handler: function (val, oldVal) {
@@ -60,247 +91,324 @@
                         this.setScrollToRow(foundRow.id);
                     }
                 }
+            },
+            store_annoMapping: {
+                handler: function (val, oldVal) {
+                    this.extraCols = val.headers;
+                    if(this.extraCols.length == 0) {
+                        this.topMargin = 35;
+                    } else {
+                        this.topMargin = 0;
+                    }
+                }
             }
+        },
+        mounted: function () {
+            if (this.stateTreeData) {
+                this.update();
+            }
+            const tbody = document.getElementById("body");
+            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
+            this.extraCols = this.store_annoMapping.headers;
         },
         methods: {
             ...mapActions({
-                stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL
+                stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
+                store_setTreeTopY: types.TREE_ACTION_SET_TOP_Y
             }),
+            //Is called on every change to the store data
             update() {
-                this.tableBody = d3.select('table');
-                this.renderTableHeader(this.tableBody);
-                this.renderTableBody(this.tableBody);
-            },
-            renderTableHeader(table_d3) {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
-                var t_head = table_d3.select('thead');
-                const updateTh = t_head.select('tr')
-                                        .selectAll('th')
-                                        .data(titles);
-
-                const enterTh = updateTh.enter()
-                                    .append("th");
-
-                updateTh.merge(enterTh)
-                        .text(d => d);
-
-                // const exitTh = updateTh.exit();
-                // exitTh.transition().duration(1000)
-                // .style("opacity", 0)
-                // .remove();
-            },
-            renderTableBody(table_d3) {
-                var titles = d3.keys(this.stateTreeData[0]);
-                titles = titles.splice(1);
-                var t_body = table_d3.select('tbody');
-                //Maps all the tree data into it's own rows.
-                // console.log(this.stateTreeData);
-                let renderData = [];
-                this.stateTreeData.forEach(d => {
-                    renderData["Gene name"] = d["Gene name"];
-                });
-                var rows_d3_map = t_body
-                        .selectAll('tr')
-                        .data(this.stateTreeData);
-
-                if(rows_d3_map.length === 0) {
-                    console.log("No new entering nodes");
-                    return;
-                }
-
-            //All the rows which are new. At first load it's all the rows from data.
-                var rows_entering = rows_d3_map.enter();
-                var rows_exiting = rows_d3_map.exit();
-
-                // console.log(rows_entering);
-            //Modify the rows entering with appending html tags or modifying its style.
-                rows_entering = rows_entering.append('tr')
-                            .style("opacity", 0);
-                rows_entering.transition().duration(1000)
-                            .style("opacity", 1);
-
-                /*
-                    selection.merge(other)
-                Returns a new selection merging this selection with the specified other selection.
-                The returned selection has the same number of groups and the same parents as this selection.
-                commonly used to merge the enter and update selections after a data-join.
-                */
-                var td_rows_map = rows_d3_map.merge(rows_entering);
-
-                td_rows_map = td_rows_map
-                                .selectAll('td')
-                                .data((d) => {
-                                    return titles.map((k) => {
-                                        return { 'value': d[k], 'name': k};
-                                    });
-                                });
-
-                var td_entering = td_rows_map.enter();
-                td_entering = td_entering.append('td');
-
-                td_rows_map = td_rows_map.merge(td_entering);
-                td_rows_map = td_rows_map
-                                .attr('data-th', d => d.name)
-                                .text(d => d.value)
-                                .attr('class','my-col');
-
-                rows_exiting.transition().duration(500)
-                        .style("opacity", 0)
-                        .remove();
-            },
-            setScrollToRow(num) {
-                var centerRow = num-8;
-                const tbody = document.getElementById("mybody");
-                tbody.scrollTop = 40*centerRow;
-                this.scrollFromTree = true;
-            },
-            setScroll(val) {
-                const tbody = document.getElementById("mybody");
-                // if(val.y < 0) {
-                //     tbody.scrollTop = 0;
-                // } else {
-                //     var rowNumber = val.y/this.rowHeight;
-                //     // console.log(rowNumber);
-                //     var padding = 0; //rowNumber/2;
-                //     //padding required cuz as the row number increases,
-                //     // the tree gets more misaligned
-                //     tbody.scrollTop = 40*rowNumber + padding;
-                //     this.scrollFromTree = true;
-                // }
-                // var rowNumber = Math.round(val);
-                // console.log("rowNumber"+ rowNumber);
-                // var padding = 0;
-                // tbody.scrollTop = 40*rowNumber + padding;
-                // this.scrollFromTree = true;
+                this.cols = titles;
+                this.data = this.stateTreeData;
+                let theadHeight = this.$refs.thead.clientHeight;
+                this.store_setTreeTopY(theadHeight-38);
             },
             handleScroll() {
+                //If scrolling is from tree, we don't need to update the table scroll again
                 if(this.scrollFromTree) {
                     this.scrollFromTree = false;
                     return;
                 }
-                const thead = document.getElementById("myhead");
-                const tbodyScroll = document.getElementById("mybody").scrollLeft;
-                thead.scrollLeft = tbodyScroll;
-                const scrollTop = document.getElementById("mybody").scrollTop;
-
-                var rowNumber = scrollTop/this.rowHeight;
+                let tbodyScrollL = document.getElementById("body").scrollLeft;
+                this.scrollTableHeader(tbodyScrollL);
+                let tBodyScrollT = document.getElementById("body").scrollTop;
+                this.scrollTreeFromTable(tBodyScrollT);
+            },
+            scrollTableHeader(amount) {
+                let thead = document.getElementById("head");
+                thead.scrollLeft = amount;
+            },
+            scrollTreeFromTable(amount) {
+                var rowNumber = amount/this.rowHeight;
                 rowNumber = Math.round(rowNumber);
                 var geneId = this.stateTreeData[rowNumber]["Gene ID"];
                 var scroll = {i: rowNumber, id: geneId};
                 this.stateSetTableScroll(scroll);
+            },
+            setScrollToRow(num) {
+                var centerRow = num-8;
+                const tbody = document.getElementById("body");
+                tbody.scrollTop = 40*centerRow;
+                this.scrollFromTree = true;
+            },
+            rowClicked(d) {
+                this.showPopup = true;
+                let uniprotId = d["Uniprot ID"];
+                if(uniprotId) {
+                    uniprotId = uniprotId.toLowerCase();
+                } else {
+                    uniprotId = "N/A";
+                }
+                this.popupHeader = "Uniprot ID: " + uniprotId.toUpperCase();
+                let annoList = this.getFormattedAnnotationsList(uniprotId);
+                this.popupData = this.getPopupData(annoList);
+            },
+            getDBLink(r) {
+                let link = "";
+                switch(r.db){
+                    case 'UniProtKB':
+                        link =  'https://www.uniprot.org/uniprot/'+r.id;
+                        break;
+                    case 'AGI_LocusCode':
+                        link =  'https://www.arabidopsis.org/servlets/TairObject?type=locus&name='+r.id;
+                        break;
+                    case 'ComplexPortal':
+                        link = 'https://www.ebi.ac.uk/complexportal/complex/'+r.id;
+                        break;
+                    case 'EMBL':
+                        link = 'https://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&Submit=Go&id='+r.id;
+                        break;
+                    case 'EcoGene':
+                        link = 'http://www.ecogene.org/geneInfo.php?eg_id='+r.id;
+                        break;
+                    case 'FB':
+                        link = 'http://flybase.org/reports/'+r.id;
+                        break;
+                    case 'GeneDB':
+                        link = 'http://www.genedb.org/gene/'+r.id;
+                        break;
+                    case 'NCBI_gi':
+                        link = 'https://www.ncbi.nlm.nih.gov/protein/'+r.id;
+                        break;
+                    case 'PomBase':
+                        link = 'https://www.pombase.org/gene/'+r.id;
+                        break;
+                    case 'RGD':
+                        link = 'https://rgd.mcw.edu/rgdweb/report/gene/main.html?id='+r.id;
+                        break;
+                    case 'RefSeq':
+                        link = 'https://www.ncbi.nlm.nih.gov/nuccore/'+r.id;
+                        break;
+                    case 'SGD':
+                        link = 'https://www.yeastgenome.org/locus/'+r.id;
+                        break;
+                    case 'TAIR':
+                        link = 'https://www.arabidopsis.org/servlets/TairObject?accession='+r.id;
+                        break;
+                    case 'WB':
+                        link = 'https://wormbase.org/db/gene/gene?name='+r.id;
+                        break;
+                    case 'ZFIN':
+                        link = 'http://zfin.org/'+r.id;
+                        break;
+                    case 'dictyBase':
+                        link = ' http://dictybase.org/gene/'+r.id;
+                        break;
+                    default:
+                        console.log("DB Id not recognized:", r)
+                        break;
+                }
+                return link;
+            },
+            getFormattedAnnotationsList(uniprotId) {
+                var annosForGene = this.store_annoMapping.annoMap[uniprotId];
+                var annoList = [];
+                if(!annosForGene) return annoList;
+                annosForGene.forEach(a => {
+                    var id = a.goId;
+                    var code = "";
+                    if(a.evidenceCode) {
+                        code = a.evidenceCode.split(",")[2];
+                    }
+                    var refCode = a.reference.split(":")[0];
+                    var refId = a.reference.split(":")[1];
+                    var refLink = "https://www.ncbi.nlm.nih.gov/pubmed/" + refId;
+                    if(refCode == "GO_REF") {
+                        refLink = "https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-"
+                            +refId+".md";
+                    }
+                    let withFromList = [];
+                    if(a.withFrom) {
+                        a.withFrom.forEach(r => {
+                            withFromList.push(
+                                {name: r.db+":"+r.id,
+                                 link: this.getDBLink(r)
+                                });
+                        });
+                    }
+
+                    var findGoId = annoList.find(a => {return a.goId === id;});
+                    if(!findGoId) {
+                        annoList.push({
+                            goId: a.goId,
+                            goTerm: a.goName,
+                            code: code,
+                            reference: [{
+                                count: 1,
+                                link: refLink
+                            }],
+                            withFrom: withFromList,
+                            source: "QuickGO",
+                            sourceLink: "https://www.ebi.ac.uk/QuickGO/term/" + a.goId
+                        });
+                    } else {
+                        findGoId.reference.push({
+                            count: findGoId.reference.length + 1,
+                            link: refLink
+                        })
+                    }
+                });
+                return annoList;
+            },
+            getPopupData(annoList) {
+                let popUpTableData = [];
+                annoList.forEach(ann => {
+                    let singleRow = [];
+                    let goTerm = ann.goTerm;
+                    singleRow.push(goTerm);
+                    let code = ann.code;
+                    singleRow.push(code);
+
+                    let references = {type: "links"};
+                    references["links"] = [];
+                    ann.reference.forEach(ref => {
+                        references["links"].push({text: ref.count, link: ref.link});
+                    });
+                    singleRow.push(references);
+
+                    let withFrom = {type: "links"};
+                    withFrom["links"] = [];
+                    ann.withFrom.forEach(wf => {
+                        withFrom["links"].push({text: wf.name, link: wf.link});
+                    });
+                    singleRow.push(withFrom);
+
+                    let source = {type: "link", text: ann.source, link: ann.sourceLink};
+                    singleRow.push(source);
+
+                    popUpTableData.push(singleRow);
+                });
+                return popUpTableData;
             }
-        },
-        mounted: function () {
-            if(this.stateTreeData) {
-                this.update();
-            }
-            const tbody = document.getElementById("mybody");
-            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 100));
-        },
-        created: function () {
-            const tbody = document.getElementById("mybody");
-            // tbody.addEventListener('scroll', this.handleScroll);
         },
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll);
         }
     }
-
 </script>
-<style>
+<style scoped>
     #parent {
         position: absolute;
-        left: 1vw;
-        top: 6vh;
-        width: 48vw;
+        width: 95%;
         height: 800px;
         overflow: hidden;
     }
-
-    table {
+    .mainTable {
         display: flex;
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
         height: 800px;
-        border: 2px solid #9CC255;
+        border: 0px solid #9CC255;
         border-collapse: collapse;
         overflow: hidden;
         /* Use this to create a "dead" area color if table is too wide for cells */
-        background-color: #d6efb5fc;
+        /*background-color: #d6daeb;*/
         font-size: 14px;
         font-family: sans-serif;
     }
-
-    thead {
-        /*
-        Grow thead automatically to fit content, don't shrink it
-        proportionately to the body.
-        */
+    .mainTable thead {
         flex: 0 0 auto;
         display: block;
-        /* x-scrolling will be managed via JS */
+        /* required for programmatic scrolling of header */
         overflow-x: hidden;
-        /*
-        Keep header columns aligned with useless scrollbar.
-        For IE11, use "dead area" color to hide scrollbar functions
-        */
         overflow-y: scroll;
-        scrollbar-base-color: #ccc;
-        scrollbar-face-color: #ccc;
-        scrollbar-highlight-color: #ccc;
-        scrollbar-track-color: #ccc;
-        scrollbar-arrow-color: #ccc;
-        scrollbar-shadow-color: #ccc;
-        scrollbar-dark-shadow-color: #ccc;
     }
-
-    /*
-    For Webkit, use "dead area" color to hide scrollbar functions
-    TODO: on Chrome/Safari for Mac, scrollbars are not shown anyway and
-    this creates an extra block. No impact on iOS Safari.
-    */
-    thead::-webkit-scrollbar { display: block; background-color: #ccc; }
-    thead::-webkit-scrollbar-track { background-color: #ccc; }
-
-    /* Scroll the actual tbody (second child on all browsers) */
-    tbody {
-        display: block;
+    #mainTr {
+        border-bottom: 3px solid #f1f1f0;
+        filter: brightness(100%) !important;
+        cursor: default !important;
+    }
+    #secTr {
+        height: 35px;
+        max-height: 35px;
+        min-height: 35px;
+        filter: brightness(100%) !important;
+        cursor: default !important;
+        border-bottom: 3px solid #f1f1f0;
+        background-color: transparent;
+    }
+    .mainTable tbody {
         overflow: scroll;
     }
-
-    /* IE11 adds an extra tbody, have to hide it */
-    tbody:nth-child(3) { display: none; }
-
-    /* The one caveat, a hard-set width is required. */
-    td, th {
-        width: 300px;
-        min-width: 300px;
-        max-width: 300px;
-        height: 40px;
+    .mainTable tr:nth-child(even) {
+        background-color: #d6daeb;
+    }
+    .mainTable tr:nth-child(odd) {
+        background-color: #eceef6;
+    }
+    .mainTable tr:hover {
+        filter: brightness(85%);
+    }
+    .mainTable th {
+        background-color: #e1e7f3;
+        text-align: center;
+    }
+    .mainTable .thHide {
+        visibility: hidden;
+    }
+    .mainTable th, .mainTable td {
+        /*background-color: #e1e7f3;*/
+        min-width: 200px;
+        width: 200px;
+        max-width: 200px;
         min-height: 40px;
         max-height: 40px;
-        overflow: hidden;
-        text-overflow: clip;
-        white-space: nowrap;
-        padding: 5px;
-        border: 1px solid #9CC255;
-        background-color: white;
-    }
+        height: 40px;
+        border: 1px solid #f1f1f0;
+        /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
 
-    th {
-        background-color: #d6efb5fc;
+        word-wrap: break-word;
+        cursor: pointer;
     }
-
-    td:first-child,
-    th:first-child {
-        width: 250px;
-        min-width: 250px;
-        max-width: 250px;
+    .mainTable td:first-child,
+    .mainTable th:first-child {
         position: sticky;
         position: -webkit-sticky;
         left:0;
-        box-shadow: 5px 0 2px -2px #888;
+        box-shadow: 5px 0 2px -2px #f1f1f0;
+        background-color: #d6daeb;
+    }
+
+    .speTr {
+        background-color: #6687c6 !important;
+        color: white;
+        text-align: left !important;
+        text-indent: 50px;
+    }
+
+    .noDisplay {
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .anno_circle {
+        r: 8;
+        fill: #ff0;
+        stroke: steelblue;
+        stroke-width: 2px;
     }
 </style>
+

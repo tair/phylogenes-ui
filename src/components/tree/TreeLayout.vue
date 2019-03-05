@@ -62,13 +62,14 @@
         computed: {
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
-                stateTableScroll: types.TABLE_GET_SCROLL
+                stateTableScroll: types.TABLE_GET_SCROLL,
+                store_stateTreeTopY: types.TREE_GET_TOP_Y
             })
         },
         watch: {
             jsonData: {
+                deep: true,
                 handler: function (val, oldVal) {
-                    // console.log(this.jsonData);
                     this.isLoading = true;
                     this.initTree();
                 }
@@ -78,11 +79,16 @@
                     this.processMatchedNodes(val);
                 }
             },
+            store_stateTreeTopY: {
+                handler: function (val, oldVal) {
+                    this.topPaddingY = val;
+                    this.alignNodes();
+                }
+            },
             stateTableScroll: {
                 handler: function (val, oldVal) {
                     var nodes = this.rootNode.descendants();
                     var treeNode = nodes.find(n => n.geneId == val.id);
-
                     this.moveTreeToNodePosition(treeNode);
                 }
             }
@@ -104,15 +110,15 @@
                 duration2: 0.1,
                 index: 0,
                 counter: 0,
-                topPaddingY: 80,
-                rowHeight: 40,
+                rowHeight: 41,
                 enableMenu: false,
-                showLegend: true,
+                showLegend: false,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
                 topMostNodePos: {x: 0.0, y: 0.0},
                 currentTopNodePos: {x: 0.0, y: 0.0},
+                topPaddingY: 35
             }
         },
         mounted() {
@@ -124,7 +130,6 @@
             this.resetRootPosition();
 
             if (this.jsonData != null) {
-                // console.log(this.jsonData);
                 this.initTree();
             }
         },
@@ -140,7 +145,6 @@
                 this.resetRootPosition();
                 this.treelinks = [];
                 this.treenodes = [];
-                // this.$emit('updated-tree', []);
             },
             //Set the d3 svg to it's original position before moving around with mouse
             resetRootPosition() {
@@ -196,7 +200,6 @@
                 d3.select('.nodes')
                     .selectAll('g.shape')
                     .data(this.oldIndexes);
-                // console.log(this.oldIndexes);
 
                 var nodes = this.rootNode.descendants();
                 this.updateExtraInfo(nodes);
@@ -205,7 +208,6 @@
 
                 // this.updateAccordingToDepth(nodes);
                 this.$emit('updated-tree', nodes);
-                // console.log(nodes);
 
                 this.renderNodes(nodes, true);
                 this.renderLinks(nodes);
@@ -321,7 +323,6 @@
                 exitingNodes.nodes().forEach(n => {
                     if (n.__data__) {
                         var findNode = this.$refs.treenode.find(en => en.content.id == n.__data__.id);
-                        // console.log(this.clickedNode.id + "-" + this.clickedNode.x + "," + this.clickedNode.y);
                         findNode.onExit(this.clickedNode);
                     }
                 });
@@ -346,11 +347,9 @@
             getTempArrayForNodes(updatedNodes) {
                 var tempArray = [];
                 updatedNodes.nodes().forEach(n => {
-                    // console.log("N ", n.__data__);
                     var node_content = n.__data__;
                     if (n.constructor && n.constructor.name === "EnterNode") {
                         if (this.clickedNode) {
-                            // console.log("Click ", this.clickedNode.id);
                             node_content.xo = this.clickedNode.x;
                             node_content.yo = this.clickedNode.y;
                         }
@@ -370,7 +369,6 @@
                 this.index = 0;
                 this.rootNode.each(n => {
                     n.id = this.index++;
-                    // console.log(n.id + " X: " + n.x);
 
                     //Check if the node data contains a text we can use
                     if(n.data.text) {
@@ -427,13 +425,7 @@
             },
             //Overwrite each Node positions with custom logic
             setCustomPositionX(d) {
-                if (d.depth == 0) {
-                    d.x = this.topPaddingY + 0;
-                }
-                if (d.dfId) {
-                    var newX = this.topPaddingY + d.dfId * this.rowHeight;
-                    d.x = newX;
-                }
+
             },
             setCustomPositionY(d, tree_depth) {
                 // tree_depth required to divide 'y' equally  based on treeWidth and depth of tree.
@@ -465,7 +457,6 @@
                 this.setCurrentTopNode({x: this.topMostNodePos.x, y: this.topMostNodePos.y});
                 this.stateTreeZoom({x:0, y:0});
             },
-
             // ~~~~~~~~~ Links
             renderLinks(nodes) {
                 d3.select('.links')
@@ -540,7 +531,6 @@
                         });
                     }
                 });
-                // console.log("Datum Length ", this.linkDatums);
             },
             // Reset the tree layout since the nodes have been updated.
             resetTreeLayout() {
@@ -575,7 +565,6 @@
 
                 var topMostNode = null;
                 nodesOrderedByDepth.some(d => {
-                    // console.log(d.id + " - " + d.dfId + " - " + d.x);
                     topMostNode = d;
                     return !d.children;
                 });
@@ -627,7 +616,6 @@
                 nodes.forEach(n => {
                     this.oldIndexes.push(n);
                 });
-                // console.log("Index Size " + this.oldIndexes.length);
             },
             saveOldPositions(root) {
                 root.each(d => {
@@ -705,7 +693,6 @@
                     })
             },
             onClick(source) {
-                // console.log(source.id + "-" + source.x + "," + source.y);
                 this.clickedNode = {id: source.id, x: source.x, y: source.y};
                 this.updateTree();
             },
@@ -730,13 +717,18 @@
                 this.currentTopNodePos.x += d3.event.transform.x - transform.x;
                 this.alignNodes();
             },
+            moveUp() {
+                this.rowsScrolledUp=this.rowsScrolledUp+5;
+                this.alignNodes();
+            },
+            //Setting top node padding goes here.
             alignNodes() {
                 let leafNodes = this.getLeafNodesByDepth();
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
-                // console.log(currTopNode);
-                var topNodePosY = -1*currTopNode.x + 40;
+                if(!currTopNode) return;
+                var topNodePosY = -1*currTopNode.x + 35 + this.topPaddingY;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)
@@ -761,7 +753,6 @@
                     }
                 });
                 if (this.link_intersected) {
-                    // console.log(link_intersected);
                     this.$refs.nodeToAdd.onIntersect(true);
                 } else {
                     this.$refs.nodeToAdd.onIntersect(false);
@@ -775,7 +766,6 @@
                 }
             },
             onMenuClick(opt, data) {
-                // console.log(this.$refs.menu.userData);
                 var nodeId = this.$refs.menu.userData
                 if(opt === "Add") {
                     this.addNewChildNode(nodeId);
@@ -822,7 +812,6 @@
                     parentChildren = parentChildren.filter(pc => pc.id != nodeId);
                     if(parentChildren.length == 0) parentChildren = null;
                     nodeToDelete.parent.children = parentChildren;
-                    // console.log(nodes);
                     this.updateTree2();
                 }
             },
@@ -899,18 +888,7 @@
             },
             // ~~~~~~~~~~~~~~~~ ********************** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTree2() {
-                //Explain: why old Indexes?
-                // d3.select('.nodes')
-                //     .selectAll('g')
-                //     .data(this.oldIndexes);
-                // // console.log(this.oldIndexes);
-                //
-                // var nodes = this.rootNode.descendants();
-                // // console.log(nodes);
-                // this.updateAccordingToDepth(nodes);
-                // this.saveOldPositions(this.rootNode);
-                // this.renderLinks(nodes);
-                // this.renderNodes(nodes);
+
             },
             updateAccordingToDepth(nodes, flag) {
                 this.counter = 0;
@@ -926,6 +904,7 @@
 <style scoped>
     svg {
         background-color: white;
+        cursor: grab;
     }
     .legend-box {
         background-color: #9E9E9E;
