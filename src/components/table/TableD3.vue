@@ -113,17 +113,17 @@
         },
         methods: {
             ...mapActions({
-                stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL
+                stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
+                store_setTreeTopY: types.TREE_ACTION_SET_TOP_Y
             }),
             //Is called on every change to the store data
             update() {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
-                // console.log("Len ", titles.length);
                 this.cols = titles;
                 this.data = this.stateTreeData;
                 let theadHeight = this.$refs.thead.clientHeight;
-                // console.log(theadHeight);
+                this.store_setTreeTopY(theadHeight-38);
             },
             handleScroll() {
                 //If scrolling is from tree, we don't need to update the table scroll again

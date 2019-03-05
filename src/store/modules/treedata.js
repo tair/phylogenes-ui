@@ -20,7 +20,8 @@ const state = {
         nodeAtCenter: null, //Node which should be set at the center of tree panel view.
         matchedNodes: null,
         zoom: null,
-        scroll: null
+        scroll: null,
+        topPaddingY: 0
     }
 };
 
@@ -51,6 +52,9 @@ const getters = {
     },
     [types.TABLE_GET_SCROLL]: state => {
         return state.treedata.scroll;
+    },
+    [types.TREE_GET_TOP_Y]: state => {
+        return state.treedata.topPaddingY;
     }
 };
 
@@ -81,6 +85,9 @@ const actions = {
     [types.TABLE_ACTION_SET_SCROLL]: (context, payload) => {
         //console.log("Action" + payload);
         context.state.treedata.scroll = payload;
+    },
+    [types.TREE_ACTION_SET_TOP_Y]: (context, payload) => {
+      context.state.treedata.topPaddingY = payload;
     },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
         var q = "";

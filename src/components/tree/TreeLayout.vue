@@ -62,7 +62,8 @@
         computed: {
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
-                stateTableScroll: types.TABLE_GET_SCROLL
+                stateTableScroll: types.TABLE_GET_SCROLL,
+                store_stateTreeTopY: types.TREE_GET_TOP_Y
             })
         },
         watch: {
@@ -78,11 +79,15 @@
                     this.processMatchedNodes(val);
                 }
             },
+            store_stateTreeTopY: {
+                handler: function (val, oldVal) {
+                    this.topPaddingY = val;
+                }
+            },
             stateTableScroll: {
                 handler: function (val, oldVal) {
                     var nodes = this.rootNode.descendants();
                     var treeNode = nodes.find(n => n.geneId == val.id);
-
                     this.moveTreeToNodePosition(treeNode);
                 }
             }
@@ -104,15 +109,15 @@
                 duration2: 0.1,
                 index: 0,
                 counter: 0,
-                topPaddingY: 80,
                 rowHeight: 41,
                 enableMenu: false,
-                showLegend: true,
+                showLegend: false,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
                 topMostNodePos: {x: 0.0, y: 0.0},
-                currentTopNodePos: {x: 0.0, y: 0.0}
+                currentTopNodePos: {x: 0.0, y: 0.0},
+                topPaddingY: 35
             }
         },
         mounted() {
@@ -139,7 +144,6 @@
                 this.resetRootPosition();
                 this.treelinks = [];
                 this.treenodes = [];
-                // this.$emit('updated-tree', []);
             },
             //Set the d3 svg to it's original position before moving around with mouse
             resetRootPosition() {
@@ -420,13 +424,7 @@
             },
             //Overwrite each Node positions with custom logic
             setCustomPositionX(d) {
-                if (d.depth == 0) {
-                    d.x = this.topPaddingY + 0;
-                }
-                if (d.dfId) {
-                    var newX = this.topPaddingY + d.dfId * this.rowHeight;
-                    d.x = newX;
-                }
+
             },
             setCustomPositionY(d, tree_depth) {
                 // tree_depth required to divide 'y' equally  based on treeWidth and depth of tree.
@@ -458,7 +456,6 @@
                 this.setCurrentTopNode({x: this.topMostNodePos.x, y: this.topMostNodePos.y});
                 this.stateTreeZoom({x:0, y:0});
             },
-
             // ~~~~~~~~~ Links
             renderLinks(nodes) {
                 d3.select('.links')
@@ -723,12 +720,13 @@
                 this.rowsScrolledUp=this.rowsScrolledUp+5;
                 this.alignNodes();
             },
+            //Setting top node padding goes here.
             alignNodes() {
                 let leafNodes = this.getLeafNodesByDepth();
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
-                var topNodePosY = -1*currTopNode.x + 35 + 35;
+                var topNodePosY = -1*currTopNode.x + 35 + this.topPaddingY;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)
