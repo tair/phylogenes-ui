@@ -185,7 +185,7 @@ const actions = {
             q = util.buildGeneralQuery(context.state.tree.payload);
             fq = util.buildFieldQuery(context.state.tree.payload);
         }
-        console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
+        // console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
 
         axios({
             method: 'GET',

@@ -8,7 +8,7 @@
             </template>
         </modal>
         <table class="mainTable" :style="{marginTop: topMargin+'px'}">
-            <thead id="head">
+            <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr" v-if="extraCols.length > 0">
@@ -119,8 +119,11 @@
             update() {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
+                // console.log("Len ", titles.length);
                 this.cols = titles;
                 this.data = this.stateTreeData;
+                let theadHeight = this.$refs.thead.clientHeight;
+                // console.log(theadHeight);
             },
             handleScroll() {
                 //If scrolling is from tree, we don't need to update the table scroll again
@@ -159,7 +162,8 @@
                     uniprotId = "N/A";
                 }
                 this.popupHeader = "Uniprot ID: " + uniprotId.toUpperCase();
-                this.popupData = this.getFormattedAnnotationsList(uniprotId);
+                let annoList = this.getFormattedAnnotationsList(uniprotId);
+                this.popupData = this.getPopupData(annoList);
             },
             getDBLink(r) {
                 let link = "";
@@ -267,6 +271,36 @@
                     }
                 });
                 return annoList;
+            },
+            getPopupData(annoList) {
+                let popUpTableData = [];
+                annoList.forEach(ann => {
+                    let singleRow = [];
+                    let goTerm = ann.goTerm;
+                    singleRow.push(goTerm);
+                    let code = ann.code;
+                    singleRow.push(code);
+
+                    let references = {type: "links"};
+                    references["links"] = [];
+                    ann.reference.forEach(ref => {
+                        references["links"].push({text: ref.count, link: ref.link});
+                    });
+                    singleRow.push(references);
+
+                    let withFrom = {type: "links"};
+                    withFrom["links"] = [];
+                    ann.withFrom.forEach(wf => {
+                        withFrom["links"].push({text: wf.name, link: wf.link});
+                    });
+                    singleRow.push(withFrom);
+
+                    let source = {type: "link", text: ann.source, link: ann.sourceLink};
+                    singleRow.push(source);
+
+                    popUpTableData.push(singleRow);
+                });
+                return popUpTableData;
             }
         },
         destroyed: function () {

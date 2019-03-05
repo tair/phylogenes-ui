@@ -6,12 +6,16 @@
                     <th v-for="col in cols">{{col}}</th>
                 </tr>
             </thead>
-            <tr v-for="a in data">
-                <td>{{a.goTerm}}</td>
-                <td>{{a.code}}</td>
-                <td><a v-for="ref in a.reference" v-bind:href="ref.link">{{ref.count}}, </a></td>
-                <td><a v-for="wf in a.withFrom" v-bind:href="wf.link">{{wf.name}},</a></td>
-                <td><a v-bind:href="a.sourceLink">{{a.source}}</a></td>
+            <tr v-for="row in data">
+                <td v-for="cell in row">
+                    <span v-if="!cell.type">{{cell}}</span>
+                    <!--If Cell type is 'link', render a single hyperlink-->
+                    <a v-if="cell.type=='link'" v-bind:href="cell.link">{{cell.text}}</a>
+                    <!--If Cell type is 'links', render multiple hyperlinks-->
+                    <a v-if="cell.type=='links'"
+                       v-for="(ref, i) in cell.links" v-bind:href="ref.link">{{ref.text}}<span v-if="i != cell.links.length - 1">,</span>
+                    </a>
+                </td>
             </tr>
         </table>
     </div>

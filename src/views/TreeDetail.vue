@@ -160,9 +160,9 @@
               });
             },
             loadAnnotations(annotations) {
+                this.anno_mapping = {};
+                this.anno_headers = [];
                 if(!annotations) {
-                    this.anno_mapping = {};
-                    this.anno_headers = [];
                     var annoObj = {
                         headers: this.anno_headers,
                         annoMap: this.anno_mapping
@@ -172,7 +172,6 @@
                     return;
                 }
 
-                //Actual code
                 annotations.forEach(a => {
                     var uni_mapping = JSON.parse(a);
                     var uniprotId = uni_mapping.uniprot_id;
@@ -185,9 +184,11 @@
                     });
                 });
 
-                setTimeout(() => {
-                    this.refreshTable();
-                }, 2000);
+                var annoObj = {
+                    headers: this.anno_headers,
+                    annoMap: this.anno_mapping
+                }
+                this.store_setAnnoMapping(annoObj);
             },
             processJson(treeJson) {
                 d3.csv("/organism_to_display.csv", (err, data) => {
@@ -349,16 +350,6 @@
                 this.$refs.treeLayout.moveUp();
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            refreshTable() {
-                var annoObj = {
-                    headers: this.anno_headers,
-                    annoMap: this.anno_mapping
-                }
-
-                this.store_setAnnoMapping(annoObj);
-                if(this.orig_nodes == null) return;
-                this.updateTableData(this.orig_nodes);
-            },
             updateTableData(nodes) {
                 this.orig_nodes = nodes;
                 var tabularData = [];
@@ -398,7 +389,9 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
-                this.completeData = this.stateTreeData;
+                if(this.completeData != null) {
+                    this.completeData = this.stateTreeData;
+                }
             }
         },
         watch: {
