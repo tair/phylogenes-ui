@@ -389,9 +389,7 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
-                if(this.completeData != null) {
-                    this.completeData = this.stateTreeData;
-                }
+                this.completeData = this.stateTreeData;
             }
         },
         watch: {

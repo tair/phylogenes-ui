@@ -82,6 +82,7 @@
             store_stateTreeTopY: {
                 handler: function (val, oldVal) {
                     this.topPaddingY = val;
+                    this.alignNodes();
                 }
             },
             stateTableScroll: {
