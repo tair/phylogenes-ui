@@ -1,12 +1,15 @@
 <template>
     <div>
+        <div class="databand">
+            {{getMetadataText()}}
+        </div>
         <div class="col1">
             <div class="chart">
-                <div class="chart-menu">
-                    <span class="d-block p-2 bg-secondary text-dark">Tree Panel for
-                        <span class="font-weight-bold">{{ this.treeId }}</span>
-                    </span>
-                </div>
+                <!--<div class="chart-menu">-->
+                    <!--<span class="d-block p-2 bg-secondary text-dark">Tree Panel for-->
+                        <!--<span class="font-weight-bold">{{ this.treeId }}</span>-->
+                    <!--</span>-->
+                <!--</div>-->
                 <div class="chart-content">
                     <div class="container">
                         <div class="row">
@@ -43,11 +46,11 @@
         </div>
         <div class="col2">
             <div class="chart">
-                <div class="chart-menu">
-                    <span class="d-block p-2 bg-secondary text-dark">Table Panel for
-                       <span class="font-weight-bold">{{ this.treeId }}</span>
-                    </span>
-                </div>
+                <!--<div class="chart-menu">-->
+                    <!--<span class="d-block p-2 bg-secondary text-dark">Table Panel for-->
+                       <!--<span class="font-weight-bold">{{ this.treeId }}</span>-->
+                    <!--</span>-->
+                <!--</div>-->
                 <div class="chart-content">
                     <tablelayout></tablelayout>
                     <!--<intersect></intersect>-->
@@ -141,8 +144,12 @@
                 }
                 this.store_setMatchedNodes(this.matchNodes);
             },
+            getMetadataText() {
+                return "NADH-UBIQUINONE OXIDOREDUCTASE SUBUNIT";
+            },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
+                console.log(treeJson);
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
@@ -419,13 +426,22 @@
     .chart {
         /*background-color: #ffffff;*/
         border-color: /*#f4a460*/ #fff !important;
-        border: 1px solid;
+        border-left: 1px solid;
         box-sizing: border-box;
-        box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
+        box-shadow: 0 0 4px 0 rgba(0,0,0,.1);
 
         position: relative;
         width: 100%;
         height: 100%;
+    }
+    .databand {
+        width: 100%;
+        height: 50px;
+        margin: 0;
+
+        padding-top: 15px;
+        padding-left: 15px;
+        font-size: medium;
     }
     div.chart-menu {
         width: 100%;

@@ -77,13 +77,6 @@
                         console.log("Error! Unknown field name matched");
                 }
                 return displayName;
-            },
-            getFamilyName() {
-                if(this.item.family_name) {
-                    return this.item.family_name[0];
-                } else {
-                    return "";
-                }
             }
         }
     }
