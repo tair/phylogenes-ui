@@ -68,13 +68,15 @@
                 treeFilters: null
             }
         },
-        beforeRouteEnter (to, from, next) {
-            next(vm => {
-                vm.doSearch();
-            });
-        },
+        // beforeRouteEnter (to, from, next) {
+        //     next(vm => {
+        //         vm.doSearch();
+        //     });
+        // },
         created() {
             this.treeFilters = this.stateTreeFilters;
+            this.doSearch();
+
         },
         methods: {
             showSearchResult() {
@@ -92,9 +94,9 @@
                     filters: this.stateTreeFilters
                 }
                 this.stateAction_doSearch(payload);
-                if(this.$refs.sr) {
-                    this.$refs.sr.newSearch();
-                }
+                // if(this.$refs.sr) {
+                //     this.$refs.sr.newSearch();
+                // }
             },
             showFilters() {
                 if(this.stateTreeFilters.organisms.length > 0) {
@@ -120,11 +122,11 @@
             })
         },
         watch: {
-            stateSearchText: {
-                handler: function (val, oldVal) {
-                    this.doSearch();
-                }
-            },
+            // stateSearchText: {
+            //     handler: function (val, oldVal) {
+            //         this.doSearch();
+            //     }
+            // },
             stateTreeFilters: {
                 deep: true,
                 handler: function (val, oldVal) {

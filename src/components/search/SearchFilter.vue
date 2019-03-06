@@ -8,9 +8,9 @@
 
                 <div class="form-inline my-lg-0">
                     <input class="form-control input-lg" id="famName"
-                           v-on:keyup.enter="doSearch()" v-model="searchText"
+                           v-on:keyup.enter="newSearch()" v-model="searchText"
                            aria-describedby="Family Name" placeholder="Eg: Protein">
-                    <a href="#" class="btn p-2 m-0 pr-5 btn-flat" @click.prevent="doSearch()">
+                    <a href="#" class="btn p-2 m-0 pr-5 btn-flat" @click.prevent="newSearch()">
                         <i class="fas fa-search"></i>
                     </a>
                 </div>
@@ -84,7 +84,9 @@
         methods: {
             ...mapActions({
                 stateAction_setSearchFilters: types.TREE_ACTION_SET_FILTER,
-                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH
+                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
+                stateAction_resetFilters: types.TREE_ACTION_RESET_FILTER,
+                stateAction_setSearchText: types.TREE_ACTION_SET_SEARCH,
             }),
             onFiltersChange() {
               this.stateAction_setSearchFilters(this.treeFilters);
@@ -96,6 +98,11 @@
                     filters: this.stateSearchFilters
                 };
                 this.stateAction_doSearch(payload);
+            },
+            newSearch() {
+                this.stateAction_resetFilters();
+                this.stateAction_setSearchText(this.searchText);
+                this.stateAction_doSearch();
             },
             resetFilters() {
                 this.treeFilters.organisms = [];
