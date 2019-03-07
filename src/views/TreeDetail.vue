@@ -38,6 +38,7 @@
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
                         <treelayout2  :jsonData="jsonData" :mappingData="mappingData"
                                       ref="treeLayout"
+                                      v-on:init-tree="onTreeInit"
                                       v-on:updated-tree="onTreeUpdate"></treelayout2>
 
                     </div>
@@ -101,7 +102,6 @@
                 baseUrl: process.env.BASE_URL,
                 searchText: "",
                 matchNodes: [],
-                orig_nodes: null,
                 anno_mapping: {},
                 anno_headers: [],
                 legend: true
@@ -145,11 +145,12 @@
                 this.store_setMatchedNodes(this.matchNodes);
             },
             getMetadataText() {
-                return "NADH-UBIQUINONE OXIDOREDUCTASE SUBUNIT";
+                let metadataText = "NADH-UBIQUINONE OXIDOREDUCTASE SUBUNIT";
+                metadataText += "";
+                return metadataText;
             },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
-                console.log(treeJson);
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
@@ -343,6 +344,9 @@
             onMouseLeaveLink(link) {
                 this.branchLength = "N/A";
             },
+            onTreeInit(nodes) {
+              this.completeData = nodes;
+            },
             onTreeUpdate(nodes) {
                 this.updateTableData(nodes);
             },
@@ -358,7 +362,6 @@
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
-                this.orig_nodes = nodes;
                 var tabularData = [];
                 var sortedNodes = nodes.sort(function (a, b) {
                     return a.dfId - b.dfId;
@@ -396,7 +399,6 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
-                this.completeData = this.stateTreeData;
             }
         },
         watch: {

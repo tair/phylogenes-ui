@@ -71,7 +71,10 @@
                 deep: true,
                 handler: function (val, oldVal) {
                     this.isLoading = true;
-                    this.initTree();
+                    if(val != null) {
+                        this.initTree();
+                        console.log("Init tree ");
+                    }
                 }
             },
             store_matchedNodes: {
@@ -171,6 +174,8 @@
                 this.updateOldIndexes(nodes);
                 //Update nodes dfid according to depth of nodes.
                 this.calculateDepthIds(nodes);
+
+                this.$emit('init-tree', nodes);
 
                 setTimeout(() => {
                     this.updateTree();
