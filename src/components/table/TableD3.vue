@@ -21,13 +21,14 @@
                 </tr>
             </thead>
             <tbody id="body">
-                <tr v-for="entry in data" @click="rowClicked(entry)">
-                    <td v-for="key in cols">
+                <tr v-for="row in data">
+                    <td v-for="key in cols" @click="cellClicked(key, row)"
+                        :class="{hoverSp: row[key] == '*'}">
                         <svg :width=tdWidth :height=tdHeight>
                             <g>
-                                <text v-if="entry[key] != '*'"
-                                      dy=".35em" x=5 y=20>{{entry[key]}}</text>
-                                <circle v-if="entry[key] == '*'" class="anno_circle"
+                                <text v-if="row[key] != '*'"
+                                      dy=".35em" x=5 y=20>{{row[key]}}</text>
+                                <circle v-if="row[key] == '*'" class="anno_circle"
                                       cx="100" cy="18"></circle>
                             </g>
                         </svg>
@@ -95,7 +96,7 @@
             store_annoMapping: {
                 handler: function (val, oldVal) {
                     this.extraCols = val.headers;
-                    if(this.extraCols.length == 0) {
+                    if(this.extraCols.length === 0) {
                         this.topMargin = 35;
                     } else {
                         this.topMargin = 0;
@@ -122,8 +123,12 @@
                 titles = titles.splice(1);
                 this.cols = titles;
                 this.data = this.stateTreeData;
-                let theadHeight = this.$refs.thead.clientHeight;
-                this.store_setTreeTopY(theadHeight-38);
+
+                setTimeout(() => {
+                    let theadHeight = this.$refs.thead.clientHeight;
+                    this.store_setTreeTopY(theadHeight-38);
+                },1000);
+
             },
             handleScroll() {
                 //If scrolling is from tree, we don't need to update the table scroll again
@@ -164,6 +169,26 @@
                 this.popupHeader = "Uniprot ID: " + uniprotId.toUpperCase();
                 let annoList = this.getFormattedAnnotationsList(uniprotId);
                 this.popupData = this.getPopupData(annoList);
+            },
+            cellClicked(c, row) {
+                if(row[c] != '*') return;
+                let uniprotId = row["Uniprot ID"];
+                if(uniprotId) {
+                    uniprotId = uniprotId.toLowerCase();
+                } else {
+                    uniprotId = "N/A";
+                }
+                let uniHeader = "Uniprot ID: " + uniprotId.toUpperCase();
+                let annoList = this.getFormattedAnnotationsList(uniprotId);
+                annoList = annoList.filter(a => a.goTerm === c);
+                if(annoList.length != 0) {
+                    this.displayPopup(uniHeader, annoList);
+                }
+            },
+            displayPopup(header, data) {
+                this.popupHeader = header;
+                this.popupData = this.getPopupData(data);
+                this.showPopup = true;
             },
             getDBLink(r) {
                 let link = "";
@@ -227,7 +252,8 @@
                 var annoList = [];
                 if(!annosForGene) return annoList;
                 annosForGene.forEach(a => {
-                    var id = a.goId;
+                    let id = a.goId;
+                    let goTermLink = "https://www.ebi.ac.uk/QuickGO/term/"+id;
                     var code = "";
                     if(a.evidenceCode) {
                         code = a.evidenceCode.split(",")[2];
@@ -249,11 +275,18 @@
                         });
                     }
 
-                    var findGoId = annoList.find(a => {return a.goId === id;});
+                    var findGoId = annoList.find(a => {
+                        if(refCode != '') {
+                            return a.goId === id && a.code === code;
+                        } else {
+                            return a.goId === id
+                        }
+                    });
                     if(!findGoId) {
                         annoList.push({
                             goId: a.goId,
                             goTerm: a.goName,
+                            goTermLink: goTermLink,
                             code: code,
                             reference: [{
                                 count: 1,
@@ -261,13 +294,14 @@
                             }],
                             withFrom: withFromList,
                             source: "QuickGO",
-                            sourceLink: "https://www.ebi.ac.uk/QuickGO/term/" + a.goId
+                            sourceLink: "https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=" + uniprotId
                         });
                     } else {
                         findGoId.reference.push({
                             count: findGoId.reference.length + 1,
                             link: refLink
-                        })
+                        });
+                        findGoId.withFrom.concat(withFromList);
                     }
                 });
                 return annoList;
@@ -276,8 +310,9 @@
                 let popUpTableData = [];
                 annoList.forEach(ann => {
                     let singleRow = [];
-                    let goTerm = ann.goTerm;
+                    let goTerm = {type: "link", text: ann.goTerm, link: ann.goTermLink};
                     singleRow.push(goTerm);
+
                     let code = ann.code;
                     singleRow.push(code);
 
@@ -346,7 +381,7 @@
         max-height: 35px;
         min-height: 35px;
         filter: brightness(100%) !important;
-        cursor: default !important;
+        /*cursor: default !important;*/
         border-bottom: 3px solid #f1f1f0;
         background-color: transparent;
     }
@@ -360,7 +395,7 @@
         background-color: #eceef6;
     }
     .mainTable tr:hover {
-        filter: brightness(85%);
+        /*filter: brightness(85%);*/
     }
     .mainTable th {
         background-color: #e1e7f3;
@@ -381,8 +416,9 @@
         /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
 
         word-wrap: break-word;
-        cursor: pointer;
+        /*cursor: pointer;*/
     }
+
     .mainTable td:first-child,
     .mainTable th:first-child {
         position: sticky;
@@ -397,6 +433,11 @@
         color: white;
         text-align: left !important;
         text-indent: 50px;
+    }
+    .hoverSp:hover {
+        background-color: #e1e7f3 !important;
+        filter: brightness(85%);
+        cursor: pointer;
     }
 
     .noDisplay {

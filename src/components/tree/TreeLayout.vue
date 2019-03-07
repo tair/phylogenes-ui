@@ -904,7 +904,7 @@
 <style scoped>
     svg {
         background-color: white;
-        cursor: grab;
+        /*cursor: grab;*/
     }
     .legend-box {
         background-color: #9E9E9E;
