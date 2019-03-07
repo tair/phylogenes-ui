@@ -28,7 +28,7 @@
             <div class="text-bold text-dark py-2 pt-0" style="border-bottom: 1px solid #dfdfdf">Taxonomic Range</div>
             <div class="list-group" style="max-height: 200px; overflow: auto;">
                 <div v-for="data in orderedSpecies" :key="data.key" class="list-group-item list-group-item-action borderless text-muted">
-                    <input type="checkbox" :value="data.key" v-on:change="onFiltersChange()" v-model="treeFilters.species">
+                    <input class="ml-2" type="checkbox" :value="data.key" v-on:change="onFiltersChange()" v-model="treeFilters.species">
                     <span class="pl-2 text-dark">{{ data.key | fullName }}</span>
                     <span class="float-right badge badge-pill badge-danger">{{ data.count }}</span>
                 </div>
@@ -37,7 +37,7 @@
             <div class="text-bold text-dark py-2 pt-5" style="border-bottom: 1px solid #dfdfdf">Organisms included</div>
             <div class="list-group" style="max-height: 200px; overflow: auto;">
                 <div v-for="data in orderedOrganisms" :key="data.key" class="list-group-item list-group-item-action borderless text-muted">
-                    <input type="checkbox" :value="data.key" v-on:change="onFiltersChange()" v-model="treeFilters.organisms">
+                    <input class="ml-2" type="checkbox" :value="data.key" v-on:change="onFiltersChange()" v-model="treeFilters.organisms">
                     <span class="pl-2 text-dark">{{ data.key }}</span>
                     <span class="float-right badge badge-pill badge-danger">{{ data.count }}</span>
                 </div>

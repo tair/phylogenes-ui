@@ -10,11 +10,11 @@
                 <b-pagination class="mt-3" size="sm" align="center" :total-rows="searchData.numFound" v-model="currentPage" :per-page="perPage">
                 </b-pagination>
         </div>
-        <div class="alert elevation-0 mb-2 p-1 text-left text-sm" role="alert"
+        <div class="alert elevation-0 mb-0 p-2 text-bold" role="alert"
              :class="getAlertClass()">
                 {{getRestatedText()}}
         </div>
-        <div class="elevation-0 mb-2 p-1">
+        <div class="elevation-0 mb-0 p-2">
             <div class="row">
                 <div class="col-6">
                     <span class="text-bold">Gene family</span>
@@ -148,6 +148,5 @@
 </script>
 
 <style scoped>
-
 </style>
 

@@ -4,12 +4,12 @@
             <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/V04jvRh5YFE" allowfullscreen></iframe>
         </div>
 
-            <div class="bg-pggrey pt-3">
-                <a class="" href="">
-                    <p class="text-magenta">Getting Started With PhyloGenes
-                    <i class="far fa-file ml-1"></i></p>
-                </a>
-            </div>
+        <div class="bg-pggrey pt-3">
+            <a class="" href="">
+                <p class="text-magenta">Getting Started With PhyloGenes
+                <i class="far fa-file ml-1"></i></p>
+            </a>
+        </div>
     </div>
 </template>
 

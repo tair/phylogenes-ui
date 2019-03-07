@@ -1,6 +1,6 @@
 <template>
     <div class="row bg-mblue">
-      <b-input-group class="my-2">
+      <b-input-group class="my-1">
         <b-input-group-prepend class="mx-2">
           Search within tree
         </b-input-group-prepend>

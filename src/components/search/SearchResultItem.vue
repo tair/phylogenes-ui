@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="row pb-1">
+        <div class="row">
             <div class="col-6">
                 <router-link :to="{ path: '/tree/' + this.item.id }" tag="a">
                     <span class="text-danger h6"> {{ getFamilyName() }}</span>
