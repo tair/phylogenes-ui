@@ -2,7 +2,7 @@
     <div>
 
         <!-- Fixed navbar -->
-        <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-success">
+        <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-dblue">
             <a class="my-logo" href="/">
                 <img width="75" height="48" src="../../src/assets/img/phy-logo2.png" alt="">
             </a>
