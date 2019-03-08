@@ -20,7 +20,7 @@
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
                 <div v-if="!this.stateTreeIsError && !this.stateTreeIsLoading">
-                <search-filter ref="sf"
+                <search-filter
                     :facets="stateTreeData.facets"
                     ></search-filter>
                 </div>
@@ -32,7 +32,7 @@
             <div class="col-sm-12 col-md-8 col-lg-9 px-4 bg-pggrey" style="height: 100vh; overflow: auto;">
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-                <search-result v-if="showSearchResult()" ref="sr"
+                <search-result v-if="showSearchResult()"
                                :searchData="stateTreeData"></search-result>
                 <div v-if="this.stateTreeIsError" class="text-danger pt-4 h5">
                     Error occurred while reading data.
@@ -65,13 +65,10 @@
                 treeFilters: null
             }
         },
-        beforeRouteEnter (to, from, next) {
-            next(vm => {
-                vm.doSearch();
-            });
-        },
         created() {
             this.treeFilters = this.stateTreeFilters;
+            this.doSearch();
+
         },
         methods: {
             showSearchResult() {
@@ -89,9 +86,6 @@
                     filters: this.stateTreeFilters
                 }
                 this.stateAction_doSearch(payload);
-                if(this.$refs.sr) {
-                    this.$refs.sr.newSearch();
-                }
             },
             showFilters() {
                 if(this.stateTreeFilters.organisms.length > 0) {
@@ -117,11 +111,6 @@
             })
         },
         watch: {
-            stateSearchText: {
-                handler: function (val, oldVal) {
-                    this.doSearch();
-                }
-            },
             stateTreeFilters: {
                 deep: true,
                 handler: function (val, oldVal) {

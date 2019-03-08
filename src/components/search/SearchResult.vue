@@ -63,6 +63,7 @@
                 handler (val, oldVal){
                     this.treeFilters.startRow = (this.currentPage -1)*this.treeFilters.rows
                     this.setFilter(this.treeFilters);
+                    this.stateTreePaginate(this.treeFilters);
                 }
             },
             perPage: {
@@ -70,14 +71,9 @@
                     this.currentPage = 1;
                     this.treeFilters.rows = val;
                     this.setFilter(this.treeFilters);
+                    this.stateTreePaginate(this.treeFilters);
                 }
             },
-            stateTreeFilters: {
-                deep: true,
-                handler (val, oldVal) {
-                    this.stateTreePaginate(val);
-                }
-            }
         },
         data() {
             return {
@@ -103,23 +99,13 @@
         created() {
             this.treeFilters = this.stateTreeFilters;
             this.perPage = this.treeFilters.rows;
+            this.currentPage = this.treeFilters.startRow/this.treeFilters.rows + 1;
         },
         methods: {
             ...mapActions({
                 stateTreePaginate: types.TREE_ACTION_PAGINATE,
                 setFilter: types.TREE_ACTION_SET_FILTER
             }),
-            newSearch() {
-              this.gotoPage(1);
-            },
-            gotoPage(page) {
-
-                if(page === 0 || page > this.noPages || this.currentPage === page)
-                    return;
-
-                this.treeFilters.startRow = (page - 1) * this.treeFilters.rows;
-                this.stateTreePaginate(this.treeFilters);
-            },
             getRestatedText() {
                 var text = "You searched for '" + this.stateSearchText + "'.";
                 if(this.stateSearchText == null) {

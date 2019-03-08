@@ -7,12 +7,12 @@
 
                 <div class="form-inline my-lg-0">
                     <input class="form-control input-lg w-100 px-2" id="famName"
-                           v-on:keyup.enter="doSearch()" v-model="searchText"
+                           v-on:keyup.enter="newSearch()" v-model="searchText"
                            aria-describedby="Family Name" 
                            placeholder="Search by Uniprot ID, gene ID, gene symbol, or keyword">
                 </div>
                 <div class="form-inline my-lg-0 justify-content-end pt-2">
-                    <a href="#" class="btn btn-pggrey mr-2" @click.prevent="doSearch()">
+                    <a href="#" class="btn btn-pggrey mr-2" @click.prevent="newSearch()">
                         <i class="fas fa-search"></i>
                     </a>
                     <a href="#" class="btn btn-pggrey" @click.prevent="doReset()">
@@ -85,7 +85,9 @@
         methods: {
             ...mapActions({
                 stateAction_setSearchFilters: types.TREE_ACTION_SET_FILTER,
-                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH
+                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
+                stateAction_resetFilters: types.TREE_ACTION_RESET_FILTER,
+                stateAction_setSearchText: types.TREE_ACTION_SET_SEARCH,
             }),
             onFiltersChange() {
               this.stateAction_setSearchFilters(this.treeFilters);
@@ -98,8 +100,10 @@
                 };
                 this.stateAction_doSearch(payload);
             },
-            doReset() {
-                this.searchText = null;
+            newSearch() {
+                this.stateAction_resetFilters();
+                this.stateAction_setSearchText(this.searchText);
+                this.stateAction_doSearch();
             },
             resetFilters() {
                 this.treeFilters.organisms = [];

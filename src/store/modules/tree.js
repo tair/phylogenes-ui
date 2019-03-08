@@ -100,9 +100,9 @@ const actions = {
         var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload = payload;
-            q = util.buildGeneralQuery(context.state.tree.payload);
-            fq = util.buildFieldQuery(context.state.tree.payload);
         }
+        q = util.buildGeneralQuery(context.state.tree.payload);
+        fq = util.buildFieldQuery(context.state.tree.payload);
 
         context.state.tree.isLoading = true;
         axios({
@@ -183,9 +183,9 @@ const actions = {
         var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload.filters = payload;
-            q = util.buildGeneralQuery(context.state.tree.payload);
-            fq = util.buildFieldQuery(context.state.tree.payload);
         }
+        q = util.buildGeneralQuery(context.state.tree.payload);
+        fq = util.buildFieldQuery(context.state.tree.payload);
         // console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
 
         axios({

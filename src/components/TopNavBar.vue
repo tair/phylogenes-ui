@@ -111,12 +111,14 @@
         methods: {
             ...mapActions({
                 setSearchText: types.TREE_ACTION_SET_SEARCH,
-                resetFilter: types.TREE_ACTION_RESET_FILTER
+                resetFilter: types.TREE_ACTION_RESET_FILTER,
+                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
             }),
             onSearch() {
                 this.resetFilter();
                 this.setSearchText(this.searchText);
-                this.$router.replace('/tree');
+                this.stateAction_doSearch();
+                this.$router.push('/tree');
                 this.searchText = null;
             },
             onReset() {
