@@ -9,17 +9,19 @@
                 </div>
                 <div class="chart-content">
                     <div class="container">
-                        <div class="row">
-                            <div class="col-sm">
+                        <div class="row align-items-end">
+                            <div class="col-sm px-0">
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
                                         @click="expandAll">Expand All</button>
                             </div>
                             <div class="col-auto">
                                 <search-box v-on:search="onSearch"></search-box>
                             </div>
-                            <div class="col-sm">
+                            <div class="col-sm px-0">
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
                                         @click="showLegend">{{showLegendButtonText}}</button>
+                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
+                                        <!--@click="moveUp">Move UP</button>-->
                             </div>
                         </div>
                     </div>
@@ -39,7 +41,7 @@
                 </div>
             </div>
         </div>
-        <div class="col1">
+        <div class="col2">
             <div class="chart">
                 <div class="chart-menu">
                     <span class="d-block p-2 bg-secondary text-dark">Table Panel for
@@ -79,7 +81,8 @@
         computed: {
             ...mapGetters({
                 stateTreeJson: types.TREE_GET_JSON,
-                stateTreeData: types.TREE_GET_DATA
+                stateTreeData: types.TREE_GET_DATA,
+                stateTreeAnnotations: types.TREE_GET_ANNOTATIONS
             }),
             showLegendButtonText(){
                 return this.legend?'Hide Legend':'Show Legend';
@@ -95,6 +98,9 @@
                 baseUrl: process.env.BASE_URL,
                 searchText: "",
                 matchNodes: [],
+                orig_nodes: null,
+                anno_mapping: {},
+                anno_headers: [],
                 legend: true
             }
         },
@@ -107,6 +113,7 @@
             ...mapActions({
                 loadJsonFromDB: types.TREE_ACTION_GET_JSON,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
+                store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
@@ -143,6 +150,46 @@
                 this.store_setMatchedNodes([-1]);
                 this.completeData = null;
             },
+            loadJsonFromFile(fileName) {
+              d3.json("/sam_annotations_simple.json", (err, data) => {
+                  if (err) {
+                      console.log(err);
+                  } else {
+                      this.loadAnnotations(data);
+                  }
+              });
+            },
+            loadAnnotations(annotations) {
+                this.anno_mapping = {};
+                this.anno_headers = [];
+                if(!annotations) {
+                    var annoObj = {
+                        headers: this.anno_headers,
+                        annoMap: this.anno_mapping
+                    }
+
+                    this.store_setAnnoMapping(annoObj);
+                    return;
+                }
+
+                annotations.forEach(a => {
+                    var uni_mapping = JSON.parse(a);
+                    var uniprotId = uni_mapping.uniprot_id;
+                    var annotationsList = JSON.parse(uni_mapping.go_annotations);
+                    this.anno_mapping[uniprotId] = annotationsList;
+                    annotationsList.forEach(singleAnno => {
+                        if(!this.anno_headers.includes(singleAnno.goName)) {
+                           this.anno_headers.push(singleAnno.goName);
+                       }
+                    });
+                });
+
+                var annoObj = {
+                    headers: this.anno_headers,
+                    annoMap: this.anno_mapping
+                }
+                this.store_setAnnoMapping(annoObj);
+            },
             processJson(treeJson) {
                 d3.csv("/organism_to_display.csv", (err, data) => {
                     if (err) {
@@ -150,7 +197,6 @@
                     } else {
                         this.mappingData = data;
                         this.mapOrganismToDisplayName(treeJson);
-                        // console.log(treeJson);
                         this.jsonData = treeJson;
                     }
                 });
@@ -241,7 +287,6 @@
             },
             getLeafNodeText(d) {
                 if(d.children) {
-                    // console.log(d.children[0].data);
                     return d.children[0].organism;
                 }
                 return "Leaf Node";
@@ -260,6 +305,7 @@
                 }
                 return "#00FF00";
             },
+            //For testing
             // loadJson() {
             //     d3.json("/panther.json", (err, data) => {
             //         if(err) {
@@ -300,8 +346,12 @@
                 this.$refs.treeLayout.onShowLegend();
                 this.legend = !this.legend;
             },
+            moveUp() {
+                this.$refs.treeLayout.moveUp();
+            },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
+                this.orig_nodes = nodes;
                 var tabularData = [];
                 var sortedNodes = nodes.sort(function (a, b) {
                     return a.dfId - b.dfId;
@@ -317,8 +367,22 @@
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
-                        tableNode["Gene ID"] = geneId;
                         tableNode["Organism"] = n.data.organism;
+                        this.anno_headers.forEach(a => {
+                            tableNode[a] = "";
+                            if(n.data.uniprotId) {
+                                let uniprotId = n.data.uniprotId.toLowerCase();
+                                if(this.anno_mapping[uniprotId]) {
+                                    let currAnno = this.anno_mapping[uniprotId];
+                                    currAnno.forEach(c => {
+                                        if(c.goName === a) {
+                                            tableNode[a] = "*";
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                        tableNode["Gene ID"] = geneId;
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tabularData.push(tableNode);
@@ -331,12 +395,17 @@
         watch: {
             '$route.params.id': function (id) {
                 this.treeId = id;
-                this.loadJsonFromDB(this.treeId);
                 this.jsonData = null;
+                this.loadJsonFromDB(this.treeId);
             },
             stateTreeJson: {
                 handler: function (val, oldVal) {
                     this.loadJson(val);
+                }
+            },
+            stateTreeAnnotations: {
+                handler: function (val, oldVal) {
+                    this.loadAnnotations(val);
                 }
             }
         },
@@ -378,7 +447,12 @@
     }
     .col1 {
         width: 50%;
-        height: 80%;
+        height: 100%;
+        float: left;
+    }
+    .col2 {
+        width: 50%;
+        height: 100%;
         float: left;
     }
 </style>

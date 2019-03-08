@@ -1,10 +1,10 @@
 <template>
 	<div>
 	<div class="white-background bg-white mb-5 mx-3">
-		<button class="btn btn-default" @click.prevent="switchView()" v-if="showText">View species tree</button>
-		<button class="btn btn-default" @click.prevent="switchView()" v-if="!showText">Switch to see full list of species in plain text</button>		
-		<div class="scroll-div bg-white p-5 my-5" v-if="showText">
-			<p>Protein sequences from these plant species are included in the current PhyloGenes release (version 1.0):</p>
+		<button class="btn btn-default btn-organism" @click.prevent="switchView()" v-if="showText">View species tree</button>
+		<button class="btn btn-default btn-organism" @click.prevent="switchView()" v-if="!showText">Switch to see full list of species in plain text</button>		
+		<div class="scroll-div bg-white my-2 px-5" v-if="showText">
+			<p class="text-lg mr-5 pr-5">Protein sequences from these plant species are included in the current PhyloGenes release (version 1.0):</p>
 
 			<p>Amborella trichopoda<br>
 			Arabidopsis thaliana<br>
@@ -37,7 +37,7 @@
 			Zea mays (corn)<br>
 			Zostera marina (eelgrass)</p>
 
-			<p>Protein sequences from the following non-plant model organisms are include to provide functional information that can be useful for when no experimental plant data is available:</p>
+			<p class="text-lg">Protein sequences from the following non-plant model organisms are include to provide functional information that can be useful for when no experimental plant data is available:</p>
 
 			<p>Caenorhabditis elegans (nematode worm)<br>
 			Danio rerio (zebrafish)<br>
@@ -85,5 +85,10 @@
 	    position: absolute;
 	    top: 0; left:0;
 	    bottom: 0; right:0;
+	}
+	.btn-organism {
+		position: absolute;
+		right: 0;
+		z-index: 1;
 	}
 </style>

@@ -116,7 +116,7 @@
   body {
     /* Margin bottom by footer height */
     margin-bottom: 60px;
-    background-color: #efefef;
+    background-color: #e9e9e9;
   }
   .footer {
     position: absolute;
