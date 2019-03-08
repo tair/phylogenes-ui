@@ -105,6 +105,9 @@
                 this.stateAction_setSearchText(this.searchText);
                 this.stateAction_doSearch();
             },
+            doReset() {
+                this.searchText = null;
+            },
             resetFilters() {
                 this.treeFilters.organisms = [];
                 this.treeFilters.species = [];

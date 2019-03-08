@@ -6,7 +6,7 @@
         </b-input-group-prepend>
         <input id="search" type="text" class="my-input" placeholder="Gene name, Gene ID, Uniprot ID"
                          v-model="searchText">
-        <div class="col-auto my-text">
+        <div v-if="matchText" class="col-auto my-text">
           {{matchText}}
         </div>
         <b-input-group-append>
