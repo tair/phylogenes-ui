@@ -28,6 +28,12 @@
             }
         },
         methods: {
+            getFamilyName() {
+                if(this.item.family_name) {
+                    return this.item.family_name[0];
+                }
+                return "";
+            },
             getHighlightedFields() {
                 var fl = "";
                 if(!this.item.hl) {
