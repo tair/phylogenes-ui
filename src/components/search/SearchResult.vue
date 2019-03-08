@@ -8,10 +8,8 @@
                         <b-form-select v-model="perPage" :options="options"/>
                     </b-input-group>
                 </div>
-                <!-- <div class="col-sm-3"> -->
-                    <b-pagination class="mt-3" size="sm" align="center" :total-rows="searchData.numFound" v-model="currentPage" :per-page="perPage">
-                    </b-pagination>
-                <!-- </div> -->
+                <b-pagination class="mt-3" size="sm" align="center" :total-rows="searchData.numFound" v-model="currentPage" :per-page="perPage">
+                </b-pagination>
         </div>
         <div class="alert elevation-0 mb-2 p-1 text-center text-sm" role="alert"
              :class="getAlertClass()">
@@ -109,17 +107,6 @@
                 stateTreePaginate: types.TREE_ACTION_PAGINATE,
                 setFilter: types.TREE_ACTION_SET_FILTER
             }),
-            // newSearch() {
-            //   this.gotoPage(this.currentPage);
-            // },
-            // gotoPage(page) {
-
-            //     if(page === 0 || page > this.noPages || this.currentPage === page)
-            //         return;
-
-            //     this.treeFilters.startRow = (page - 1) * this.treeFilters.rows;
-            //     this.stateTreePaginate(this.treeFilters);
-            // },
             getRestatedText() {
                 var text = "You searched for '" + this.stateSearchText + "'.";
                 if(this.stateSearchText == null) {
