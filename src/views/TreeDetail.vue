@@ -9,15 +9,15 @@
                 </div>
                 <div class="chart-content">
                     <div class="container">
-                        <div class="row">
-                            <div class="col-sm">
+                        <div class="row align-items-end">
+                            <div class="col-sm px-0">
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
                                         @click="expandAll">Expand All</button>
                             </div>
                             <div class="col-auto">
                                 <search-box v-on:search="onSearch"></search-box>
                             </div>
-                            <div class="col-sm">
+                            <div class="col-sm px-0">
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
                                         @click="showLegend">{{showLegendButtonText}}</button>
                                 <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->

@@ -1,24 +1,22 @@
 <template>
     <div class="browse">
-        <site-map :current-page="name"></site-map>
-
-        <div v-if="showFilters()" class="p-3" style="background: #F1F7EE;">
-            <span v-for="species in this.treeFilters.species" class="badge badge-pill badge-danger mr-1 p-1">
-                {{ species }}
-                <a href="#" @click="removeFilter('species', species)" class="text-white"><i class="fas fa-times-circle"></i></a>
-            </span>
-            <span v-for="organisms in this.treeFilters.organisms" class="badge badge-pill badge-info mr-1 p-1">
-                {{ organisms }}
-                <a href="#" @click="removeFilter('organisms', organisms)" class="text-white"><i class="fas fa-times-circle"></i></a>
-            </span>
-            <span v-for="nodeTypes in this.treeFilters.nodeTypes" class="badge badge-pill badge-primary mr-1 p-1">
-                {{ nodeTypes }}
-                <a href="#" @click="removeFilter('nodeTypes', nodeTypes)" class="text-white"><i class="fas fa-times-circle"></i></a>
-            </span>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-12 col-md-4 col-lg-3 px-4 mb-sm-3" style="height: 100vh; overflow: auto; background: #F1F7EE;">
+             <div class="row">
+            <div class="col-sm-12 col-md-4 col-lg-3 p-4 bg-lblue" style="height: 100vh; overflow: auto;">
+                
+                <div v-if="showFilters()" class="py-3">
+                    <span v-for="species in this.treeFilters.species" class="badge badge-pill badge-danger mr-1 p-1">
+                        {{ species }}
+                        <a href="#" @click="removeFilter('species', species)" class="text-white"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                    <span v-for="organisms in this.treeFilters.organisms" class="badge badge-pill badge-info mr-1 p-1">
+                        {{ organisms }}
+                        <a href="#" @click="removeFilter('organisms', organisms)" class="text-white"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                    <span v-for="nodeTypes in this.treeFilters.nodeTypes" class="badge badge-pill badge-primary mr-1 p-1">
+                        {{ nodeTypes }}
+                        <a href="#" @click="removeFilter('nodeTypes', nodeTypes)" class="text-white"><i class="fas fa-times-circle"></i></a>
+                    </span>
+                </div>
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
                 <div v-if="!this.stateTreeIsError && !this.stateTreeIsLoading">
@@ -31,7 +29,7 @@
                 </div>
             </div>
 
-            <div class="col-sm-12 col-md-8 col-lg-9 px-4" style="height: 100vh; overflow: auto; background: white;">
+            <div class="col-sm-12 col-md-8 col-lg-9 px-4 bg-pggrey" style="height: 100vh; overflow: auto;">
 
                 <i v-if="this.stateTreeIsLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
                 <search-result v-if="showSearchResult()" ref="sr"
@@ -64,7 +62,6 @@
         },
         data() {
             return {
-                name: "Tree Browse",
                 treeFilters: null
             }
         },

@@ -2,36 +2,33 @@
     <div>
         <div class="row p-2 align-items-center">
                 <div class="text-muted text-sm mr-auto">Query time: {{ searchData.queryTime }} ms</div>
-                <div class="text-primary text-sm">Results found: {{ searchData.numFound }}</div>
                 <div class="col-sm-2">
                     <b-input-group size="sm">
                         <b-form-select v-model="perPage" :options="options"/>
                     </b-input-group>
                 </div>
-                <!-- <div class="col-sm-3"> -->
-                    <b-pagination class="mt-3" size="sm" align="center" :total-rows="searchData.numFound" v-model="currentPage" :per-page="perPage">
-                    </b-pagination>
-                <!-- </div> -->
+                <b-pagination class="mt-3" size="sm" align="center" :total-rows="searchData.numFound" v-model="currentPage" :per-page="perPage">
+                </b-pagination>
         </div>
-        <div class="alert elevation-0 mb-2 p-1 text-center text-sm" role="alert"
+        <div class="alert elevation-0 mb-0 p-2 text-bold" role="alert"
              :class="getAlertClass()">
                 {{getRestatedText()}}
         </div>
-        <div class="bg-gray elevation-0 mb-2 p-1">
-            <div class="row pb-1">
+        <div class="elevation-0 mb-0 p-2">
+            <div class="row">
                 <div class="col-6">
-                    <span class="text-bold text-sm">Gene family</span>
+                    <span class="text-bold">Gene family</span>
                 </div>
                 <div class="col">
-                    <span class="text-bold text-sm">Matched field</span>
+                    <span class="text-bold">Matched field</span>
                 </div>
                 <div class="col">
-                    <span class="text-bold text-sm">Number of genes</span>
+                    <span class="text-bold">Number of genes in family</span>
                 </div>
             </div>
         </div>
         <div v-for="(data, i) in searchData.results"
-             v-bind:class="[i%2==0 ? whiteBg : grayBg]"
+             v-bind:class="[i%2==0 ? blueBg : greyBg]"
              class="elevation-0 mb-0 p-2">
             <result-item :item="data"></result-item>
         </div>
@@ -85,15 +82,15 @@
         data() {
             return {
                 treeFilters: null,
-                whiteBg: 'bg-white',
-                grayBg: 'bg-gray-light',
+                greyBg: 'bg-pggrey',
+                blueBg: 'bg-lblue',
                 currentPage: 1,
-                perPage: 10,
+                perPage: 20,
                 options: [
-                    { value: 5, text: '5 per page' },
                     { value: 10, text: '10 per page' },
                     { value: 20, text: '20 per page' },
-                    { value: 50, text: '50 per page' }
+                    { value: 50, text: '50 per page' },                   
+                    { value: 100, text: '100 per page' },
                 ]
             }
         },
@@ -140,7 +137,7 @@
                 if(this.searchData.numFound == 0) {
                     return "alert-danger";
                 }
-                return "alert-success";
+                return "alert-mblue";
             }
         },
         components: {
@@ -151,6 +148,5 @@
 </script>
 
 <style scoped>
-
 </style>
 

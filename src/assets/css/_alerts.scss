@@ -46,3 +46,8 @@
   @extend .bg-info;
   border-color: darken(theme-color("info"), 5%);
 }
+
+.alert-mblue {
+  @extend .bg-mblue;
+  border-color: darken(theme-color("mblue"), 5%);
+}

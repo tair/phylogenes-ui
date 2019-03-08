@@ -9,8 +9,7 @@
         <div class="col-sm-12 col-md-6 col-lg-6 px-3">
           <summary-stats></summary-stats>
           <search-bar></search-bar>
-          <button class="btn btn-danger my-4 mr-3" @click.prevent="goToSample()">Explore a sample tree</button>
-          <a href="#"><i class="fas fa-info-circle fa-lg" v-b-popover="'info text'"></i></a>
+          <button class="btn btn-mblue text-magenta my-3 px-3 py-2" @click.prevent="goToSample()">Explore a sample tree</button>
           <video-card></video-card>
         </div>
         <div class="same-height col-sm-12 col-md-6 col-lg-6 px-3">
