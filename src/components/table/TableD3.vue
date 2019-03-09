@@ -389,16 +389,16 @@
         overflow: scroll;
     }
     .mainTable tr:nth-child(even) {
-        background-color: #d6daeb;
+        background-color: #cdeaf5;
     }
     .mainTable tr:nth-child(odd) {
-        background-color: #eceef6;
+        background-color: #e9e9e9;
     }
     .mainTable tr:hover {
         /*filter: brightness(85%);*/
     }
     .mainTable th {
-        background-color: #e1e7f3;
+        background-color: #9cd5e3;
         text-align: center;
     }
     .mainTable .thHide {
@@ -425,12 +425,19 @@
         position: -webkit-sticky;
         left:0;
         box-shadow: 5px 0 2px -2px #f1f1f0;
-        background-color: #d6daeb;
+        background-color: #9cd5e3;
+    }
+
+    .mainTable tr:nth-child(even) td:first-child {
+        background-color: #cdeaf5;
+    }
+    .mainTable tr:nth-child(odd) td:first-child {
+        background-color: #e9e9e9;
     }
 
     .speTr {
-        background-color: #6687c6 !important;
-        color: white;
+        background-color: #9cd5e3 !important;
+        color: black;
         text-align: left !important;
         text-indent: 50px;
     }
