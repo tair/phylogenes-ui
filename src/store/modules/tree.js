@@ -4,6 +4,7 @@ import util from "./util";
 
 // const SOLR_URL = 'http://localhost:8983/solr/panther/select';
 const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
+const DEFAULT_ROWS = 20;
 
 const state = {
     tree: {
@@ -13,7 +14,7 @@ const state = {
             results: [],
             numFound: 0,
             startRow: 0,
-            rows: 10,
+            rows: DEFAULT_ROWS,
             queryTime: 0,
             facets: {
                 nodeTypes: [],
@@ -26,7 +27,7 @@ const state = {
             searchText: null,
             filters: {
                 startRow: 0,
-                rows: 10,
+                rows: DEFAULT_ROWS,
                 familyName: null,
                 uniprotId: null,
                 nodeTypes: [],
@@ -65,7 +66,7 @@ const actions = {
             searchText: null,
             filters: {
                 startRow: 0,
-                rows: 10,
+                rows: DEFAULT_ROWS,
                 familyName: null,
                 uniprotId: null,
                 nodeTypes: [],
@@ -79,7 +80,7 @@ const actions = {
     [types.TREE_ACTION_RESET_FILTER]: (context) => {
         var filters= {
                 startRow: 0,
-                rows: 10,
+                rows: DEFAULT_ROWS,
                 familyName: null,
                 uniprotId: null,
                 nodeTypes: [],
@@ -99,9 +100,9 @@ const actions = {
         var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload = payload;
-            q = util.buildGeneralQuery(context.state.tree.payload);
-            fq = util.buildFieldQuery(context.state.tree.payload);
         }
+        q = util.buildGeneralQuery(context.state.tree.payload);
+        fq = util.buildFieldQuery(context.state.tree.payload);
 
         context.state.tree.isLoading = true;
         axios({
@@ -182,9 +183,9 @@ const actions = {
         var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload.filters = payload;
-            q = util.buildGeneralQuery(context.state.tree.payload);
-            fq = util.buildFieldQuery(context.state.tree.payload);
         }
+        q = util.buildGeneralQuery(context.state.tree.payload);
+        fq = util.buildFieldQuery(context.state.tree.payload);
         // console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
 
         axios({

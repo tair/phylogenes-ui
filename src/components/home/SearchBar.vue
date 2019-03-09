@@ -1,28 +1,22 @@
 <template>
 
-        <div class="d-flex flex-column">
+        <div class="d-flex flex-column bg-mblue p-3">
             <div class="d-flex flex-row">
-                <div class="d-flex flex-column"><p>Search for gene trees by ID, symbol or keyword</p></div>
-                <div class="d-flex flex-column pl-3"><a href="#"><i class="fas fa-info-circle fa-lg" v-b-popover="'info text'"></i></a></div>
+                <div class="d-flex flex-column"><p>Search gene family</p></div>
             </div>
             <form @submit.prevent="onSearch()">
             <div class="d-flex flex-row">
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1">
-                        <i class="fa fa-search"></i>
-                    </span>
-                </div>
                 <input type="text" class="form-control elevation-0" id="treeSearchTxt"
                        v-model="searchText"
-                       style="width: 100%; background-color: #ffb663; color: white; border: 0px;"
+                       style="border: 0px;"
                        aria-describedby="treeSearch"
                        placeholder="search by UniProt ID, gene ID, gene symbol or keyword"
                        />
-                <button class="btn btn-info mx-2" @click.prevent="onSearch()">
-                    Go
+                <button class="btn btn-pggrey ml-2" @click.prevent="onSearch()">
+                    <i class="fa fa-search"></i>
                 </button>
-                <button class="btn btn-info" @click.prevent="onReset()">
-                    Reset
+                <button class="btn btn-pggrey ml-2" @click.prevent="onReset()">
+                    <i class="fa fa-times"></i>
                 </button>
             </div>
             </form>
@@ -52,11 +46,14 @@
             ...mapActions({
                 setSearchText: types.TREE_ACTION_SET_SEARCH,
                 resetFilter: types.TREE_ACTION_RESET_FILTER,
+                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
             }),
             onSearch() {
                 this.resetFilter();
                 this.setSearchText(this.searchText);
+                this.stateAction_doSearch();
                 this.$router.push('tree');
+                this.searchText = null;
             },
             onReset() {
                 this.searchText = null;

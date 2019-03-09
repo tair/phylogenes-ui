@@ -2,8 +2,8 @@
     <div>
 
         <!-- Fixed navbar -->
-        <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-success">
-            <a class="my-logo" href="#">
+        <nav id="navbar2" class="navbar navbar-expand-md navbar-light fixed-top elevation-2 bg-dblue">
+            <a class="my-logo" href="/">
                 <img width="75" height="48" src="../../src/assets/img/phy-logo2.png" alt="">
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,15 +63,15 @@
 
                     <li>
                         <form class="nav-link form-inline my-2 my-lg-0" @submit.prevent="onSearch()">
-                            <input class="form-control mr-sm-2 form-control-sm"
+                            <input class="form-control mr-sm-2 form-control-sm nav-input-width"
                                    v-model="searchText"
-                                   style="background-color: #B9CDA0; border: none;"
+                                   style="border: none;"
                                    type="text" placeholder="search by UniProt ID, gene ID, gene symbol or keyword" aria-label="Search">
-                            <button class="btn btn-sm btn-success mx-2" @click.prevent="onSearch()">
-                                Go
+                            <button class="btn btn-sm btn-pggrey mr-2" @click.prevent="onSearch()">
+                                <i class="fa fa-search"></i>
                             </button>
-                            <button class="btn btn-sm btn-success" @click.prevent="onReset()">
-                                Reset
+                            <button class="btn btn-sm btn-pggrey" @click.prevent="onReset()">
+                                <i class="fa fa-times"></i>
                             </button>
                         </form>
                     </li>
@@ -111,12 +111,14 @@
         methods: {
             ...mapActions({
                 setSearchText: types.TREE_ACTION_SET_SEARCH,
-                resetFilter: types.TREE_ACTION_RESET_FILTER
+                resetFilter: types.TREE_ACTION_RESET_FILTER,
+                stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
             }),
             onSearch() {
                 this.resetFilter();
                 this.setSearchText(this.searchText);
-                this.$router.replace('/tree');
+                this.stateAction_doSearch();
+                this.$router.push('/tree');
                 this.searchText = null;
             },
             onReset() {
@@ -129,5 +131,8 @@
     .my-logo {
         position: absolute;
         padding: 10px;
+    }
+    .nav-input-width {
+        width: 305px !important;
     }
 </style>

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="databand">
+        <div class="databand text-danger text-bold">
             {{getMetadataText()}}
         </div>
         <div class="col1">
@@ -12,15 +12,15 @@
                 <!--</div>-->
                 <div class="chart-content">
                     <div class="container">
-                        <div class="row">
-                            <div class="col-sm">
+                        <div class="row align-items-end">
+                            <div class="col-sm px-0">
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
                                         @click="expandAll">Expand All</button>
                             </div>
                             <div class="col-auto">
                                 <search-box v-on:search="onSearch"></search-box>
                             </div>
-                            <div class="col-sm">
+                            <div class="col-sm px-0">
                                 <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
                                         @click="showLegend">{{showLegendButtonText}}</button>
                                 <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
@@ -86,10 +86,35 @@
             ...mapGetters({
                 stateTreeJson: types.TREE_GET_JSON,
                 stateTreeData: types.TREE_GET_DATA,
-                stateTreeAnnotations: types.TREE_GET_ANNOTATIONS
+                stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
+                store_getTreeMetadata: types.TREE_GET_METADATA
             }),
             showLegendButtonText(){
                 return this.legend?'Hide Legend':'Show Legend';
+            }
+        },
+        watch: {
+            '$route.params.id': function (id) {
+                this.treeId = id;
+                this.jsonData = null;
+                this.loadJsonFromDB(this.treeId);
+            },
+            stateTreeJson: {
+                handler: function (val, oldVal) {
+                    this.loadJson(val);
+                }
+            },
+            stateTreeAnnotations: {
+                handler: function (val, oldVal) {
+                    this.loadAnnotations(val);
+                }
+            },
+            store_getTreeMetadata: {
+                handler: function (val, oldVal) {
+                    console.log("Metadata ", val);
+                    this.metadata.familyName = val.familyName[0];
+                    this.metadata.spannedTaxon = val.taxonRange[0];
+                }
             }
         },
         data() {
@@ -104,7 +129,16 @@
                 matchNodes: [],
                 anno_mapping: {},
                 anno_headers: [],
-                legend: true
+                legend: true,
+                metadata: {
+                    familyName: "",
+                    genesCount: 0,
+                    uniqueOrganisms: {
+                        totalCount: 0,
+                        organisms: []
+                    },
+                    spannedTaxon: ""
+                }
             }
         },
         mounted() {
@@ -145,8 +179,10 @@
                 this.store_setMatchedNodes(this.matchNodes);
             },
             getMetadataText() {
-                let metadataText = "NADH-UBIQUINONE OXIDOREDUCTASE SUBUNIT";
-                metadataText += "";
+                let metadataText = this.metadata.familyName;
+                metadataText += ", " + this.metadata.genesCount + " genes";
+                metadataText += ", " + this.metadata.uniqueOrganisms.totalCount + " organisms";
+                metadataText += ", spanning " + this.metadata.spannedTaxon;
                 return metadataText;
             },
             loadJson(jsonString) {
@@ -157,6 +193,10 @@
                 this.stateSetTreeData([]);
                 this.store_setMatchedNodes([-1]);
                 this.completeData = null;
+
+                 console.log("Mounted ", this.store_getTreeMetadata);
+                this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
+                this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange[0];
             },
             loadJsonFromFile(fileName) {
               d3.json("/sam_annotations_simple.json", (err, data) => {
@@ -345,7 +385,29 @@
                 this.branchLength = "N/A";
             },
             onTreeInit(nodes) {
-              this.completeData = nodes;
+                console.log(nodes);
+                var tabularData = [];
+                var sortedNodes = nodes.sort(function (a, b) {
+                    return a.dfId - b.dfId;
+                });
+                var index = 0;
+                let uniqueOrganisms = [];
+                sortedNodes.forEach(n => {
+                    if(!n.children) {
+                        var tableNode = {};
+                        tableNode["id"] = index++;
+                        tableNode["Gene name"] = n.data.gene_symbol;
+                        tableNode["Organism"] = n.data.organism;
+                        if(!uniqueOrganisms.includes(n.data.organism)) {
+                            uniqueOrganisms.push(n.data.organism);
+                        }
+                        tabularData.push(tableNode);
+                    }
+                });
+                this.metadata.genesCount = tabularData.length;
+                this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
+                this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
+                this.completeData = nodes;
             },
             onTreeUpdate(nodes) {
                 this.updateTableData(nodes);
@@ -399,23 +461,6 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
-            }
-        },
-        watch: {
-            '$route.params.id': function (id) {
-                this.treeId = id;
-                this.jsonData = null;
-                this.loadJsonFromDB(this.treeId);
-            },
-            stateTreeJson: {
-                handler: function (val, oldVal) {
-                    this.loadJson(val);
-                }
-            },
-            stateTreeAnnotations: {
-                handler: function (val, oldVal) {
-                    this.loadAnnotations(val);
-                }
             }
         },
         created() {

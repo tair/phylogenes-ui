@@ -12,6 +12,10 @@ const state = {
         data: null,
         jsonString: null,
         go_annotations: null,
+        metadata: {
+            familyName: [],
+            taxonRange: []
+        },
         anno_mapping: {
           headers: [],
           mapping: null
@@ -34,6 +38,9 @@ const getters = {
     },
     [types.TREE_GET_ANNOTATIONS]: state => {
       return state.treedata.go_annotations;
+    },
+    [types.TREE_GET_METADATA]: state => {
+        return state.treedata.metadata;
     },
     [types.TREE_GET_ANNO_MAPPING]: state => {
       return state.treedata.anno_mapping;
@@ -71,6 +78,9 @@ const actions = {
         //console.log("Action" + payload);
         context.state.treedata.matchedNodes = payload;
     },
+    [types.TREE_ACTION_SET_METADATA]: (context, payload) => {
+        context.state.treedata.metadata = payload;
+    },
     [types.TREE_ACTION_SET_ANNO_MAPPING]: (context, payload) => {
         //console.log("Action" + payload);
         context.state.treedata.anno_mapping = payload;
@@ -101,12 +111,14 @@ const actions = {
         axios({
             method: 'GET',
             url: SOLR_URL +
-            '?fl=' + 'jsonString, go_annotations' +
+            '?fl=' + 'family_name,species_list,jsonString,go_annotations' +
             '&rows=1' + '&start=0' +
             '&q=' + q
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
+                    context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
+                    context.state.treedata.metadata.taxonRange = res.data.response.docs[0].species_list;
                     context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
                     context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
                 }

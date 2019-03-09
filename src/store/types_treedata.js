@@ -2,6 +2,7 @@
 export const TREE_GET_DATA = 'treedata/stateTreeData';
 export const TREE_GET_JSON = 'treedata/stateTreeJson';
 export const TREE_GET_ANNOTATIONS = 'treedata/stateTreeAnnotations';
+export const TREE_GET_METADATA = 'treedata/store_getTreeMetadata';
 export const TREE_GET_ANNO_MAPPING = 'treedata/store_annoMapping';
 export const TREE_GET_NODES = 'treedata/stateTreeNodes';
 export const TREE_GET_MATCHED_NODES = 'treedata/stateTreeMatchedNodes';
@@ -13,6 +14,7 @@ export const TREE_GET_TOP_Y = 'treedata/store_stateTreeTopY';
 //actions
 export const TREE_ACTION_SET_DATA = 'treedata/stateSetTreeData';
 export const TREE_ACTION_SET_NODES = 'treedata/stateSetTreeNodes';
+export const TREE_ACTION_SET_METADATA = 'treedata/store_setTreeMetadata';
 export const TREE_ACTION_SET_ANNO_MAPPING = 'treedata/store_setAnnoMapping';
 export const TREE_ACTION_SET_MATCHED_NODES = 'treedata/stateSetTreeMatchedNodes';
 export const TREE_ACTION_SET_CENTER_NODE = 'treedata/store_setCenterNode';

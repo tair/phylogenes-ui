@@ -73,7 +73,6 @@
                     this.isLoading = true;
                     if(val != null) {
                         this.initTree();
-                        console.log("Init tree ");
                     }
                 }
             },
@@ -909,7 +908,7 @@
 <style scoped>
     svg {
         background-color: white;
-        cursor: grab;
+        /*cursor: grab;*/
     }
     .legend-box {
         background-color: #9E9E9E;
