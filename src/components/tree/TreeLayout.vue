@@ -114,7 +114,7 @@
                 counter: 0,
                 rowHeight: 41,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
@@ -732,7 +732,8 @@
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 if(!currTopNode) return;
-                var topNodePosY = -1*currTopNode.x + 35 + this.topPaddingY;
+
+                var topNodePosY = -1*currTopNode.x + 40 + this.topPaddingY;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)
@@ -913,7 +914,7 @@
     .legend-box {
         background-color: #9E9E9E;
         position: absolute;
-        top: 85px;
+        top: 55px;
         right: 5px;
         width: 230px;
         float: left;

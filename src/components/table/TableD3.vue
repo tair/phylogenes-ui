@@ -126,7 +126,7 @@
 
                 setTimeout(() => {
                     let theadHeight = this.$refs.thead.clientHeight;
-                    this.store_setTreeTopY(theadHeight-38);
+                    // this.store_setTreeTopY(theadHeight);
                 },1000);
 
             },

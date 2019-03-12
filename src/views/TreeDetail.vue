@@ -1,7 +1,19 @@
 <template>
     <div>
-        <div class="databand text-danger text-bold">
-            {{getMetadataText()}}
+        <modal v-if="showPopup" @close="showPopup = false">
+            <div slot="header">{{popupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
+                <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
+            </template>
+        </modal>
+        <div class="databand text-danger text-bold ">
+            <!-- <span v-html="getMetadataText()" ref="popup"></span> -->
+            <span style="cursor: pointer" v-on:click="showOrganismPopup()">{{metadata.familyName}}, {{metadata.genesCount}} genes, 
+                <a><u>
+                    {{metadata.uniqueOrganisms.totalCount}} organisms</u></a>
+                , spanning {{this.metadata.spannedTaxon}}
+            </span>
         </div>
         <div class="col1">
             <div class="chart">
@@ -73,6 +85,8 @@
     import {mapGetters} from 'vuex';
 
     import * as types from '../store/types_treedata';
+    import customModal from '@/components/modal/CustomModal';
+    import popupTableOrganism from '@/components/table/PopupTableOrganism';
 
     export default {
         name: "TreeDetail",
@@ -80,7 +94,9 @@
             treelayout2: treelayout2,
             tablelayout: tablelayout,
             intersect: intersect,
-            searchBox: searchBox
+            searchBox: searchBox,
+            'modal': customModal,
+            popupTable: popupTableOrganism
         },
         computed: {
             ...mapGetters({
@@ -111,7 +127,7 @@
             },
             store_getTreeMetadata: {
                 handler: function (val, oldVal) {
-                    console.log("Metadata ", val);
+                    // console.log("Metadata ", val);
                     this.metadata.familyName = val.familyName[0];
                     this.metadata.spannedTaxon = val.taxonRange[0];
                 }
@@ -138,6 +154,15 @@
                         organisms: []
                     },
                     spannedTaxon: ""
+                },
+                showPopup: false,
+                popupHeader: "Organisms",
+                popupCols: ["Organism", "Number of genes"],
+                popupData: [],
+                popupTableConfig: {
+                    tableHeight: 'auto',
+                    tableWidth: 'auto',
+                    colsWidth: ['300px', '100px']
                 }
             }
         },
@@ -145,6 +170,7 @@
             this.loadJsonFromDB(this.treeId);
             this.searchText = "";
             this.matchNodes = [];
+            this.popupData = [];
         },
         methods: {
             ...mapActions({
@@ -154,6 +180,16 @@
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
+            showOrganismPopup() {
+                this.showPopup = true;
+                this.popupData = [];
+                this.metadata.uniqueOrganisms.organisms.forEach(o => {
+                    let singleRow = [];
+                    singleRow.push(o.name);
+                    singleRow.push(o.count);
+                    this.popupData.push(singleRow); 
+                });
+            },
             onSearch(text) {
                 if(text != null) {
                     var d = this.completeData.filter(t => {
@@ -181,7 +217,8 @@
             getMetadataText() {
                 let metadataText = this.metadata.familyName;
                 metadataText += ", " + this.metadata.genesCount + " genes";
-                metadataText += ", " + this.metadata.uniqueOrganisms.totalCount + " organisms";
+                metadataText += ", " + "<a><u>" +
+                this.metadata.uniqueOrganisms.totalCount + " organisms</u></a>";
                 metadataText += ", spanning " + this.metadata.spannedTaxon;
                 return metadataText;
             },
@@ -194,7 +231,6 @@
                 this.store_setMatchedNodes([-1]);
                 this.completeData = null;
 
-                 console.log("Mounted ", this.store_getTreeMetadata);
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange[0];
             },
@@ -385,7 +421,6 @@
                 this.branchLength = "N/A";
             },
             onTreeInit(nodes) {
-                console.log(nodes);
                 var tabularData = [];
                 var sortedNodes = nodes.sort(function (a, b) {
                     return a.dfId - b.dfId;
@@ -398,16 +433,36 @@
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
                         tableNode["Organism"] = n.data.organism;
-                        if(!uniqueOrganisms.includes(n.data.organism)) {
-                            uniqueOrganisms.push(n.data.organism);
+                        var geneId = n.data.gene_id;
+                        if (geneId) {
+                            geneId = geneId.split(':')[1];
+                        }
+                        tableNode["Gene ID"] = geneId;
+                        tableNode["Protein function"] = n.data.definition;
+                        tableNode["Uniprot ID"] = n.data.uniprotId;
+
+                        if(n.data.organism) {
+                            let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                            if(org) {
+                                org.count++;
+                            } else {
+                                let org = {
+                                    name: n.data.organism,
+                                    count: 1
+                                }
+                                uniqueOrganisms.push(org);
+                            }
                         }
                         tabularData.push(tableNode);
                     }
                 });
+
                 this.metadata.genesCount = tabularData.length;
                 this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
+                uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
                 this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
-                this.completeData = nodes;
+
+                this.completeData = tabularData;
             },
             onTreeUpdate(nodes) {
                 this.updateTableData(nodes);
