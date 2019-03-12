@@ -76,10 +76,14 @@
                 stateSearchText: types.TREE_GET_SEARCH_TEXT
             }),
             orderedSpecies: function () {
-                return _.orderBy(this.facets.species, 'key')
+                return this.facets.species.sort((a,b)=>{
+                    return a.key.toLowerCase().localeCompare(b.key.toLowerCase());
+                });
             },
             orderedOrganisms: function () {
-                return _.orderBy(this.facets.organisms, 'key')
+                return this.facets.organisms.sort((a,b)=>{
+                    return a.key.toLowerCase().localeCompare(b.key.toLowerCase());
+                });
             }
         },
         methods: {
