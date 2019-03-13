@@ -360,7 +360,6 @@
                 var index = 0;
                 sortedNodes.forEach(n => {
                     if(!n.children) {
-                        // if(index > 2) return;
                         var tableNode = {};
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
