@@ -17,14 +17,21 @@
                     <th colspan="3" style="background-color: transparent"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="col in cols">{{col}}</th>
+                    <th v-for="col in cols" :key="col">{{col}}</th>
                 </tr>
             </thead>
             <tbody id="body">
-                <tr v-for="row in data">
-                    <td v-for="key in cols" @click="cellClicked(key, row)"
+                <tr v-for="row in data" >
+                    <td v-for="key in cols" @click="cellClicked(key, row)" :key="key"
                         :class="{hoverSp: row[key] == '*'}">
-                        <tablecell :cellText="row[key]"></tablecell>
+                        <svg :width=tdWidth :height=tdHeight>
+                            <g>
+                                <text v-if="row[key] != '*'"
+                                      dy=".35em" x=5 y=20>{{row[key]}}</text>
+                                <circle v-if="row[key] == '*'" class="anno_circle"
+                                      cx="100" cy="18"></circle>
+                            </g>
+                        </svg>
                     </td>
                 </tr>
             </tbody>
@@ -40,14 +47,12 @@
     import { mapGetters, mapActions } from 'vuex';
 
     import popupTable from './PopupTable';
-    import tablecell from './TableCellD3';
     import customModal from '@/components/modal/CustomModal';
 
     export default {
         name: "tablelayout",
         components: {
             popupTable: popupTable,
-            tablecell: tablecell,
             'modal': customModal
         },
         data() {
@@ -389,6 +394,9 @@
     .mainTable tr:nth-child(odd) {
         background-color: #e9e9e9;
     }
+    .mainTable tr:hover {
+        /*filter: brightness(85%);*/
+    }
     .mainTable th {
         background-color: #9cd5e3;
         text-align: center;
@@ -442,6 +450,13 @@
     .noDisplay {
         background-color: transparent !important;
         box-shadow: none !important;
+    }
+
+    .anno_circle {
+        r: 8;
+        fill: #ff0;
+        stroke: steelblue;
+        stroke-width: 2px;
     }
 </style>
 

@@ -1,12 +1,27 @@
 <template>
     <div>
+        <modal v-if="showPopup" @close="showPopup = false">
+            <div slot="header">{{popupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
+                <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
+            </template>
+        </modal>
+        <div class="databand text-danger text-bold ">
+            <!-- <span v-html="getMetadataText()" ref="popup"></span> -->
+            <span style="cursor: pointer" v-on:click="showOrganismPopup()">{{metadata.familyName}}, {{metadata.genesCount}} genes, 
+                <a><u>
+                    {{metadata.uniqueOrganisms.totalCount}} organisms</u></a>
+                , spanning {{this.metadata.spannedTaxon}}
+            </span>
+        </div>
         <div class="col1">
             <div class="chart">
-                <div class="chart-menu">
-                    <span class="d-block p-2 bg-secondary text-dark">Tree Panel for
-                        <span class="font-weight-bold">{{ this.treeId }}</span>
-                    </span>
-                </div>
+                <!--<div class="chart-menu">-->
+                    <!--<span class="d-block p-2 bg-secondary text-dark">Tree Panel for-->
+                        <!--<span class="font-weight-bold">{{ this.treeId }}</span>-->
+                    <!--</span>-->
+                <!--</div>-->
                 <div class="chart-content">
                     <div class="container">
                         <div class="row align-items-end">
@@ -35,6 +50,7 @@
                                     <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
                         <treelayout2  :jsonData="jsonData" :mappingData="mappingData"
                                       ref="treeLayout"
+                                      v-on:init-tree="onTreeInit"
                                       v-on:updated-tree="onTreeUpdate"></treelayout2>
 
                     </div>
@@ -43,11 +59,11 @@
         </div>
         <div class="col2">
             <div class="chart">
-                <div class="chart-menu">
-                    <span class="d-block p-2 bg-secondary text-dark">Table Panel for
-                       <span class="font-weight-bold">{{ this.treeId }}</span>
-                    </span>
-                </div>
+                <!--<div class="chart-menu">-->
+                    <!--<span class="d-block p-2 bg-secondary text-dark">Table Panel for-->
+                       <!--<span class="font-weight-bold">{{ this.treeId }}</span>-->
+                    <!--</span>-->
+                <!--</div>-->
                 <div class="chart-content">
                     <tablelayout></tablelayout>
                     <!--<intersect></intersect>-->
@@ -69,6 +85,8 @@
     import {mapGetters} from 'vuex';
 
     import * as types from '../store/types_treedata';
+    import customModal from '@/components/modal/CustomModal';
+    import popupTableOrganism from '@/components/table/PopupTableOrganism';
 
     export default {
         name: "TreeDetail",
@@ -76,16 +94,43 @@
             treelayout2: treelayout2,
             tablelayout: tablelayout,
             intersect: intersect,
-            searchBox: searchBox
+            searchBox: searchBox,
+            'modal': customModal,
+            popupTable: popupTableOrganism
         },
         computed: {
             ...mapGetters({
                 stateTreeJson: types.TREE_GET_JSON,
                 stateTreeData: types.TREE_GET_DATA,
-                stateTreeAnnotations: types.TREE_GET_ANNOTATIONS
+                stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
+                store_getTreeMetadata: types.TREE_GET_METADATA
             }),
             showLegendButtonText(){
                 return this.legend?'Hide Legend':'Show Legend';
+            }
+        },
+        watch: {
+            '$route.params.id': function (id) {
+                this.treeId = id;
+                this.jsonData = null;
+                this.loadJsonFromDB(this.treeId);
+            },
+            stateTreeJson: {
+                handler: function (val, oldVal) {
+                    this.loadJson(val);
+                }
+            },
+            stateTreeAnnotations: {
+                handler: function (val, oldVal) {
+                    this.loadAnnotations(val);
+                }
+            },
+            store_getTreeMetadata: {
+                handler: function (val, oldVal) {
+                    // console.log("Metadata ", val);
+                    this.metadata.familyName = val.familyName[0];
+                    this.metadata.spannedTaxon = val.taxonRange[0];
+                }
             }
         },
         data() {
@@ -98,16 +143,34 @@
                 baseUrl: process.env.BASE_URL,
                 searchText: "",
                 matchNodes: [],
-                orig_nodes: null,
                 anno_mapping: {},
                 anno_headers: [],
-                legend: true
+                legend: true,
+                metadata: {
+                    familyName: "",
+                    genesCount: 0,
+                    uniqueOrganisms: {
+                        totalCount: 0,
+                        organisms: []
+                    },
+                    spannedTaxon: ""
+                },
+                showPopup: false,
+                popupHeader: "Organisms",
+                popupCols: ["Organism", "Number of genes"],
+                popupData: [],
+                popupTableConfig: {
+                    tableHeight: 'auto',
+                    tableWidth: 'auto',
+                    colsWidth: ['300px', '100px']
+                }
             }
         },
         mounted() {
             this.loadJsonFromDB(this.treeId);
             this.searchText = "";
             this.matchNodes = [];
+            this.popupData = [];
         },
         methods: {
             ...mapActions({
@@ -117,6 +180,16 @@
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             }),
+            showOrganismPopup() {
+                this.showPopup = true;
+                this.popupData = [];
+                this.metadata.uniqueOrganisms.organisms.forEach(o => {
+                    let singleRow = [];
+                    singleRow.push(o.name);
+                    singleRow.push(o.count);
+                    this.popupData.push(singleRow); 
+                });
+            },
             onSearch(text) {
                 if(text != null) {
                     var d = this.completeData.filter(t => {
@@ -141,6 +214,14 @@
                 }
                 this.store_setMatchedNodes(this.matchNodes);
             },
+            getMetadataText() {
+                let metadataText = this.metadata.familyName;
+                metadataText += ", " + this.metadata.genesCount + " genes";
+                metadataText += ", " + "<a><u>" +
+                this.metadata.uniqueOrganisms.totalCount + " organisms</u></a>";
+                metadataText += ", spanning " + this.metadata.spannedTaxon;
+                return metadataText;
+            },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
                 treeJson = treeJson.search.annotation_node;
@@ -149,6 +230,9 @@
                 this.stateSetTreeData([]);
                 this.store_setMatchedNodes([-1]);
                 this.completeData = null;
+
+                this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
+                this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange[0];
             },
             loadJsonFromFile(fileName) {
               d3.json("/sam_annotations_simple.json", (err, data) => {
@@ -336,6 +420,50 @@
             onMouseLeaveLink(link) {
                 this.branchLength = "N/A";
             },
+            onTreeInit(nodes) {
+                var tabularData = [];
+                var sortedNodes = nodes.sort(function (a, b) {
+                    return a.dfId - b.dfId;
+                });
+                var index = 0;
+                let uniqueOrganisms = [];
+                sortedNodes.forEach(n => {
+                    if(!n.children) {
+                        var tableNode = {};
+                        tableNode["id"] = index++;
+                        tableNode["Gene name"] = n.data.gene_symbol;
+                        tableNode["Organism"] = n.data.organism;
+                        var geneId = n.data.gene_id;
+                        if (geneId) {
+                            geneId = geneId.split(':')[1];
+                        }
+                        tableNode["Gene ID"] = geneId;
+                        tableNode["Protein function"] = n.data.definition;
+                        tableNode["Uniprot ID"] = n.data.uniprotId;
+
+                        if(n.data.organism) {
+                            let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                            if(org) {
+                                org.count++;
+                            } else {
+                                let org = {
+                                    name: n.data.organism,
+                                    count: 1
+                                }
+                                uniqueOrganisms.push(org);
+                            }
+                        }
+                        tabularData.push(tableNode);
+                    }
+                });
+
+                this.metadata.genesCount = tabularData.length;
+                this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
+                uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
+                this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
+
+                this.completeData = tabularData;
+            },
             onTreeUpdate(nodes) {
                 this.updateTableData(nodes);
             },
@@ -351,7 +479,6 @@
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
-                this.orig_nodes = nodes;
                 var tabularData = [];
                 var sortedNodes = nodes.sort(function (a, b) {
                     return a.dfId - b.dfId;
@@ -390,24 +517,6 @@
                     }
                 });
                 this.stateSetTreeData(tabularData);
-                this.completeData = this.stateTreeData;
-            }
-        },
-        watch: {
-            '$route.params.id': function (id) {
-                this.treeId = id;
-                this.jsonData = null;
-                this.loadJsonFromDB(this.treeId);
-            },
-            stateTreeJson: {
-                handler: function (val, oldVal) {
-                    this.loadJson(val);
-                }
-            },
-            stateTreeAnnotations: {
-                handler: function (val, oldVal) {
-                    this.loadAnnotations(val);
-                }
             }
         },
         created() {
@@ -420,13 +529,22 @@
     .chart {
         /*background-color: #ffffff;*/
         border-color: /*#f4a460*/ #fff !important;
-        border: 1px solid;
+        border-left: 1px solid;
         box-sizing: border-box;
-        box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
+        box-shadow: 0 0 4px 0 rgba(0,0,0,.1);
 
         position: relative;
         width: 100%;
         height: 100%;
+    }
+    .databand {
+        width: 100%;
+        height: 50px;
+        margin: 0;
+
+        padding-top: 15px;
+        padding-left: 15px;
+        font-size: medium;
     }
     div.chart-menu {
         width: 100%;
