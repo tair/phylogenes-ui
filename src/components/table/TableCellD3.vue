@@ -26,6 +26,7 @@
                 el: null,
                 origText: "",
                 computedText: "",
+                cellWidth: 180,
                 isEllipsis: false
             }
         },
@@ -37,11 +38,6 @@
         },
         mounted: function () {
             this.el = d3.select(this.$el);
-            this.el.select('g')
-                .append("div")
-                .attr("class", "mytooltip")				
-                .style("opacity", .9);
-
             this.setComputedText();
         },
         methods: {
@@ -52,20 +48,16 @@
                     this.origText = this.cellText;
                     this.computedText = this.cellText;
                     setTimeout(() => {
+                        //Get text pixels width instead of just the normal text length since
+                        // pixel size is more depending on the type of text.
                         let computedLength = textNode.getComputedTextLength();
-                        if(computedLength > 180) {
+                        //If computed text length is greater than cell width, than slice the text 
+                        // and show ellipsis. When you hover over the ellipsis text it will show
+                        // tooltip with full text. (Todo)
+                        if(computedLength > cellWidth) {
                             this.computedText = this.cellText.slice(0, 17);
                             this.computedText += "..."; 
-                            this.isEllipsis = true;
-                            this.el.select('text')
-                                .on("mouseover", function(d) {		
-                                    div.transition()		
-                                        .duration(200)		
-                                        .style("opacity", .9);		
-                                    div	.html(formatTime(d.date) + "<br/>"  + d.close)	
-                                        .style("left", (d3.event.pageX) + "px")		
-                                        .style("top", (d3.event.pageY - 28) + "px");	
-                                    })					
+                            this.isEllipsis = true;				
                         }
                     }, 100);
                 }
@@ -82,20 +74,6 @@
         fill: #ff0;
         stroke: steelblue;
         stroke-width: 2px;
-    }
-    .mytooltip {	
-        position: absolute;			
-        text-align: center;
-        left: 30px;
-        top: 50px;			
-        width: 60px;					
-        height: 28px;					
-        padding: 2px;				
-        font: 12px sans-serif;		
-        background: lightsteelblue;	
-        border: 0px;		
-        border-radius: 8px;			
-        pointer-events: none;			
     }
 </style>
 
