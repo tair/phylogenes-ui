@@ -7,11 +7,12 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-        <div class="databand text-danger text-bold ">
+        <div class="databand text-danger">
             <!-- <span v-html="getMetadataText()" ref="popup"></span> -->
-            <span style="cursor: pointer" v-on:click="showOrganismPopup()">{{metadata.familyName}}, {{metadata.genesCount}} genes, 
-                <a><u>
-                    {{metadata.uniqueOrganisms.totalCount}} organisms</u></a>
+            <span v-on:click="showOrganismPopup()">
+                {{metadata.familyName}} ({{treeId}}), {{metadata.genesCount}} genes, 
+                <span style="cursor: pointer"><b><u>
+                    {{metadata.uniqueOrganisms.totalCount}} organisms</u></b></span>
                 , spanning {{this.metadata.spannedTaxon}}
             </span>
         </div>
