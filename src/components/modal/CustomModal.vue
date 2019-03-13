@@ -10,7 +10,7 @@
                         </slot>
                     </div>
 
-                    <div class="modal-body">
+                    <div class="modal-body align-middle">
                         <slot name="body">
                             default body
                         </slot>
@@ -63,7 +63,7 @@
 
     .modal-container {
         width: 530px;
-        max-height: 300px;
+        max-height: 500px;
         margin: 0px auto;
         padding: 10px 10px;
         background-color: #fff;

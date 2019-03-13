@@ -28,6 +28,7 @@
             </div>
         </div>
         <div v-for="(data, i) in searchData.results"
+             :key=i
              v-bind:class="[i%2==0 ? blueBg : greyBg]"
              class="elevation-0 mb-0 p-2">
             <result-item :item="data"></result-item>

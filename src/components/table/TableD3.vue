@@ -17,12 +17,12 @@
                     <th colspan="3" style="background-color: transparent"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="col in cols">{{col}}</th>
+                    <th v-for="col in cols" :key="col">{{col}}</th>
                 </tr>
             </thead>
             <tbody id="body">
-                <tr v-for="row in data">
-                    <td v-for="key in cols" @click="cellClicked(key, row)"
+                <tr v-for="row in data" >
+                    <td v-for="key in cols" @click="cellClicked(key, row)" :key="key"
                         :class="{hoverSp: row[key] == '*'}">
                         <svg :width=tdWidth :height=tdHeight>
                             <g>
