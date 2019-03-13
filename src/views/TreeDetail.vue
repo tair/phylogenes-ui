@@ -360,6 +360,7 @@
                 var index = 0;
                 sortedNodes.forEach(n => {
                     if(!n.children) {
+                        // if(index > 2) return;
                         var tableNode = {};
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
@@ -385,6 +386,7 @@
                         tableNode["Gene ID"] = geneId;
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
+                        tableNode["Subfamily Name"] = n.data.sf_name;
                         tabularData.push(tableNode);
                     }
                 });

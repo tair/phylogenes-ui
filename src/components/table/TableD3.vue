@@ -24,14 +24,15 @@
                 <tr v-for="row in data">
                     <td v-for="key in cols" @click="cellClicked(key, row)"
                         :class="{hoverSp: row[key] == '*'}">
-                        <svg :width=tdWidth :height=tdHeight>
+                        <!-- <svg :width=tdWidth :height=tdHeight>
                             <g>
                                 <text v-if="row[key] != '*'"
                                       dy=".35em" x=5 y=20>{{row[key]}}</text>
                                 <circle v-if="row[key] == '*'" class="anno_circle"
                                       cx="100" cy="18"></circle>
                             </g>
-                        </svg>
+                        </svg> -->
+                        <tablecell :cellText="row[key]"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -47,12 +48,14 @@
     import { mapGetters, mapActions } from 'vuex';
 
     import popupTable from './PopupTable';
+    import tablecell from './TableCellD3';
     import customModal from '@/components/modal/CustomModal';
 
     export default {
         name: "tablelayout",
         components: {
             popupTable: popupTable,
+            tablecell: tablecell,
             'modal': customModal
         },
         data() {
@@ -184,6 +187,9 @@
                 if(annoList.length != 0) {
                     this.displayPopup(uniHeader, annoList);
                 }
+            },
+            cellHover(text) {
+                // console.log(text.length);
             },
             displayPopup(header, data) {
                 this.popupHeader = header;
@@ -336,6 +342,19 @@
                     popUpTableData.push(singleRow);
                 });
                 return popUpTableData;
+            },
+            getTooltipText(text) {
+                if(text) {
+                    if(text.length > 22) {
+                        return text;
+                    }
+                }
+                return "";
+            },
+            isToolTip(text) {
+                if(text) {
+                    return text.length > 22
+                }
             }
         },
         destroyed: function () {
@@ -457,6 +476,21 @@
         fill: #ff0;
         stroke: steelblue;
         stroke-width: 2px;
+    }
+
+    .hasTooltip span {
+        display: none;
+        color: #000;
+        text-decoration: none;
+        padding: 3px;
+    }
+
+    .hasTooltip:hover span {
+        display: block;
+        position: absolute;
+        background-color: #FFF;
+        border: 1px solid #CCC;
+        margin: 2px 10px;
     }
 </style>
 
