@@ -54,7 +54,7 @@
                         //If computed text length is greater than cell width, than slice the text 
                         // and show ellipsis. When you hover over the ellipsis text it will show
                         // tooltip with full text. (Todo)
-                        if(computedLength > cellWidth) {
+                        if(computedLength > this.cellWidth) {
                             this.computedText = this.cellText.slice(0, 17);
                             this.computedText += "..."; 
                             this.isEllipsis = true;				
