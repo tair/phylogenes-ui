@@ -78,7 +78,7 @@
             },
             store_matchedNodes: {
                 handler: function (val, oldVal) {
-                    this.processMatchedNodes2(val);
+                    this.processMatchedNodes(val);
                 }
             },
             store_stateTreeTopY: {
