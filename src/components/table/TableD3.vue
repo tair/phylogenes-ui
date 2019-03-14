@@ -14,7 +14,7 @@
                 <tr id="secTr" v-if="extraCols.length > 0">
                     <th colspan="2" class="noDisplay"></th>
                     <th :colspan="extraCols.length" scope="colgroup" class="speTr">Known Function</th>
-                    <th colspan="3" style="background-color: transparent"></th>
+                    <th colspan="4" class="noDisplay"></th>
                 </tr>
                 <tr id="mainTr">
                     <th v-for="col in cols" :key="col">{{col}}</th>
@@ -24,14 +24,7 @@
                 <tr v-for="row in data" >
                     <td v-for="key in cols" @click="cellClicked(key, row)" :key="key"
                         :class="{hoverSp: row[key] == '*'}">
-                        <svg :width=tdWidth :height=tdHeight>
-                            <g>
-                                <text v-if="row[key] != '*'"
-                                      dy=".35em" x=5 y=20>{{row[key]}}</text>
-                                <circle v-if="row[key] == '*'" class="anno_circle"
-                                      cx="100" cy="18"></circle>
-                            </g>
-                        </svg>
+                        <tablecell :cellText="row[key]"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -48,12 +41,14 @@
 
     import popupTable from './PopupTable';
     import customModal from '@/components/modal/CustomModal';
+    import tablecell from '@/components/table/TableCellD3';
 
     export default {
         name: "tablelayout",
         components: {
             popupTable: popupTable,
-            'modal': customModal
+            'modal': customModal,
+            tablecell: tablecell
         },
         data() {
             return {
@@ -347,7 +342,7 @@
     #parent {
         position: absolute;
         width: 95%;
-        height: 800px;
+        height: 100%;
         overflow: hidden;
     }
     .mainTable {
@@ -355,8 +350,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 800px;
-        border: 0px solid #9CC255;
+        height: 80vh;
         border-collapse: collapse;
         overflow: hidden;
         /* Use this to create a "dead" area color if table is too wide for cells */
@@ -375,6 +369,7 @@
         border-bottom: 3px solid #f1f1f0;
         filter: brightness(100%) !important;
         cursor: default !important;
+        background-color: #9cd5e3;
     }
     #secTr {
         height: 35px;
@@ -382,7 +377,7 @@
         min-height: 35px;
         filter: brightness(100%) !important;
         /*cursor: default !important;*/
-        border-bottom: 3px solid #f1f1f0;
+        border: 0 !important;
         background-color: transparent;
     }
     .mainTable tbody {
@@ -398,8 +393,8 @@
         /*filter: brightness(85%);*/
     }
     .mainTable th {
-        background-color: #9cd5e3;
         text-align: center;
+        border-top: 3px solid #f1f1f0;
     }
     .mainTable .thHide {
         visibility: hidden;
@@ -412,7 +407,7 @@
         min-height: 40px;
         max-height: 40px;
         height: 40px;
-        border: 1px solid #f1f1f0;
+        border-right: 3px solid #f1f1f0;
         /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
 
         word-wrap: break-word;
@@ -450,6 +445,7 @@
     .noDisplay {
         background-color: transparent !important;
         box-shadow: none !important;
+        border: 0 !important;
     }
 
     .anno_circle {
