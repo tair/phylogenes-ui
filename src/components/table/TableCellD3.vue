@@ -57,7 +57,15 @@
                         if(computedLength > this.cellWidth) {
                             this.computedText = this.cellText.slice(0, 17);
                             this.computedText += "..."; 
-                            this.isEllipsis = true;				
+                            this.isEllipsis = true;
+                            let remainingText = this.cellText.slice(15, this.cellText.length);
+                            this.el.on("mouseover", () => {
+                                this.el.select('text').text(remainingText);
+                            })
+                            .on("mouseout", () => {
+                                this.el.select('text').text(this.computedText);
+                            });
+
                         }
                     }, 100);
                 }
