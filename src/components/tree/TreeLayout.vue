@@ -1,7 +1,7 @@
 <template>
     <div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <svg id="treeSvg" width="100%" height="900">
+        <svg id="treeSvg" width="100%" height="80vh">
             <g id="wrapper">
                 <g class="links">
                     <baselink v-for="link in treelinks"

@@ -347,7 +347,7 @@
     #parent {
         position: absolute;
         width: 95%;
-        height: 800px;
+        height: 100%;
         overflow: hidden;
     }
     .mainTable {
@@ -355,7 +355,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 800px;
+        height: 80vh;
         border: 0px solid #9CC255;
         border-collapse: collapse;
         overflow: hidden;
@@ -412,7 +412,7 @@
         min-height: 40px;
         max-height: 40px;
         height: 40px;
-        border: 1px solid #f1f1f0;
+        border-left: 3px solid #f1f1f0;
         /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
 
         word-wrap: break-word;
