@@ -2,7 +2,7 @@
    <svg :width=tdWidth :height=tdHeight>
        <g>
            <text v-if="cellText != '*'"
-                 dy=".35em" x=5 y=20>{{computedText}}</text>
+                 dy=".35em" x=5 y=20 style='word-wrap: break-word'>{{computedText}}</text>
            <circle v-if="cellText == '*'" class="anno_circle"
                  cx="100" cy="18"></circle>
        </g>
@@ -59,21 +59,53 @@
                         // and show ellipsis. When you hover over the ellipsis text it will show
                         // tooltip with full text. (Todo)
                         if(computedLength > this.cellWidth) {
-                            this.computedText = this.cellText.slice(0, 17);
-                            this.computedText += "..."; 
+                            let splitText = this.cellText.slice(0, 17);
+                            this.computedText = splitText + "..."; 
                             this.isEllipsis = true;
-                            let remainingText = this.cellText.slice(15, this.cellText.length);
-                            this.el.on("mouseover", () => {
-                                this.el.select('text').text(remainingText);
+                            let remainingText = this.cellText.slice(17, this.cellText.length);
+                            this.el.on("mouseenter", () => {
+                                let lineNumber = this.wrapText(this.cellText, this.cellWidth);
+                                if(lineNumber == 3) {
+                                    this.tdHeight = '60px';
+                                } else if(lineNumber == 2) {
+                                    this.tdHeight = '50px';
+                                } else {
+                                    this.tdHeight = '40px';
+                                }
                             })
-                            .on("mouseout", () => {
-                                this.el.select('text').text(this.computedText);
+                            .on("mouseleave", () => {
+                                this.tdHeight = '30px';
+                                this.el.select('text').attr('y', 20).text(this.computedText);
                             });
-
                         }
                     }, 100);
                 }
             },
+            //Modified from: https://bl.ocks.org/mbostock/5247027
+            wrapText(celltext, width) {
+                var text = this.el.select('text'),
+                    words = celltext.match(/.{1,5}/g).reverse(),
+                    word,
+                    line = [],
+                    lineNumber = 0,
+                    lineHeight = 1.1, // ems
+                    y = text.attr("y")-8,
+                    x = 5,
+                    dy = parseFloat(text.attr("dy")),
+                    tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+          
+                while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(""));
+                    if (tspan.node().getComputedTextLength() > width) {
+                        line.pop();
+                        tspan.text(line.join(""));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                }
+                return lineNumber;
+            }
         },
         destroyed: function () {
             
