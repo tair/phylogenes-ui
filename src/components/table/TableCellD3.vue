@@ -59,21 +59,49 @@
                             this.computedText = splitText + "..."; 
                             this.isEllipsis = true;
                             let remainingText = this.cellText.slice(17, this.cellText.length);
-                            this.el.on("mouseover", () => {
-                                this.tdHeight = '40px';
-                                this.el.select('text').attr('y', 15).text(splitText);
-                                this.el.select('text').append('tspan')
-                                    .attr('x', 5).attr('y', 35).text(remainingText);
+                            this.el.on("mouseenter", () => {
+                                let lineNumber = this.wrapText(this.cellText, this.cellWidth);
+                                if(lineNumber == 3) {
+                                    this.tdHeight = '60px';
+                                } else if(lineNumber == 2) {
+                                    this.tdHeight = '50px';
+                                } else {
+                                    this.tdHeight = '40px';
+                                }
                             })
-                            .on("mouseout", () => {
+                            .on("mouseleave", () => {
                                 this.tdHeight = '30px';
                                 this.el.select('text').attr('y', 20).text(this.computedText);
                             });
-
                         }
                     }, 100);
                 }
             },
+            //Modified from: https://bl.ocks.org/mbostock/5247027
+            wrapText(celltext, width) {
+                var text = this.el.select('text'),
+                    words = celltext.match(/.{1,5}/g).reverse(),
+                    word,
+                    line = [],
+                    lineNumber = 0,
+                    lineHeight = 1.1, // ems
+                    y = text.attr("y")-8,
+                    x = 5,
+                    dy = parseFloat(text.attr("dy")),
+                    tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+          
+                while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(""));
+                    if (tspan.node().getComputedTextLength() > width) {
+                        line.pop();
+                        tspan.text(line.join(""));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                }
+                return lineNumber;
+            }
         },
         destroyed: function () {
             
