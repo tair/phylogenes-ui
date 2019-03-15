@@ -34,7 +34,11 @@
             
         },
         watch: {
-            
+            cellText: {
+                handler: function (val, oldVal) {
+                    this.setComputedText();
+                }
+            }
         },
         mounted: function () {
             this.el = d3.select(this.$el);
