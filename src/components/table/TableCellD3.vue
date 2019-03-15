@@ -2,7 +2,7 @@
    <svg :width=tdWidth :height=tdHeight>
        <g>
            <text v-if="cellText != '*'"
-                 dy=".35em" x=5 y=20 style='word-wrap: break-word'>{{computedText}}</text>
+                 dy=".35em" x=5 y=20>{{computedText}}</text>
            <circle v-if="cellText == '*'" class="anno_circle"
                  cx="100" cy="18"></circle>
        </g>
@@ -47,10 +47,9 @@
         methods: {
             setComputedText() {
                 let textNode = this.el.select('text').node();
-
+                this.origText = this.cellText ? this.cellText:"";
+                this.computedText = this.cellText ? this.cellText:"";
                 if(textNode) {
-                    this.origText = this.cellText;
-                    this.computedText = this.cellText;
                     setTimeout(() => {
                         //Get text pixels width instead of just the normal text length since
                         // pixel size is more depending on the type of text.
