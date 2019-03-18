@@ -350,7 +350,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 80vh;
+        height: 85vh;
         border-collapse: collapse;
         overflow: hidden;
         /* Use this to create a "dead" area color if table is too wide for cells */

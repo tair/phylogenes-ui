@@ -1,7 +1,7 @@
 <template>
     <div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <svg id="treeSvg" width="100%" height="80vh">
+        <svg id="treeSvg" width="100%" height="87vh">
             <g id="wrapper">
                 <g class="links">
                     <baselink v-for="link in treelinks"
@@ -114,7 +114,7 @@
                 counter: 0,
                 rowHeight: 41,
                 enableMenu: false,
-                showLegend: true,
+                showLegend: false,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
@@ -251,7 +251,6 @@
                 let firstMatchedNode = this.findFirstMatchedNodeInTree();
                 setTimeout(() => {
                     this.centerTreeToGivenNode(firstMatchedNode);
-                    this.alignNodes();
                 }, 1000);
                 this.updateTree();
             },
@@ -434,8 +433,6 @@
                 var branchScale = this.showBranchLength ? d.data.branch_length: 0.5;
                 var actualLength = defaultLength * branchScale;
 
-                // var text = d.text + " BS - " + branchScale;
-                // d.text = text;
                 if(actualLength < 20) actualLength = 10;
                 if(d.parent) {
                     d.y = d.parent.y;
@@ -628,21 +625,6 @@
                 //Recursive method
                 this.calculateDepthFirstIds(nodes[0]);
             },
-            centerTreeToGivenNode(node) {
-                if(node == null) {
-                    this.store_setCenterNode(node);
-                    return;
-                }
-                let leafNodes = this.getLeafNodesByDepth();
-                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
-                this.rowsScrolledUp = foundNodeIdx-8;
-            },
-            moveTreeToNodePosition(node) {
-                let leafNodes = this.getLeafNodesByDepth();
-                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
-                this.rowsScrolledUp = foundNodeIdx;
-                this.alignNodes();
-            },
             moveTreeWithPadding(node, padding) {
                 //If the top node is within the screen range,
                 // padding should be 0, so that the tree doesn't move out of the screen
@@ -713,7 +695,6 @@
                     let rowNum = Math.round(diffEnd/40);
                     this.rowsScrolledUp -= rowNum;
                 }
-
                 this.currentTopNodePos.x += d3.event.transform.x - transform.x;
                 this.alignNodes();
             },
@@ -721,10 +702,32 @@
                 this.rowsScrolledUp=this.rowsScrolledUp+5;
                 this.alignNodes();
             },
+            centerTreeToGivenNode(node) {
+                if(node == null) {
+                    this.store_setCenterNode(node);
+                    return;
+                }
+                let leafNodes = this.getLeafNodesByDepth();
+                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
+                this.rowsScrolledUp = foundNodeIdx-8;
+                this.alignNodes();
+            },
+            moveTreeToNodePosition(node) {
+                let leafNodes = this.getLeafNodesByDepth();
+                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
+                this.rowsScrolledUp = foundNodeIdx;
+                this.alignNodes();
+            },
             //Setting top node padding goes here.
             alignNodes() {
                 let leafNodes = this.getLeafNodesByDepth();
+
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
+                let totalRowsInPanel = 26;
+                let maxRowsMovedUp = leafNodes.length - totalRowsInPanel;
+                if(maxRowsMovedUp < 0) maxRowsMovedUp = 0;
+
+                if(this.rowsScrolledUp >= maxRowsMovedUp) this.rowsScrolledUp = maxRowsMovedUp;
 
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 if(!currTopNode) return;
