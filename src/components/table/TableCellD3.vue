@@ -34,7 +34,11 @@
             
         },
         watch: {
-            
+            cellText: {
+                handler: function (val, oldVal) {
+                    this.setComputedText();
+                }
+            }
         },
         mounted: function () {
             this.el = d3.select(this.$el);
@@ -43,10 +47,9 @@
         methods: {
             setComputedText() {
                 let textNode = this.el.select('text').node();
-
+                this.origText = this.cellText ? this.cellText:"";
+                this.computedText = this.cellText ? this.cellText:"";
                 if(textNode) {
-                    this.origText = this.cellText;
-                    this.computedText = this.cellText;
                     setTimeout(() => {
                         //Get text pixels width instead of just the normal text length since
                         // pixel size is more depending on the type of text.

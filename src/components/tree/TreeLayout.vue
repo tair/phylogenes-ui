@@ -225,66 +225,58 @@
                     return d.children;
                 });
             },
-            processMatchedNodes(matNodes) {
-                if(!this.rootNode) return;
 
-                let firstMatchedNode = null; //Used for centering the tree panel to this matched node
+            // ~~~~~~~~~~~~~~~~ Search Within Matched Node Specific ~~~~~~~~~~~~~~~~~//
+            processMatchedNodes(matchedNodes) {
+                if(matchedNodes.length == 0) {
+                    this.resetMatchedNodes();
+                    return;
+                }
                 let allNodes = this.rootNode.descendants();
-                let foundAnyInHidden = false;
-
                 allNodes.forEach(d => {
-                    d.matched = false; //Init all matched flags to false
-                    var geneId = d.data.gene_id;
-                    if (geneId) {
-                        geneId = geneId.split(':')[1];
-                    }
-
-                    matNodes.forEach(v => {
-                        if(geneId === v["Gene ID"]) {
+                    d.matched = false;
+                    if(!d.children) {
+                        let found = this.isMatchWithNode(d, matchedNodes);
+                        if(found) {
                             d.matched = true;
                         }
-                    });
-
-                    if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
-                        if(firstMatchedNode == null) {
-                            firstMatchedNode = d;
-                        }
                     }
-
                     if(d._children) {
-                        let tempFound = this.findMatNodesInChildren(d, matNodes, firstMatchedNode);
-                        if(!foundAnyInHidden && tempFound) {
-                            foundAnyInHidden = true;
+                        if(this.findMatNodesInChildren(d, matchedNodes)) {
                             this.expandAllFromNode(d);
                         }
                     }
                 });
 
-                //Center Tree panel to first matched node
-                this.centerTreeToGivenNode(firstMatchedNode);
+                let firstMatchedNode = this.findFirstMatchedNodeInTree();
+                setTimeout(() => {
+                    this.centerTreeToGivenNode(firstMatchedNode);
+                    this.alignNodes();
+                }, 1000);
                 this.updateTree();
-
-                if(foundAnyInHidden && firstMatchedNode == null) {
-                    setTimeout(() => {
-                        allNodes = this.rootNode.descendants();
-                        allNodes.forEach(d => {
-                            var geneId = d.data.gene_id;
-                            if (geneId) {
-                                geneId = geneId.split(':')[1];
-                            }
-                            if(matNodes.length > 0 && geneId === matNodes[0]["Gene ID"]) {
-                                this.centerTreeToGivenNode(d);
-                                this.alignNodes();
-                            }
-                        });
-                    }, 1000);
-                }
+            },
+            findFirstMatchedNodeInTree() {
+                var nodes = this.rootNode.descendants();
+                nodes = nodes.filter(n => {return !n.children});
+                let sortedNodes = nodes.sort(function (a, b) {
+                    return a.dfId - b.dfId;
+                });
+                let firstNode = sortedNodes.find(n => {return n.matched});
+                return firstNode;
+            },
+            resetMatchedNodes() {
+                if(!this.rootNode) return;
+                let allNodes = this.rootNode.descendants();
+                 allNodes.forEach(d => {
+                     d.matched = false;
+                 });
+                 this.updateTree();
             },
             findMatNodesInChildren(d, matNodes) {
                 var foundAny = false;
                 if(d.children) {
                     d.children.forEach(dc => {
-                        var found = matNodes.find(v => v["Gene ID"] === dc.geneId);
+                        let found = this.isMatchWithNode(dc, matNodes);
                         if(found) {
                             dc.matched = true;
                             foundAny = true;
@@ -297,7 +289,7 @@
                 }
                 if(d._children) {
                     d._children.forEach(dc => {
-                        var found = matNodes.find(v => v["Gene ID"] === dc.geneId);
+                        let found = this.isMatchWithNode(dc, matNodes);
                         if(found) {
                             dc.matched = true;
                             foundAny = true;
@@ -310,7 +302,11 @@
                 }
                 return foundAny;
             },
-
+            isMatchWithNode(d, matNodes) {
+                return matNodes.find(v => v["Uniprot ID"] === d.data.uniprotId);
+            },
+            // ~~~~~~~~~~~~~~~~ *** ~~~~~~~~~~~~~~~~~//
+            
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             // ~~~~~~~~~ Nodes
             renderNodes(nodes, updatePos){
