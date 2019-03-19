@@ -12,18 +12,20 @@
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr" v-if="extraCols.length > 0">
-                    <th colspan="2" class="noDisplay"></th>
-                    <th :colspan="extraCols.length" scope="colgroup" class="speTr">Known Function</th>
-                    <th colspan="4" class="noDisplay"></th>
+                    <th colspan="2" class="thInvis"></th>
+                    <th :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
+                    <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="col in cols" :key="col">{{col}}</th>
+                    <th v-for="(col,i) in cols" :key="col" 
+                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">{{col}}
+                    </th>
                 </tr>
             </thead>
             <tbody id="body">
-                <tr v-for="row in data" >
-                    <td v-for="key in cols" @click="cellClicked(key, row)" :key="key"
-                        :class="{hoverSp: row[key] == '*'}">
+                <tr v-for="(row) in data" >
+                    <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
+                        :class="getTdClasses(row[key], i)">
                         <tablecell :cellText="row[key]"></tablecell>
                     </td>
                 </tr>
@@ -63,7 +65,7 @@
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
-                topMargin: 0
+                topMargin: 0,
             }
         },
         computed: {
@@ -331,7 +333,18 @@
                     popUpTableData.push(singleRow);
                 });
                 return popUpTableData;
-            }
+            },
+            getTdClasses(cellValue, col_idx) {
+                let classes = [];
+                if(cellValue == '*') {
+                    classes.push('tdHover');
+                }
+                //For all cells belonging to sub columns for annotations
+                if(col_idx > 1 && col_idx < this.extraCols.length+1) {
+                    classes.push('tdSubCol');
+                }
+                return classes;
+            },
         },
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll);
@@ -350,7 +363,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 80vh;
+        height: 85vh;
         border-collapse: collapse;
         overflow: hidden;
         /* Use this to create a "dead" area color if table is too wide for cells */
@@ -430,22 +443,27 @@
         background-color: #e9e9e9;
     }
 
-    .speTr {
+    .thInvis {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: 0 !important;
+    }
+    .thSubCol {
         background-color: #9cd5e3 !important;
         color: black;
         text-align: left !important;
         text-indent: 50px;
     }
-    .hoverSp:hover {
+    .thSubColSp {
+        border-right: 1px solid #f1f1f0 !important;
+    }
+    .tdSubCol {
+        border-right: 1px solid #f1f1f0 !important;
+    }
+    .tdHover:hover {
         background-color: #e1e7f3 !important;
         filter: brightness(85%);
         cursor: pointer;
-    }
-
-    .noDisplay {
-        background-color: transparent !important;
-        box-shadow: none !important;
-        border: 0 !important;
     }
 
     .anno_circle {
