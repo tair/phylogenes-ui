@@ -146,6 +146,8 @@
             refresh() {
                 this.resetRootPosition();
                 this.treelinks = [];
+
+                this.treenodes.splice(0, 1000);
                 this.treenodes = [];
             },
             //Set the d3 svg to it's original position before moving around with mouse
