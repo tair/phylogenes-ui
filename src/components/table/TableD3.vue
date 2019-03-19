@@ -167,7 +167,7 @@
                 let annoList = this.getFormattedAnnotationsList(uniprotId);
                 this.popupData = this.getPopupData(annoList);
             },
-            cellClicked(c, row) {
+            tdClicked(c, row) {
                 if(row[c] != '*') return;
                 let uniprotId = row["Uniprot ID"];
                 if(uniprotId) {
