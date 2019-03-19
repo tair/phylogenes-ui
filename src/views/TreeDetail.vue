@@ -556,7 +556,7 @@
         background-color: #6C757E;
     }
     div.chart-content {
-        height: 80vh;
+        height: 87vh;
         padding: 15px;
         overflow: hidden;
     }
