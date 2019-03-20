@@ -2,7 +2,7 @@
    <svg :width=tdWidth :height=tdHeight>
        <g>
            <text v-if="cellText != '*'"
-                 dy=".35em" x=5 y=20 style='word-wrap: break-word'>{{computedText}}</text>
+                 dy=".35em" x=5 y=20>{{computedText}}</text>
            <circle v-if="cellText == '*'" class="anno_circle"
                  cx="100" cy="18"></circle>
        </g>

@@ -128,9 +128,8 @@
             },
             store_getTreeMetadata: {
                 handler: function (val, oldVal) {
-                    // console.log("Metadata ", val);
                     this.metadata.familyName = val.familyName[0];
-                    this.metadata.spannedTaxon = val.taxonRange[0];
+                    this.metadata.spannedTaxon = val.taxonRange;
                 }
             }
         },
@@ -233,7 +232,7 @@
                 this.completeData = null;
 
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
-                this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange[0];
+                this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
             },
             loadJsonFromFile(fileName) {
               d3.json("/sam_annotations_simple.json", (err, data) => {
