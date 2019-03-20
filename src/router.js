@@ -7,6 +7,7 @@ import Contact from './views/Contact.vue'
 import Login from './views/Login.vue'
 import TreeBrowse from './views/TreeBrowse.vue'
 import TreeDetail from './views/TreeDetail.vue'
+import TreeDetail2 from './views/TreeDetail2.vue'
 
 Vue.use(Router)
 

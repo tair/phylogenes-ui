@@ -1,38 +1,26 @@
 <template>
-    <div>
+    <span class="_parent">
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <svg id="treeSvg" width="100%" height="87vh">
+        <svg id="treeSvg" width="100%" height="100%">
             <g id="wrapper">
                 <g class="links">
                     <baselink v-for="link in treelinks"
-                              :key="link.id" ref="treelink"
-                              :content="link">
+                                :key="link.id" ref="treelink"
+                                :content="link">
                     </baselink>
                 </g>
-                <!--@contextmenu.prevent="$refs.menu.open($event, {foo: 'bar'})"-->
                 <g class="nodes">
                     <basenode v-for="node in treenodes"
-                              :id="node.id" :key="node.id" ref="treenode"
-                              :content="node"
-                              v-on:clicknode="onClick"></basenode>
+                                :id="node.id" :key="node.id" ref="treenode"
+                                :content="node"
+                                v-on:clicknode="onClick"></basenode>
                 </g>
-
-                <!--<dragnode ref="nodeToAdd" :content="exampleNode"-->
-                <!--v-on:dragging="onDrag"-->
-                <!--v-on:dragend="onDragEnd"></dragnode>-->
             </g>
         </svg>
-        <context-menu v-if="enableMenu" ref="menu">
-            <ul class="options" slot-scope="child">
-                <li @click="onMenuClick('Add')">Add</li>
-                <li @click="onMenuClick('Delete')">Delete</li>
-            </ul>
-        </context-menu>
         <div v-if="showLegend" class="legend-box">
             <tree-legend></tree-legend>
         </div>
-
-    </div>
+    </span>
 </template>
 
 <script>
@@ -51,7 +39,7 @@
     import intersectUtil from "../../util/intersect";
 
     export default {
-        name: "treelayout2",
+        name: "treelayout",
         props: ['jsonData', 'mappingData', 'matchedNodes'],
         components: {
             'basenode': baseNode,
@@ -908,6 +896,10 @@
     }
 </script>
 <style scoped>
+    ._parent {
+        width: inherit;
+        height: inherit;
+    }
     svg {
         background-color: white;
         /*cursor: grab;*/
@@ -915,10 +907,11 @@
     .legend-box {
         background-color: #9E9E9E;
         position: absolute;
-        top: 55px;
+        top: 1px;
         right: 5px;
         width: 230px;
         float: left;
     }
+    
 </style>
 

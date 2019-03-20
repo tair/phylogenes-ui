@@ -7,7 +7,8 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-        <table class="mainTable" :style="{marginTop: topMargin+'px'}">
+        <table class="mainTable"> 
+        <!-- :style="{marginTop: topMargin+'px'}"> -->
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
@@ -363,7 +364,7 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 85vh;
+        height: 100%;
         border-collapse: collapse;
         overflow: hidden;
         /* Use this to create a "dead" area color if table is too wide for cells */
@@ -385,13 +386,22 @@
         background-color: #9cd5e3;
     }
     #secTr {
-        height: 35px;
-        max-height: 35px;
-        min-height: 35px;
+        /* height: 5%; */
+        /* max-height: 35px;
+        min-height: 35px; */
         filter: brightness(100%) !important;
         /*cursor: default !important;*/
         border: 0 !important;
         background-color: transparent;
+    }
+    #secTr th {
+         height: 35px !important;
+    }
+    @media (min-height: 432px) {
+         #secTr th { height: 35px !important; }
+    }
+    @media (min-height: 960px) {
+         #secTr th { height: 55px !important; }
     }
     .mainTable tbody {
         overflow: scroll;
@@ -417,8 +427,8 @@
         min-width: 200px;
         width: 200px;
         max-width: 200px;
-        min-height: 40px;
-        max-height: 40px;
+        min-height: 40px; 
+        max-height: 40px; 
         height: 40px;
         border-right: 3px solid #f1f1f0;
         /*box-shadow: 5px 0 2px -2px #f1f1f0;*/

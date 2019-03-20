@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="main" class="container-fluid main_container bg-pggrey d-flex">
         <modal v-if="showPopup" @close="showPopup = false">
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
@@ -7,76 +7,63 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-        <div class="databand text-danger">
-            <!-- <span v-html="getMetadataText()" ref="popup"></span> -->
-            <span v-on:click="showOrganismPopup()">
-                {{metadata.familyName}} ({{treeId}}), {{metadata.genesCount}} genes, 
-                <span style="cursor: pointer"><b><u>
-                    {{metadata.uniqueOrganisms.totalCount}} organisms</u></b></span>
-                , spanning {{this.metadata.spannedTaxon}}
-            </span>
-        </div>
-        <div class="col1">
-            <div class="chart">
-                <!--<div class="chart-menu">-->
-                    <!--<span class="d-block p-2 bg-secondary text-dark">Tree Panel for-->
-                        <!--<span class="font-weight-bold">{{ this.treeId }}</span>-->
-                    <!--</span>-->
-                <!--</div>-->
-                <div class="chart-content">
-                    <div class="container">
+        <div class="row flex-fill">
+            <!-- Metadata Band -->
+            <div class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand">
+                <span v-on:click="showOrganismPopup()">
+                    {{metadata.familyName}} ({{treeId}}), {{metadata.genesCount}} genes, 
+                    <span style="cursor: pointer"><b><u>
+                        {{metadata.uniqueOrganisms.totalCount}} organisms</u></b></span>
+                    , spanning {{this.metadata.spannedTaxon}}
+                </span>
+            </div>
+            <!-- Tree Panel -->
+            <div class="col-sm-6 h-95 pg-panel">
+                <div class="row h-100">
+                    <!-- Menu Bar -->
+                    <div class="col-sm-12 h-5">
                         <div class="row align-items-end">
-                            <div class="col-sm px-0">
-                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1"
-                                        @click="expandAll">Expand All</button>
+                            <div class="col-sm align-items-center">
+                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
+                                            @click="expandAll">Expand All</button>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-auto align-items-center">
                                 <search-box v-on:search="onSearch"></search-box>
                             </div>
-                            <div class="col-sm px-0">
-                                <button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"
+                            <div class="col-sm align-items-center">
+                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1 float-right"
                                         @click="showLegend">{{showLegendButtonText}}</button>
+                                <!-- For Testing -->
                                 <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
                                         <!--@click="moveUp">Move UP</button>-->
                             </div>
                         </div>
                     </div>
-                    <!--<div class="tree-panel-menu">-->
-                            <!--&lt;!&ndash;Branch Length: <span>{{branchLength}}</span>&ndash;&gt;-->
-                    <!--</div>-->
-                    <div class="tree-box">
-                        <!--<treelayout :jsonData="jsonData"-->
-                                    <!--v-on:updated-tree="onTreeUpdate"-->
-                                    <!--v-on:mouse-over-link="onMouseOverLink"-->
-                                    <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
-                        <treelayout2  :jsonData="jsonData" :mappingData="mappingData"
-                                      ref="treeLayout"
-                                      v-on:init-tree="onTreeInit"
-                                      v-on:updated-tree="onTreeUpdate"></treelayout2>
-
+                    <!-- Tree SVG Component -->
+                    <div class="col-sm-12 h-95">
+                        <treelayout  :jsonData="jsonData" :mappingData="mappingData"
+                                        ref="treeLayout"
+                                        v-on:init-tree="onTreeInit"
+                                        v-on:updated-tree="onTreeUpdate"></treelayout>
+                    </div>
+                </div>    
+            </div>
+            <!-- Table Panel -->
+            <div class="col-sm-6 h-95 pg-panel">
+                <div class="row h-100">
+                    <!-- table component -->
+                    <div class="col-sm-12 h-100">
+                        <tablelayout></tablelayout>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col2">
-            <div class="chart">
-                <!--<div class="chart-menu">-->
-                    <!--<span class="d-block p-2 bg-secondary text-dark">Table Panel for-->
-                       <!--<span class="font-weight-bold">{{ this.treeId }}</span>-->
-                    <!--</span>-->
-                <!--</div>-->
-                <div class="chart-content">
-                    <tablelayout></tablelayout>
-                    <!--<intersect></intersect>-->
-                </div>
-            </div>
-        </div>
+    </div>
     </div>
 
 </template>
 
 <script>
-    import treelayout2 from '../components/tree/TreeLayout';
+    import treelayout from '../components/tree/TreeLayout';
     import tablelayout from '../components/table/TableD3';
     import intersect from '../components/tree/Intersection';
     import searchBox from '../components/search/SearchBox';
@@ -92,7 +79,7 @@
     export default {
         name: "TreeDetail",
         components: {
-            treelayout2: treelayout2,
+            treelayout: treelayout,
             tablelayout: tablelayout,
             intersect: intersect,
             searchBox: searchBox,
@@ -527,52 +514,27 @@
 </script>
 
 <style scoped>
-    .chart {
-        /*background-color: #ffffff;*/
-        border-color: /*#f4a460*/ #fff !important;
-        border-left: 1px solid;
-        box-sizing: border-box;
-        box-shadow: 0 0 4px 0 rgba(0,0,0,.1);
-
-        position: relative;
-        width: 100%;
-        height: 100%;
+    #main > .row {
+        min-height: 91vh;
     }
-    .databand {
-        width: 100%;
-        height: 50px;
-        margin: 0;
-
-        padding-top: 15px;
-        padding-left: 15px;
+    .pg-databand {
         font-size: medium;
     }
-    div.chart-menu {
-        width: 100%;
-        height: 40px;
-        padding: 2px;
-        margin: 0;
-        box-sizing: border-box;
-        background-color: #6C757E;
+    @media (min-height: 300px) {
+        .pg-databand { font-size: small; }
     }
-    div.chart-content {
-        height: 87vh;
+    @media (min-height: 768px) {
+        .pg-databand { font-size: medium; }
+    }
+    .pg-panel {
+        border-left: 1px solid;
+        border-color: #fff !important;
+        box-sizing: border-box;
+        box-shadow: 0 0 4px 0 rgba(0,0,0,.1);
         padding: 15px;
         overflow: hidden;
     }
-    .tree-panel-menu {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .col1 {
-        width: 50%;
-        height: 100%;
-        float: left;
-    }
-    .col2 {
-        width: 50%;
-        height: 100%;
-        float: left;
+    @media (max-height: 948px) {
+        .pg-panel { padding-top: 1px; }
     }
 </style>
