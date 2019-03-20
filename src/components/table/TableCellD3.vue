@@ -83,7 +83,7 @@
                 })
                 .on("mouseleave", () => {
                     this.tdHeight = '30px';
-                    this.el.select('text').attr('y', 20).text(this.computedText);
+                    this.el.select('text').attr('y', 17).text(this.computedText);
                 });
             },
             //Modified from: https://bl.ocks.org/mbostock/5247027

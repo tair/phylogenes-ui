@@ -1,7 +1,7 @@
 <template>
     <div class="row bg-mblue">
       <b-input-group class="my-1">
-        <b-input-group-prepend class="align-items-center">
+        <b-input-group-prepend class="mx-2 align-items-center">
           Search within tree
         </b-input-group-prepend>
         <input id="search" type="text" class="my-input" placeholder="Gene name, Gene ID, Uniprot ID"
