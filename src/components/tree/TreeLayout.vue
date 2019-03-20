@@ -1,7 +1,7 @@
 <template>
     <span class="_parent">
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <svg id="treeSvg" width="100%" height="100%">
+        <svg id="treeSvg" ref="treesvg" width="100%" height="100%">
             <g id="wrapper">
                 <g class="links">
                     <baselink v-for="link in treelinks"
@@ -102,7 +102,7 @@
                 counter: 0,
                 rowHeight: 41,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
@@ -713,8 +713,10 @@
                 let leafNodes = this.getLeafNodesByDepth();
 
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
-                let totalRowsInPanel = 26;
-                let maxRowsMovedUp = leafNodes.length - totalRowsInPanel;
+                let svgHeight = this.getTreePanelHeight();
+                let rowHeight = 40;
+                let totalRowsInPanel = Math.floor(svgHeight/rowHeight);
+                let maxRowsMovedUp = leafNodes.length - (totalRowsInPanel-1);
                 if(maxRowsMovedUp < 0) maxRowsMovedUp = 0;
 
                 if(this.rowsScrolledUp >= maxRowsMovedUp) this.rowsScrolledUp = maxRowsMovedUp;
@@ -722,7 +724,8 @@
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 if(!currTopNode) return;
 
-                var topNodePosY = -1*currTopNode.x + 40 + this.topPaddingY;
+                let topPadding = rowHeight+25;
+                var topNodePosY = -1*currTopNode.x + topPadding; //+ this.topPaddingY;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)
@@ -732,6 +735,9 @@
                     });
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
                 this.store_setCenterNode(currCenterNode);
+            },
+            getTreePanelHeight() {
+                return this.$refs.treesvg.clientHeight;
             },
             getLeafNodesByDepth() {
                 return this.leafNodesByDepth;

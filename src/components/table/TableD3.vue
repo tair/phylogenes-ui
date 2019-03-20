@@ -19,7 +19,8 @@
                 </tr>
                 <tr id="mainTr">
                     <th v-for="(col,i) in cols" :key="col" 
-                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">{{col}}
+                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">
+                            <tablecell :cellText="col" :type="'th'"></tablecell>
                     </th>
                 </tr>
             </thead>
@@ -367,10 +368,11 @@
         height: 100%;
         border-collapse: collapse;
         overflow: hidden;
-        /* Use this to create a "dead" area color if table is too wide for cells */
-        /*background-color: #d6daeb;*/
         font-size: 14px;
         font-family: sans-serif;
+        border-left: 3px solid #f1f1f0;
+        border-bottom: 3px solid #f1f1f0;
+        border-right: 3px solid #f1f1f0;
     }
     .mainTable thead {
         flex: 0 0 auto;
@@ -384,6 +386,7 @@
         filter: brightness(100%) !important;
         cursor: default !important;
         background-color: #9cd5e3;
+        height: 40px !important;
     }
     #secTr {
         /* height: 5%; */
@@ -412,8 +415,8 @@
     .mainTable tr:nth-child(odd) {
         background-color: #e9e9e9;
     }
-    .mainTable tr:hover {
-        /*filter: brightness(85%);*/
+    .mainTable tr {
+        height: 40px !important;
     }
     .mainTable th {
         text-align: center;
@@ -423,18 +426,13 @@
         visibility: hidden;
     }
     .mainTable th, .mainTable td {
-        /*background-color: #e1e7f3;*/
         min-width: 200px;
         width: 200px;
         max-width: 200px;
-        min-height: 40px; 
-        max-height: 40px; 
-        height: 40px;
         border-right: 3px solid #f1f1f0;
-        /*box-shadow: 5px 0 2px -2px #f1f1f0;*/
-
-        word-wrap: break-word;
-        /*cursor: pointer;*/
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .mainTable td:first-child,
