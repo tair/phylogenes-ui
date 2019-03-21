@@ -2,7 +2,8 @@
    <svg :width=tdWidth :height=tdHeight>
        <g>
            <text v-if="cellText != '*'"
-                 dy=".35em" x=5 y=20>{{computedText}}</text>
+                 dy=".35em" x=5 y=17 
+                 :class="getTextClass()">{{computedText}}</text>
            <circle v-if="cellText == '*'" class="anno_circle"
                  cx="100" cy="18"></circle>
        </g>
@@ -15,7 +16,7 @@
     import { setTimeout } from 'timers';
     export default {
         name: "tablecell",
-        props: ['cellText'],
+        props: ['cellText', 'type'],
         components: {
            
         },
@@ -59,26 +60,31 @@
                         // tooltip with full text. (Todo)
                         if(computedLength > this.cellWidth) {
                             let splitText = this.cellText.slice(0, 17);
+                            if(this.type === 'th') {
+                                splitText = this.cellText.slice(0, 22); 
+                            } 
                             this.computedText = splitText + "..."; 
                             this.isEllipsis = true;
-                            let remainingText = this.cellText.slice(17, this.cellText.length);
-                            this.el.on("mouseenter", () => {
-                                let lineNumber = this.wrapText(this.cellText, this.cellWidth);
-                                if(lineNumber == 3) {
-                                    this.tdHeight = '60px';
-                                } else if(lineNumber == 2) {
-                                    this.tdHeight = '50px';
-                                } else {
-                                    this.tdHeight = '40px';
-                                }
-                            })
-                            .on("mouseleave", () => {
-                                this.tdHeight = '30px';
-                                this.el.select('text').attr('y', 20).text(this.computedText);
-                            });
+                            this.processOnMouseHover();
                         }
                     }, 100);
                 }
+            },
+            processOnMouseHover() {
+                this.el.on("mouseenter", () => {
+                    let lineNumber = this.wrapText(this.cellText, this.cellWidth);
+                    if(lineNumber == 3) {
+                        this.tdHeight = '60px';
+                    } else if(lineNumber == 2) {
+                        this.tdHeight = '50px';
+                    } else {
+                        this.tdHeight = '40px';
+                    }
+                })
+                .on("mouseleave", () => {
+                    this.tdHeight = '30px';
+                    this.el.select('text').attr('y', 17).text(this.computedText);
+                });
             },
             //Modified from: https://bl.ocks.org/mbostock/5247027
             wrapText(celltext, width) {
@@ -104,6 +110,12 @@
                     }
                 }
                 return lineNumber;
+            },
+            getTextClass() {
+                if(this.type === 'th') {
+                    return 'thClass'
+                }
+                return "";
             }
         },
         destroyed: function () {
@@ -112,6 +124,11 @@
     }
 </script>
 <style>
+    .thClass {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     .anno_circle {
         r: 8;
         fill: #ff0;

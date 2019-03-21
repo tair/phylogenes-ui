@@ -14,7 +14,7 @@ const state = {
         go_annotations: null,
         metadata: {
             familyName: [],
-            taxonRange: []
+            taxonRange: ''
         },
         anno_mapping: {
           headers: [],
@@ -111,14 +111,15 @@ const actions = {
         axios({
             method: 'GET',
             url: SOLR_URL +
-            '?fl=' + 'family_name,species_list,jsonString,go_annotations' +
+            '?fl=' + 'family_name,speciation_events,jsonString,go_annotations' +
             '&rows=1' + '&start=0' +
             '&q=' + q
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
+                    console.log(res.data.response.docs[0].speciation_events[0]);
                     context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
-                    context.state.treedata.metadata.taxonRange = res.data.response.docs[0].species_list;
+                    context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
                     context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
                     context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
                 }

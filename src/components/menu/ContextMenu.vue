@@ -1,3 +1,12 @@
+
+<!-- Eg. Usage
+<context-menu v-if="enableMenu" ref="menu">
+    <ul class="options" slot-scope="child">
+        <li @click="onMenuClick('Add')">Add</li>
+        <li @click="onMenuClick('Delete')">Delete</li>
+    </ul>
+</context-menu> -->
+
 <template>
     <div
        v-show="isVisible"

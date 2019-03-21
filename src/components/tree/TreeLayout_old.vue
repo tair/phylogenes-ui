@@ -1,3 +1,9 @@
+<!--Example Usage-->
+<!--<treelayout :jsonData="jsonData"-->
+            <!--v-on:updated-tree="onTreeUpdate"-->
+            <!--v-on:mouse-over-link="onMouseOverLink"-->
+            <!--v-on:mouse-leaves-link="onMouseLeaveLink"></treelayout>-->
+
 <template>
     <div>
     <svg id="treeSvg" width="900" height="900">
