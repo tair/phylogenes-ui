@@ -1,38 +1,26 @@
 <template>
-    <div>
+    <span class="_parent">
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <svg id="treeSvg" width="100%" height="87vh">
+        <svg id="treeSvg" ref="treesvg" width="100%" height="100%">
             <g id="wrapper">
                 <g class="links">
                     <baselink v-for="link in treelinks"
-                              :key="link.id" ref="treelink"
-                              :content="link">
+                                :key="link.id" ref="treelink"
+                                :content="link">
                     </baselink>
                 </g>
-                <!--@contextmenu.prevent="$refs.menu.open($event, {foo: 'bar'})"-->
                 <g class="nodes">
                     <basenode v-for="node in treenodes"
-                              :id="node.id" :key="node.id" ref="treenode"
-                              :content="node"
-                              v-on:clicknode="onClick"></basenode>
+                                :id="node.id" :key="node.id" ref="treenode"
+                                :content="node"
+                                v-on:clicknode="onClick"></basenode>
                 </g>
-
-                <!--<dragnode ref="nodeToAdd" :content="exampleNode"-->
-                <!--v-on:dragging="onDrag"-->
-                <!--v-on:dragend="onDragEnd"></dragnode>-->
             </g>
         </svg>
-        <context-menu v-if="enableMenu" ref="menu">
-            <ul class="options" slot-scope="child">
-                <li @click="onMenuClick('Add')">Add</li>
-                <li @click="onMenuClick('Delete')">Delete</li>
-            </ul>
-        </context-menu>
         <div v-if="showLegend" class="legend-box">
             <tree-legend></tree-legend>
         </div>
-
-    </div>
+    </span>
 </template>
 
 <script>
@@ -51,7 +39,7 @@
     import intersectUtil from "../../util/intersect";
 
     export default {
-        name: "treelayout2",
+        name: "treelayout",
         props: ['jsonData', 'mappingData', 'matchedNodes'],
         components: {
             'basenode': baseNode,
@@ -114,7 +102,7 @@
                 counter: 0,
                 rowHeight: 41,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 link_intersected: null,
                 wrapper_d3: null,
@@ -725,8 +713,10 @@
                 let leafNodes = this.getLeafNodesByDepth();
 
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
-                let totalRowsInPanel = 26;
-                let maxRowsMovedUp = leafNodes.length - totalRowsInPanel;
+                let svgHeight = this.getTreePanelHeight();
+                let rowHeight = 40;
+                let totalRowsInPanel = Math.floor(svgHeight/rowHeight);
+                let maxRowsMovedUp = leafNodes.length - (totalRowsInPanel-1);
                 if(maxRowsMovedUp < 0) maxRowsMovedUp = 0;
 
                 if(this.rowsScrolledUp >= maxRowsMovedUp) this.rowsScrolledUp = maxRowsMovedUp;
@@ -734,7 +724,8 @@
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 if(!currTopNode) return;
 
-                var topNodePosY = -1*currTopNode.x + 40 + this.topPaddingY;
+                let topPadding = rowHeight+25;
+                var topNodePosY = -1*currTopNode.x + topPadding; //+ this.topPaddingY;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)
@@ -744,6 +735,9 @@
                     });
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
                 this.store_setCenterNode(currCenterNode);
+            },
+            getTreePanelHeight() {
+                return this.$refs.treesvg.clientHeight;
             },
             getLeafNodesByDepth() {
                 return this.leafNodesByDepth;
@@ -768,7 +762,6 @@
                 if (this.link_intersected) {
                     const nn = this.addNewNodeBetweenLink(this.link_intersected);
                     this.$refs.nodeToAdd.resetPosition();
-                    this.updateTree2();
                 }
             },
             onMenuClick(opt, data) {
@@ -776,7 +769,6 @@
                 if(opt === "Add") {
                     this.addNewChildNode(nodeId);
                     this.updateIdAndText();
-                    this.updateTree2();
                 }
                 if(opt === "Delete") {
                     this.deleteNode(nodeId);
@@ -818,7 +810,6 @@
                     parentChildren = parentChildren.filter(pc => pc.id != nodeId);
                     if(parentChildren.length == 0) parentChildren = null;
                     nodeToDelete.parent.children = parentChildren;
-                    this.updateTree2();
                 }
             },
             addNewNodeBetweenLink(link) {
@@ -893,9 +884,6 @@
                 return newNode;
             },
             // ~~~~~~~~~~~~~~~~ ********************** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            updateTree2() {
-
-            },
             updateAccordingToDepth(nodes, flag) {
                 this.counter = 0;
                 this.calculateDepthFirstIds(nodes[0]);
@@ -908,6 +896,10 @@
     }
 </script>
 <style scoped>
+    ._parent {
+        width: inherit;
+        height: inherit;
+    }
     svg {
         background-color: white;
         /*cursor: grab;*/
@@ -915,10 +907,11 @@
     .legend-box {
         background-color: #9E9E9E;
         position: absolute;
-        top: 55px;
+        top: 1px;
         right: 5px;
         width: 230px;
         float: left;
     }
+    
 </style>
 
