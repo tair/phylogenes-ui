@@ -22,7 +22,7 @@
                 <div class="row h-100">
                     <!-- Menu Bar -->
                     <div class="col-sm-12 h-5">
-                        <div class="row align-items-end">
+                        <div class="row align-items-center">
                             <div class="col-sm align-items-center">
                                 <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
                                             @click="expandAll">Expand All</button>
@@ -115,7 +115,6 @@
             },
             store_getTreeMetadata: {
                 handler: function (val, oldVal) {
-                    // console.log("Metadata ", val);
                     this.metadata.familyName = val.familyName[0];
                     this.metadata.spannedTaxon = val.taxonRange[0];
                 }

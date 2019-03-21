@@ -7,8 +7,7 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-        <table class="mainTable"> 
-        <!-- :style="{marginTop: topMargin+'px'}"> -->
+        <table class="mainTable" :style="{marginTop: topMargin+'px'}"> 
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
@@ -389,11 +388,7 @@
         height: 40px !important;
     }
     #secTr {
-        /* height: 5%; */
-        /* max-height: 35px;
-        min-height: 35px; */
         filter: brightness(100%) !important;
-        /*cursor: default !important;*/
         border: 0 !important;
         background-color: transparent;
     }

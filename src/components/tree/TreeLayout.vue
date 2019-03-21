@@ -762,7 +762,6 @@
                 if (this.link_intersected) {
                     const nn = this.addNewNodeBetweenLink(this.link_intersected);
                     this.$refs.nodeToAdd.resetPosition();
-                    this.updateTree2();
                 }
             },
             onMenuClick(opt, data) {
@@ -770,7 +769,6 @@
                 if(opt === "Add") {
                     this.addNewChildNode(nodeId);
                     this.updateIdAndText();
-                    this.updateTree2();
                 }
                 if(opt === "Delete") {
                     this.deleteNode(nodeId);
@@ -812,7 +810,6 @@
                     parentChildren = parentChildren.filter(pc => pc.id != nodeId);
                     if(parentChildren.length == 0) parentChildren = null;
                     nodeToDelete.parent.children = parentChildren;
-                    this.updateTree2();
                 }
             },
             addNewNodeBetweenLink(link) {
@@ -887,9 +884,6 @@
                 return newNode;
             },
             // ~~~~~~~~~~~~~~~~ ********************** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            updateTree2() {
-
-            },
             updateAccordingToDepth(nodes, flag) {
                 this.counter = 0;
                 this.calculateDepthFirstIds(nodes[0]);
