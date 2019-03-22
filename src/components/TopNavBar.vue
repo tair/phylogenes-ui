@@ -26,7 +26,7 @@
                         </a>
                     </router-link>
 
-                    <a href="https://conf.arabidopsis.org/display/PHGSUP" class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Help">
+                    <a href="https://conf.arabidopsis.org/display/PHGSUP" target="_blank" class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Help">
                         Help
                     </a>
 
