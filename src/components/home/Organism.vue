@@ -6,50 +6,16 @@
 		<div class="scroll-div bg-white my-2 px-5" v-if="showText">
 			<p class="text-lg mr-5 pr-5">Protein sequences from these plant species are included in the current PhyloGenes release (version 1.0):</p>
 
-			<p>Amborella trichopoda<br>
-			Arabidopsis thaliana<br>
-			Brachypodium distachyon (purple false brome)<br>
-			Brassica rapa subsp. Pekinensis (Chinese cabbage)<br>
-			Chlamydomonas reinhardtii<br>
-			Citrus sinensis (orange)<br>
-			Cucumis sativus (cucumber)<br>
-			Erythranthe guttata (yellow monkey flower)<br>
-			Glycine max (soybean)<br>
-			Gossypium hirsutum (cotton)<br>
-			Helianthus annuus (sunflower)<br>
-			Hordeum vulgare (barley)<br>
-			Medicago truncatula (barrelclover)<br>
-			Musa acuminata (banana)<br>
-			Nicotiana tabacum (tobacco)<br>
-			Oryza sativa (rice)<br>
-			Ostreococcus tauri<br>
-			Phoenix dactylifera (date palm)<br>
-			Physcomitrella patens<br>
-			Populus trichocarpa (black cottonwood)<br>
-			Prunus persica (peach)<br>
-			Ricinus communis (castor bean)<br>
-			Setaria italica (foxtail millet)<br>
-			Solanum lycopersicum (tomato)<br>
-			Sorghum bicolor (sorghum)<br>
-			Theobroma cacao (cocoa)<br>
-			Triticum aestivum (wheat)<br>
-			Vitis vinifera (grape)<br>
-			Zea mays (corn)<br>
-			Zostera marina (eelgrass)</p>
+			<p>
+				<a v-for="data in plantSpecies" :href="'https://conf.arabidopsis.org/display/PHGSUP/'+data.sciName.replace(' ','+')"><i>{{data.sciName}}</i>&nbsp;<template v-if="data.cmnName">({{data.cmnName}})</template><br></a>
+			</p>
 
 			<p class="text-lg">Protein sequences from the following non-plant model organisms are include to provide functional information that can be useful for when no experimental plant data is available:</p>
 
-			<p>Caenorhabditis elegans (nematode worm)<br>
-			Danio rerio (zebrafish)<br>
-			Dictyostelium discoideum<br>
-			Drosophila melanogaster (fruit fly)<br>
-			Escherichia coli<br>
-			Homo sapiens (human)<br>
-			Mus musculus (mouse)<br>
-			Rattus norvegicus (rat)<br>
-			Saccharomyces cerevisiae (budding yeast)<br>
-			Schizosaccharomyces pombe (fission yeast)</p>
-
+			<p>
+				<template v-for="data in nonPlantSpecies" href=""><i>{{data.sciName}}</i>&nbsp;<template v-if="data.cmnName">({{data.cmnName}})</template><br></template>
+			</p>
+			
 		</div>
 		<div class="scroll-div bg-white my-5 d-flex align-items-center" v-if="!showText">
 			<img src="../../../src/assets/img/speciestree.png" alt="speciestree" style="width:100%">
@@ -64,6 +30,48 @@
         data() {
             return {
                 showText: true,
+                plantSpecies: [
+                	{sciName:'Amborella trichopoda',cmnName:''},
+					{sciName:'Arabidopsis thaliana',cmnName:''},
+					{sciName:'Brachypodium distachyon',cmnName:'purple false brome'},
+					{sciName:'Brassica rapa subsp. Pekinensis',cmnName:'Chinese cabbage'},
+					{sciName:'Chlamydomonas reinhardtii',cmnName:''},
+					{sciName:'Citrus sinensis',cmnName:'orange'},
+					{sciName:'Cucumis sativus',cmnName:'cucumber'},
+					{sciName:'Erythranthe guttata',cmnName:'yellow monkey flower'},
+					{sciName:'Glycine max',cmnName:'soybean'},
+					{sciName:'Gossypium hirsutum',cmnName:'cotton'},
+					{sciName:'Helianthus annuus',cmnName:'sunflower'},
+					{sciName:'Hordeum vulgare',cmnName:'barley'},
+					{sciName:'Medicago truncatula',cmnName:'barrelclover'},
+					{sciName:'Musa acuminata',cmnName:'banana'},
+					{sciName:'Nicotiana tabacum',cmnName:'tobacco'},
+					{sciName:'Oryza sativa',cmnName:'rice'},
+					{sciName:'Ostreococcus tauri',cmnName:''},
+					{sciName:'Phoenix dactylifera',cmnName:'date palm'},
+					{sciName:'Physcomitrella patens',cmnName:''},
+					{sciName:'Populus trichocarpa',cmnName:'black cottonwood'},
+					{sciName:'Prunus persica',cmnName:'peach'},
+					{sciName:'Ricinus communis',cmnName:'castor bean'},
+					{sciName:'Setaria italica',cmnName:'foxtail millet'},
+					{sciName:'Solanum lycopersicum',cmnName:'tomato'},
+					{sciName:'Sorghum bicolor',cmnName:'sorghum'},
+					{sciName:'Theobroma cacao',cmnName:'cocoa'},
+					{sciName:'Triticum aestivum',cmnName:'wheat'},
+					{sciName:'Vitis vinifera',cmnName:'grape'},
+					{sciName:'Zea mays',cmnName:'corn'},
+                ],
+                nonPlantSpecies: [
+                	{sciName:'Caenorhabditis elegans',cmnName:'nematode worm'},
+                	{sciName:'Danio rerio',cmnName:'zebrafish'},
+                	{sciName:'Dictyostelium discoideum',cmnName:''},
+                	{sciName:'Drosophila melanogaster',cmnName:'fruit fly'},
+                	{sciName:'Escherichia coli',cmnName:''},
+                	{sciName:'Homo sapiens',cmnName:'human'},
+                	{sciName:'Rattus norvegicus',cmnName:'rat'},
+                	{sciName:'Saccharomyces cerevisiae',cmnName:'budding yeast'},
+                	{sciName:'Schizosaccharomyces pombe',cmnName:'fission yeast'},
+                ]
             }
         },
         methods: {
