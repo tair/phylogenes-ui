@@ -117,7 +117,6 @@ const actions = {
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
-                    console.log(res.data.response.docs[0].speciation_events[0]);
                     context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
                     context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
                     context.state.treedata.jsonString = res.data.response.docs[0].jsonString;

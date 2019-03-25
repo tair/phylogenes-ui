@@ -83,6 +83,11 @@
                 }
             }
         },
+        beforeRouteLeave (to, from, next) {
+            next(vm => {
+                console.log("Route leave");
+            })
+        },
         data() {
             return {
                 isLoading: false,
@@ -259,6 +264,7 @@
                  allNodes.forEach(d => {
                      d.matched = false;
                  });
+                 console.log("resetMatchedNodes -> updateTree");
                  this.updateTree();
             },
             findMatNodesInChildren(d, matNodes) {
