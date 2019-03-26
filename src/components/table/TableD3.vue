@@ -7,7 +7,8 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-        <table class="mainTable" :style="{marginTop: topMargin+'px'}"> 
+        <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
+        <table v-if="!isLoading" class="mainTable" :style="{marginTop: topMargin+'px'}"> 
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
@@ -67,6 +68,7 @@
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
                 topMargin: 0,
+                isLoading: false
             }
         },
         computed: {
@@ -79,12 +81,15 @@
         watch: {
             stateTreeData: {
                 handler: function (val, oldVal) {
-                    this.update();
+                    this.isLoading = true;
+                    if(val != null && val.length > 0) {
+                        this.update();
+                    }
                 }
             },
             store_getCenterNode: {
                 handler: function (val, oldVal) {
-                    if(val == null) return;
+                    if(val == null || this.isLoading) return;
                     var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
@@ -103,9 +108,6 @@
             }
         },
         mounted: function () {
-            if (this.stateTreeData) {
-                this.update();
-            }
             const tbody = document.getElementById("body");
             tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
             this.extraCols = this.store_annoMapping.headers;
@@ -113,7 +115,6 @@
         methods: {
             ...mapActions({
                 stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
-                store_setTreeTopY: types.TREE_ACTION_SET_TOP_Y
             }),
             //Is called on every change to the store data
             update() {
@@ -123,8 +124,7 @@
                 this.data = this.stateTreeData;
 
                 setTimeout(() => {
-                    let theadHeight = this.$refs.thead.clientHeight;
-                    this.store_setTreeTopY(theadHeight-38);
+                    this.isLoading = false;
                 },1000);
 
             },

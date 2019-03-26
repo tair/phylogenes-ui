@@ -11,7 +11,7 @@
             <!-- Metadata Band -->
             <div class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand">
                 <i v-if="this.metadata.isLoading" 
-                    class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
+                    class="fa fa-spinner fa-spin fa-2x p-5 text-primary"></i>
                 <span v-if="!this.metadata.isLoading" v-on:click="showOrganismPopup()">
                     {{metadata.familyName}} ({{treeId}}), {{metadata.genesCount}} genes, 
                     <span style="cursor: pointer"><b><u>
