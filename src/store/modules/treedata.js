@@ -67,7 +67,7 @@ const getters = {
 
 const actions = {
     [types.TREE_ACTION_SET_DATA]: (context, payload) => {
-        //console.log("Action" + payload);
+        // console.log("Action Table Data", payload.length);
         context.state.treedata.data = payload;
     },
     [types.TREE_ACTION_SET_NODES]: (context, payload) => {
@@ -117,7 +117,6 @@ const actions = {
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
-                    console.log(res.data.response.docs[0].speciation_events[0]);
                     context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
                     context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
                     context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
