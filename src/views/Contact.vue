@@ -17,7 +17,7 @@
                                 We are in the Pacific Time Zone<br>
                                 Tel. : (650) 995-7502<br>
                                 Fax : (877) 820-5814<br>
-                                info@phoenixbioinformatics.org
+                                info@phylogenes.org
                                 <br><br><br>
 
                                 <a href="mailto:info@phylogenes.org?subject=Contact%20PhyloGenes">Email Us</a>
