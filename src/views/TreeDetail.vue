@@ -481,7 +481,10 @@
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
-                        tableNode["Organism"] = n.data.organism;
+                        tableNode["Organism"] = n.data.organism;                       
+                        this.anno_headers.sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        });
                         this.anno_headers.forEach(a => {
                             tableNode[a] = "";
                             if(n.data.uniprotId) {
