@@ -81,7 +81,9 @@
         watch: {
             stateTreeData: {
                 handler: function (val, oldVal) {
-                    this.isLoading = true;
+                    if(val.length == 0) {
+                        this.isLoading = true;
+                    }
                     if(val != null && val.length > 0) {
                         this.update();
                     }
@@ -109,14 +111,18 @@
         },
         mounted: function () {
             this.isLoading = true;
-            const tbody = document.getElementById("body");
-            tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
-            this.extraCols = this.store_annoMapping.headers;
         },
         methods: {
             ...mapActions({
                 stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
             }),
+            initAfterLoad() {
+                setTimeout(() => {
+                    const tbody = document.getElementById("body");
+                    tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
+                    this.extraCols = this.store_annoMapping.headers;
+                },10);
+            },
             //Is called on every change to the store data
             update() {
                 var titles = d3.keys(this.stateTreeData[0]);
@@ -124,10 +130,12 @@
                 this.cols = titles;
                 this.data = this.stateTreeData;
 
-                setTimeout(() => {
-                    this.isLoading = false;
-                },1000);
-
+                if(this.isLoading) {
+                    setTimeout(() => {
+                        this.initAfterLoad();
+                        this.isLoading = false;
+                    },1000);
+                }
             },
             handleScroll() {
                 //If scrolling is from tree, we don't need to update the table scroll again
