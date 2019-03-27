@@ -53,7 +53,8 @@
         computed: {
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
-                stateTableScroll: types.TABLE_GET_SCROLL
+                stateTableScroll: types.TABLE_GET_SCROLL,
+                stateTreeData: types.TREE_GET_DATA
             })
         },
         watch: {
@@ -70,6 +71,14 @@
                 handler: function (val, oldVal) {
                     if(!this.isLoading) {
                         this.processMatchedNodes(val);
+                    }
+                }
+            },
+            stateTreeData: {
+                handler: function (val, oldVal) {
+                    if(val.length == 0) {
+                        this.isLoading = true;
+                        this.refresh();
                     }
                 }
             },

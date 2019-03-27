@@ -108,6 +108,7 @@
             }
         },
         mounted: function () {
+            this.isLoading = true;
             const tbody = document.getElementById("body");
             tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
             this.extraCols = this.store_annoMapping.headers;

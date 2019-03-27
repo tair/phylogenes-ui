@@ -104,6 +104,7 @@
                 this.treeId = id;
                 this.jsonData = null;
                 this.loadJsonFromDB(this.treeId);
+                this.stateSetTreeData([]);
                 this.metadata.isLoading = true;
             },
             stateTreeJson: {
@@ -212,9 +213,6 @@
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
-                this.stateSetTreeData([]);
-                //TODO move not at load
-                // this.store_setMatchedNodes([-1]);
                 this.completeData = null;
             },
             resetDataband() {
