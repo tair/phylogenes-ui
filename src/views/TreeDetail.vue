@@ -500,7 +500,7 @@
                             }
                         });
                         tableNode["Gene ID"] = geneId;
-                        tableNode["Protein function"] = n.data.definition;
+                        tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily Name"] = n.data.sf_name;
                         tabularData.push(tableNode);
