@@ -20,11 +20,9 @@
                         </a>
                     </router-link>
 
-                    <router-link to="/about" tag="li">
-                        <a class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="About Us">
-                            About
-                        </a>
-                    </router-link>
+                    <a href="https://conf.arabidopsis.org/display/PHGSUP/About+PhyloGenes" target="_blank" class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="About Us">
+                        About
+                    </a>
 
                     <a href="https://conf.arabidopsis.org/display/PHGSUP" target="_blank" class="nav-link pr-3" style="font-size: 15px"  data-toggle="tooltip" title="Help">
                         Help
