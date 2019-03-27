@@ -215,18 +215,6 @@
                 this.processJson(treeJson);
                 this.completeData = null;
             },
-            resetDataband() {
-                this.metadata = {
-                    isLoading: true,
-                    familyName: "",
-                    genesCount: 0,
-                    uniqueOrganisms: {
-                        totalCount: 0,
-                        organisms: []
-                    },
-                    spannedTaxon: ""
-                };
-            },
             loadJsonFromFile(fileName) {
               d3.json("/sam_annotations_simple.json", (err, data) => {
                   if (err) {

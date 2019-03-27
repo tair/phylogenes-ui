@@ -5,13 +5,13 @@
                 data-toggle="tooltip" :title="computedText">
                 {{computedText}}
         </span>
-        <span v-if="cellText == '*'">
+        <span v-else>
             <svg :width=tdWidth :height=tdHeight>
                 <g>
                     <text v-if="cellText != '*'"
                             dy=".35em" x=5 y=17 
                             :class="getTextClass()">{{computedText}}</text>
-                    <circle v-if="cellText == '*'" class="anno_circle"
+                    <circle v-else class="anno_circle"
                             cx="100" cy="18"></circle>
                 </g>
             </svg>

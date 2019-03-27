@@ -8,7 +8,7 @@
             </template>
         </modal>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-if="!isLoading" class="mainTable" :style="{marginTop: topMargin+'px'}"> 
+        <table v-else class="mainTable" :style="{marginTop: topMargin+'px'}"> 
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
@@ -24,7 +24,7 @@
                     </th>
                 </tr>
             </thead>
-            <tbody id="body">
+            <tbody id="body" ref="tbody">
                 <tr v-for="(row) in data" >
                     <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(row[key], i)">
@@ -118,8 +118,7 @@
             }),
             initAfterLoad() {
                 setTimeout(() => {
-                    const tbody = document.getElementById("body");
-                    tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
+                    this.$refs.tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
                     this.extraCols = this.store_annoMapping.headers;
                 },10);
             },
@@ -134,7 +133,7 @@
                     setTimeout(() => {
                         this.initAfterLoad();
                         this.isLoading = false;
-                    },1000);
+                    },100);
                 }
             },
             handleScroll() {
