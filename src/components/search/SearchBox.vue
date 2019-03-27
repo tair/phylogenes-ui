@@ -78,6 +78,7 @@ methods: {
         background-color: #ffffff;
         background-clip: padding-box;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
+        width: 220px;
     }
     input:-webkit-autofill,
     input:-webkit-autofill:hover, 

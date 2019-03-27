@@ -490,7 +490,10 @@
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
-                        tableNode["Organism"] = n.data.organism;
+                        tableNode["Organism"] = n.data.organism;                       
+                        this.anno_headers.sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        });
                         this.anno_headers.forEach(a => {
                             tableNode[a] = "";
                             if(n.data.uniprotId) {
@@ -506,7 +509,7 @@
                             }
                         });
                         tableNode["Gene ID"] = geneId;
-                        tableNode["Protein function"] = n.data.definition;
+                        tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily Name"] = n.data.sf_name;
                         tabularData.push(tableNode);
