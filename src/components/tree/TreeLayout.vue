@@ -1,7 +1,6 @@
 <template>
     <span class="_parent">
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-
         <svg id="treeSvg" ref="treesvg" width="100%" height="100%">
             <g id="wrapper">
                 <g class="links">
@@ -18,8 +17,6 @@
                 </g>
             </g>
         </svg>
-
-        
         <div v-if="showLegend" class="legend-box">
             <tree-legend></tree-legend>
         </div>

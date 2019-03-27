@@ -414,7 +414,6 @@
                 this.branchLength = "N/A";
             },
             onTreeInit(nodes) {
-                console.log("onTreeInit ", nodes.length);
                 var tabularData = [];
                 var sortedNodes = nodes.sort(function (a, b) {
                     return a.dfId - b.dfId;
@@ -459,7 +458,6 @@
                 this.completeData = tabularData;
             },
             onTreeUpdate(nodes) {
-                console.log("onTreeUpdate ", nodes.length);
                 this.metadata.isLoading = false;
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;

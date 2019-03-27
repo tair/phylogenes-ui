@@ -64,7 +64,6 @@ const getters = {
 
 const actions = {
     [types.TREE_ACTION_SET_DATA]: (context, payload) => {
-        // console.log("Action Table Data", payload.length);
         context.state.treedata.data = payload;
     },
     [types.TREE_ACTION_SET_NODES]: (context, payload) => {
