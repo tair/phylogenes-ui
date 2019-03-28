@@ -10,7 +10,9 @@
         <div class="row flex-fill">
             <!-- Metadata Band -->
             <div class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand">
-                <span v-on:click="showOrganismPopup()">
+                <i v-if="this.metadata.isLoading" 
+                    class="fa fa-spinner fa-spin fa-2x p-5 text-primary"></i>
+                <span v-if="!this.metadata.isLoading" v-on:click="showOrganismPopup()">
                     {{metadata.familyName}} ({{treeId}}), {{metadata.genesCount}} genes, 
                     <span style="cursor: pointer"><b><u>
                         {{metadata.uniqueOrganisms.totalCount}} organisms</u></b></span>
@@ -102,6 +104,8 @@
                 this.treeId = id;
                 this.jsonData = null;
                 this.loadJsonFromDB(this.treeId);
+                this.stateSetTreeData([]);
+                this.metadata.isLoading = true;
             },
             stateTreeJson: {
                 handler: function (val, oldVal) {
@@ -117,6 +121,7 @@
                 handler: function (val, oldVal) {
                     this.metadata.familyName = val.familyName[0];
                     this.metadata.spannedTaxon = val.taxonRange;
+                    this.metadata.isLoading = false;
                 }
             }
         },
@@ -134,6 +139,7 @@
                 anno_headers: [],
                 legend: true,
                 metadata: {
+                    isLoading: false,
                     familyName: "",
                     genesCount: 0,
                     uniqueOrganisms: {
@@ -158,6 +164,7 @@
             this.searchText = "";
             this.matchNodes = [];
             this.popupData = [];
+            this.metadata.isLoading = true;
         },
         methods: {
             ...mapActions({
@@ -201,25 +208,12 @@
                 }
                 this.store_setMatchedNodes(this.matchNodes);
             },
-            getMetadataText() {
-                let metadataText = this.metadata.familyName;
-                metadataText += ", " + this.metadata.genesCount + " genes";
-                metadataText += ", " + "<a><u>" +
-                this.metadata.uniqueOrganisms.totalCount + " organisms</u></a>";
-                metadataText += ", spanning " + this.metadata.spannedTaxon;
-                return metadataText;
-            },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson);
-                this.stateSetTreeData([]);
-                this.store_setMatchedNodes([-1]);
                 this.completeData = null;
-
-                this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
-                this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
             },
             loadJsonFromFile(fileName) {
               d3.json("/sam_annotations_simple.json", (err, data) => {
@@ -452,6 +446,9 @@
                 this.completeData = tabularData;
             },
             onTreeUpdate(nodes) {
+                this.metadata.isLoading = false;
+                this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
+                this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
                 this.updateTableData(nodes);
             },
             expandAll() {

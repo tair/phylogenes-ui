@@ -1,13 +1,22 @@
 <template>
-   <svg :width=tdWidth :height=tdHeight>
-       <g>
-           <text v-if="cellText != '*'"
-                 dy=".35em" x=5 y=17 
-                 :class="getTextClass()">{{computedText}}</text>
-           <circle v-if="cellText == '*'" class="anno_circle"
-                 cx="100" cy="18"></circle>
-       </g>
-   </svg>
+    <span>
+        <span v-if="cellText != '*'" 
+                class="spanText"
+                data-toggle="tooltip" :title="computedText">
+                {{computedText}}
+        </span>
+        <span v-else>
+            <svg :width=tdWidth :height=tdHeight>
+                <g>
+                    <text v-if="cellText != '*'"
+                            dy=".35em" x=5 y=17 
+                            :class="getTextClass()">{{computedText}}</text>
+                    <circle v-else class="anno_circle"
+                            cx="100" cy="18"></circle>
+                </g>
+            </svg>
+        </span>
+   </span>
 </template>
 
 <script>
@@ -134,6 +143,9 @@
         fill: #ff0;
         stroke: steelblue;
         stroke-width: 2px;
+    }
+    .spanText {
+        padding-left: 10px;
     }
 </style>
 
