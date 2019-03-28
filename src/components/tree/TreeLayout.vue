@@ -51,7 +51,7 @@
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
                 stateTableScroll: types.TABLE_GET_SCROLL,
-                store_stateTreeTopY: types.TREE_GET_TOP_Y
+                stateTreeData: types.TREE_GET_DATA
             })
         },
         watch: {
@@ -66,13 +66,17 @@
             },
             store_matchedNodes: {
                 handler: function (val, oldVal) {
-                    this.processMatchedNodes(val);
+                    if(!this.isLoading) {
+                        this.processMatchedNodes(val);
+                    }
                 }
             },
-            store_stateTreeTopY: {
+            stateTreeData: {
                 handler: function (val, oldVal) {
-                    this.topPaddingY = val;
-                    this.alignNodes();
+                    if(val.length == 0) {
+                        this.isLoading = true;
+                        this.refresh();
+                    }
                 }
             },
             stateTableScroll: {
@@ -107,21 +111,11 @@
                 link_intersected: null,
                 wrapper_d3: null,
                 topMostNodePos: {x: 0.0, y: 0.0},
-                currentTopNodePos: {x: 0.0, y: 0.0},
-                topPaddingY: 35
+                currentTopNodePos: {x: 0.0, y: 0.0}
             }
         },
         mounted() {
-            this.isLoading = true;
-            var svg = d3.select('#treeSvg');
-            this.wrapper_d3 = svg.select("#wrapper");
-            svg.call(this.setZoomListener(this.wrapper_d3));
-
-            this.resetRootPosition();
-
-            if (this.jsonData != null) {
-                this.initTree();
-            }
+          
         },
         methods: {
             ...mapActions({
@@ -147,29 +141,34 @@
             },
             //Initialize Tree at the time of Mounted() or jsonData has been updated.
             initTree() {
-                this.refresh();
-
                 if(this.jsonData == null) {
+                    console.error("jsonData is null!");
                     return;
                 }
+                var svg = d3.select('#treeSvg');
+                this.wrapper_d3 = svg.select("#wrapper");
+                svg.call(this.setZoomListener(this.wrapper_d3));
+
+                 // ~~~~~~~~~~~~~~~ Init tree nodes but not render them yet. ~~~~~~~~~~~~~~//
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
-
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
-                this.resetTreeLayout();
 
+                this.resetTreeLayout();
+                
                 this.updateOldIndexes(nodes);
                 //Update nodes dfid according to depth of nodes.
                 this.calculateDepthIds(nodes);
-
                 this.$emit('init-tree', nodes);
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+                this.refresh();
 
                 setTimeout(() => {
                     this.updateTree();
                     this.adjustPosition(nodes);
-                    this.isLoading = false;
                 }, 1000);
             },
             updateTreeOnlyRendering() {
@@ -255,11 +254,12 @@
             },
             resetMatchedNodes() {
                 if(!this.rootNode) return;
+
                 let allNodes = this.rootNode.descendants();
-                 allNodes.forEach(d => {
-                     d.matched = false;
-                 });
-                 this.updateTree();
+                allNodes.forEach(d => {
+                    d.matched = false;
+                });
+                this.updateTree();
             },
             findMatNodesInChildren(d, matNodes) {
                 var foundAny = false;
@@ -480,6 +480,8 @@
                     setTimeout(() => {
                         //Explain temp array
                         this.treelinks = tempArray;
+                        this.isLoading = false;
+                        
                     }, this.duration2);
                 }, timeoutS);
             },
@@ -710,6 +712,8 @@
             },
             //Setting top node padding goes here.
             alignNodes() {
+                if(this.wrapper_d3 == null) return;
+
                 let leafNodes = this.getLeafNodesByDepth();
 
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
@@ -725,7 +729,7 @@
                 if(!currTopNode) return;
 
                 let topPadding = rowHeight+25;
-                var topNodePosY = -1*currTopNode.x + topPadding; //+ this.topPaddingY;
+                var topNodePosY = -1*currTopNode.x + topPadding;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3.transition().duration(500)
@@ -737,7 +741,11 @@
                 this.store_setCenterNode(currCenterNode);
             },
             getTreePanelHeight() {
-                return this.$refs.treesvg.clientHeight;
+                if(this.$refs.treesvg) {
+                    return this.$refs.treesvg.clientHeight;
+                } else {
+                    return 0;
+                }
             },
             getLeafNodesByDepth() {
                 return this.leafNodesByDepth;

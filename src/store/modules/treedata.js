@@ -60,14 +60,10 @@ const getters = {
     [types.TABLE_GET_SCROLL]: state => {
         return state.treedata.scroll;
     },
-    [types.TREE_GET_TOP_Y]: state => {
-        return state.treedata.topPaddingY;
-    }
 };
 
 const actions = {
     [types.TREE_ACTION_SET_DATA]: (context, payload) => {
-        //console.log("Action" + payload);
         context.state.treedata.data = payload;
     },
     [types.TREE_ACTION_SET_NODES]: (context, payload) => {
@@ -96,9 +92,6 @@ const actions = {
         //console.log("Action" + payload);
         context.state.treedata.scroll = payload;
     },
-    [types.TREE_ACTION_SET_TOP_Y]: (context, payload) => {
-      context.state.treedata.topPaddingY = payload;
-    },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
         var q = "";
         if(payload != null) {
@@ -117,7 +110,6 @@ const actions = {
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
-                    console.log(res.data.response.docs[0].speciation_events[0]);
                     context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
                     context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
                     context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
