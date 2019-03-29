@@ -1,7 +1,7 @@
 <template>
     <div class="mb-5 elevation-0">
         <div class="embed-responsive embed-responsive-16by9">
-            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/xpbY2VfutAI" allowfullscreen></iframe>
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/xpbY2VfutAI?rel=0" allowfullscreen></iframe>
         </div>
 
         <div class="bg-pggrey pt-3">
