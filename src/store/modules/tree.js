@@ -150,9 +150,13 @@ const actions = {
                 if(res.data.facet_counts.facet_fields.species_list != null) {
                     for(var i = 0; i < res.data.facet_counts.facet_fields.species_list.length;) {
                         var jsonData = {};
-                        jsonData['key'] = res.data.facet_counts.facet_fields.species_list[i++];
-                        jsonData['count'] = res.data.facet_counts.facet_fields.species_list[i++];
-                        context.state.tree.data.facets.species.push(jsonData);
+                        let key = res.data.facet_counts.facet_fields.species_list[i++];
+                        let count = res.data.facet_counts.facet_fields.species_list[i++]
+                        if(count > 0) {
+                            jsonData['key'] = key;
+                            jsonData['count'] = count;
+                            context.state.tree.data.facets.species.push(jsonData);
+                        }
                     }
                 }
                 //////////////////////////////////////
