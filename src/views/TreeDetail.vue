@@ -267,6 +267,11 @@
                 });
             },
             formatJson(data) {
+                if(data.node_name) {
+                    var uniprotId = data.node_name;
+                    uniprotId = uniprotId.split("UniProtKB=")[1];
+                    data.uniprotId = uniprotId;
+                }
                 if(data.children) {
                     if(data.children.annotation_node) {
                         data.children = data.children.annotation_node;
@@ -478,7 +483,7 @@
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
-                        tableNode["Organism"] = n.data.organism;                       
+                        tableNode["Organism"] = n.data.organism;
                         this.anno_headers.sort(function (a, b) {
                             return a.toLowerCase().localeCompare(b.toLowerCase());
                         });
