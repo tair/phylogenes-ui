@@ -1,0 +1,1280 @@
+{
+	"search": {
+		"parameters": {
+			"elapsed_time": "896 milliseconds.",
+			"id": "PTHR10000"
+		},
+		"annotation_node": {
+			"sf_id": "PTHR10000:SF8",
+			"reference_speciation_event": "LUCA",
+			"species": "LUCA",
+			"children": {
+				"annotation_node": [
+					{
+						"reference_speciation_event": "Eukaryota",
+						"species": "Eukaryota",
+						"children": {
+							"annotation_node": [
+								{
+									"reference_speciation_event": "Amoebozoa",
+									"species": "Amoebozoa",
+									"children": {
+										"annotation_node": [
+											{
+												"node_type": "DUPLICATION",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Entamoeba histolytica",
+															"gene_symbol": "EHI_168190",
+															"node_name": "ENTHI|EnsemblGenome=EHI_168190|UniProtKB=C4M4Q5",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0,
+															"accession": "AN4",
+															"gene_id": "EnsemblGenome:EHI_168190",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														},
+														{
+															"organism": "Entamoeba histolytica",
+															"gene_symbol": "EHI_003000",
+															"node_name": "ENTHI|EnsemblGenome=EHI_003000|UniProtKB=C4M9L1",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0,
+															"accession": "AN5",
+															"gene_id": "EnsemblGenome:EHI_003000",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.972,
+												"accession": "AN3",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"reference_speciation_event": "Dictyostelium",
+												"species": "Dictyostelium",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Dictyostelium discoideum",
+															"gene_symbol": "DDB0169374",
+															"node_name": "DICDI|dictyBase=DDB_G0277745|UniProtKB=Q86KT5",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0.201,
+															"accession": "AN7",
+															"gene_id": "dictyBase:DDB_G0277745",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														},
+														{
+															"organism": "Dictyostelium purpureum",
+															"gene_symbol": "DICPUDRAFT_76364",
+															"node_name": "DICPU|Gene=DICPUDRAFT_76364|UniProtKB=F0ZDE0",
+															"definition": "Putative uncharacterized protein",
+															"branch_length": 0.22,
+															"accession": "AN8",
+															"gene_id": "Gene:DICPUDRAFT_76364",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.774,
+												"accession": "AN6",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											}
+										]
+									},
+									"branch_length": 0.354,
+									"accession": "AN2",
+									"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+								},
+								{
+									"organism": "Thalassiosira pseudonana",
+									"gene_symbol": "THAPS_23626",
+									"node_name": "THAPS|Gene=Thaps23626|UniProtKB=B5YNW5",
+									"definition": "Predicted protein",
+									"branch_length": 0.869,
+									"accession": "AN9",
+									"gene_id": "Gene:Thaps23626",
+									"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+								}
+							]
+						},
+						"branch_length": 0.12,
+						"accession": "AN1",
+						"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+					},
+					{
+						"node_type": "DUPLICATION",
+						"reference_speciation_event": "Eubacteria",
+						"children": {
+							"annotation_node": [
+								{
+									"sf_id": "PTHR10000:SF23",
+									"reference_speciation_event": "Eubacteria",
+									"species": "Eubacteria",
+									"children": {
+										"annotation_node": [
+											{
+												"reference_speciation_event": "Bacilli",
+												"species": "Bacilli",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Streptococcus pneumoniae",
+															"gene_symbol": "spr0263",
+															"node_name": "STRR6|EnsemblGenome=spr0263|UniProtKB=Q8DR95",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0.787,
+															"accession": "AN13",
+															"gene_id": "EnsemblGenome:spr0263",
+															"sf_name": "SUBFAMILY NOT NAMED"
+														},
+														{
+															"reference_speciation_event": "Bacillales",
+															"species": "Bacillales",
+															"children": {
+																"annotation_node": [
+																	{
+																		"organism": "Staphylococcus aureus",
+																		"gene_symbol": "SAOUHSC_00909",
+																		"node_name": "STAA8|EnsemblGenome=SAOUHSC_00909|UniProtKB=Q2FZT1",
+																		"definition": "Uncharacterized protein",
+																		"branch_length": 0.433,
+																		"accession": "AN15",
+																		"gene_id": "EnsemblGenome:SAOUHSC_00909",
+																		"sf_name": "SUBFAMILY NOT NAMED"
+																	},
+																	{
+																		"node_type": "DUPLICATION",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Listeria monocytogenes",
+																					"gene_symbol": "lmo0276",
+																					"node_name": "LISMO|Gene=CAD00803|UniProtKB=Q8YA83",
+																					"definition": "Lmo0276 protein",
+																					"branch_length": 1.005,
+																					"accession": "AN17",
+																					"gene_id": "Gene:CAD00803",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"organism": "Listeria monocytogenes",
+																					"gene_symbol": "lmo0030",
+																					"node_name": "LISMO|Gene=CAC98245|UniProtKB=Q8YAT3",
+																					"definition": "Lmo0030 protein",
+																					"branch_length": 1.028,
+																					"accession": "AN18",
+																					"gene_id": "Gene:CAC98245",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"organism": "Listeria monocytogenes",
+																					"gene_symbol": "lmo2263",
+																					"node_name": "LISMO|Gene=CAD00341|UniProtKB=Q8Y515",
+																					"definition": "Lmo2263 protein",
+																					"branch_length": 0.616,
+																					"accession": "AN19",
+																					"gene_id": "Gene:CAD00341",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				}
+																			]
+																		},
+																		"branch_length": 0.26,
+																		"accession": "AN16",
+																		"sf_name": "SUBFAMILY NOT NAMED"
+																	},
+																	{
+																		"reference_speciation_event": "Bacillus",
+																		"species": "Bacillus",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Bacillus subtilis",
+																					"gene_symbol": "yitU",
+																					"node_name": "BACSU|EnsemblGenome=BSU11140|UniProtKB=P70947",
+																					"definition": "5-amino-6-(5-phospho-D-ribitylamino)uracil phosphatase YitU",
+																					"branch_length": 0.397,
+																					"accession": "AN21",
+																					"gene_id": "EnsemblGenome:BSU11140",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"organism": "Bacillus cereus",
+																					"gene_symbol": "BC_1165",
+																					"node_name": "BACCR|EnsemblGenome=BC_1165|UniProtKB=Q81GM7",
+																					"definition": "Hydrolase (HAD superfamily)",
+																					"branch_length": 0.397,
+																					"accession": "AN22",
+																					"gene_id": "EnsemblGenome:BC_1165",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				}
+																			]
+																		},
+																		"branch_length": 0.248,
+																		"accession": "AN20",
+																		"sf_name": "SUBFAMILY NOT NAMED"
+																	}
+																]
+															},
+															"branch_length": 0.564,
+															"accession": "AN14",
+															"sf_name": "SUBFAMILY NOT NAMED"
+														}
+													]
+												},
+												"branch_length": 0.31,
+												"accession": "AN12",
+												"sf_name": "SUBFAMILY NOT NAMED"
+											},
+											{
+												"organism": "mycoplasma genitalium",
+												"gene_symbol": "MG265",
+												"node_name": "MYCGE|EnsemblGenome=MG_265|UniProtKB=P47507",
+												"definition": "Putative phosphatase MG265",
+												"branch_length": 0.938,
+												"accession": "AN23",
+												"gene_id": "EnsemblGenome:MG_265",
+												"sf_name": "SUBFAMILY NOT NAMED"
+											},
+											{
+												"organism": "Leptospira interrogans",
+												"gene_symbol": "LB_007",
+												"node_name": "LEPIN|EnsemblGenome=LB_007|UniProtKB=Q8EY50",
+												"definition": "Haloacid dehalogenase-like protein",
+												"branch_length": 0.97,
+												"accession": "AN24",
+												"gene_id": "EnsemblGenome:LB_007",
+												"sf_name": "SUBFAMILY NOT NAMED"
+											}
+										]
+									},
+									"branch_length": 0.741,
+									"accession": "AN11",
+									"sf_name": "SUBFAMILY NOT NAMED"
+								},
+								{
+									"sf_id": "PTHR10000:SF25",
+									"reference_speciation_event": "Eubacteria",
+									"species": "Eubacteria",
+									"children": {
+										"annotation_node": [
+											{
+												"reference_speciation_event": "Bacilli",
+												"species": "Bacilli",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Streptococcus pneumoniae",
+															"gene_symbol": "spr1811",
+															"node_name": "STRR6|EnsemblGenome=spr1811|UniProtKB=Q8DNC5",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0.796,
+															"accession": "AN27",
+															"gene_id": "EnsemblGenome:spr1811",
+															"sf_name": "SUBFAMILY NOT NAMED"
+														},
+														{
+															"reference_speciation_event": "Bacillales",
+															"species": "Bacillales",
+															"children": {
+																"annotation_node": [
+																	{
+																		"node_type": "DUPLICATION",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Listeria monocytogenes",
+																					"gene_symbol": "lmo2208",
+																					"node_name": "LISMO|Gene=CAD00286|UniProtKB=Q8Y568",
+																					"definition": "Lmo2208 protein",
+																					"branch_length": 1.077,
+																					"accession": "AN30",
+																					"gene_id": "Gene:CAD00286",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"organism": "Listeria monocytogenes",
+																					"gene_symbol": "lmo2359",
+																					"node_name": "LISMO|Gene=CAD00437|UniProtKB=Q8Y4S3",
+																					"definition": "Lmo2359 protein",
+																					"branch_length": 1.267,
+																					"accession": "AN31",
+																					"gene_id": "Gene:CAD00437",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"organism": "Listeria monocytogenes",
+																					"gene_symbol": "lmo1029",
+																					"node_name": "LISMO|Gene=CAC99107|UniProtKB=Q8Y888",
+																					"definition": "Lmo1029 protein",
+																					"branch_length": 0.673,
+																					"accession": "AN32",
+																					"gene_id": "Gene:CAC99107",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				}
+																			]
+																		},
+																		"branch_length": 0.053,
+																		"accession": "AN29",
+																		"sf_name": "SUBFAMILY NOT NAMED"
+																	},
+																	{
+																		"reference_speciation_event": "Bacillus",
+																		"species": "Bacillus",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Bacillus subtilis",
+																					"gene_symbol": "ykrA",
+																					"node_name": "BACSU|EnsemblGenome=BSU14550|UniProtKB=Q45494",
+																					"definition": "Putative phosphatase YkrA",
+																					"branch_length": 0.354,
+																					"accession": "AN34",
+																					"gene_id": "EnsemblGenome:BSU14550",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"node_type": "DUPLICATION",
+																					"children": {
+																						"annotation_node": [
+																							{
+																								"organism": "Bacillus cereus",
+																								"gene_symbol": "BC_2060",
+																								"node_name": "BACCR|EnsemblGenome=BC_2060|UniProtKB=Q81EC2",
+																								"definition": "Hydrolase (HAD superfamily)",
+																								"branch_length": 0.888,
+																								"accession": "AN36",
+																								"gene_id": "EnsemblGenome:BC_2060",
+																								"sf_name": "SUBFAMILY NOT NAMED"
+																							},
+																							{
+																								"organism": "Bacillus cereus",
+																								"gene_symbol": "BC_3975",
+																								"node_name": "BACCR|EnsemblGenome=BC_3975|UniProtKB=Q819K1",
+																								"definition": "Hydrolase (HAD superfamily)",
+																								"branch_length": 0.511,
+																								"accession": "AN37",
+																								"gene_id": "EnsemblGenome:BC_3975",
+																								"sf_name": "SUBFAMILY NOT NAMED"
+																							}
+																						]
+																					},
+																					"branch_length": 0.2,
+																					"accession": "AN35",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				}
+																			]
+																		},
+																		"branch_length": 0.127,
+																		"accession": "AN33",
+																		"sf_name": "SUBFAMILY NOT NAMED"
+																	}
+																]
+															},
+															"branch_length": 0.578,
+															"accession": "AN28",
+															"sf_name": "SUBFAMILY NOT NAMED"
+														}
+													]
+												},
+												"branch_length": 0.29,
+												"accession": "AN26",
+												"sf_name": "SUBFAMILY NOT NAMED"
+											},
+											{
+												"node_type": "DUPLICATION",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Bacteroides thetaiotaomicron",
+															"gene_symbol": "BT_1666",
+															"node_name": "BACTN|EnsemblGenome=BT_1666|UniProtKB=Q8A759",
+															"definition": "Hydrolase, haloacid dehalogenase-like hydrolase",
+															"branch_length": 0.658,
+															"accession": "AN39",
+															"gene_id": "EnsemblGenome:BT_1666",
+															"sf_name": "SUBFAMILY NOT NAMED"
+														},
+														{
+															"organism": "Bacteroides thetaiotaomicron",
+															"gene_symbol": "BT_4131",
+															"node_name": "BACTN|EnsemblGenome=BT_4131|UniProtKB=Q8A090",
+															"definition": "Putative haloacid dehalogenase-like hydrolase",
+															"branch_length": 0.604,
+															"accession": "AN40",
+															"gene_id": "EnsemblGenome:BT_4131",
+															"sf_name": "SUBFAMILY NOT NAMED"
+														}
+													]
+												},
+												"branch_length": 0.341,
+												"accession": "AN38",
+												"sf_name": "SUBFAMILY NOT NAMED"
+											},
+											{
+												"organism": "Neisseria meningitidis serogroup b",
+												"gene_symbol": "NMB1663",
+												"node_name": "NEIMB|EnsemblGenome=NMB1663|UniProtKB=Q9JYB3",
+												"definition": "Uncharacterized protein",
+												"branch_length": 0.761,
+												"accession": "AN41",
+												"gene_id": "EnsemblGenome:NMB1663",
+												"sf_name": "SUBFAMILY NOT NAMED"
+											}
+										]
+									},
+									"branch_length": 0.955,
+									"accession": "AN25",
+									"sf_name": "SUBFAMILY NOT NAMED"
+								},
+								{
+									"reference_speciation_event": "Eubacteria",
+									"species": "Eubacteria",
+									"children": {
+										"annotation_node": [
+											{
+												"node_type": "DUPLICATION",
+												"reference_speciation_event": "Firmicutes",
+												"children": {
+													"annotation_node": [
+														{
+															"sf_id": "PTHR10000:SF47",
+															"reference_speciation_event": "Firmicutes",
+															"species": "Firmicutes",
+															"children": {
+																"annotation_node": [
+																	{
+																		"organism": "Clostridium botulinum",
+																		"gene_symbol": "CBO1615",
+																		"node_name": "CLOBH|Gene=CBO1615|UniProtKB=A5I286",
+																		"definition": "Putative hydrolase",
+																		"branch_length": 0.735,
+																		"accession": "AN45",
+																		"gene_id": "Gene:CBO1615",
+																		"sf_name": "SUBFAMILY NOT NAMED"
+																	},
+																	{
+																		"reference_speciation_event": "Bacillales",
+																		"species": "Bacillales",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"node_type": "DUPLICATION",
+																					"children": {
+																						"annotation_node": [
+																							{
+																								"organism": "Staphylococcus aureus",
+																								"gene_symbol": "SAOUHSC_02396",
+																								"node_name": "STAA8|EnsemblGenome=SAOUHSC_02396|UniProtKB=Q2FWA2",
+																								"definition": "Uncharacterized protein",
+																								"branch_length": 1.025,
+																								"accession": "AN48",
+																								"gene_id": "EnsemblGenome:SAOUHSC_02396",
+																								"sf_name": "SUBFAMILY NOT NAMED"
+																							},
+																							{
+																								"organism": "Staphylococcus aureus",
+																								"gene_symbol": "SAOUHSC_00542",
+																								"node_name": "STAA8|EnsemblGenome=SAOUHSC_00542|UniProtKB=Q2G0L8",
+																								"definition": "Uncharacterized protein",
+																								"branch_length": 0.655,
+																								"accession": "AN49",
+																								"gene_id": "EnsemblGenome:SAOUHSC_00542",
+																								"sf_name": "SUBFAMILY NOT NAMED"
+																							}
+																						]
+																					},
+																					"branch_length": 0.327,
+																					"accession": "AN47",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"organism": "Listeria monocytogenes",
+																					"gene_symbol": "lmo0663",
+																					"node_name": "LISMO|Gene=CAC98741|UniProtKB=Q8Y970",
+																					"definition": "Lmo0663 protein",
+																					"branch_length": 0.566,
+																					"accession": "AN50",
+																					"gene_id": "Gene:CAC98741",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				},
+																				{
+																					"reference_speciation_event": "Bacillus",
+																					"species": "Bacillus",
+																					"children": {
+																						"annotation_node": [
+																							{
+																								"node_type": "DUPLICATION",
+																								"children": {
+																									"annotation_node": [
+																										{
+																											"organism": "Bacillus subtilis",
+																											"gene_symbol": "ywtE",
+																											"node_name": "BACSU|EnsemblGenome=BSU35850|UniProtKB=P96741",
+																											"definition": "5-amino-6-(5-phospho-D-ribitylamino)uracil phosphatase YwtE",
+																											"branch_length": 0.77,
+																											"accession": "AN53",
+																											"gene_id": "EnsemblGenome:BSU35850",
+																											"sf_name": "SUBFAMILY NOT NAMED"
+																										},
+																										{
+																											"organism": "Bacillus subtilis",
+																											"gene_symbol": "ycsE",
+																											"node_name": "BACSU|EnsemblGenome=BSU04040|UniProtKB=P42962",
+																											"definition": "5-amino-6-(5-phospho-D-ribitylamino)uracil phosphatase YcsE",
+																											"branch_length": 0.937,
+																											"accession": "AN54",
+																											"gene_id": "EnsemblGenome:BSU04040",
+																											"sf_name": "SUBFAMILY NOT NAMED"
+																										},
+																										{
+																											"organism": "Bacillus subtilis",
+																											"gene_symbol": "ywpJ",
+																											"node_name": "BACSU|EnsemblGenome=BSU36290|UniProtKB=P94592",
+																											"definition": "Phosphatase YwpJ",
+																											"branch_length": 0.696,
+																											"accession": "AN55",
+																											"gene_id": "EnsemblGenome:BSU36290",
+																											"sf_name": "SUBFAMILY NOT NAMED"
+																										}
+																									]
+																								},
+																								"branch_length": 0.065,
+																								"accession": "AN52",
+																								"sf_name": "SUBFAMILY NOT NAMED"
+																							},
+																							{
+																								"node_type": "DUPLICATION",
+																								"children": {
+																									"annotation_node": [
+																										{
+																											"organism": "Bacillus cereus",
+																											"gene_symbol": "BC_0246",
+																											"node_name": "BACCR|EnsemblGenome=BC_0246|UniProtKB=Q81IV0",
+																											"definition": "Hydrolase (HAD superfamily)",
+																											"branch_length": 0.559,
+																											"accession": "AN57",
+																											"gene_id": "EnsemblGenome:BC_0246",
+																											"sf_name": "SUBFAMILY NOT NAMED"
+																										},
+																										{
+																											"organism": "Bacillus cereus",
+																											"gene_symbol": "BC_2618",
+																											"node_name": "BACCR|EnsemblGenome=BC_2618|UniProtKB=Q81CX3",
+																											"definition": "Hydrolase (HAD superfamily)",
+																											"branch_length": 0.525,
+																											"accession": "AN58",
+																											"gene_id": "EnsemblGenome:BC_2618",
+																											"sf_name": "SUBFAMILY NOT NAMED"
+																										}
+																									]
+																								},
+																								"branch_length": 0.128,
+																								"accession": "AN56",
+																								"sf_name": "SUBFAMILY NOT NAMED"
+																							}
+																						]
+																					},
+																					"branch_length": 0.479,
+																					"accession": "AN51",
+																					"sf_name": "SUBFAMILY NOT NAMED"
+																				}
+																			]
+																		},
+																		"branch_length": 0.387,
+																		"accession": "AN46",
+																		"sf_name": "SUBFAMILY NOT NAMED"
+																	}
+																]
+															},
+															"branch_length": 0.421,
+															"accession": "AN44",
+															"sf_name": "SUBFAMILY NOT NAMED"
+														},
+														{
+															"reference_speciation_event": "Firmicutes",
+															"species": "Firmicutes",
+															"children": {
+																"annotation_node": [
+																	{
+																		"node_type": "DUPLICATION",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Clostridium botulinum",
+																					"gene_symbol": "CBO1173",
+																					"node_name": "CLOBH|Gene_OrderedLocusName=CBO1173|UniProtKB=A5I113",
+																					"definition": "Putative hydrolase",
+																					"branch_length": 1.37,
+																					"accession": "AN61",
+																					"gene_id": "Gene_OrderedLocusName:CBO1173",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				},
+																				{
+																					"organism": "Clostridium botulinum",
+																					"gene_symbol": "CBO2599",
+																					"node_name": "CLOBH|Gene_OrderedLocusName=CBO2599|UniProtKB=A5I530",
+																					"definition": "Putative hydrolase",
+																					"branch_length": 1.061,
+																					"accession": "AN62",
+																					"gene_id": "Gene_OrderedLocusName:CBO2599",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				},
+																				{
+																					"organism": "Clostridium botulinum",
+																					"gene_symbol": "CBO3330",
+																					"node_name": "CLOBH|Gene_OrderedLocusName=CBO3330|UniProtKB=A5I755",
+																					"definition": "Putative hydrolase",
+																					"branch_length": 0.819,
+																					"accession": "AN63",
+																					"gene_id": "Gene_OrderedLocusName:CBO3330",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				}
+																			]
+																		},
+																		"branch_length": 0.068,
+																		"accession": "AN60",
+																		"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																	},
+																	{
+																		"reference_speciation_event": "Bacilli",
+																		"species": "Bacilli",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"node_type": "DUPLICATION",
+																					"children": {
+																						"annotation_node": [
+																							{
+																								"organism": "Streptococcus pneumoniae",
+																								"gene_symbol": "spr0824",
+																								"node_name": "STRR6|EnsemblGenome=spr0824|UniProtKB=Q8DQ66",
+																								"definition": "Uncharacterized protein",
+																								"branch_length": 1.089,
+																								"accession": "AN66",
+																								"gene_id": "EnsemblGenome:spr0824",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							},
+																							{
+																								"organism": "Streptococcus pneumoniae",
+																								"gene_symbol": "spr1124",
+																								"node_name": "STRR6|EnsemblGenome=spr1124|UniProtKB=Q8DPK1",
+																								"definition": "Uncharacterized protein",
+																								"branch_length": 0.995,
+																								"accession": "AN67",
+																								"gene_id": "EnsemblGenome:spr1124",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							},
+																							{
+																								"organism": "Streptococcus pneumoniae",
+																								"gene_symbol": "spr1170",
+																								"node_name": "STRR6|EnsemblGenome=spr1170|UniProtKB=Q8DPG8",
+																								"definition": "Uncharacterized protein",
+																								"branch_length": 0.888,
+																								"accession": "AN68",
+																								"gene_id": "EnsemblGenome:spr1170",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							}
+																						]
+																					},
+																					"branch_length": 0.174,
+																					"accession": "AN65",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				},
+																				{
+																					"reference_speciation_event": "Bacillales",
+																					"species": "Bacillales",
+																					"children": {
+																						"annotation_node": [
+																							{
+																								"organism": "Staphylococcus aureus",
+																								"gene_symbol": "SAOUHSC_01323",
+																								"node_name": "STAA8|EnsemblGenome=SAOUHSC_01323|UniProtKB=Q2FYV1",
+																								"definition": "Uncharacterized protein",
+																								"branch_length": 0.731,
+																								"accession": "AN70",
+																								"gene_id": "EnsemblGenome:SAOUHSC_01323",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							},
+																							{
+																								"node_type": "DUPLICATION",
+																								"children": {
+																									"annotation_node": [
+																										{
+																											"organism": "Listeria monocytogenes",
+																											"gene_symbol": "lmo2699",
+																											"node_name": "LISMO|Gene=CAD00912|UniProtKB=Q8Y3Y0",
+																											"definition": "Lmo2699 protein",
+																											"branch_length": 0.957,
+																											"accession": "AN72",
+																											"gene_id": "Gene:CAD00912",
+																											"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																										},
+																										{
+																											"organism": "Listeria monocytogenes",
+																											"gene_symbol": "lmo2577",
+																											"node_name": "LISMO|Gene=CAD00655|UniProtKB=Q8Y478",
+																											"definition": "Lmo2577 protein",
+																											"branch_length": 1.331,
+																											"accession": "AN73",
+																											"gene_id": "Gene:CAD00655",
+																											"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																										},
+																										{
+																											"organism": "Listeria monocytogenes",
+																											"gene_symbol": "lmo0158",
+																											"node_name": "LISMO|Gene=CAC98373|UniProtKB=Q8YAG8",
+																											"definition": "Lmo0158 protein",
+																											"branch_length": 0.774,
+																											"accession": "AN74",
+																											"gene_id": "Gene:CAC98373",
+																											"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																										},
+																										{
+																											"organism": "Listeria monocytogenes",
+																											"gene_symbol": "lmo0272",
+																											"node_name": "LISMO|Gene=CAD00799|UniProtKB=Q8YA87",
+																											"definition": "Lmo0272 protein",
+																											"branch_length": 0.774,
+																											"accession": "AN75",
+																											"gene_id": "Gene:CAD00799",
+																											"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																										}
+																									]
+																								},
+																								"branch_length": 0.068,
+																								"accession": "AN71",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							},
+																							{
+																								"node_type": "DUPLICATION",
+																								"reference_speciation_event": "Bacillus",
+																								"children": {
+																									"annotation_node": [
+																										{
+																											"sf_id": "PTHR10000:SF50",
+																											"reference_speciation_event": "Bacillus",
+																											"species": "Bacillus",
+																											"children": {
+																												"annotation_node": [
+																													{
+																														"organism": "Bacillus subtilis",
+																														"gene_symbol": "yhaX",
+																														"node_name": "BACSU|EnsemblGenome=BSU09830|UniProtKB=O07539",
+																														"definition": "Stress response protein YhaX",
+																														"branch_length": 0.556,
+																														"accession": "AN78",
+																														"gene_id": "EnsemblGenome:BSU09830",
+																														"sf_name": "SUBFAMILY NOT NAMED"
+																													},
+																													{
+																														"organism": "Bacillus cereus",
+																														"gene_symbol": "BC_0886",
+																														"node_name": "BACCR|EnsemblGenome=BC_0886|UniProtKB=Q81HC9",
+																														"definition": "Hydrolase (HAD superfamily)",
+																														"branch_length": 0.556,
+																														"accession": "AN79",
+																														"gene_id": "EnsemblGenome:BC_0886",
+																														"sf_name": "SUBFAMILY NOT NAMED"
+																													}
+																												]
+																											},
+																											"branch_length": 0.616,
+																											"accession": "AN77",
+																											"sf_name": "SUBFAMILY NOT NAMED"
+																										},
+																										{
+																											"reference_speciation_event": "Bacillus",
+																											"species": "Bacillus",
+																											"children": {
+																												"annotation_node": [
+																													{
+																														"organism": "Bacillus subtilis",
+																														"gene_symbol": "yxeH",
+																														"node_name": "BACSU|EnsemblGenome=BSU39550|UniProtKB=P54947",
+																														"definition": "Putative phosphatase YxeH",
+																														"branch_length": 0.613,
+																														"accession": "AN81",
+																														"gene_id": "EnsemblGenome:BSU39550",
+																														"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																													},
+																													{
+																														"node_type": "DUPLICATION",
+																														"children": {
+																															"annotation_node": [
+																																{
+																																	"organism": "Bacillus cereus",
+																																	"gene_symbol": "BC_4063",
+																																	"node_name": "BACCR|EnsemblGenome=BC_4063|UniProtKB=Q819C3",
+																																	"definition": "Hydrolase (HAD superfamily)",
+																																	"branch_length": 1.443,
+																																	"accession": "AN83",
+																																	"gene_id": "EnsemblGenome:BC_4063",
+																																	"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																																},
+																																{
+																																	"organism": "Bacillus cereus",
+																																	"gene_symbol": "BC_4052",
+																																	"node_name": "BACCR|EnsemblGenome=BC_4052|UniProtKB=Q819D3",
+																																	"definition": "Hydrolase (HAD superfamily)",
+																																	"branch_length": 1.462,
+																																	"accession": "AN84",
+																																	"gene_id": "EnsemblGenome:BC_4052",
+																																	"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																																},
+																																{
+																																	"organism": "Bacillus cereus",
+																																	"gene_symbol": "BC_5396",
+																																	"node_name": "BACCR|EnsemblGenome=BC_5396|UniProtKB=Q814N0",
+																																	"definition": "Hydrolase (HAD superfamily)",
+																																	"branch_length": 1.048,
+																																	"accession": "AN85",
+																																	"gene_id": "EnsemblGenome:BC_5396",
+																																	"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																																}
+																															]
+																														},
+																														"branch_length": 0.168,
+																														"accession": "AN82",
+																														"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																													}
+																												]
+																											},
+																											"branch_length": 0.243,
+																											"accession": "AN80",
+																											"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																										}
+																									]
+																								},
+																								"branch_length": 0.37,
+																								"accession": "AN76",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							}
+																						]
+																					},
+																					"branch_length": 0.187,
+																					"accession": "AN69",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				}
+																			]
+																		},
+																		"branch_length": 0.165,
+																		"accession": "AN64",
+																		"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																	}
+																]
+															},
+															"branch_length": 0.397,
+															"accession": "AN59",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.607,
+												"accession": "AN43",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"node_type": "DUPLICATION",
+												"reference_speciation_event": "Actinomycetales",
+												"children": {
+													"annotation_node": [
+														{
+															"reference_speciation_event": "Actinomycetales",
+															"species": "Actinomycetales",
+															"children": {
+																"annotation_node": [
+																	{
+																		"node_type": "DUPLICATION",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Streptomyces coelicolor",
+																					"gene_symbol": "SCO4581",
+																					"node_name": "STRCO|Gene=CAB44512|UniProtKB=Q9XAS3",
+																					"definition": "Uncharacterized protein",
+																					"branch_length": 0.394,
+																					"accession": "AN89",
+																					"gene_id": "Gene:CAB44512",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				},
+																				{
+																					"organism": "Streptomyces coelicolor",
+																					"gene_symbol": "SCO3960",
+																					"node_name": "STRCO|Gene=CAA22232|UniProtKB=Q9ZBX2",
+																					"definition": "Uncharacterized protein",
+																					"branch_length": 0.371,
+																					"accession": "AN90",
+																					"gene_id": "Gene:CAA22232",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				}
+																			]
+																		},
+																		"branch_length": 0.331,
+																		"accession": "AN88",
+																		"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																	},
+																	{
+																		"organism": "Mycobacterium tuberculosis",
+																		"gene_symbol": "Rv3813c",
+																		"node_name": "MYCTU|EnsemblGenome=LH57_20785|UniProtKB=O07810",
+																		"definition": "Conserved protein",
+																		"branch_length": 0.664,
+																		"accession": "AN91",
+																		"gene_id": "EnsemblGenome:LH57_20785",
+																		"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																	}
+																]
+															},
+															"branch_length": 0.309,
+															"accession": "AN87",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														},
+														{
+															"organism": "Streptomyces coelicolor",
+															"gene_symbol": "SCO3950",
+															"node_name": "STRCO|Gene=CAA22222|UniProtKB=Q9ZBY2",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0.71,
+															"accession": "AN92",
+															"gene_id": "Gene:CAA22222",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.876,
+												"accession": "AN86",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"organism": "Thermotoga maritima",
+												"gene_symbol": "TM_0651",
+												"node_name": "THEMA|EnsemblGenome=TM_0651|UniProtKB=Q9WZB9",
+												"definition": "Hydrolase (HAD superfamily)",
+												"branch_length": 1.149,
+												"accession": "AN93",
+												"gene_id": "EnsemblGenome:TM_0651",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"node_type": "DUPLICATION",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Deinococcus radiodurans",
+															"gene_symbol": "DR_1329",
+															"node_name": "DEIRA|EnsemblGenome=DR_1329|UniProtKB=Q9RUQ3",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0.932,
+															"accession": "AN95",
+															"gene_id": "EnsemblGenome:DR_1329",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														},
+														{
+															"organism": "Deinococcus radiodurans",
+															"gene_symbol": "DR_0240",
+															"node_name": "DEIRA|EnsemblGenome=DR_0240|UniProtKB=Q9RXR7",
+															"definition": "Uncharacterized protein",
+															"branch_length": 0.718,
+															"accession": "AN96",
+															"gene_id": "EnsemblGenome:DR_0240",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.999,
+												"accession": "AN94",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"reference_speciation_event": "Cyanobacteria",
+												"species": "Cyanobacteria",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Gloeobacter violaceus",
+															"gene_symbol": "glr0833",
+															"node_name": "GLOVI|Gene=BAC88774|UniProtKB=Q7NMD3",
+															"definition": "Glr0833 protein",
+															"branch_length": 0.647,
+															"accession": "AN98",
+															"gene_id": "Gene:BAC88774",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														},
+														{
+															"organism": "Synechocystis",
+															"gene_symbol": "sll1524",
+															"node_name": "SYNY3|Gene=BAA18460|UniProtKB=P74365",
+															"definition": "Sll1524 protein",
+															"branch_length": 0.639,
+															"accession": "AN99",
+															"gene_id": "Gene:BAA18460",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.573,
+												"accession": "AN97",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"node_type": "DUPLICATION",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Bacteroides thetaiotaomicron",
+															"gene_symbol": "BT_4699",
+															"node_name": "BACTN|EnsemblGenome=BT_4699|UniProtKB=Q89YN2",
+															"definition": "Putative hydrolase, haloacid dehalogenase-like hydrolase",
+															"branch_length": 0.49,
+															"accession": "AN101",
+															"gene_id": "EnsemblGenome:BT_4699",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														},
+														{
+															"organism": "Bacteroides thetaiotaomicron",
+															"gene_symbol": "BT_3352",
+															"node_name": "BACTN|EnsemblGenome=BT_3352|UniProtKB=Q8A2F3",
+															"definition": "Haloacid dehalogenase-like hydrolase",
+															"branch_length": 0.471,
+															"accession": "AN102",
+															"gene_id": "EnsemblGenome:BT_3352",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.758,
+												"accession": "AN100",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"organism": "Dictyoglomus turgidum",
+												"gene_symbol": "Dtur_1231",
+												"node_name": "DICTD|EnsemblGenome=Dtur_1231|UniProtKB=B8E309",
+												"definition": "Cof-like hydrolase",
+												"branch_length": 1.031,
+												"accession": "AN103",
+												"gene_id": "EnsemblGenome:Dtur_1231",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"organism": "Fusobacterium nucleatum",
+												"gene_symbol": "FN0869",
+												"node_name": "FUSNN|EnsemblGenome=FN0869|UniProtKB=Q8RF49",
+												"definition": "Hydrolase (HAD superfamily)",
+												"branch_length": 1.207,
+												"accession": "AN104",
+												"gene_id": "EnsemblGenome:FN0869",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											},
+											{
+												"reference_speciation_event": "Proteobacteria",
+												"species": "Proteobacteria",
+												"children": {
+													"annotation_node": [
+														{
+															"organism": "Bradyrhizobium diazoefficiens",
+															"gene_symbol": "blr6763",
+															"node_name": "BRADU|Gene=BAC52028|UniProtKB=Q89FD8",
+															"definition": "Blr6763 protein",
+															"branch_length": 1.154,
+															"accession": "AN106",
+															"gene_id": "Gene:BAC52028",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														},
+														{
+															"node_type": "DUPLICATION",
+															"reference_speciation_event": "Gammaproteobacteria",
+															"children": {
+																"annotation_node": [
+																	{
+																		"reference_speciation_event": "Gammaproteobacteria",
+																		"species": "Gammaproteobacteria",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Vibrio cholerae",
+																					"gene_symbol": "VC_A0243",
+																					"node_name": "VIBCH|EnsemblGenome=VC_A0243|UniProtKB=Q9KMS7",
+																					"definition": "Uncharacterized protein",
+																					"branch_length": 0.591,
+																					"accession": "AN109",
+																					"gene_id": "EnsemblGenome:VC_A0243",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				},
+																				{
+																					"reference_speciation_event": "Enterobacteriaceae",
+																					"species": "Enterobacteriaceae",
+																					"children": {
+																						"annotation_node": [
+																							{
+																								"node_type": "DUPLICATION",
+																								"children": {
+																									"annotation_node": [
+																										{
+																											"organism": "Salmonella typhimurium",
+																											"gene_symbol": "STM4010",
+																											"node_name": "SALTY|EnsemblGenome=STM4010|UniProtKB=Q8ZKU5",
+																											"definition": "Putative hydrolase",
+																											"branch_length": 0.899,
+																											"accession": "AN112",
+																											"gene_id": "EnsemblGenome:STM4010",
+																											"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																										},
+																										{
+																											"organism": "Salmonella typhimurium",
+																											"gene_symbol": "ybhA",
+																											"node_name": "SALTY|EnsemblGenome=STM0784|UniProtKB=Q8ZQR5",
+																											"definition": "Putative hydrolase of the HAD superfamily",
+																											"branch_length": 0.173,
+																											"accession": "AN113",
+																											"gene_id": "EnsemblGenome:STM0784",
+																											"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																										}
+																									]
+																								},
+																								"branch_length": 0.062,
+																								"accession": "AN111",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							},
+																							{
+																								"organism": "Yersinia pestis",
+																								"gene_symbol": "YPO1148",
+																								"node_name": "YERPE|EnsemblGenome=YP_1012|UniProtKB=Q7CH63",
+																								"definition": "Uncharacterized protein",
+																								"branch_length": 0.357,
+																								"accession": "AN114",
+																								"gene_id": "EnsemblGenome:YP_1012",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							},
+																							{
+																								"organism": "Escherichia coli",
+																								"gene_symbol": "ybhA",
+																								"node_name": "ECOLI|EcoGene=EG11239|UniProtKB=P21829",
+																								"definition": "Pyridoxal phosphate phosphatase YbhA",
+																								"branch_length": 0.169,
+																								"accession": "AN115",
+																								"gene_id": "EcoGene:EG11239",
+																								"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																							}
+																						]
+																					},
+																					"branch_length": 0.668,
+																					"accession": "AN110",
+																					"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																				}
+																			]
+																		},
+																		"branch_length": 0.39,
+																		"accession": "AN108",
+																		"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+																	},
+																	{
+																		"sf_id": "PTHR10000:SF49",
+																		"reference_speciation_event": "Gammaproteobacteria",
+																		"species": "Gammaproteobacteria",
+																		"children": {
+																			"annotation_node": [
+																				{
+																					"organism": "Haemophilus influenzae",
+																					"gene_symbol": "HI_0003",
+																					"node_name": "HAEIN|EnsemblGenome=HI_0003|UniProtKB=P44447",
+																					"definition": "Putative phosphatase HI_0003",
+																					"branch_length": 0.893,
+																					"accession": "AN117",
+																					"gene_id": "EnsemblGenome:HI_0003",
+																					"sf_name": "SUGAR PHOSPHATASE YIDA"
+																				},
+																				{
+																					"organism": "Vibrio cholerae",
+																					"gene_symbol": "VC_1364",
+																					"node_name": "VIBCH|EnsemblGenome=VC_1364|UniProtKB=Q9KS95",
+																					"definition": "Uncharacterized protein",
+																					"branch_length": 0.564,
+																					"accession": "AN118",
+																					"gene_id": "EnsemblGenome:VC_1364",
+																					"sf_name": "SUGAR PHOSPHATASE YIDA"
+																				},
+																				{
+																					"reference_speciation_event": "Enterobacteriaceae",
+																					"species": "Enterobacteriaceae",
+																					"children": {
+																						"annotation_node": [
+																							{
+																								"organism": "Salmonella typhimurium",
+																								"gene_symbol": "yidA",
+																								"node_name": "SALTY|EnsemblGenome=STM3831|UniProtKB=Q8ZKY8",
+																								"definition": "Putative hydrolase of the HAD superfamily",
+																								"branch_length": 0.032,
+																								"accession": "AN120",
+																								"gene_id": "EnsemblGenome:STM3831",
+																								"sf_name": "SUGAR PHOSPHATASE YIDA"
+																							},
+																							{
+																								"organism": "Yersinia pestis",
+																								"gene_symbol": "YPO4093",
+																								"node_name": "YERPE|Gene_OrderedLocusName=YPO4093|UniProtKB=Q0W9U3",
+																								"definition": "Putative haloacid dehalogenase-like hydrolase",
+																								"branch_length": 0.417,
+																								"accession": "AN121",
+																								"gene_id": "Gene_OrderedLocusName:YPO4093",
+																								"sf_name": "SUGAR PHOSPHATASE YIDA"
+																							},
+																							{
+																								"organism": "Escherichia coli",
+																								"gene_symbol": "yidA",
+																								"node_name": "ECOLI|EcoGene=EG11195|UniProtKB=P0A8Y5",
+																								"definition": "Sugar phosphatase YidA",
+																								"branch_length": 0.044,
+																								"accession": "AN122",
+																								"gene_id": "EcoGene:EG11195",
+																								"sf_name": "SUGAR PHOSPHATASE YIDA"
+																							}
+																						]
+																					},
+																					"branch_length": 0.584,
+																					"accession": "AN119",
+																					"sf_name": "SUGAR PHOSPHATASE YIDA"
+																				}
+																			]
+																		},
+																		"branch_length": 0.4,
+																		"accession": "AN116",
+																		"sf_name": "SUGAR PHOSPHATASE YIDA"
+																	}
+																]
+															},
+															"branch_length": 0.453,
+															"accession": "AN107",
+															"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+														}
+													]
+												},
+												"branch_length": 0.517,
+												"accession": "AN105",
+												"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+											}
+										]
+									},
+									"branch_length": 0.608,
+									"accession": "AN42",
+									"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+								}
+							]
+						},
+						"branch_length": 0.12,
+						"accession": "AN10",
+						"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+					}
+				],
+				"": [
+
+				]
+			},
+			"branch_length": 0,
+			"accession": "AN0",
+			"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+		}
+	}
+}

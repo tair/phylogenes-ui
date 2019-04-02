@@ -1,22 +1,8 @@
 <template>
     <div>
-        <div class="jumbotron text-dark elevation-0 bg-white py-2">
-            <div class="container-fluid" style="max-width: 1600px">
-                <div class="row">
-                    <div class="col-md-7 text-info">
-                        <h1 class="display-4">Phylogenes</h1>
-                        <p class="lead text-danger">PhyloGenes displays pre-computed phylogenetic trees of
-                            protein families alongside experimental gene function
-                            data and sequence information to facilitate inference of unknown gene function.</p>
-
-                    </div>
-                    <div class="col-md-5 pt-3 text-right">
-                        <div class="mb-1"><a href="" style="color: #244A8C">Explore a sample tree <i class="fas fa-angle-double-right"></i></a></div>
-                        <div class="mb-1"><a href="" style="color: #244A8C">Upload your own tree <i class="fas fa-angle-double-right"></i></a></div>
-                        <div class="mb-1"><a href="" style="color: #244A8C">What's new? <i class="fas fa-angle-double-right"></i></a></div>
-                        <div class="mb-1"><a href="" style="color: #244A8C">View species tree <i class="fas fa-angle-double-right"></i></a></div>
-                    </div>
-                </div>
+        <div class="elevation-0 px-5 bg-pggrey">
+            <div class="container-fluid px-3" style="max-width: 1600px">
+                        <p class="lead text-dark py-3 my-0 text-bold" style="text:bold;"><b>PhyloGenes displays pre-computed phylogenetic trees of gene families alongside experimental gene function data to facilitate inference of unknown gene function in plants.</b></p>
             </div>
         </div>
     </div>
