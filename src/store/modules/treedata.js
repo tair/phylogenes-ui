@@ -3,7 +3,7 @@ import util from "./util";
 import axios from "axios/index";
 
 // const SOLR_URL = 'http://localhost:8983/solr/panther/select';
-const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
+const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
 
 const state = {
     treedata: {
