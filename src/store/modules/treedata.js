@@ -110,10 +110,18 @@ const actions = {
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
-                    context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
-                    context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
-                    context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
-                    context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                    if(res.data.response.docs[0].jsonString) {
+                        context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
+                    }
+                    if(res.data.response.docs[0].family_name) {
+                        context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
+                    }
+                    if(res.data.response.docs[0].speciation_events) {
+                        context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
+                    }
+                    if(res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                    }
                 }
                 // tree data
                 // context.state.treeData.data.results = res.data.response.docs;
