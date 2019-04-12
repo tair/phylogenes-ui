@@ -12,9 +12,10 @@
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
-                <tr id="secTr" v-if="extraCols.length > 0">
+                <tr id="secTr">
                     <th colspan="2" class="thInvis"></th>
-                    <th :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
+                    <th v-if="extraCols.length > 0" 
+                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
                     <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
@@ -377,9 +378,7 @@
         overflow: hidden;
         font-size: 14px;
         font-family: sans-serif;
-        border-left: 3px solid #f1f1f0;
         border-bottom: 3px solid #f1f1f0;
-        border-right: 3px solid #f1f1f0;
     }
     .mainTable thead {
         flex: 0 0 auto;
@@ -464,6 +463,7 @@
         color: black;
         text-align: left !important;
         text-indent: 50px;
+        border-left: 3px solid #f1f1f0 !important;
     }
     .thSubColSp {
         border-right: 1px solid #f1f1f0 !important;
