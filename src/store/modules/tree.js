@@ -3,8 +3,8 @@ import axios from "axios/index";
 import util from "./util";
 
 // const SOLR_URL = 'http://localhost:8983/solr/panther/select';
-// const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
-const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
+const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
+// const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
 const DEFAULT_ROWS = 20;
 
 const state = {
