@@ -36,15 +36,21 @@
         },
         methods: {
             renderLink() {
-                if(!this.content.enterLink) {
+                if(this.content.justPan) {
+                    console.log("justPan");
                     this.el.select('path')
                         .attr('d', d => {
-                            var d = {x: this.content.xo, y: this.content.yo};
-                            var s = {x: this.content.parent.xo, y: this.content.parent.yo};
-                            return this.diagonal(d, s);
+                            return this.diagonal(this.content, this.content.parent)
                         });
+                }
+                if(!this.content.enterLink) {
+                    // this.el.select('path')
+                    //     .attr('d', d => {
+                    //         var d = {x: this.content.xo, y: this.content.yo};
+                    //         var s = {x: this.content.parent.xo, y: this.content.parent.yo};
+                    //         return this.diagonal(d, s);
+                    //     });
                     this.el.select('path')
-                        .transition().duration(this.duration)
                         .attr('d', d => {
                             return this.diagonal(this.content, this.content.parent)
                         });
