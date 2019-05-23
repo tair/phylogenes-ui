@@ -243,11 +243,9 @@
                 // "Updated" nodes based on change in the data.
                 // The data we associate is the array of tree nodes "treenodes[]"
                 // The treenodes array is still the old array, which is updated using d3 later.
-                d3.select('.nodes')
+                var oldNodes = d3.select('.nodes')
                     .selectAll('g.shape')
-                    .data(this.oldIndexes);
-                // console.log("Modified Nodes ", nodes.length);
-                // console.log("Old Nodes ", this.oldIndexes.length);
+                    .data(this.treenodes_view);
                 //modifiedNodes tells d3 which nodes have been modified compared to previously rendered
                 // 'treenodes'.
                 var nodesData = d3.select('.nodes')
@@ -255,7 +253,6 @@
                     .data(nodes, function (d) {
                         return d.id;
                     });
-
                 //enteringNodes gives any new nodes added to the tree (expand)
                 //type: EnterNode. EnterNode.nodes() gives array of nodes.
                 //(more nodes than treenodes array, which means new nodes need to be rendered)
@@ -284,10 +281,10 @@
                 let lazyTreenodes = this.origTreenodes;
                 if(this.isLazyLoad) {
                     lazyTreenodes = this.sliceArrayForView(this.origTreenodes);
-                    lazyTreenodes.forEach(n => {
-                        n.xo = n.x;
-                        n.yo = n.y;
-                    });
+                    // lazyTreenodes.forEach(n => {
+                    //     n.xo = n.x;
+                    //     n.yo = n.y;
+                    // });
                 }
                 if(waitForExitNodesToBeRemoved) {
                     setTimeout(() => {
@@ -343,13 +340,19 @@
             //Add node content from d3 updatedNodes to an array sorted by n.id and customized
             getModifiedUpdatedNodes(updatedNodes) {
                 var tempArray = [];
+                let enterNodesArr = [];
+                if (this.isAnimated && this.clickedNode) {
+                    enterNodesArr = this.getChildrenIdList(this.clickedNode.source);
+                }
                 updatedNodes.nodes().forEach(n => {
                     var node_content = n.__data__;
                     if(this.isAnimated) {
                         if (n.constructor && n.constructor.name === "EnterNode") {
                             if (this.clickedNode) {
-                                node_content.xo = this.clickedNode.x;
-                                node_content.yo = this.clickedNode.y;
+                                if(enterNodesArr.includes(node_content.id)) {
+                                    node_content.xo = this.clickedNode.x;
+                                    node_content.yo = this.clickedNode.y;
+                                }
                             }
                         }
                     } else {
@@ -368,12 +371,19 @@
             },
             getModifiedUpdatedLinks(updatedLinks) {
                 var tempArray = [];
+                let enterNodesArr = [];
+                if (this.isAnimated && this.clickedNode) {
+                    enterNodesArr = this.getChildrenIdList(this.clickedNode.source);
+                }
                 updatedLinks.nodes().forEach(n => {
                     var node_content = n.__data__;
                     node_content.enterLink = false;
+                    node_content.panUpdate = false;
                     if(this.isAnimated) {
                         if (n.constructor && n.constructor.name === "EnterNode") {
-                            node_content.enterLink = true;
+                            if(enterNodesArr.includes(node_content.id)) {
+                                node_content.enterLink = true;
+                            }
                         }
                     }
                     tempArray.push(node_content);
@@ -443,13 +453,16 @@
                 let lazyTreelinks = this.origTreelinks;
                 setTimeout(() => {
                     lazyTreenodes = this.sliceArrayForView(this.origTreenodes);
-                //     lazyTreenodes = this.modifyForPan(lazyTreenodes);
+                    lazyTreenodes.forEach(n => {
+                        n.xo = n.x;
+                        n.yo = n.y;
+                    });
                     lazyTreelinks = this.sliceLinksArrayForView(this.origTreelinks);
-                //     // lazyTreelinks.forEach(n => {
-                //     //     if(n.enterLink) {
-                //     //         console.log(n);
-                //     //     }
-                //     // });
+                    if(this.isAnimated) {
+                        lazyTreelinks.forEach(n => {
+                            n.panUpdate = true;
+                        });
+                    }
                     this.treenodes_view = lazyTreenodes;
                     this.treelinks_view = lazyTreelinks;
                 });
@@ -485,7 +498,6 @@
                 return splitArr;
             },
             sliceLinksArrayForView(arr) {
-                
                 arr.sort((a, b) => {
                     if(a.x < b.x) {
                         return -1;
@@ -515,16 +527,6 @@
                 });
                 // console.log(origArr.length, ",", splitArr.length);
                 return splitArr;
-            },
-            modifyForPan(nodes) {
-                console.log("modifyForPan");
-                nodes.forEach(n => {
-                    n.xo = n.x;
-                    n.yo = n.y;
-                    n.enterLink = false;
-                    n.justPan = true;
-                });
-                return nodes;
             },
 
             // ~~~~~~~~~~~~~~~~ Search Within Matched Node Specific ~~~~~~~~~~~~~~~~~//
@@ -720,6 +722,16 @@
                 this.topMostNodePos.y = -1 * node.x + paddingTop;
                 this.topMostNodePos.x = 80;
             },
+            getChildrenIdList(node) {
+                let idList = [];
+                if(node.children) {
+                    node.children.forEach(cn => {
+                        idList.push(cn.id);
+                        idList = idList.concat(this.getChildrenIdList(cn));
+                    });
+                }
+                return idList;
+            },
             //Get total number of children for a node
             getChildrenCount(node) {
                 var count = 0;
@@ -823,7 +835,7 @@
                     })
             },
             onClick(source) {
-                this.clickedNode = {id: source.id, x: source.x, y: source.y};
+                this.clickedNode = {id: source.id, x: source.x, y: source.y, source: source};
                 this.updateTree();
             },
             onPan(g, transform) {
@@ -838,6 +850,7 @@
                 var diffEnd = d3.event.transform.y - transform.y;
                 if(diffEnd != 0 && this.isLazyLoad) {
                     this.updateViewOnly();
+                    // this.updateTree();
                 }
                 if(diffEnd < 0) {
                     let rowNum = Math.round(diffEnd/40*-1);
@@ -861,12 +874,14 @@
                 let leafNodes = this.getLeafNodesByDepth();
                 let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
                 this.rowsScrolledUp = foundNodeIdx-8;
+                this.updateViewOnly();
                 this.alignTree();
             },
             moveTreeToNodePosition(node) {
                 let leafNodes = this.getLeafNodesByDepth();
                 let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
                 this.rowsScrolledUp = foundNodeIdx;
+                this.updateViewOnly();
                 this.alignTree();
             },
             getTreePanelHeight() {

@@ -69,7 +69,8 @@
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
                 topMargin: 0,
-                isLoading: false
+                isLoading: false,
+                ticking: false
             }
         },
         computed: {
@@ -111,6 +112,9 @@
             }
         },
         mounted: function () {
+            if(this.stateTreeData) {
+                this.update();
+            }
             this.isLoading = true;
         },
         methods: {
@@ -143,10 +147,17 @@
                     this.scrollFromTree = false;
                     return;
                 }
+                if(!this.ticking) {
+                    this.ticking = true;
+                    setTimeout(() => {
+                        this.ticking = false;
+                        let tBodyScrollT = document.getElementById("body").scrollTop;
+                        this.scrollTreeFromTable(tBodyScrollT);
+                    }, 1000);
+                }
+                
                 let tbodyScrollL = document.getElementById("body").scrollLeft;
                 this.scrollTableHeader(tbodyScrollL);
-                let tBodyScrollT = document.getElementById("body").scrollTop;
-                this.scrollTreeFromTable(tBodyScrollT);
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
