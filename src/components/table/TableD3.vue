@@ -70,6 +70,7 @@
                 popupData: [],
                 topMargin: 0,
                 isLoading: false,
+                firstLoad: false,
                 ticking: false
             }
         },
@@ -115,11 +116,13 @@
             if(this.stateTreeData) {
                 this.update();
             }
+            this.store_setTableIsLoading(true);
             this.isLoading = true;
         },
         methods: {
             ...mapActions({
                 stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
+                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
             initAfterLoad() {
                 setTimeout(() => {
@@ -132,12 +135,17 @@
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
                 this.cols = titles;
-                this.data = this.stateTreeData;
-
+                
+                if(this.stateTreeData.length > 2000) {
+                    this.data = this.stateTreeData;//.splice(0, 1500);
+                } else {
+                    this.data = this.stateTreeData;
+                }
                 if(this.isLoading) {
                     setTimeout(() => {
                         this.initAfterLoad();
                         this.isLoading = false;
+                        this.store_setTableIsLoading(false);
                     },100);
                 }
             },

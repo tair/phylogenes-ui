@@ -51,7 +51,8 @@
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
                 stateTableScroll: types.TABLE_GET_SCROLL,
-                stateTreeData: types.TREE_GET_DATA
+                stateTreeData: types.TREE_GET_DATA,
+                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
             })
         },
         watch: {
@@ -84,6 +85,12 @@
                     var nodes = this.rootNode.descendants();
                     var treeNode = nodes.find(n => n.geneId == val.id);
                     this.moveTreeToNodePosition(treeNode);
+                }
+            },
+            store_tableIsLoading: {
+                handler: function(val, oldval) {
+                    console.log(val);
+                    this.isLoading = val;
                 }
             }
         },
@@ -410,7 +417,6 @@
                 this.treelinks_view.splice(0, this.treelinks_view.length);
                 setTimeout(() => {
                     this.treelinks_view = linksArr;
-                    this.isLoading = false;
                 });
             },
             // Align tree layout according to the rows moved up
