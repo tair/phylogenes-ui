@@ -165,7 +165,6 @@ const actions = {
             })
     },
     [types.TABLE_ACTION_SET_TABLE_ISLOADING]: (context, payload) => {
-        console.log("payload ", payload);
         context.state.treedata.isTableLoading = payload;
     }
 };

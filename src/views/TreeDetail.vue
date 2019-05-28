@@ -408,12 +408,10 @@
             },
             onTreeInit(nodes) {
                 var tabularData = [];
-                var sortedNodes = nodes.sort(function (a, b) {
-                    return a.dfId - b.dfId;
-                });
+                this.sortArrayByX(nodes);
                 var index = 0;
                 let uniqueOrganisms = [];
-                sortedNodes.forEach(n => {
+                nodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
                         tableNode["id"] = index++;
@@ -454,6 +452,7 @@
                 this.metadata.isLoading = false;
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
+                this.sortArrayByX(nodes);
                 this.updateTableData(nodes);
             },
             expandAll() {
@@ -466,15 +465,22 @@
             moveUp() {
                 this.$refs.treeLayout.moveUp();
             },
+            sortArrayByX(arr) {
+                arr.sort((a, b) => {
+                    if(a.x < b.x) {
+                        return -1;
+                    }
+                    if(a.x > b.x) {
+                        return 1;
+                    }
+                    return 0;
+                });
+            },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
                 var tabularData = [];
-                var sortedNodes = nodes.sort(function (a, b) {
-                    return a.dfId - b.dfId;
-                });
-
                 var index = 0;
-                sortedNodes.forEach(n => {
+                nodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
                         tableNode["id"] = index++;
