@@ -64,6 +64,7 @@
                 tdHeight: '30px',
                 rowHeight: 40,
                 scrollFromTree: false,
+                scrollTop_old: 0,
                 showPopup: false,
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
@@ -71,7 +72,9 @@
                 topMargin: 0,
                 isLoading: false,
                 firstLoad: false,
-                ticking: false
+                lazyLoad: false,
+                ticking: false,
+                rowsScrolled: 0
             }
         },
         computed: {
@@ -113,11 +116,11 @@
             }
         },
         mounted: function () {
+            this.isLoading = true;
             if(this.stateTreeData) {
                 this.update();
             }
             this.store_setTableIsLoading(true);
-            this.isLoading = true;
         },
         methods: {
             ...mapActions({
@@ -135,7 +138,14 @@
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
                 this.cols = titles;
-                this.data = this.stateTreeData;
+                this.data = [];
+                if(this.stateTreeData.length > 1000) {
+                    this.lazyLoad = true;
+                    this.updateRows();
+                } else {
+                    this.data = this.stateTreeData;
+                }
+                
                 if(this.isLoading) {
                     setTimeout(() => {
                         this.initAfterLoad();
@@ -143,6 +153,17 @@
                         this.store_setTableIsLoading(false);
                     },100);
                 }
+            },
+            updateRows() {
+                if(!this.lazyLoad) return;
+                let limit = 30 + this.rowsScrolled*2;
+                let i = 0;
+                this.data = [];
+                this.stateTreeData.some(n => {
+                    this.data.push(n);
+                    i++;
+                    return i > limit;
+                });
             },
             handleScroll() {
                 //If scrolling is from tree, we don't need to update the table scroll again
@@ -154,13 +175,16 @@
                     this.ticking = true;
                     setTimeout(() => {
                         this.ticking = false;
-                        let tBodyScrollT = document.getElementById("body").scrollTop;
-                        this.scrollTreeFromTable(tBodyScrollT);
+                        let scrollTop_curr = document.getElementById("body").scrollTop;
+                        if(scrollTop_curr != this.scrollTop_old) {
+                            this.scrollTop_old = scrollTop_curr;
+                            this.scrollTreeFromTable(this.scrollTop_old);
+                        } 
                     }, 1000);
                 }
                 
-                let tbodyScrollL = document.getElementById("body").scrollLeft;
-                this.scrollTableHeader(tbodyScrollL);
+                let scrollLeft_curr = document.getElementById("body").scrollLeft;
+                this.scrollTableHeader(scrollLeft_curr);
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
@@ -171,12 +195,16 @@
                 rowNumber = Math.round(rowNumber);
                 var geneId = this.stateTreeData[rowNumber]["Gene ID"];
                 var scroll = {i: rowNumber, id: geneId};
+                this.rowsScrolled = rowNumber;
+                this.updateRows();
                 this.stateSetTableScroll(scroll);
             },
-            setScrollToRow(num) {
-                var centerRow = num-8;
+            setScrollToRow(rowNumber) {
+                this.rowsScrolled = rowNumber;
+                this.updateRows();
+                var centerRowNumber = rowNumber-8;
                 const tbody = document.getElementById("body");
-                tbody.scrollTop = 40*centerRow;
+                tbody.scrollTop = 40*centerRowNumber;
                 this.scrollFromTree = true;
             },
             rowClicked(d) {

@@ -432,13 +432,16 @@
                 var topNodePosY = -1*currTopNode.x + topPadding;
                 var topNodePosX = this.currentTopNodePos.x;
 
-                this.wrapper_d3.transition().duration(500)
+                this.wrapper_d3
+                    .transition().duration(500)
                     .attr("transform", (d) => {
                         this.setCurrentTopNode({x: topNodePosX, y: topNodePosY});
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
-                this.store_setCenterNode(currCenterNode);
+                setTimeout(() => {
+                    this.store_setCenterNode(currCenterNode);
+                }, 500);
             },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
