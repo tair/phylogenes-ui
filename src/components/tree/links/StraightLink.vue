@@ -44,9 +44,12 @@
                 } else {
                     this.el.select('path')
                         .attr('d', d => {
-                            var d = {x: this.content.xo, y: this.content.yo};
-                            var s = {x: this.content.parent.xo, y: this.content.parent.yo};
-                            return this.diagonal(d, s);
+                            let dest = {x: this.content.xo, y: this.content.yo};
+                            let s = dest;
+                            if(this.content.parent) {
+                                s = {x: this.content.parent.xo, y: this.content.parent.yo};
+                            }
+                            return this.diagonal(dest, s);
                         });
                     this.el.select('path')
                         .transition().duration(this.duration)
@@ -70,6 +73,7 @@
                 // console.log("Mouse Over");
             },
             diagonal(s, d) {
+                if(s == null || d == null) return null;
                 // var log = "M" + s.y + "," + s.x
                 //     + "C" + (s.y + d.y) / 2 + "," + s.x
                 //     + " " + (s.y + d.y) / 2 + "," + d.x

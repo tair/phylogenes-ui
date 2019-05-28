@@ -135,12 +135,7 @@
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
                 this.cols = titles;
-                
-                if(this.stateTreeData.length > 2000) {
-                    this.data = this.stateTreeData;//.splice(0, 1500);
-                } else {
-                    this.data = this.stateTreeData;
-                }
+                this.data = this.stateTreeData;
                 if(this.isLoading) {
                     setTimeout(() => {
                         this.initAfterLoad();
