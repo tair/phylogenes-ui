@@ -170,7 +170,7 @@
                 this.data = [];
                 this.stateTreeData.some(n => {
                     //Only add rows after the 'noOfTopRowsToRemove'
-                    if(i > noOfTopRowsToRemove) {
+                    if(i >= noOfTopRowsToRemove) {
                         this.data.push(n);
                     }
                     i++;
@@ -218,7 +218,7 @@
                 if(this.lazyLoad && this.rowsScrolled > 500) {
                     //Lazy Load - correct scrolling
                     setTimeout(() => {
-                        centerRowNumber -= this.rowsScrolled - 99;
+                        centerRowNumber -= this.rowsScrolled - 101;
                         const tbody = document.getElementById("body");
                         tbody.scrollTop = 40*centerRowNumber;
                     }, 1000);
