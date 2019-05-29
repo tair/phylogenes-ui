@@ -74,7 +74,8 @@
                 firstLoad: false,
                 lazyLoad: false,
                 ticking: false,
-                rowsScrolled: 0
+                rowsScrolled: 0,
+                upperLimit: 100
             }
         },
         computed: {
@@ -154,15 +155,26 @@
                     },100);
                 }
             },
+            //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
+            //This depends on rowsScrolled var.
+            //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
             updateRows() {
                 if(!this.lazyLoad) return;
-                let limit = 30 + this.rowsScrolled*2;
+                let noOfRowsToAdd = 30 + this.rowsScrolled*2;
+                let noOfTopRowsToRemove = 0;
+                if(this.rowsScrolled > 500) {
+                    noOfTopRowsToRemove = this.rowsScrolled - this.upperLimit;
+                    noOfRowsToAdd = 30 + this.rowsScrolled;
+                }
                 let i = 0;
                 this.data = [];
                 this.stateTreeData.some(n => {
-                    this.data.push(n);
+                    //Only add rows after the 'noOfTopRowsToRemove'
+                    if(i > noOfTopRowsToRemove) {
+                        this.data.push(n);
+                    }
                     i++;
-                    return i > limit;
+                    return i > noOfRowsToAdd;
                 });
             },
             handleScroll() {
@@ -203,8 +215,20 @@
                 this.rowsScrolled = rowNumber;
                 this.updateRows();
                 var centerRowNumber = rowNumber-8;
-                const tbody = document.getElementById("body");
-                tbody.scrollTop = 40*centerRowNumber;
+                if(this.lazyLoad && this.rowsScrolled > 500) {
+                    //Lazy Load - correct scrolling
+                    setTimeout(() => {
+                        centerRowNumber -= this.rowsScrolled - 99;
+                        const tbody = document.getElementById("body");
+                        tbody.scrollTop = 40*centerRowNumber;
+                    }, 1000);
+
+                } else {
+                    //Normal scrolling
+                    const tbody = document.getElementById("body");
+                    tbody.scrollTop = 40*centerRowNumber;
+                }
+                
                 this.scrollFromTree = true;
             },
             rowClicked(d) {
