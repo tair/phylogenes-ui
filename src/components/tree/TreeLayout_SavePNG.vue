@@ -2,6 +2,11 @@
     <span class="_parent">
         <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1 float-left"
                 @click="exportPng">PNG</button>
+        <a id="download" download="image.png">
+            <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1 float-left"
+                    @click="downloadPng">Download</button>
+        </a>
+
         <svg id="treeSvg" ref="treesvg" :width="svgWidth" :height="svgHeight">
             <g id="wrapper">
                 <g class="links">
@@ -119,6 +124,12 @@
             ...mapActions({
                 loadJsonFromDB: types.TREE_ACTION_GET_JSON,
             }),
+            downloadPng() {
+                var download = document.getElementById("download");
+                var image = document.getElementById("canvas").toDataURL("image/png")
+                            .replace("image/png", "image/octet-stream");
+                download.setAttribute("href", image);
+            },
             exportPng() {
                 var doctype = '<?xml version="1.0" standalone="no"?>'
                             + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
@@ -146,8 +157,22 @@
                     canvas.height = this.svgHeight;
                     var ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
+                    // var png = canvas.toDataURL("image/png");
 
-                    var canvasUrl = canvas.toDataURL("image/png");
+                    canvas.toBlob((blob) => {
+                        console.log(blob.size);
+                        let URLObj = window.URL || window.webkitURL;
+                        let a = document.createElement("a");  
+                        a.href = URLObj.createObjectURL(blob);
+                        a.download = this.treeId+".png";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    })
+
+                    // var canvasUrl = canvas.toDataURL("image/png")
+                    //                         .replace("image/png", "image/octet-stream");
+                    // window.location.href=canvasUrl;
                     // var img2 = d3.select('body').append('img')
                     //     .attr('width', 400)
                     //     .attr('height', 400)
@@ -182,7 +207,7 @@
                         if ( !selectorTextArr.includes('.'+classes[c]) )
                             selectorTextArr.push( '.'+classes[c] );
                 }
-                console.log(selectorTextArr);
+                // console.log(selectorTextArr);
 
                 // Extract CSS Rules
                 var extractedCSSText = "";
@@ -222,7 +247,6 @@
                         console.log(err);
                     } else {
                         this.mappingData = data;
-                        console.log(this.mappingData);
                         this.mapOrganismToDisplayName(treeJson, data);
                         //  assigns the data to a hierarchy using parent-child relationships
                         this.rootNode = d3.hierarchy(treeJson, function(d) {
@@ -395,9 +419,10 @@
                             return (a.parent == b.parent ? 1 : 1) }
                         );
                 }
-                var totalLeafNodes = this.getTotalLeafNodes();
-                this.svgHeight = totalLeafNodes*40 + 100;
+                
                 this.treeLayoutd3Obj(root);
+                let nodes = this.rootNode.descendants();
+                this.setBranchLength(nodes);
             },
             updateTree() {
                 this.saveOldPositions(this.rootNode);
@@ -516,7 +541,15 @@
                 });
             },
             adjustTreeLayoutPosition() {
+                this.adjustSvgDims();
                 this.alignTree();
+            },
+            adjustSvgDims() {
+                var totalLeafNodes = this.getTotalLeafNodes();
+                this.svgHeight = totalLeafNodes*40 + 50;
+                let rightNode = this.getRightmostNode();
+                this.svgWidth = rightNode.y + rightNode.text.length * 10 + 100;
+                // console.log(rightNode.text.length+"-"+rightNode.y+" - "+this.svgWidth);
             },
             alignTree() {
                 if(this.wrapper_d3 == null) return;
@@ -530,7 +563,7 @@
 
                 let topPadding = rowHeight;
                 var topNodePosY = -1*currTopNode.x + topPadding;
-                var topNodePosX = 150;
+                var topNodePosX = 50;
 
                 this.wrapper_d3
                     .attr("transform", (d) => {
@@ -553,6 +586,11 @@
                 this.sortArrayByX(nodes);
                 return nodes[nodes.length-1];
             },
+            getRightmostNode() {
+                var nodes = this.rootNode.descendants();
+                this.sortArrayByY(nodes);
+                return nodes[nodes.length-1];
+            },
             sortArrayByX(arr) {
                 arr.sort((a, b) => {
                     if(a.x < b.x) {
@@ -564,11 +602,52 @@
                     return 0;
                 });
             },
+            sortArrayByY(arr) {
+                arr.sort((a, b) => {
+                    if(a.y < b.y) {
+                        return -1;
+                    }
+                    if(a.y > b.y) {
+                        return 1;
+                    }
+                    return 0;
+                });
+            },
             getTotalLeafNodes(nodes) {
                 var nodes = this.rootNode.descendants();
                 this.sortArrayByX(nodes);
                 var leafNodes = nodes.filter(n => !n.children);
                 return leafNodes.length;
+            },
+            getTotalDepthofTree(nodes) {
+                var totalDepth = 1;
+                //Calculate depth of tree
+                nodes.forEach(d => {
+                    if(d.depth > totalDepth) {
+                        totalDepth = d.depth;
+                    }
+                });
+                return totalDepth;
+            },
+            setCustomPositionY(d, tree_depth) {
+                // tree_depth required to divide 'y' equally  based on treeWidth and depth of tree.
+                var treeWidth = 800;
+                var defaultLength = treeWidth/tree_depth;
+                var branchScale = this.showBranchLength ? d.data.branch_length: 0.5;
+                var actualLength = defaultLength * branchScale;
+
+                if(actualLength < 20) actualLength = 10;
+                if(d.parent) {
+                    d.y = d.parent.y;
+                    d.y = d.y + actualLength;
+                }
+            },
+            //Set link length (y) based on given scale
+            setBranchLength(nodes) {
+                var totalDepth = this.getTotalDepthofTree(nodes);
+                nodes.forEach(d => {
+                    this.setCustomPositionY(d, totalDepth);
+                });
             },
             // loadJson() {
             //     var svg = d3.select('#treeSvg');
