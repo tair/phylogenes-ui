@@ -2,8 +2,8 @@ import * as types from '../types_tree';
 import axios from "axios/index";
 import util from "./util";
 
-// const SOLR_URL = 'http://localhost:8983/solr/panther/select';
-const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
+const SOLR_URL = 'http://localhost:3000/api/panther';
+// const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
 // const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
 const DEFAULT_ROWS = 20;
 
@@ -98,24 +98,22 @@ const actions = {
         context.state.tree.payload.searchText = payload;
     },
     [types.TREE_ACTION_DO_SEARCH]: (context, payload) => {
-        var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload = payload;
         }
-        q = util.buildGeneralQuery(context.state.tree.payload);
-        fq = util.buildFieldQuery(context.state.tree.payload);
-
+        const {searchText, filters:{startRow, rows, species, organisms}} = context.state.tree.payload;
         context.state.tree.isLoading = true;
         axios({
-            method: 'GET',
-            url: SOLR_URL +
-            '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
-            '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
-            '&rows=' + context.state.tree.payload.filters.rows +
-            '&start=' + context.state.tree.payload.filters.startRow +
-            '&q=' + q +
-            '&fq=' + fq +
-            '&hl=on&hl.fl=sf_names,%20gene_symbols,%20family_name'
+            method: 'POST',
+            url: SOLR_URL+'/search',
+            data: {
+                searchText: searchText,
+                start: startRow,
+                rows: rows,
+                species: species,
+                organisms: organisms,
+                facet: 'on'
+            }
         })
             .then(res => {
                 // tree data
@@ -185,24 +183,21 @@ const actions = {
     },
 
     [types.TREE_ACTION_PAGINATE]: (context, payload) => {
-        var q = "", fq = "";
         if(payload != null) {
             context.state.tree.payload.filters = payload;
         }
-        q = util.buildGeneralQuery(context.state.tree.payload);
-        fq = util.buildFieldQuery(context.state.tree.payload);
-        // console.log('Solr Query: ' + q + ' Filter Query: ' + fq);
-
+        const {searchText, filters:{startRow, rows, species, organisms}} = context.state.tree.payload;
         axios({
-            method: 'GET',
-            url: SOLR_URL +
-            '?facet.field=node_types&facet.field=organisms&facet.field=species_list&facet=on' +
-            '&fl=id,%20sf_names,%20family_name,%20node_types,%20gene_symbols,%20uniprot_ids' +
-            '&rows=' + context.state.tree.payload.filters.rows +
-            '&start=' + context.state.tree.payload.filters.startRow +
-            '&q=' + q +
-            '&fq=' + fq +
-            '&hl=on&hl.fl=sf_names,%20gene_symbols,%20family_name'
+            method: 'POST',
+            url: SOLR_URL+'/search',
+            data: {
+                searchText: searchText,
+                start: startRow,
+                rows: rows,
+                species: species,
+                organisms: organisms,
+                facet: 'off'
+            }
         })
             .then(res => {
 
