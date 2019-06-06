@@ -971,10 +971,10 @@
                 this.setTreeLinks(allLinks);
                 this.adjustSvgForExport();
                 setTimeout(() => {
-                    this.wrapper_d3
-                        .attr("transform", (d) => {
-                            return "translate(50)";
-                        });
+                    // this.wrapper_d3
+                    //     .attr("transform", (d) => {
+                    //         return "translate(50)";
+                    //     });
                     var url = this.getSvgBlobUrl();
                     var img = d3.select('span').append('img').node();
                     // start loading the image.
