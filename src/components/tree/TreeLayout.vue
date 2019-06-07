@@ -338,30 +338,38 @@
             //Add node content from d3 updatedNodes to an array sorted by n.id and customized
             getModifiedUpdatedNodes(updatedNodes) {
                 var tempArray = [];
-                let enterNodesArr = [];
+                let clickedNodeChildren = [];
                 if (this.isAnimated && this.clickedNode) {
-                    enterNodesArr = this.getChildrenIdList(this.clickedNode.source);
+                    //add all the children of the clicked node to an array
+                    clickedNodeChildren = this.getChildrenIdList(this.clickedNode.source);
                 }
                 updatedNodes.nodes().forEach(n => {
                     var node_content = n.__data__;
                     if(this.isAnimated) {
+                        //the old positions are changed for new entering nodes to be clicked node's position,
+                        // so that animation starts from clicked node, and translates to the current posn.
                         if (n.constructor && n.constructor.name === "EnterNode") {
                             if (this.clickedNode) {
-                                if(enterNodesArr.includes(node_content.id)) {
+                                //Not all "EnterNode" would be just the nodes expanding from the clicked node.
+                                // Some are nodes entering because of lazy loading, and we don't need to update it's
+                                //old positions.
+                                if(clickedNodeChildren.includes(node_content.id)) {
                                     node_content.xo = this.clickedNode.x;
                                     node_content.yo = this.clickedNode.y;
                                 }
                             }
                         }
                     } else {
+                        //If the nodes are just updating, then old positions are nodes position before
+                        // updating the tree layout
                         node_content.xo = node_content.x;
                         node_content.yo = node_content.y;
                     }
                     
                     tempArray.push(node_content);
-
                 });
 
+                //We need to sort the array added by id, because d3 renders based on id of the nodes.
                 tempArray.sort((a, b) => {
                     return b.id < a.id;
                 });
