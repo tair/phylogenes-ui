@@ -9,6 +9,7 @@ const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
 const state = {
     treedata: {
         isLoading: false,
+        isTableLoading: false,
         iserror: false,
         data: null,
         jsonString: null,
@@ -60,6 +61,9 @@ const getters = {
     },
     [types.TABLE_GET_SCROLL]: state => {
         return state.treedata.scroll;
+    },
+    [types.TABLE_GET_ISTABLELOADING]: state => {
+        return state.treedata.isTableLoading;
     },
 };
 
@@ -159,6 +163,9 @@ const actions = {
             .catch(error => {
                 console.log('Error while reading data (E8273): ' + JSON.stringify(error));
             })
+    },
+    [types.TABLE_ACTION_SET_TABLE_ISLOADING]: (context, payload) => {
+        context.state.treedata.isTableLoading = payload;
     }
 };
 

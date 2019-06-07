@@ -26,7 +26,7 @@
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row) in data" >
+                <tr v-for="(row) in rowsToRender" >
                     <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(row[key], i)">
                         <tablecell :cellText="row[key]"></tablecell>
@@ -57,19 +57,25 @@
         },
         data() {
             return {
+                lazyLoad: false, //lazy load flag for rendering rows only within view
                 cols: [],
-                data: [],
+                rowsToRender: [],
                 extraCols: [],
                 tdWidth: '190px',
                 tdHeight: '30px',
                 rowHeight: 40,
                 scrollFromTree: false,
+                scrollTop_old: 0,
                 showPopup: false,
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
                 topMargin: 0,
-                isLoading: false
+                isLoading: false,
+                firstLoad: false,
+                ticking: false,
+                rowsScrolled: 0,
+                upperLimit: 100
             }
         },
         computed: {
@@ -112,14 +118,22 @@
         },
         mounted: function () {
             this.isLoading = true;
+            if(this.stateTreeData) {
+                this.update();
+            }
+            this.store_setTableIsLoading(true);
         },
         methods: {
             ...mapActions({
                 stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
+                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
             initAfterLoad() {
                 setTimeout(() => {
-                    this.$refs.tbody.addEventListener('scroll', _.throttle(this.handleScroll, 10));
+                    //handleScroll is called with a throttle of 10 ms, this is to control the number of 
+                    // calls made to the function, on scorlling of mouse.
+                    this.$refs.tbody.addEventListener('scroll', 
+                            _.throttle(this.handleScroll, 10));
                     this.extraCols = this.store_annoMapping.headers;
                 },10);
             },
@@ -128,41 +142,115 @@
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
                 this.cols = titles;
-                this.data = this.stateTreeData;
-
+                this.rowsToRender = [];
+                //If the total number of rows is > 
+                if(this.stateTreeData.length > 1000) {
+                    this.lazyLoad = true;
+                    this.updateRows();
+                } else {
+                    this.rowsToRender = this.stateTreeData;
+                }
+                
                 if(this.isLoading) {
                     setTimeout(() => {
                         this.initAfterLoad();
                         this.isLoading = false;
+                        this.store_setTableIsLoading(false);
                     },100);
                 }
             },
+            //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
+            //This depends on rowsScrolled var.
+            //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
+            updateRows() {
+                if(!this.lazyLoad) return;
+
+                //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
+                //We add all the rows scolled to the table
+                let noOfRowsToAdd = 30 + this.rowsScrolled*2;
+                let noOfTopRowsToRemove = 0;
+                if(this.rowsScrolled > 500) {
+                    //If the rowsScrolled becomes greater than 500, then the table rendering becomes slow.
+                    // So, we remove some of the top rows from being rendered too.
+                    noOfTopRowsToRemove = this.rowsScrolled - this.upperLimit;
+                    noOfRowsToAdd = 30 + this.rowsScrolled;
+                }
+
+                let i = 0;
+                this.rowsToRender = [];
+                //this.rowsToRender - add rows ranging from index [noOfTopRowsToRemove] to [noOfRowsToAdd].
+                this.stateTreeData.some(n => {
+                    //Only add rows after the 'noOfTopRowsToRemove'
+                    if(i >= noOfTopRowsToRemove) {
+                        this.rowsToRender.push(n);
+                    }
+                    i++;
+                    return i > noOfRowsToAdd;
+                });
+            },
             handleScroll() {
-                //If scrolling is from tree, we don't need to update the table scroll again
+                //If scrolling is from tree (programattic), handleScroll is still being called.
+                // So we just return without changing anything.
                 if(this.scrollFromTree) {
                     this.scrollFromTree = false;
                     return;
                 }
-                let tbodyScrollL = document.getElementById("body").scrollLeft;
-                this.scrollTableHeader(tbodyScrollL);
-                let tBodyScrollT = document.getElementById("body").scrollTop;
-                this.scrollTreeFromTable(tBodyScrollT);
+
+                //this.ticking is used to call the more intensive functions like 'scrollTree'
+                // and 'updateRows' only once in 1s. This is needed because handleScroll is
+                // called a lot of times when the mouse is scrolled in a second, but we don't
+                // need to perform methods like updateRows for every call, or it will slow down
+                // performance.
+                if(!this.ticking) {
+                    this.ticking = true;
+                    setTimeout(() => {
+                        this.ticking = false;
+                        let scrollTop_curr = document.getElementById("body").scrollTop;
+                        if(scrollTop_curr != this.scrollTop_old) {
+                            this.scrollTop_old = scrollTop_curr;
+                            this.scrollTreeFromTable(this.scrollTop_old);
+                            //Updates rowsToRender based on the scrolled value.
+                            this.updateRows();
+                        } 
+                    }, 1000);
+                }
+                
+                let scrollLeft_curr = document.getElementById("body").scrollLeft;
+                this.scrollTableHeader(scrollLeft_curr);
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
                 thead.scrollLeft = amount;
             },
+            //Move the tree node to the rows scrolled by table.
+            //We do this by setting store 'stateSetTableScroll' with the 'scroll' row number.
+            //Also assign this.rowsScrolled which is used for lazy loading.
             scrollTreeFromTable(amount) {
                 var rowNumber = amount/this.rowHeight;
                 rowNumber = Math.round(rowNumber);
                 var geneId = this.stateTreeData[rowNumber]["Gene ID"];
                 var scroll = {i: rowNumber, id: geneId};
+                this.rowsScrolled = rowNumber;
                 this.stateSetTableScroll(scroll);
             },
-            setScrollToRow(num) {
-                var centerRow = num-8;
-                const tbody = document.getElementById("body");
-                tbody.scrollTop = 40*centerRow;
+            setScrollToRow(rowNumber) {
+                this.rowsScrolled = rowNumber;
+                this.updateRows();
+                var centerRowNumber = rowNumber-8;
+                if(this.lazyLoad && this.rowsScrolled > 500) {
+                    //Lazy Load - correct scrolling
+                    setTimeout(() => {
+                        centerRowNumber -= this.rowsScrolled - 101;
+                        const tbody = document.getElementById("body");
+                        tbody.scrollTop = 40*centerRowNumber;
+                    }, 1000);
+
+                } else {
+                    //Normal scrolling
+                    const tbody = document.getElementById("body");
+                    tbody.scrollTop = 40*centerRowNumber;
+                }
+                
                 this.scrollFromTree = true;
             },
             rowClicked(d) {

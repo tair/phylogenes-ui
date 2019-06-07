@@ -58,7 +58,8 @@ across all treenode types (eg. translate, exit movement).
             onExit(node) {
                 if(!node) return;
                 // console.log("ON Exit ", node);
-                this.el.transition().duration(this.duration)
+                this.el
+                    .transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + node.y + "," + node.x + ")";
                     });
@@ -72,7 +73,8 @@ across all treenode types (eg. translate, exit movement).
                 this.el.attr("transform", d => {
                     return "translate(" + this.content.yo + "," + this.content.xo + ")";
                 });
-                this.el.transition().duration(this.duration)
+                this.el
+                    .transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + this.content.y + "," + this.content.x + ")";
                     });
