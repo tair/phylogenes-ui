@@ -1,10 +1,9 @@
 import * as types from '../types_treedata';
-import util from "./util";
 import axios from "axios/index";
 
-const SOLR_URL = 'http://localhost:3000/api/panther';
-// const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
-// const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
+// const API_URL = 'http://localhost:3000/api/panther';
+const API_URL = 'http://54.68.67.235:3000/api/panther';
+// const API_URL = 'http://52.37.99.223:3000/api/panther';
 
 const state = {
     treedata: {
@@ -96,7 +95,7 @@ const actions = {
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
         axios({
             method: 'GET',
-            url: SOLR_URL + '/tree/' + payload // TODO: is there a case payload is null?
+            url: API_URL + '/tree/' + payload
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
@@ -127,7 +126,7 @@ const actions = {
     [types.TREE_ACTION_GET_ANNOTATIONS]: (context, payload) => {
         axios({
             method: 'GET',
-            url: SOLR_URL + '/go_annotations/' + payload // TODO: is there a case payload is empty?
+            url: API_URL + '/go_annotations/' + payload
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {

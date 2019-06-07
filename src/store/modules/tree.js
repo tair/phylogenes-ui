@@ -1,10 +1,9 @@
 import * as types from '../types_tree';
 import axios from "axios/index";
-import util from "./util";
 
-const SOLR_URL = 'http://localhost:3000/api/panther';
-// const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
-// const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
+// const API_URL = 'http://localhost:3000/api/panther';
+const API_URL = 'http://54.68.67.235:3000/api/panther';
+// const API_URL = 'http://52.37.99.223:3000/api/panther';
 const DEFAULT_ROWS = 20;
 
 const state = {
@@ -105,7 +104,7 @@ const actions = {
         context.state.tree.isLoading = true;
         axios({
             method: 'POST',
-            url: SOLR_URL+'/search',
+            url: API_URL+'/search',
             data: {
                 searchText: searchText,
                 start: startRow,
@@ -189,7 +188,7 @@ const actions = {
         const {searchText, filters:{startRow, rows, species, organisms}} = context.state.tree.payload;
         axios({
             method: 'POST',
-            url: SOLR_URL+'/search',
+            url: API_URL+'/search',
             data: {
                 searchText: searchText,
                 start: startRow,
