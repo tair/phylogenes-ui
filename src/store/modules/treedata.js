@@ -1,10 +1,9 @@
 import * as types from '../types_treedata';
-import util from "./util";
 import axios from "axios/index";
 
-// const SOLR_URL = 'http://localhost:8983/solr/panther/select';
-const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
-// const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
+// const API_URL = 'http://localhost:3000/api/panther';
+const API_URL = 'http://54.68.67.235:3000/api/panther';
+// const API_URL = 'http://52.37.99.223:3000/api/panther';
 
 const state = {
     treedata: {
@@ -98,20 +97,10 @@ const actions = {
         context.state.treedata.scroll = payload;
     },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
-        var q = "";
-        if(payload != null) {
-            q = util.getQueryForPantherId(payload);
-            if(q == "")
-                q = "*:*";
-        }
-        // console.log('QQQQ: ' + q);
-
+        if (!payload) return;
         axios({
             method: 'GET',
-            url: SOLR_URL +
-            '?fl=' + 'family_name,speciation_events,jsonString,go_annotations' +
-            '&rows=1' + '&start=0' +
-            '&q=' + q
+            url: API_URL + '/tree/' + payload
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
@@ -140,20 +129,9 @@ const actions = {
             })
     },
     [types.TREE_ACTION_GET_ANNOTATIONS]: (context, payload) => {
-        var q = "";
-        if(payload != null) {
-            q = util.getQueryForPantherId(payload);
-            if(q == "")
-                q = "*:*";
-        }
-        // console.log('QQQQ: ' + q);
-
         axios({
             method: 'GET',
-            url: SOLR_URL +
-            '?fl=' + 'go_annotations' +
-            '&rows=1' + '&start=0' +
-            '&q=' + q
+            url: API_URL + '/go_annotations/' + payload
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
