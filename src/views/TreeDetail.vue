@@ -30,6 +30,8 @@
                                             @click="expandAll">Expand All</button>
                                 <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
                                             @click="exportPNG">PNG</button>
+                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
+                                            @click="exportSVG">SVG</button>
                             </div>
                             <div class="col-auto align-items-center">
                                 <search-box v-on:search="onSearch"></search-box>
@@ -462,6 +464,9 @@
             },
             exportPNG() {
                 this.$refs.treeLayout.onExportPng(this.treeId);
+            },
+            exportSVG() {
+                this.$refs.treeLayout.onExportSvg(this.treeId);
             },
             showLegend() {
                 this.$refs.treeLayout.onShowLegend();

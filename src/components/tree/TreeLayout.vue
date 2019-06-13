@@ -101,7 +101,7 @@
                 isLazyLoad: true,
                 isAnimated: true,
                 enableMenu: false,
-                showLegend: true,
+                showLegend: false,
                 showBranchLength: true,
                 //constants
                 rowLimit_lazyLoad: 25,
@@ -958,25 +958,29 @@
                 var refNode = element.hasChildNodes() ? element.children[0] : null;
                 element.insertBefore( styleElement, refNode );
             },
+            onExportSvg(treeId) {
+                this.isLoading = true;
+                this.adjustSvgForExport(false);
+                setTimeout(() => {
+                    var url = this.getSvgBlobUrl();
+                    let a = document.createElement("a"); 
+                    a.href = url;
+                    a.download = treeId+".svg";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => {
+                        this.resetSvgAfterExport();
+                    }, 100);
+                }, 1000);
+            },
             onExportPng(treeId) {
                 this.isLoading = true;
-                let allNodes = []; let allLinks = [];
-                this.origTreenodes.forEach(n => {
-                    allNodes.push(n);
-                });
-                this.origTreelinks.forEach(n => {
-                    allLinks.push(n);
-                });
-                this.setTreeNodes(allNodes);
-                this.setTreeLinks(allLinks);
-                this.adjustSvgForExport();
+                this.adjustSvgForExport(true);
                 setTimeout(() => {
-                    // this.wrapper_d3
-                    //     .attr("transform", (d) => {
-                    //         return "translate(50)";
-                    //     });
                     var url = this.getSvgBlobUrl();
                     var img = d3.select('span').append('img').node();
+                    this.isLoading = false;
                     // start loading the image.
                     img.src = url;
                     img.onload = ()=> {
@@ -985,32 +989,6 @@
                         }, 1000);
                     }
                 }, 1000);
-            },
-            canvasToBlob(img, treeId) {
-                //Now that the image has loaded, put the image into a canvas element.
-                var canvas = d3.select('body').append('canvas').node();
-                canvas.width = this.$refs.treesvg.clientWidth;
-                canvas.height = this.$refs.treesvg.clientHeight;
-                var ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-
-                canvas.toBlob((blob) => {
-                    // console.log(blob.size);
-                    let URLObj = window.URL || window.webkitURL;
-                    let a = document.createElement("a"); 
-                    a.href = URLObj.createObjectURL(blob);
-                    a.download = treeId+".png";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    let canvasNode = d3.select('canvas');
-                    if(canvasNode) {
-                        canvasNode.remove();
-                    }
-                    d3.select('#treeSvg').attr("width", "100%").attr("height", "100%");
-                    
-                    this.isLoading = false;
-                })
             },
             // Put the svg into an image tag so that the Canvas element can read it in.
             getSvgBlobUrl() {
@@ -1023,16 +1001,78 @@
                             + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
                 var source = (new XMLSerializer()).serializeToString(svgNode);
                 var blob = new Blob([ doctype + source], { type: 'image/svg+xml;charset=utf-8' });
+                
                 var url = window.URL.createObjectURL(blob);
                 return url;
             },
-            adjustSvgForExport() {
+            adjustSvgForExport(fixed) {
+                let allNodes = []; let allLinks = [];
+                this.origTreenodes.forEach(n => {
+                    allNodes.push(n);
+                });
+                this.origTreelinks.forEach(n => {
+                    allLinks.push(n);
+                });
+                this.setTreeNodes(allNodes);
+                this.setTreeLinks(allLinks);
+
                 var totalLeafNodes = this.getTotalLeafNodes();
                 var svgHeight = totalLeafNodes*40 + 50;
                 let rightNode = this.getRightmostNode();
                 var svgWidth = rightNode.y + rightNode.text.length * 10 + 100;
                 d3.select('#treeSvg').attr("width", svgWidth).attr("height", svgHeight);
-                
+
+                if(fixed) {
+                    d3.select('#treeSvg').style("position", "fixed");
+                } 
+            },
+            resetSvgAfterExport() {
+                d3.select('#treeSvg').attr("width", "100%").attr("height", "100%")
+                        .style("position", "relative");
+                    
+                this.isLoading = false;
+            },
+            canvasToBlob(img, treeId) {
+                //Now that the image has loaded, put the image into a canvas element.
+                var maxHeight = 34000;
+                var svgHeight = this.$refs.treesvg.clientHeight;
+                if(svgHeight > 42000) {
+                    for(var i = 0; i< this.$refs.treesvg.clientHeight/10000; i++) {
+                        var canvas = d3.select('body').append('canvas').node();
+                        canvas.width = this.$refs.treesvg.clientWidth;
+                        canvas.height = 10000;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, canvas.height*i, canvas.width, canvas.height,
+                                        0, 0, canvas.width, canvas.height);
+                        this.canvasToPng(canvas, treeId + "_"+i);
+                    }
+                } else {
+                    var canvas = d3.select('body').append('canvas').node();
+                    canvas.width = this.$refs.treesvg.clientWidth;
+                    canvas.height = this.$refs.treesvg.clientHeight;
+                    if(canvas.height > 34000) {
+                        canvas.height = 34000;
+                    }
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    this.canvasToPng(canvas, treeId);
+                }
+                this.resetSvgAfterExport();
+            },
+            canvasToPng(canvas, fileName) {
+                canvas.toBlob((blob) => {
+                    let URLObj = window.URL || window.webkitURL;
+                    let a = document.createElement("a"); 
+                    a.href = URLObj.createObjectURL(blob);
+                    // a.download = fileName+".png";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    let canvasNodes = d3.selectAll('canvas');
+                    if(canvasNodes) {
+                        canvasNodes.remove();
+                    }
+                })
             },
             getTotalLeafNodes(nodes) {
                 var nodes = this.rootNode.descendants();
