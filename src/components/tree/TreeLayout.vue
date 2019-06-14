@@ -670,7 +670,209 @@
                     this.setCustomPositionY(d, totalDepth);
                 });
             },
+            // ~~~~~~~~~~~~~~~~ Export PNG/SVG ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            onExportSvg(treeId) {
+                this.isLoading = true;
+                //Svg size is increased to the complete tree size
+                this.adjustSvgForExport(false);
+                setTimeout(() => {
+                    var url = this.getSvgBlobUrl();
+                    //Create a temp link to download the svg
+                    let a = document.createElement("a"); 
+                    a.href = url;
+                    a.download = treeId+".svg";
+                    document.body.appendChild(a);
+                    //Downloads the link as a file
+                    a.click();
+                    //remove the temp link created
+                    document.body.removeChild(a);
+                    setTimeout(() => {
+                        //Reset the svg to it's original size
+                        this.resetSvgAfterExport();
+                    }, 100);
+                }, 1000);
+            },
+            onExportPng(treeId) {
+                this.isLoading = true;
+                //Svg size is increased to the complete tree size
+                this.adjustSvgForExport(true);
+                setTimeout(() => {
+                    var url = this.getSvgBlobUrl();
+                    var img = d3.select('span').append('img').node();
+                    this.isLoading = false;
+                    // start loading the image with the svg blob
+                    img.src = url;
+                    img.onload = ()=> {
+                        setTimeout(() => {
+                            this.drawCanvas(img, treeId);
+                        }, 1000);
+                    }
+                }, 1000);
+            },
+            //Set the width and height of svg to it's full size, 
+            // which is then used to download the image.
+            // 'fixed': if true, we modify the style to fixed.
+            adjustSvgForExport(fixed) {
+                //If 'lazyload' is true, the treeview nodes and link are spliced. So, in order to
+                // get the complete tree in our final image, we set the tree nodes & links to 
+                // have all the nodes and links, which are saved in 'origTreenodes' and 'origTreelinks'
+                // which are modified during every update to the tree.
+                let allNodes = []; let allLinks = [];
+                this.origTreenodes.forEach(n => {
+                    allNodes.push(n);
+                });
+                this.origTreelinks.forEach(n => {
+                    allLinks.push(n);
+                });
+                this.setTreeNodes(allNodes);
+                this.setTreeLinks(allLinks);
 
+                var totalLeafNodes = this.getTotalLeafNodes();
+                //svgHeight is set by totalLeafNodes * rowHeight (40) + padding, which gives total
+                // height for tree when it has all nodes.
+                var svgHeight = totalLeafNodes*40 + 50;
+                let rightNode = this.getRightmostNode();
+                //svgHWidth is set by position of rightmose node + it's text length + some padding
+                var svgWidth = rightNode.y + rightNode.text.length * 10 + 200;
+                d3.select('#treeSvg').attr("width", svgWidth).attr("height", svgHeight);
+
+                //Set the position to fixed, so that the tree layout does not move based on
+                // the svg size increase. If not set, the tree layout moves iut of the screen,
+                // and the user will see a blank screen for the time it takes to export and before 
+                // reset svg is called.
+                // Remember to set svg back to 'relative' once the exporet is done.
+                // TODO: The fixed position does not work for '.svg' export.
+                if(fixed) {
+                    d3.select('#treeSvg').style("position", "fixed");
+                } 
+            },
+             // Convert the svg into a Blob which contains svg xml string format. Return as a URL.
+             // This URL is used to download as .svg file, or conversion into png/jpeg format.
+            getSvgBlobUrl() {
+                var svgNode = d3.select('#treeSvg').node();
+
+                //svgNode without appended css only has default css, and does not get custom
+                // vue component css. So we need to add those to the svg before converting into a blob.
+                var cssStyleText = this.getCSSStyles(svgNode);
+                this.appendCss(cssStyleText, svgNode);
+                
+                // serialize our SVG XML to a string.
+                var doctype = '<?xml version="1.0" standalone="no"?>'
+                            + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+                var source = (new XMLSerializer()).serializeToString(svgNode);
+                var blob = new Blob([ doctype + source], { type: 'image/svg+xml;charset=utf-8' });
+                
+                var url = window.URL.createObjectURL(blob);
+                return url;
+            },
+            //Returns CSS styles for components which have custom styles, which needs to be added
+            // to the svg, else the render uses default css for this d3 components.
+            // Custom components are:
+            // 1. #treeSvg 2. #node-? (all node components incl. text) 3. #link-? (all link component)
+            //Returns a single string with all the css added.
+            getCSSStyles(parentElement) {
+                var selectorTextArr = [];
+                // Add Parent element Id and Classes to the list
+                selectorTextArr.push( '#'+parentElement.id );
+
+                for (var c = 0; c < parentElement.classList.length; c++)
+                    if ( !selectorTextArr.includes('.'+parentElement.classList[c]) )
+                        selectorTextArr.push( '.'+parentElement.classList[c] );
+
+                // Add Children element Ids and Classes to the list
+                var nodes = parentElement.getElementsByTagName("*");
+                for (var i = 0; i < nodes.length; i++) {
+                    var id = nodes[i].id;
+                    if ( !selectorTextArr.includes('#'+id) )
+                        selectorTextArr.push( '#'+id );
+
+                    var classes = nodes[i].classList;
+                    for (var c = 0; c < classes.length; c++)
+                        if ( !selectorTextArr.includes('.'+classes[c]) )
+                            selectorTextArr.push( '.'+classes[c] );
+                }
+
+                // Extract CSS Rules
+                var extractedCSSText = "";
+                for (var i = 0; i < document.styleSheets.length; i++) {
+                    var s = document.styleSheets[i];
+                    try {
+                        if(!s.cssRules) continue;
+                    } catch( e ) {
+                        if(e.name !== 'SecurityError') throw e; // for Firefox
+                        continue;
+                    }
+                    
+                    var cssRules = s.cssRules;
+                    for (var r = 0; r < cssRules.length; r++) {
+                        if(cssRules[r].selectorText && 
+                            (cssRules[r].selectorText.includes("#node") ||
+                                cssRules[r].selectorText.includes("#link") ||
+                                    cssRules[r].selectorText.includes("#treeSvg"))) {
+                            extractedCSSText += cssRules[r].cssText;
+                        }
+                    }
+                }
+                return extractedCSSText;
+            },
+            //Appends the extracted custom css to the 'element' which is svg node.
+            appendCss(cssText, element) {
+                var styleElement = document.createElement("style");
+                styleElement.setAttribute("type","text/css"); 
+                styleElement.innerHTML = cssText;
+                var refNode = element.hasChildNodes() ? element.children[0] : null;
+                element.insertBefore( styleElement, refNode );
+            },
+            //Draw a canvas element with the 'img' of the svg.
+            drawCanvas(img, treeId) {
+                //Now that the image has loaded, put the image into a canvas element.
+                var svgHeight = this.$refs.treesvg.clientHeight;
+                //if tree is greater than 42000 pixels (~1000 genes) in height, the png is
+                // divided into 10000 pixels each and saved in parts.
+                if(svgHeight > 42000) {
+                    for(var i = 0; i< this.$refs.treesvg.clientHeight/10000; i++) {
+                        var canvas = d3.select('body').append('canvas').node();
+                        canvas.width = this.$refs.treesvg.clientWidth;
+                        canvas.height = 10000;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, canvas.height*i, canvas.width, canvas.height,
+                                        0, 0, canvas.width, canvas.height);
+                        this.canvasToPng(canvas, treeId + "_"+i);
+                    }
+                } else {
+                    var canvas = d3.select('body').append('canvas').node();
+                    canvas.width = this.$refs.treesvg.clientWidth;
+                    canvas.height = this.$refs.treesvg.clientHeight;
+                    if(canvas.height > 34000) {
+                        canvas.height = 34000;
+                    }
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    this.canvasToPng(canvas, treeId);
+                }
+                this.resetSvgAfterExport();
+            },
+            canvasToPng(canvas, fileName) {
+                canvas.toBlob((blob) => {
+                    let URLObj = window.URL || window.webkitURL;
+                    let a = document.createElement("a"); 
+                    a.href = URLObj.createObjectURL(blob);
+                    a.download = fileName+".png";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    let canvasNodes = d3.selectAll('canvas');
+                    if(canvasNodes) {
+                        canvasNodes.remove();
+                    }
+                })
+            },
+            resetSvgAfterExport() {
+                d3.select('#treeSvg').attr("width", "100%").attr("height", "100%")
+                        .style("position", "relative");
+                    
+                this.isLoading = false;
+            },
             // ~~~~~~~~~~~~~~~~ Tree Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             //sort nodes by 'x' posn in the tree layout (top to bottom)
             sortArrayByX(arr) {
@@ -902,177 +1104,6 @@
                         this.expandAllFromNode(n);
                     });
                 }
-            },
-            getCSSStyles(parentElement) {
-                var selectorTextArr = [];
-                // Add Parent element Id and Classes to the list
-                selectorTextArr.push( '#'+parentElement.id );
-
-                for (var c = 0; c < parentElement.classList.length; c++)
-                    if ( !selectorTextArr.includes('.'+parentElement.classList[c]) )
-                        selectorTextArr.push( '.'+parentElement.classList[c] );
-
-                // Add Children element Ids and Classes to the list
-                var nodes = parentElement.getElementsByTagName("*");
-                for (var i = 0; i < nodes.length; i++) {
-                    var id = nodes[i].id;
-                    if ( !selectorTextArr.includes('#'+id) )
-                        selectorTextArr.push( '#'+id );
-
-                    var classes = nodes[i].classList;
-                    for (var c = 0; c < classes.length; c++)
-                        if ( !selectorTextArr.includes('.'+classes[c]) )
-                            selectorTextArr.push( '.'+classes[c] );
-                }
-                // console.log(selectorTextArr);
-
-                // Extract CSS Rules
-                var extractedCSSText = "";
-                for (var i = 0; i < document.styleSheets.length; i++) {
-                    var s = document.styleSheets[i];
-                    // console.log(s);
-
-                    // try {
-                    //     if(!s.cssRules) continue;
-                    // } catch( e ) {
-                    //     if(e.name !== 'SecurityError') throw e; // for Firefox
-                    //     continue;
-                    // }
-
-                    var cssRules = s.cssRules;
-                    for (var r = 0; r < cssRules.length; r++) {
-                        if(cssRules[r].selectorText && 
-                            (cssRules[r].selectorText.includes("#node") ||
-                                cssRules[r].selectorText.includes("#link") ||
-                                    cssRules[r].selectorText.includes("#treeSvg"))) {
-                            extractedCSSText += cssRules[r].cssText;
-                        }
-                    }
-                }
-                return extractedCSSText;
-            },
-            appendCss(cssText, element) {
-                var styleElement = document.createElement("style");
-                styleElement.setAttribute("type","text/css"); 
-                styleElement.innerHTML = cssText;
-                var refNode = element.hasChildNodes() ? element.children[0] : null;
-                element.insertBefore( styleElement, refNode );
-            },
-            onExportSvg(treeId) {
-                this.isLoading = true;
-                this.adjustSvgForExport(false);
-                setTimeout(() => {
-                    var url = this.getSvgBlobUrl();
-                    let a = document.createElement("a"); 
-                    a.href = url;
-                    a.download = treeId+".svg";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(() => {
-                        this.resetSvgAfterExport();
-                    }, 100);
-                }, 1000);
-            },
-            onExportPng(treeId) {
-                this.isLoading = true;
-                this.adjustSvgForExport(true);
-                setTimeout(() => {
-                    var url = this.getSvgBlobUrl();
-                    var img = d3.select('span').append('img').node();
-                    this.isLoading = false;
-                    // start loading the image.
-                    img.src = url;
-                    img.onload = ()=> {
-                        setTimeout(() => {
-                            this.canvasToBlob(img, treeId);
-                        }, 1000);
-                    }
-                }, 1000);
-            },
-            // Put the svg into an image tag so that the Canvas element can read it in.
-            getSvgBlobUrl() {
-                var svgNode = d3.select('#treeSvg').node();
-                var cssStyleText = this.getCSSStyles(svgNode);
-                this.appendCss(cssStyleText, svgNode);
-                
-                // serialize our SVG XML to a string.
-                var doctype = '<?xml version="1.0" standalone="no"?>'
-                            + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-                var source = (new XMLSerializer()).serializeToString(svgNode);
-                var blob = new Blob([ doctype + source], { type: 'image/svg+xml;charset=utf-8' });
-                
-                var url = window.URL.createObjectURL(blob);
-                return url;
-            },
-            adjustSvgForExport(fixed) {
-                let allNodes = []; let allLinks = [];
-                this.origTreenodes.forEach(n => {
-                    allNodes.push(n);
-                });
-                this.origTreelinks.forEach(n => {
-                    allLinks.push(n);
-                });
-                this.setTreeNodes(allNodes);
-                this.setTreeLinks(allLinks);
-
-                var totalLeafNodes = this.getTotalLeafNodes();
-                var svgHeight = totalLeafNodes*40 + 50;
-                let rightNode = this.getRightmostNode();
-                var svgWidth = rightNode.y + rightNode.text.length * 10 + 100;
-                d3.select('#treeSvg').attr("width", svgWidth).attr("height", svgHeight);
-
-                if(fixed) {
-                    d3.select('#treeSvg').style("position", "fixed");
-                } 
-            },
-            resetSvgAfterExport() {
-                d3.select('#treeSvg').attr("width", "100%").attr("height", "100%")
-                        .style("position", "relative");
-                    
-                this.isLoading = false;
-            },
-            canvasToBlob(img, treeId) {
-                //Now that the image has loaded, put the image into a canvas element.
-                var maxHeight = 34000;
-                var svgHeight = this.$refs.treesvg.clientHeight;
-                if(svgHeight > 42000) {
-                    for(var i = 0; i< this.$refs.treesvg.clientHeight/10000; i++) {
-                        var canvas = d3.select('body').append('canvas').node();
-                        canvas.width = this.$refs.treesvg.clientWidth;
-                        canvas.height = 10000;
-                        var ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, canvas.height*i, canvas.width, canvas.height,
-                                        0, 0, canvas.width, canvas.height);
-                        this.canvasToPng(canvas, treeId + "_"+i);
-                    }
-                } else {
-                    var canvas = d3.select('body').append('canvas').node();
-                    canvas.width = this.$refs.treesvg.clientWidth;
-                    canvas.height = this.$refs.treesvg.clientHeight;
-                    if(canvas.height > 34000) {
-                        canvas.height = 34000;
-                    }
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    this.canvasToPng(canvas, treeId);
-                }
-                this.resetSvgAfterExport();
-            },
-            canvasToPng(canvas, fileName) {
-                canvas.toBlob((blob) => {
-                    let URLObj = window.URL || window.webkitURL;
-                    let a = document.createElement("a"); 
-                    a.href = URLObj.createObjectURL(blob);
-                    // a.download = fileName+".png";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    let canvasNodes = d3.selectAll('canvas');
-                    if(canvasNodes) {
-                        canvasNodes.remove();
-                    }
-                })
             },
             getTotalLeafNodes(nodes) {
                 var nodes = this.rootNode.descendants();
