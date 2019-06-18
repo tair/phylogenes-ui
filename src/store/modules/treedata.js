@@ -97,6 +97,7 @@ const actions = {
         context.state.treedata.scroll = payload;
     },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
+        if (!payload) return;
         axios({
             method: 'GET',
             url: API_URL + '/tree/' + payload

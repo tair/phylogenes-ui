@@ -1,6 +1,6 @@
 <template>
     <g class="shape">
-        <path v-if="!hideShape" class="triangle" :d="triangleSymbol()"
+        <path v-if="!hideShape" id="nodeTriangle" :d="triangleSymbol()"
               :transform="rotate()"
               @click.stop.prevent="onClick"></path>
     </g>
@@ -82,7 +82,7 @@
     }
 </script>
 <style scoped>
-    .triangle {
+    #nodeTriangle {
         stroke: white;
         stroke-width: 0px;
         fill: grey;

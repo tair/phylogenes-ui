@@ -1,6 +1,6 @@
 <template>
     <g class="shape">
-        <circle v-if="!hideShape" :r=radius @click.stop.prevent="onClick"></circle>
+        <circle id="nodeCircle" v-if="!hideShape" :r=radius @click.stop.prevent="onClick"></circle>
     </g>
 </template>
 
@@ -67,7 +67,7 @@
     }
 </script>
 <style scoped>
-    circle {
+    #nodeCircle {
         stroke: steelblue;
         stroke-width: 1px;
         fill: #fff;

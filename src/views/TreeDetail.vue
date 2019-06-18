@@ -28,6 +28,10 @@
                             <div class="col-sm align-items-center">
                                 <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
                                             @click="expandAll">Expand All</button>
+                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
+                                            @click="exportPNG">PNG</button>
+                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
+                                            @click="exportSVG">SVG</button>
                             </div>
                             <div class="col-auto align-items-center">
                                 <search-box v-on:search="onSearch"></search-box>
@@ -457,6 +461,12 @@
             },
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
+            },
+            exportPNG() {
+                this.$refs.treeLayout.onExportPng(this.treeId);
+            },
+            exportSVG() {
+                this.$refs.treeLayout.onExportSvg(this.treeId);
             },
             showLegend() {
                 this.$refs.treeLayout.onShowLegend();

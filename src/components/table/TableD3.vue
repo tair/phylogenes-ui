@@ -231,6 +231,7 @@
                 var geneId = this.stateTreeData[rowNumber]["Gene ID"];
                 var scroll = {i: rowNumber, id: geneId};
                 this.rowsScrolled = rowNumber;
+                this.updateRows();
                 this.stateSetTableScroll(scroll);
             },
             setScrollToRow(rowNumber) {
