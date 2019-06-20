@@ -114,6 +114,8 @@ const actions = {
                     }
                     if(res.data.response.docs[0].go_annotations) {
                         context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                    } else if (!res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = null;
                     }
                 }
                 // tree data

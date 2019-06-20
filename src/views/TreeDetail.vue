@@ -511,6 +511,11 @@
                         tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily Name"] = n.data.sf_name;
+                        if(n._children) {
+                            if(n.data.accession) {
+                                tableNode["accession"] = n.data.accession;
+                            }
+                        }
                         tabularData.push(tableNode);
                     }
                 });

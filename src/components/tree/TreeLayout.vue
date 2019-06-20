@@ -52,7 +52,8 @@
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
                 stateTableScroll: types.TABLE_GET_SCROLL,
                 stateTreeData: types.TREE_GET_DATA,
-                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
+                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING
             })
         },
         watch: {
@@ -84,8 +85,20 @@
             stateTableScroll: {
                 handler: function (val, oldVal) {
                     var nodes = this.rootNode.descendants();
-                    var treeNode = nodes.find(n => n.geneId == val.id);
-                    this.moveTreeToNodePosition(treeNode);
+                    var treeNode = null;
+                    console.log("tree", val);
+                    if(val.id != undefined) {
+                        console.log(val.id);
+                        treeNode = nodes.find(n => n.geneId == val.id);
+                        console.log(treeNode);
+                    } else {
+                        console.log(val.accession);
+                        treeNode = nodes.find(n => n.data.accession == val.accession);
+                        console.log(treeNode);
+                    }
+                    if(treeNode) {
+                        this.moveTreeToNodePosition(treeNode);
+                    }
                 }
             },
             store_tableIsLoading: {
@@ -169,8 +182,10 @@
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
+                
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
+                this.makeDisplayCompact();
                 this.initTreeLayout(this.rootNode);
                 this.$emit('init-tree', nodes);
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -451,6 +466,65 @@
                     this.store_setCenterNode(currCenterNode);
                 }, 500);
             },
+            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            makeDisplayCompact() {
+                var nodes = this.rootNode.descendants();
+                if(!this.store_annoMapping.annoMap) return;
+                let annoKeys = Object.keys(this.store_annoMapping.annoMap);
+                this.nestedCollapse(nodes[0], annoKeys);
+            },
+            nestedCollapse(node, annoKeys) {
+                if(this.collapseIfNoAnnoFound(node, annoKeys)) {
+                    if(node.children) {
+                        node.children.forEach(c => {
+                            this.nestedCollapse(c, annoKeys);
+                        });
+                    }
+                }
+            },
+            collapseIfNoAnnoFound(node, annoKeys) {
+                let leafs = this.getLeafNodes(node);
+                let ifAnnoFound = leafs.some(l => {
+                    let uniprotId = l.data.uniprotId.toLowerCase();
+                    return annoKeys.includes(uniprotId);
+                });
+                if(!ifAnnoFound) {
+                    // console.log("Not found ", node.id);
+                    this.toggleChildren(node);
+                } else {
+                    // console.log("Found ", node.id);
+                }
+                return ifAnnoFound;
+            },
+            getLeafNodes(n) {
+                let leafs = [];
+                // console.log(n.children);
+                if(n.children) {
+                    n.children.forEach(c => {
+                        if(this.isALeafNode(c)) {
+                            leafs.push(c);
+                        } else {
+                            let ls = this.getLeafNodes(c);
+                            leafs = leafs.concat(ls);
+                        }
+                    });
+                }
+                // console.log(leafs);
+                return leafs;
+            },
+            isALeafNode(n) {
+                return !n.children && !n._children;
+            },
+            toggleChildren(d) {
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else if (d._children) {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                return d;
+            },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
@@ -601,6 +675,7 @@
                     if(n.data.text) {
                         n.text = n.data.text;
                     }
+                    // n.text = n.id;
                     if(n.data.fillColor) {
                         n.fillColor = n.data.fillColor;
                     }

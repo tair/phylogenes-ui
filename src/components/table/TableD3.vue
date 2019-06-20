@@ -100,6 +100,10 @@
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
                     var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
+                    if(!foundRow) {
+                        let accession = val.data.accession;
+                        foundRow = this.stateTreeData.find(d => d["accession"] === accession);
+                    }
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
                     }
@@ -228,8 +232,9 @@
             scrollTreeFromTable(amount) {
                 var rowNumber = amount/this.rowHeight;
                 rowNumber = Math.round(rowNumber);
-                var geneId = this.stateTreeData[rowNumber]["Gene ID"];
-                var scroll = {i: rowNumber, id: geneId};
+                var rowId = this.stateTreeData[rowNumber]["Gene ID"];
+                var accession = this.stateTreeData[rowNumber]["accession"];
+                var scroll = {i: rowNumber, id: rowId, accession: accession};
                 this.rowsScrolled = rowNumber;
                 this.stateSetTableScroll(scroll);
             },
