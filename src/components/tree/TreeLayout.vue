@@ -29,6 +29,7 @@
     import {mapActions, mapGetters} from 'vuex';
 
     import * as types from '../../store/types_treedata';
+    import * as types_tree from '../../store/types_tree';
 
     import baseNode from '../tree/nodes/BaseTreeNode';
     import baseLink from '../tree/links/BaseTreeLink';
@@ -53,7 +54,8 @@
                 stateTableScroll: types.TABLE_GET_SCROLL,
                 stateTreeData: types.TREE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
-                store_annoMapping: types.TREE_GET_ANNO_MAPPING
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+                store_getSearchText: types_tree.TREE_GET_SEARCH_TEXT
             })
         },
         watch: {
@@ -86,15 +88,10 @@
                 handler: function (val, oldVal) {
                     var nodes = this.rootNode.descendants();
                     var treeNode = null;
-                    console.log("tree", val);
                     if(val.id != undefined) {
-                        console.log(val.id);
                         treeNode = nodes.find(n => n.geneId == val.id);
-                        console.log(treeNode);
                     } else {
-                        console.log(val.accession);
                         treeNode = nodes.find(n => n.data.accession == val.accession);
-                        console.log(treeNode);
                     }
                     if(treeNode) {
                         this.moveTreeToNodePosition(treeNode);
@@ -498,7 +495,6 @@
             },
             getLeafNodes(n) {
                 let leafs = [];
-                // console.log(n.children);
                 if(n.children) {
                     n.children.forEach(c => {
                         if(this.isALeafNode(c)) {
@@ -509,7 +505,6 @@
                         }
                     });
                 }
-                // console.log(leafs);
                 return leafs;
             },
             isALeafNode(n) {

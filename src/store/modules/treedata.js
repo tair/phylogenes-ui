@@ -26,7 +26,8 @@ const state = {
         matchedNodes: null,
         zoom: null,
         scroll: null,
-        topPaddingY: 0
+        topPaddingY: 0,
+        searchTextWithin: null
     }
 };
 
@@ -57,6 +58,9 @@ const getters = {
     },
     [types.TREE_GET_ZOOM]: state => {
         return state.treedata.zoom;
+    },
+    [types.TREE_GET_SEARCHTEXTWTN]: state => {
+        return state.treedata.searchTextWithin;
     },
     [types.TABLE_GET_SCROLL]: state => {
         return state.treedata.scroll;
@@ -96,7 +100,11 @@ const actions = {
         //console.log("Action" + payload);
         context.state.treedata.scroll = payload;
     },
+    [types.TREE_ACTION_SET_SEARCHTEXTWTN]: (context, payload) => {
+        context.state.treedata.searchTextWithin = payload;
+    },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
+        if (!payload) return;
         axios({
             method: 'GET',
             url: API_URL + '/tree/' + payload

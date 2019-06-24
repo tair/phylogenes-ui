@@ -93,7 +93,8 @@
                 stateTreeJson: types.TREE_GET_JSON,
                 stateTreeData: types.TREE_GET_DATA,
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
-                store_getTreeMetadata: types.TREE_GET_METADATA
+                store_getTreeMetadata: types.TREE_GET_METADATA,
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
             }),
             showLegendButtonText(){
                 return this.legend?'Hide Legend':'Show Legend';
@@ -447,6 +448,13 @@
                 this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
 
                 this.completeData = tabularData;
+
+                setTimeout(() => {
+                    console.log(this.store_getSearchTxtWthn);
+                    if(this.store_getSearchTxtWthn != null) {
+                        this.onSearch(this.store_getSearchTxtWthn);
+                    }
+                }, 5000);
             },
             onTreeUpdate(nodes) {
                 this.metadata.isLoading = false;
