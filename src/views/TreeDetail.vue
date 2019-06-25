@@ -28,6 +28,8 @@
                             <div class="col-sm align-items-center">
                                 <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
                                             @click="expandAll">Expand All</button>
+                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
+                                            @click="onDefaultView">Default</button>
                             </div>
                             <div class="col-auto align-items-center">
                                 <search-box v-on:search="onSearch" :defaultText="defaultSearchText"></search-box>
@@ -130,10 +132,8 @@
                 handler: function(val, oldval) {
                     if(!val) {
                         if(this.store_getSearchTxtWthn != null) {
-                            console.log("on search");
                             this.defaultSearchText = this.store_getSearchTxtWthn;
                             this.onSearch(this.store_getSearchTxtWthn);
-                            // this.store_setSearchTxtWthn(null);
                         } else {
                             this.defaultSearchText = "";
                         }
@@ -475,6 +475,9 @@
             },
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
+            },
+            onDefaultView() {
+                this.$refs.treeLayout.onDefaultView();
             },
             showLegend() {
                 this.$refs.treeLayout.onShowLegend();

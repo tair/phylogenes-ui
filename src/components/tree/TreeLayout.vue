@@ -463,8 +463,14 @@
             },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             makeDisplayCompact() {
+                this.rootNode.each(d => {
+                    if(d._children) {
+                        d.children = d._children;
+                        d._children = null;
+                    }
+                });
+                
                 var nodes = this.rootNode.descendants();
-                console.log("search ", this.store_getSearchTxtWthn);
                 if(!this.store_annoMapping.annoMap) {
                     this.nestedCollapseForNonAnno(nodes);
                     return;
@@ -988,6 +994,10 @@
                         this.expandAllFromNode(n);
                     });
                 }
+            },
+            onDefaultView() {
+                this.makeDisplayCompact();
+                this.updateTree();
             },
             onExpandAll() {
                 this.rootNode.each(d => {
