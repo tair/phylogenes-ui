@@ -30,7 +30,7 @@
                                             @click="expandAll">Expand All</button>
                             </div>
                             <div class="col-auto align-items-center">
-                                <search-box v-on:search="onSearch"></search-box>
+                                <search-box v-on:search="onSearch" :defaultText="defaultSearchText"></search-box>
                             </div>
                             <div class="col-sm align-items-center">
                                 <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1 float-right"
@@ -94,7 +94,8 @@
                 stateTreeData: types.TREE_GET_DATA,
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
                 store_getTreeMetadata: types.TREE_GET_METADATA,
-                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
             }),
             showLegendButtonText(){
                 return this.legend?'Hide Legend':'Show Legend';
@@ -124,6 +125,20 @@
                     this.metadata.spannedTaxon = val.taxonRange;
                     this.metadata.isLoading = false;
                 }
+            },
+            store_tableIsLoading: {
+                handler: function(val, oldval) {
+                    if(!val) {
+                        if(this.store_getSearchTxtWthn != null) {
+                            console.log("on search");
+                            this.defaultSearchText = this.store_getSearchTxtWthn;
+                            this.onSearch(this.store_getSearchTxtWthn);
+                            // this.store_setSearchTxtWthn(null);
+                        } else {
+                            this.defaultSearchText = "";
+                        }
+                    }
+                }
             }
         },
         data() {
@@ -135,6 +150,7 @@
                 mappingData: null,
                 baseUrl: process.env.BASE_URL,
                 searchText: "",
+                defaultSearchText: "",
                 matchNodes: [],
                 anno_mapping: {},
                 anno_headers: [],
@@ -174,6 +190,7 @@
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
+                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN
             }),
             showOrganismPopup() {
                 this.showPopup = true;
@@ -448,13 +465,6 @@
                 this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
 
                 this.completeData = tabularData;
-
-                setTimeout(() => {
-                    console.log(this.store_getSearchTxtWthn);
-                    if(this.store_getSearchTxtWthn != null) {
-                        this.onSearch(this.store_getSearchTxtWthn);
-                    }
-                }, 5000);
             },
             onTreeUpdate(nodes) {
                 this.metadata.isLoading = false;

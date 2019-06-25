@@ -55,7 +55,7 @@
                 stateTreeData: types.TREE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
-                store_getSearchText: types_tree.TREE_GET_SEARCH_TEXT
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
             })
         },
         watch: {
@@ -71,9 +71,7 @@
             },
             store_matchedNodes: {
                 handler: function (val, oldVal) {
-                    if(!this.isLoading) {
-                        this.processMatchedNodes(val);
-                    }
+                    this.processMatchedNodes(val);
                 }
             },
             stateTreeData: {
@@ -466,9 +464,34 @@
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             makeDisplayCompact() {
                 var nodes = this.rootNode.descendants();
-                if(!this.store_annoMapping.annoMap) return;
+                console.log("search ", this.store_getSearchTxtWthn);
+                if(!this.store_annoMapping.annoMap) {
+                    this.nestedCollapseForNonAnno(nodes);
+                    return;
+                }
                 let annoKeys = Object.keys(this.store_annoMapping.annoMap);
-                this.nestedCollapse(nodes[0], annoKeys);
+                if(annoKeys.length > 0) {
+                     this.nestedCollapse(nodes[0], annoKeys);
+                } else {
+                    this.nestedCollapseForNonAnno(nodes);
+                }
+            },
+            nestedCollapseForNonAnno(nodes) {
+                // #1 Find first duplication node.
+                let firstDupNode;
+                nodes.some(c => {
+                    if(c.data.event_type === "DUPLICATION") {
+                        firstDupNode = c;
+                    }
+                    return c.data.event_type === "DUPLICATION"; 
+                });
+
+                // #2 Collapse immediate children of first dup node
+                if(firstDupNode) {
+                    firstDupNode.children.forEach(c => {
+                        this.toggleChildren(c);
+                    });
+                }
             },
             nestedCollapse(node, annoKeys) {
                 if(this.collapseIfNoAnnoFound(node, annoKeys)) {

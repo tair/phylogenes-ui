@@ -27,6 +27,7 @@ import {mapActions, mapGetters} from 'vuex';
 
 export default {
 name: "searchBox",
+props: ['defaultText'],
 data() {
   return {
       searchText: "",
@@ -41,6 +42,12 @@ computed: {
   })
 },
 watch: {
+  defaultText: {
+      handler: function (val, oldVal) {
+         console.log(val);
+         this.searchText = this.defaultText;
+      }
+  },
   store_matchedNodes: {
       handler: function (val, oldVal) {
           if(this.isSearched) {
