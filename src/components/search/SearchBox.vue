@@ -44,7 +44,6 @@ computed: {
 watch: {
   defaultText: {
       handler: function (val, oldVal) {
-         console.log(val);
          this.searchText = this.defaultText;
       }
   },

@@ -462,22 +462,20 @@
                 }, 500);
             },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
-                this.rootNode.each(d => {
-                    if(d._children) {
-                        d.children = d._children;
-                        d._children = null;
-                    }
-                });
-                
+                //First expand all nodes, incase the default view is modified by user.
+                this.expandAllNodes();
+
                 var nodes = this.rootNode.descendants();
+                //If there are no annotations in the tree, use a different ruleset for collapsing nodes
                 if(!this.store_annoMapping.annoMap) {
                     this.nestedCollapseForNonAnno(nodes);
                     return;
                 }
                 let annoKeys = Object.keys(this.store_annoMapping.annoMap);
                 if(annoKeys.length > 0) {
-                     this.nestedCollapse(nodes[0], annoKeys);
+                     this.nestedCollapseForAnno(nodes[0], annoKeys);
                 } else {
                     this.nestedCollapseForNonAnno(nodes);
                 }
@@ -499,15 +497,17 @@
                     });
                 }
             },
-            nestedCollapse(node, annoKeys) {
+            //Recursively collapse nodes (if no anno found) from root to all it's children.
+            nestedCollapseForAnno(node, annoKeys) {
                 if(this.collapseIfNoAnnoFound(node, annoKeys)) {
                     if(node.children) {
                         node.children.forEach(c => {
-                            this.nestedCollapse(c, annoKeys);
+                            this.nestedCollapseForAnno(c, annoKeys);
                         });
                     }
                 }
             },
+            //Collapse the given node, if the no annotation is found matching the annoKeys list.
             collapseIfNoAnnoFound(node, annoKeys) {
                 let leafs = this.getLeafNodes(node);
                 let ifAnnoFound = leafs.some(l => {
@@ -515,40 +515,11 @@
                     return annoKeys.includes(uniprotId);
                 });
                 if(!ifAnnoFound) {
-                    // console.log("Not found ", node.id);
                     this.toggleChildren(node);
-                } else {
-                    // console.log("Found ", node.id);
                 }
                 return ifAnnoFound;
             },
-            getLeafNodes(n) {
-                let leafs = [];
-                if(n.children) {
-                    n.children.forEach(c => {
-                        if(this.isALeafNode(c)) {
-                            leafs.push(c);
-                        } else {
-                            let ls = this.getLeafNodes(c);
-                            leafs = leafs.concat(ls);
-                        }
-                    });
-                }
-                return leafs;
-            },
-            isALeafNode(n) {
-                return !n.children && !n._children;
-            },
-            toggleChildren(d) {
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null;
-                } else if (d._children) {
-                    d.children = d._children;
-                    d._children = null;
-                }
-                return d;
-            },
+            
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
@@ -685,7 +656,8 @@
             isMatchWithNode(d, matNodes) {
                 return matNodes.find(v => v["Uniprot ID"] === d.data.uniprotId);
             },
-            // ~~~~~~~~~~~~~~~~ *** ~~~~~~~~~~~~~~~~~//
+
+            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             // Add extra features to nodes of tree
@@ -869,6 +841,35 @@
                 this.sortArrayByX(nodes);
                 this.leafNodesByDepth = nodes.filter(n => !n.children);
             },
+            //Get all leaf nodes from the given node 'n'
+            getLeafNodes(n) {
+                let leafs = [];
+                if(n.children) {
+                    n.children.forEach(c => {
+                        if(this.isALeafNode(c)) {
+                            leafs.push(c);
+                        } else {
+                            let ls = this.getLeafNodes(c);
+                            leafs = leafs.concat(ls);
+                        }
+                    });
+                }
+                return leafs;
+            },
+            isALeafNode(n) {
+                return !n.children && !n._children;
+            },
+            //Collapse or expand given node 'd'
+            toggleChildren(d) {
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else if (d._children) {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                return d;
+            },
             // ~~~~~~~~~~~~~~~~ Methods for Additional Info for each Node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             getNodeType(d) {
                 if(d.data.sf_id) {
@@ -1000,13 +1001,17 @@
                 this.updateTree();
             },
             onExpandAll() {
+                this.expandAllNodes();
+                this.updateTree();
+            },
+            //this.rootNode: Expands all the nodes of the tree layout.
+            expandAllNodes() {
                 this.rootNode.each(d => {
                     if(d._children) {
                         d.children = d._children;
                         d._children = null;
                     }
                 });
-                this.updateTree();
             },
             onShowLegend() {
                 this.showLegend = !this.showLegend;
