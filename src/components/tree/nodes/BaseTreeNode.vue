@@ -12,6 +12,7 @@ across all treenode types (eg. translate, exit movement).
         >
 
         </component>
+        <image v-if="content.data.hasFunc" v-b-tooltip.hover title="Has Known Function" :v-if="content.hasFunc" xlink:href="/flask-yellow.png" height="15" width="15" y="-7"/>
     </g>
 
 </template>
@@ -78,6 +79,10 @@ across all treenode types (eg. translate, exit movement).
                     .attr("transform", d => {
                         return "translate(" + this.content.y + "," + this.content.x + ")";
                     });
+                if (this.content.data.hasFunc){
+                    let textLength = this.el.select('text').node().textLength.baseVal.value;
+                    this.el.select('image').attr('x', textLength + 20);
+                }
             },
             toggleChildren(d) {
                 if (d.children) {
