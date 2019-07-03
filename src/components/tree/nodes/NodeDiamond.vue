@@ -1,6 +1,6 @@
 <template>
     <g class="shape">
-        <path v-if="!hideShape" class="diamond" :d="diamondSymbol()"
+        <path v-if="!hideShape" id="nodeDiamond" :d="diamondSymbol()"
               @click.stop.prevent="onClick"></path>
     </g>
 </template>
@@ -75,7 +75,7 @@
     }
 </script>
 <style scoped>
-    .diamond {
+    #nodeDiamond {
         stroke: white;
         stroke-width: 0px;
         fill: #0000FF;

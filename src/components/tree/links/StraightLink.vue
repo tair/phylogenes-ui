@@ -1,6 +1,6 @@
 <template>
     <g class="link" @mouseover="onMouseOver">
-        <path></path>
+        <path id="link-path"></path>
     </g>
 </template>
 <script>
@@ -90,11 +90,11 @@
     </script>
 
 <style scoped>
-    path {
+    #link-path {
         fill: none;
         stroke: steelblue;
         stroke-width: 1.5;
-    },
+    }
     path:hover {
         cursor: pointer;
         stroke: orange

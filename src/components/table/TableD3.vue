@@ -236,6 +236,7 @@
                 var accession = this.stateTreeData[rowNumber]["accession"];
                 var scroll = {i: rowNumber, id: rowId, accession: accession};
                 this.rowsScrolled = rowNumber;
+                this.updateRows();
                 this.stateSetTableScroll(scroll);
             },
             setScrollToRow(rowNumber) {
