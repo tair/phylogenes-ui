@@ -1054,7 +1054,6 @@
             onClick(source) {
                 // Add flask for node with known function
                 this.addFlask(source);
-                console.log(source);
                 this.clickedNode = {id: source.id, x: source.x, y: source.y, source: source,};
                 this.updateTree();
             },
