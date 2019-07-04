@@ -52,7 +52,8 @@
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
                 stateTableScroll: types.TABLE_GET_SCROLL,
                 stateTreeData: types.TREE_GET_DATA,
-                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
+                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING
             })
         },
         watch: {
@@ -586,11 +587,45 @@
             // ~~~~~~~~~~~~~~~~ *** ~~~~~~~~~~~~~~~~~//
             
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //  Get all uniprotIds for one node
+            getUniprotIds(node, uniprotIds){
+                if (node.data.uniprotId){
+                    uniprotIds.push(node.data.uniprotId);
+                }
+                if (node._children){
+                    node._children.forEach((child)=>{
+                        this.getUniprotIds(child, uniprotIds);
+                    });
+                }
+                if (node.children){
+                    node.children.forEach((child)=>{
+                        this.getUniprotIds(child, uniprotIds);
+                    })
+                }
+            },
+            // Add hasFunc to show flask icon
+            addFlask(node){
+                node.data.hasFunc = false;
+                if(node.children) return;
+                let uniprotIds = [];
+                this.getUniprotIds(node,uniprotIds);
+                const map = this.store_annoMapping;
+                uniprotIds.forEach(function(uniprotId){
+                        if ( uniprotId.toLowerCase() in map.annoMap
+                            && map.annoMap[uniprotId.toLowerCase()].length > 0 ) {
+                                node.data.hasFunc = true;
+                        }
+                    }
+                );
+            },
             // Add extra features to nodes of tree
             // Use this function during init
             addExtraInfoToNodes() {
                 let index = 0;
                 this.rootNode.each(n => {
+                    // add flask icon for node with known function
+                    this.addFlask(n);
+
                     n.id = index++;
 
                     //Check if the node data contains a text we can use
@@ -1017,7 +1052,10 @@
                     })
             },
             onClick(source) {
-                this.clickedNode = {id: source.id, x: source.x, y: source.y, source: source};
+                // Add flask for node with known function
+                this.addFlask(source);
+                console.log(source);
+                this.clickedNode = {id: source.id, x: source.x, y: source.y, source: source,};
                 this.updateTree();
             },
             onPan(g, transform) {
