@@ -613,8 +613,8 @@
                     }
                     if(d._children) {
                         if(this.findMatNodesInChildren(d, matchedNodes)) {
-                            this.expandAllFromNode(d);
-                            // this.expandSelectedFromNode(d, matchedNodes);
+                            // this.expandAllFromNode(d);
+                            this.expandSelectedFromNode(d, matchedNodes);
                         }
                     }
                 });
@@ -1251,6 +1251,7 @@
                     this.deleteNode(nodeId);
                 }
             },
+            //Expands all the nodes from a given node if it's collapsed in the tree
             expandAllFromNode(givenNode) {
                 if(givenNode._children) {
                     givenNode.children = givenNode._children;
@@ -1262,16 +1263,43 @@
                     });
                 }
             },
+            //Expands only the nodes which have a matched node as one of it's leafs,
+            // else keeps the other nodes collapsed
             expandSelectedFromNode(givenNode, matNodes) {
-                let matNodesIds = matNodes.map(c => c.id);
-                console.log(matNodesIds);
-                console.log(givenNode._children);
+                let matNodesIds = matNodes.map(c => c["Uniprot ID"]);
+
                 givenNode._children.forEach(c => {
                     let leafs = this.getLeafNodes(c);
-                    let leafsIds = leafs.map(c => c.id);
-                    console.log(leafsIds);
+                    let leafsIds = leafs.map(c => c.data.uniprotId);
+                    let matched = matNodesIds.some(id => {
+                        return leafsIds.includes(id);
+                    });
+                    if(!matched) {
+                        c._children = c.children;
+                        c.children = null;
+                    } else {
+                        this.collapseChildifNotMatched(c, matNodesIds);
+                    }
                 });
-                // if(givenNode.children.includes(matNodes))
+                givenNode.children = givenNode._children;
+                givenNode._children = null;
+            },
+            //Recursively check if a child node has a matched node as one of it's leafs, it not
+            // then collapses the given child node.
+            collapseChildifNotMatched(node, matNodesIds) {
+                node.children.forEach(c => {
+                    let leafs = this.getLeafNodes(c);
+                    let leafsIds = leafs.map(c => c.data.uniprotId);
+                    let matched = matNodesIds.some(id => {
+                        return leafsIds.includes(id);
+                    });
+                    if(!matched) {
+                        c._children = c.children;
+                        c.children = null;
+                    } else {
+                        this.collapseChildifNotMatched(c, matNodesIds);
+                    }
+                });
             },
             onDefaultView() {
                 this.makeDisplayCompact();
