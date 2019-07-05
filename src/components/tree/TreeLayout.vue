@@ -480,25 +480,34 @@
                 if(annoKeys.length > 0) {
                      this.nestedCollapseForAnno(nodes[0], annoKeys);
                 } else {
+                    //If there are no annotations in the tree, use a different ruleset for collapsing nodes
                     this.nestedCollapseForNonAnno(nodes);
                 }
             },
             nestedCollapseForNonAnno(nodes) {
-                // #1 Find first duplication node.
-                let firstDupNode;
-                nodes.some(c => {
+                // Find first-level duplication nodes.
+                // A first-level duplication event here refers to an internal node that is a duplication event 
+                // AND that none of its ancestral internal nodes is a duplication event.
+                // We ignore root node, even if it is a duplication event.
+                nodes = nodes.slice(1);
+                let leafNodes = this.getLeafNodesByDepth();
+                let firstNode = leafNodes.find(n => {return n.matched});
+                nodes.forEach(c => {
                     if(c.data.event_type === "DUPLICATION") {
-                        firstDupNode = c;
+                        let isParentOfLeaf = true;
+                        if(c.children) {
+                            c.children.forEach(c2 => {
+                                if(c2.children) {
+                                    this.toggleChildren(c2);
+                                    isParentOfLeaf = false;
+                                }
+                            });
+                            if(isParentOfLeaf) {
+                                this.toggleChildren(c);
+                            }
+                        }
                     }
-                    return c.data.event_type === "DUPLICATION"; 
                 });
-
-                // #2 Collapse immediate children of first dup node
-                if(firstDupNode) {
-                    firstDupNode.children.forEach(c => {
-                        this.toggleChildren(c);
-                    });
-                }
             },
             //Recursively collapse nodes (if no anno found) from root to all it's children.
             nestedCollapseForAnno(node, annoKeys) {
@@ -513,6 +522,8 @@
             //Collapse the given node, if the no annotation is found matching the annoKeys list.
             collapseIfNoAnnoFound(node, annoKeys) {
                 let leafs = this.getLeafNodes(node);
+                let firstNode = leafs.find(n => {return n.matched});
+
                 let ifAnnoFound = leafs.some(l => {
                     let uniprotId = l.data.uniprotId.toLowerCase();
                     return annoKeys.includes(uniprotId);
@@ -603,12 +614,13 @@
                     if(d._children) {
                         if(this.findMatNodesInChildren(d, matchedNodes)) {
                             this.expandAllFromNode(d);
+                            // this.expandSelectedFromNode(d, matchedNodes);
                         }
                     }
                 });
                 this.updateTree();
 
-                //Center the tree to the fist found node after updating tree is done.
+                // //Center the tree to the fist found node after updating tree is done.
                 setTimeout(() => {
                     let firstMatchedNode = this.findFirstMatchedNodeInTree();
                     this.centerTreeToGivenNode(firstMatchedNode);
@@ -1213,6 +1225,17 @@
                         this.expandAllFromNode(n);
                     });
                 }
+            },
+            expandSelectedFromNode(givenNode, matNodes) {
+                let matNodesIds = matNodes.map(c => c.id);
+                console.log(matNodesIds);
+                console.log(givenNode._children);
+                givenNode._children.forEach(c => {
+                    let leafs = this.getLeafNodes(c);
+                    let leafsIds = leafs.map(c => c.id);
+                    console.log(leafsIds);
+                });
+                // if(givenNode.children.includes(matNodes))
             },
             onDefaultView() {
                 this.makeDisplayCompact();

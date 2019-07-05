@@ -8,7 +8,7 @@
             </template>
         </modal>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-else class="mainTable" :style="{marginTop: topMargin+'px'}"> 
+        <table v-else class="mainTable"> 
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
@@ -70,7 +70,6 @@
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
-                topMargin: 0,
                 isLoading: false,
                 firstLoad: false,
                 ticking: false,
@@ -112,11 +111,6 @@
             store_annoMapping: {
                 handler: function (val, oldVal) {
                     this.extraCols = val.headers;
-                    if(this.extraCols.length === 0) {
-                        this.topMargin = 35;
-                    } else {
-                        this.topMargin = 0;
-                    }
                 }
             }
         },
