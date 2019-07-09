@@ -36,7 +36,8 @@
                                             @click="exportSVG">SVG</button>
                             </div>
                             <div class="col-auto align-items-center">
-                                <search-box v-on:search="onSearch" :defaultText="defaultSearchText"></search-box>
+                                <search-box ref="searchBox" 
+                                            v-on:search="onSearch" :defaultText="defaultSearchText"></search-box>
                             </div>
                             <div class="col-sm align-items-center">
                                 <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1 float-right"
@@ -140,6 +141,9 @@
                             this.onSearch(this.store_getSearchTxtWthn);
                         } else {
                             this.defaultSearchText = "";
+                            this.searchText = "";
+                            this.matchNodes = [];
+                            this.store_setMatchedNodes(null);
                         }
                     }
                 }
@@ -482,6 +486,7 @@
             },
             onDefaultView() {
                 this.$refs.treeLayout.onDefaultView();
+                this.$refs.searchBox.onReset();
             },
             exportPNG() {
                 this.$refs.treeLayout.onExportPng(this.treeId);

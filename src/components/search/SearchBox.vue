@@ -42,13 +42,19 @@ computed: {
   })
 },
 watch: {
+  //Set a default search text (Called when searched from outside the tree layout)
   defaultText: {
       handler: function (val, oldVal) {
          this.searchText = this.defaultText;
+         this.isSearched = true;
       }
   },
   store_matchedNodes: {
       handler: function (val, oldVal) {
+          if(val == null) {
+             this.onReset();
+             return;
+          }
           if(this.isSearched) {
               this.matchText = val.length + " Matched";
           }

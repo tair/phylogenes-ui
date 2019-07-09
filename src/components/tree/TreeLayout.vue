@@ -37,6 +37,7 @@
     import contextMenu from '../menu/ContextMenu';
     import treeLegend from '../tree/Legend';
 
+    import nodesUtils from './utils/matchedNote';
     import intersectUtil from "../../util/intersect";
 
     export default {
@@ -236,7 +237,7 @@
             },
             //Update Tree during every interaction with tree
             // which modifies the tree structure (eg. toggleNode)
-            updateTree() {
+            async updateTree() {
                 this.saveOldPositions(this.rootNode);
 
                 var modifiedNodes = this.rootNode.descendants();
@@ -249,6 +250,8 @@
                 this.renderLinks(modifiedNodes);
 
                 this.setLeafNodesByDepth(modifiedNodes);
+
+                return 1;
             },
             // ~~~~~~~~~ Nodes
             renderNodes(nodes){
@@ -464,6 +467,69 @@
                     this.store_setCenterNode(currCenterNode);
                 }, 500);
             },
+                     
+            // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            updateViewOnly() {
+                if(!this.isLazyLoad) return;
+
+                this.treenodes_view.splice(0, this.treenodes_view.length);
+                this.treelinks_view.splice(0, this.treelinks_view.length);
+                let lazyTreenodes = this.origTreenodes;
+                let lazyTreelinks = this.origTreelinks;
+                
+                setTimeout(() => {
+                    lazyTreenodes = this.sliceArrayForView(this.origTreenodes);
+                    lazyTreenodes.forEach(n => {
+                        n.xo = n.x;
+                        n.yo = n.y;
+                    });
+                    lazyTreelinks = this.sliceLinksArrayForView(this.origTreelinks);
+                    if(this.isAnimated) {
+                        lazyTreelinks.forEach(n => {
+                            n.panUpdate = true;
+                        });
+                    }
+                    this.treenodes_view = lazyTreenodes;
+                    this.treelinks_view = lazyTreelinks;
+                });
+            },
+            sliceArrayForView(arr) {
+                this.sortArrayByX(arr);
+                let splitArr = [];
+                let rowCount = 0;
+                let rowLimit = this.rowLimit_lazyLoad;
+                if(this.rowsScrolledUp > 0) {
+                    rowLimit += this.rowsScrolledUp;
+                }
+                arr.some(n => {
+                    if(!n.children) {
+                        rowCount++;
+                    }
+                    if(rowCount > this.rowsScrolledUp - 2) {
+                        splitArr.push(n);
+                    }
+                    return rowCount > rowLimit;
+                });
+                return splitArr;
+            },
+            sliceLinksArrayForView(arr) {
+                this.sortArrayByX(arr);
+                let splitArr = [];
+                let rowCount = 0;
+                let rowLimit = this.rowLimit_lazyLoad;
+                if(this.rowsScrolledUp > 0) {
+                    rowLimit += this.rowsScrolledUp;
+                }
+                arr.some(n => {
+                    if(!n.children) {
+                        rowCount++;
+                    }
+                    splitArr.push(n);
+                    return rowCount > rowLimit+50;
+                });
+                return splitArr;
+            },
+
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
@@ -533,166 +599,19 @@
                 }
                 return ifAnnoFound;
             },
-            
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            updateViewOnly() {
-                if(!this.isLazyLoad) return;
 
-                this.treenodes_view.splice(0, this.treenodes_view.length);
-                this.treelinks_view.splice(0, this.treelinks_view.length);
-                let lazyTreenodes = this.origTreenodes;
-                let lazyTreelinks = this.origTreelinks;
-                
-                setTimeout(() => {
-                    lazyTreenodes = this.sliceArrayForView(this.origTreenodes);
-                    lazyTreenodes.forEach(n => {
-                        n.xo = n.x;
-                        n.yo = n.y;
-                    });
-                    lazyTreelinks = this.sliceLinksArrayForView(this.origTreelinks);
-                    if(this.isAnimated) {
-                        lazyTreelinks.forEach(n => {
-                            n.panUpdate = true;
-                        });
-                    }
-                    this.treenodes_view = lazyTreenodes;
-                    this.treelinks_view = lazyTreelinks;
-                });
-            },
-            sliceArrayForView(arr) {
-                this.sortArrayByX(arr);
-                let splitArr = [];
-                let rowCount = 0;
-                let rowLimit = this.rowLimit_lazyLoad;
-                if(this.rowsScrolledUp > 0) {
-                    rowLimit += this.rowsScrolledUp;
-                }
-                arr.some(n => {
-                    if(!n.children) {
-                        rowCount++;
-                    }
-                    if(rowCount > this.rowsScrolledUp - 2) {
-                        splitArr.push(n);
-                    }
-                    return rowCount > rowLimit;
-                });
-                return splitArr;
-            },
-            sliceLinksArrayForView(arr) {
-                this.sortArrayByX(arr);
-                let splitArr = [];
-                let rowCount = 0;
-                let rowLimit = this.rowLimit_lazyLoad;
-                if(this.rowsScrolledUp > 0) {
-                    rowLimit += this.rowsScrolledUp;
-                }
-                arr.some(n => {
-                    if(!n.children) {
-                        rowCount++;
-                    }
-                    splitArr.push(n);
-                    return rowCount > rowLimit+50;
-                });
-                return splitArr;
-            },
-
-            // ~~~~~~~~~~~~~~~~ Search Within Matched Node Specific ~~~~~~~~~~~~~~~~~//
+            // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
             processMatchedNodes(matchedNodes) {
-                if(matchedNodes.length == 0) {
-                    this.resetMatchedNodes();
-                    return;
-                }
-                let allNodes = this.rootNode.descendants();
-                allNodes.forEach(d => {
-                    d.matched = false;
-                    if(!d.children) {
-                        let found = this.isMatchWithNode(d, matchedNodes);
-                        if(found) {
-                            d.matched = true;
-                        }
-                    }
-                    if(d._children) {
-                        if(this.findMatNodesInChildren(d, matchedNodes)) {
-                            // this.expandAllFromNode(d);
-                            this.expandSelectedFromNode(d, matchedNodes);
-                        }
-                    }
-                });
-                this.updateTree();
-
-                // //Center the tree to the fist found node after updating tree is done.
-                setTimeout(() => {
-                    let firstMatchedNode = this.findFirstMatchedNodeInTree();
-                    this.centerTreeToGivenNode(firstMatchedNode);
-                }, 1000);
-            },
-            findFirstMatchedNodeInTree() {
-                let leafNodes = this.getLeafNodesByDepth();
-                let firstNode = leafNodes.find(n => {return n.matched});
-                return firstNode;
-            },
-            resetMatchedNodes() {
-                if(!this.rootNode) return;
-
-                let allNodes = this.rootNode.descendants();
-                allNodes.forEach(d => {
-                    d.matched = false;
-                });
-                this.updateTree();
-            },
-            findMatNodesInChildren(d, matNodes) {
-                var foundAny = false;
-                if(d.children) {
-                    d.children.forEach(dc => {
-                        let found = this.isMatchWithNode(dc, matNodes);
-                        if(found) {
-                            dc.matched = true;
-                            foundAny = true;
-                        }
-                        var ff = this.findMatNodesInChildren(dc, matNodes);
-                        if(ff) {
-                            foundAny = true;
-                        }
+                var allNodes = this.rootNode.descendants();
+                nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
+                    this.updateTree().then(() => {
+                        let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
+                        this.centerTreeToGivenNode(firstMatchedNode);
                     });
-                }
-                if(d._children) {
-                    d._children.forEach(dc => {
-                        let found = this.isMatchWithNode(dc, matNodes);
-                        if(found) {
-                            dc.matched = true;
-                            foundAny = true;
-                        }
-                        var ff = this.findMatNodesInChildren(dc, matNodes);
-                        if(ff) {
-                            foundAny = true;
-                        }
-                    });
-                }
-                return foundAny;
-            },
-            isMatchWithNode(d, matNodes) {
-                return matNodes.find(v => v["Uniprot ID"] === d.data.uniprotId);
+                });
             },
 
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            //  Get all uniprotIds for one node
-            getUniprotIds(node, uniprotIds){
-                if (node.data.uniprotId){
-                    uniprotIds.push(node.data.uniprotId);
-                }
-                if (node._children){
-                    node._children.forEach((child)=>{
-                        this.getUniprotIds(child, uniprotIds);
-                    });
-                }
-                if (node.children){
-                    node.children.forEach((child)=>{
-                        this.getUniprotIds(child, uniprotIds);
-                    })
-                }
-            },
             // Add hasFunc to show flask icon
             addFlask(node){
                 node.data.hasFunc = false;
@@ -774,7 +693,7 @@
             },
             //Overwrite each Node positions with custom logic
             setCustomPositionX(d) {
-
+                /** */
             },
             setCustomPositionY(d, tree_depth) {
                 // tree_depth required to divide 'y' equally  based on treeWidth and depth of tree.
@@ -795,6 +714,78 @@
                 nodes.forEach(d => {
                     this.setCustomPositionY(d, totalDepth);
                 });
+            },
+            // ~~~~~~~~~~~~~~~~ Modify Tree Layout ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //this.rootNode: Expands all the nodes of the tree layout from the root Node
+            expandAllNodes() {
+                this.rootNode.each(d => {
+                    if(d._children) {
+                        d.children = d._children;
+                        d._children = null;
+                    }
+                });
+            },
+            //Expands all the nodes from a given node if it's collapsed in the tree
+            expandAllFromNode(givenNode) {
+                if(givenNode._children) {
+                    givenNode.children = givenNode._children;
+                    givenNode._children = null;
+                }
+                if(givenNode.children) {
+                    givenNode.children.forEach(n => {
+                        this.expandAllFromNode(n);
+                    });
+                }
+            },
+            //Expands only the nodes which have a matched node as one of it's leafs,
+            // else keeps the other nodes collapsed
+            expandSelectedFromNode(givenNode, matNodes) {
+                let matNodesIds = matNodes.map(c => c["Uniprot ID"]);
+
+                givenNode._children.forEach(c => {
+                    let leafs = this.getLeafNodes(c);
+                    let leafsIds = leafs.map(c => c.data.uniprotId);
+                    let matched = matNodesIds.some(id => {
+                        return leafsIds.includes(id);
+                    });
+                    if(!matched) {
+                        c._children = c.children;
+                        c.children = null;
+                    } else {
+                        this.collapseChildifNotMatched(c, matNodesIds);
+                    }
+                });
+                givenNode.children = givenNode._children;
+                givenNode._children = null;
+            },
+            //Recursively check if a child node has a matched node as one of it's leafs, it not
+            // then collapses the given child node.
+            // matNodesIds: A list of uniprotIds for matched nodes.
+            collapseChildifNotMatched(node, matNodesIds) {
+                node.children.forEach(c => {
+                    let leafs = this.getLeafNodes(c);
+                    let leafsIds = leafs.map(c => c.data.uniprotId);
+                    let matched = matNodesIds.some(id => {
+                        return leafsIds.includes(id);
+                    });
+                    if(!matched) {
+                        c._children = c.children;
+                        c.children = null;
+                    } else {
+                        this.collapseChildifNotMatched(c, matNodesIds);
+                    }
+                });
+            },
+            //Collapse or expand given node 'd'
+            toggleChildren(d) {
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else if (d._children) {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                return d;
             },
             // ~~~~~~~~~~~~~~~~ Export PNG/SVG ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             onExportSvg(treeId) {
@@ -1000,6 +991,12 @@
                 this.isLoading = false;
             },
             // ~~~~~~~~~~~~~~~~ Tree Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            saveOldPositions(root) {
+                root.each(d => {
+                    d.xo = d.x;
+                    d.yo = d.y;
+                });
+            },
             //sort nodes by 'x' posn in the tree layout (top to bottom)
             sortArrayByX(arr) {
                 arr.sort((a, b) => {
@@ -1033,6 +1030,13 @@
                 });
                 return totalDepth;
             },
+            //Get the total count of all the leaf nodes in the tree
+            getTotalLeafNodes() {
+                var nodes = this.rootNode.descendants();
+                this.sortArrayByX(nodes);
+                var leafNodes = nodes.filter(n => !n.children);
+                return leafNodes.length;
+            },
             getTopmostNode(nodes) {
                 this.sortArrayByX(nodes);
 
@@ -1047,6 +1051,9 @@
                 var paddingTop = 50;
                 this.topMostNodePos.y = -1 * node.x + paddingTop;
                 this.topMostNodePos.x = 80;
+            },
+            setCurrentTopNode(pos) {
+                this.currentTopNodePos = pos;
             },
             getChildrenIdList(node) {
                 let idList = [];
@@ -1085,12 +1092,7 @@
                     console.log("Id: " + n.id + " DataId: " + n.data.id);
                 }
             },
-            saveOldPositions(root) {
-                root.each(d => {
-                    d.xo = d.x;
-                    d.yo = d.y;
-                });
-            },
+            
             getTreePanelHeight() {
                 if(this.$refs.treesvg) {
                     return this.$refs.treesvg.clientHeight;
@@ -1123,16 +1125,10 @@
             isALeafNode(n) {
                 return !n.children && !n._children;
             },
-            //Collapse or expand given node 'd'
-            toggleChildren(d) {
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null;
-                } else if (d._children) {
-                    d.children = d._children;
-                    d._children = null;
-                }
-                return d;
+            getRightmostNode() {
+                var nodes = this.rootNode.descendants();
+                this.sortArrayByY(nodes);
+                return nodes[nodes.length-1];
             },
             // ~~~~~~~~~~~~~~~~ Methods for Additional Info for each Node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             getNodeType(d) {
@@ -1156,7 +1152,22 @@
                 }
                 return geneId;
             },
-
+            //Recursively Get all uniprotIds for one node
+            getUniprotIds(node, uniprotIds){
+                if (node.data.uniprotId){
+                    uniprotIds.push(node.data.uniprotId);
+                }
+                if (node._children){
+                    node._children.forEach((child)=>{
+                        this.getUniprotIds(child, uniprotIds);
+                    });
+                }
+                if (node.children){
+                    node.children.forEach((child)=>{
+                        this.getUniprotIds(child, uniprotIds);
+                    })
+                }
+            },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setZoomListener(g) {
                 let startTransform = {x:0, y:0};
@@ -1250,91 +1261,19 @@
                 if(opt === "Delete") {
                     this.deleteNode(nodeId);
                 }
-            },
-            //Expands all the nodes from a given node if it's collapsed in the tree
-            expandAllFromNode(givenNode) {
-                if(givenNode._children) {
-                    givenNode.children = givenNode._children;
-                    givenNode._children = null;
-                }
-                if(givenNode.children) {
-                    givenNode.children.forEach(n => {
-                        this.expandAllFromNode(n);
-                    });
-                }
-            },
-            //Expands only the nodes which have a matched node as one of it's leafs,
-            // else keeps the other nodes collapsed
-            expandSelectedFromNode(givenNode, matNodes) {
-                let matNodesIds = matNodes.map(c => c["Uniprot ID"]);
-
-                givenNode._children.forEach(c => {
-                    let leafs = this.getLeafNodes(c);
-                    let leafsIds = leafs.map(c => c.data.uniprotId);
-                    let matched = matNodesIds.some(id => {
-                        return leafsIds.includes(id);
-                    });
-                    if(!matched) {
-                        c._children = c.children;
-                        c.children = null;
-                    } else {
-                        this.collapseChildifNotMatched(c, matNodesIds);
-                    }
-                });
-                givenNode.children = givenNode._children;
-                givenNode._children = null;
-            },
-            //Recursively check if a child node has a matched node as one of it's leafs, it not
-            // then collapses the given child node.
-            collapseChildifNotMatched(node, matNodesIds) {
-                node.children.forEach(c => {
-                    let leafs = this.getLeafNodes(c);
-                    let leafsIds = leafs.map(c => c.data.uniprotId);
-                    let matched = matNodesIds.some(id => {
-                        return leafsIds.includes(id);
-                    });
-                    if(!matched) {
-                        c._children = c.children;
-                        c.children = null;
-                    } else {
-                        this.collapseChildifNotMatched(c, matNodesIds);
-                    }
-                });
-            },
+            },           
             onDefaultView() {
                 this.makeDisplayCompact();
                 this.updateTree();
-            },
-            getTotalLeafNodes(nodes) {
-                var nodes = this.rootNode.descendants();
-                this.sortArrayByX(nodes);
-                var leafNodes = nodes.filter(n => !n.children);
-                return leafNodes.length;
-            },
-            getRightmostNode() {
-                var nodes = this.rootNode.descendants();
-                this.sortArrayByY(nodes);
-                return nodes[nodes.length-1];
             },
             onExpandAll() {
                 this.expandAllNodes();
                 this.updateTree();
             },
-            //this.rootNode: Expands all the nodes of the tree layout.
-            expandAllNodes() {
-                this.rootNode.each(d => {
-                    if(d._children) {
-                        d.children = d._children;
-                        d._children = null;
-                    }
-                });
-            },
             onShowLegend() {
                 this.showLegend = !this.showLegend;
             },
-            setCurrentTopNode(pos) {
-                this.currentTopNodePos = pos;
-            },
+            
             deleteNode(nodeId) {
                 var nodes = this.rootNode.descendants();
                 var nodeToDelete = nodes.find(n => n.id == nodeId);
