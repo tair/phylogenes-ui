@@ -559,7 +559,7 @@
                 this.getUniprotIds(node,uniprotIds);
                 const map = this.store_annoMapping;
                 uniprotIds.forEach(function(uniprotId){
-                        if ( uniprotId.toLowerCase() in map.annoMap
+                        if ( map.annoMap && uniprotId.toLowerCase() in map.annoMap
                             && map.annoMap[uniprotId.toLowerCase()].length > 0 ) {
                                 node.data.hasFunc = true;
                         }
