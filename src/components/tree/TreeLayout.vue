@@ -40,6 +40,8 @@
     import nodesUtils from './utils/matchedNote';
     import exportUtils from './utils/exportSvg';
     import intersectUtil from "../../util/intersect";
+    import commonTreeUtils from './utils/commonTreeUtils';
+    import updateDisplayUtils from './utils/updateDisplayUtils';
 
     export default {
         name: "treelayout",
@@ -534,71 +536,7 @@
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
-                //First expand all nodes, incase the default view is modified by user.
-                this.expandAllNodes();
-
-                var nodes = this.rootNode.descendants();
-                //If there are no annotations in the tree, use a different ruleset for collapsing nodes
-                if(!this.store_annoMapping.annoMap) {
-                    this.nestedCollapseForNonAnno(nodes);
-                    return;
-                }
-                let annoKeys = Object.keys(this.store_annoMapping.annoMap);
-                if(annoKeys.length > 0) {
-                     this.nestedCollapseForAnno(nodes[0], annoKeys);
-                } else {
-                    //If there are no annotations in the tree, use a different ruleset for collapsing nodes
-                    this.nestedCollapseForNonAnno(nodes);
-                }
-            },
-            nestedCollapseForNonAnno(nodes) {
-                // Find first-level duplication nodes.
-                // A first-level duplication event here refers to an internal node that is a duplication event 
-                // AND that none of its ancestral internal nodes is a duplication event.
-                // We ignore root node, even if it is a duplication event.
-                nodes = nodes.slice(1);
-                let leafNodes = this.getLeafNodesByDepth();
-                let firstNode = leafNodes.find(n => {return n.matched});
-                nodes.forEach(c => {
-                    if(c.data.event_type === "DUPLICATION") {
-                        let isParentOfLeaf = true;
-                        if(c.children) {
-                            c.children.forEach(c2 => {
-                                if(c2.children) {
-                                    this.toggleChildren(c2);
-                                    isParentOfLeaf = false;
-                                }
-                            });
-                            if(isParentOfLeaf) {
-                                this.toggleChildren(c);
-                            }
-                        }
-                    }
-                });
-            },
-            //Recursively collapse nodes (if no anno found) from root to all it's children.
-            nestedCollapseForAnno(node, annoKeys) {
-                if(this.collapseIfNoAnnoFound(node, annoKeys)) {
-                    if(node.children) {
-                        node.children.forEach(c => {
-                            this.nestedCollapseForAnno(c, annoKeys);
-                        });
-                    }
-                }
-            },
-            //Collapse the given node, if the no annotation is found matching the annoKeys list.
-            collapseIfNoAnnoFound(node, annoKeys) {
-                let leafs = this.getLeafNodes(node);
-                let firstNode = leafs.find(n => {return n.matched});
-
-                let ifAnnoFound = leafs.some(l => {
-                    let uniprotId = l.data.uniprotId.toLowerCase();
-                    return annoKeys.includes(uniprotId);
-                });
-                if(!ifAnnoFound) {
-                    this.toggleChildren(node);
-                }
-                return ifAnnoFound;
+                updateDisplayUtils.processCompactTree(this.rootNode, this.store_annoMapping.annoMap);
             },
 
             // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
@@ -716,78 +654,7 @@
                     this.setCustomPositionY(d, totalDepth);
                 });
             },
-            // ~~~~~~~~~~~~~~~~ Modify Tree Layout ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            //this.rootNode: Expands all the nodes of the tree layout from the root Node
-            expandAllNodes() {
-                this.rootNode.each(d => {
-                    if(d._children) {
-                        d.children = d._children;
-                        d._children = null;
-                    }
-                });
-            },
-            //Expands all the nodes from a given node if it's collapsed in the tree
-            expandAllFromNode(givenNode) {
-                if(givenNode._children) {
-                    givenNode.children = givenNode._children;
-                    givenNode._children = null;
-                }
-                if(givenNode.children) {
-                    givenNode.children.forEach(n => {
-                        this.expandAllFromNode(n);
-                    });
-                }
-            },
-            //Expands only the nodes which have a matched node as one of it's leafs,
-            // else keeps the other nodes collapsed
-            expandSelectedFromNode(givenNode, matNodes) {
-                let matNodesIds = matNodes.map(c => c["Uniprot ID"]);
-
-                givenNode._children.forEach(c => {
-                    let leafs = this.getLeafNodes(c);
-                    let leafsIds = leafs.map(c => c.data.uniprotId);
-                    let matched = matNodesIds.some(id => {
-                        return leafsIds.includes(id);
-                    });
-                    if(!matched) {
-                        c._children = c.children;
-                        c.children = null;
-                    } else {
-                        this.collapseChildifNotMatched(c, matNodesIds);
-                    }
-                });
-                givenNode.children = givenNode._children;
-                givenNode._children = null;
-            },
-            //Recursively check if a child node has a matched node as one of it's leafs, it not
-            // then collapses the given child node.
-            // matNodesIds: A list of uniprotIds for matched nodes.
-            collapseChildifNotMatched(node, matNodesIds) {
-                node.children.forEach(c => {
-                    let leafs = this.getLeafNodes(c);
-                    let leafsIds = leafs.map(c => c.data.uniprotId);
-                    let matched = matNodesIds.some(id => {
-                        return leafsIds.includes(id);
-                    });
-                    if(!matched) {
-                        c._children = c.children;
-                        c.children = null;
-                    } else {
-                        this.collapseChildifNotMatched(c, matNodesIds);
-                    }
-                });
-            },
-            //Collapse or expand given node 'd'
-            toggleChildren(d) {
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null;
-                } else if (d._children) {
-                    d.children = d._children;
-                    d._children = null;
-                }
-                return d;
-            },
+            
             // ~~~~~~~~~~~~~~~~ Export PNG/SVG ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             onExportSvg(treeId) {
                 this.isLoading = true;
@@ -879,13 +746,13 @@
                 }
                 this.resetSvgAfterExport();
             },
-           
             resetSvgAfterExport() {
                 d3.select('#treeSvg').attr("width", "100%").attr("height", "100%")
                         .style("position", "relative");
                     
                 this.isLoading = false;
             },
+
             // ~~~~~~~~~~~~~~~~ Tree Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             saveOldPositions(root) {
                 root.each(d => {
@@ -1002,24 +869,6 @@
             setLeafNodesByDepth(nodes) {
                 this.sortArrayByX(nodes);
                 this.leafNodesByDepth = nodes.filter(n => !n.children);
-            },
-            //Get all leaf nodes from the given node 'n'
-            getLeafNodes(n) {
-                let leafs = [];
-                if(n.children) {
-                    n.children.forEach(c => {
-                        if(this.isALeafNode(c)) {
-                            leafs.push(c);
-                        } else {
-                            let ls = this.getLeafNodes(c);
-                            leafs = leafs.concat(ls);
-                        }
-                    });
-                }
-                return leafs;
-            },
-            isALeafNode(n) {
-                return !n.children && !n._children;
             },
             getRightmostNode() {
                 var nodes = this.rootNode.descendants();
@@ -1163,7 +1012,7 @@
                 this.updateTree();
             },
             onExpandAll() {
-                this.expandAllNodes();
+                commonTreeUtils.expandAllNodes(this.rootNode);
                 this.updateTree();
             },
             onShowLegend() {
