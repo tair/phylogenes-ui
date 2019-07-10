@@ -33,5 +33,6 @@ function expandAllFromNode(givenNode) {
 
 export default {
     getLeafNodes,
-    isALeafNode
+    isALeafNode,
+    expandAllFromNode
 }
