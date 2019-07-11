@@ -1,4 +1,5 @@
 <template>
+  <div class="col-sm-12">
     <div class="row bg-mblue">
       <b-input-group class="my-1">
         <b-input-group-prepend class="mx-2 align-items-center">
@@ -19,6 +20,7 @@
         </b-input-group-append>
       </b-input-group>
     </div>
+  </div>
 </template>
 <script>
 

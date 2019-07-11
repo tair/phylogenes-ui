@@ -23,22 +23,31 @@
             <div class="col-sm-6 h-95 pg-panel">
                 <div class="row h-100">
                     <!-- Menu Bar -->
-                    <div class="col-sm-12 h-5">
-                        <div class="row align-items-center">
-                            <div class="col-sm align-items-center">
-                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
-                                            @click="expandAll">Expand All</button>
-                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
-                                            @click="exportPNG">PNG</button>
-                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1"
-                                            @click="exportSVG">SVG</button>
-                            </div>
+                    <div class="col-sm-12">
+                        <div class="row align-items-center justify-content-between">
                             <div class="col-auto align-items-center">
                                 <search-box v-on:search="onSearch"></search-box>
                             </div>
-                            <div class="col-sm align-items-center">
-                                <button class="btn btn-outline-danger btn-sm btn-flat text-dark mb-1 float-right"
-                                        @click="showLegend">{{showLegendButtonText}}</button>
+                            <div class="col-auto align-items-center">
+                                <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
+                                    <template slot="button-content">
+                                        <i class="fas fa-tools fa-2x fa-fw"></i>
+                                    </template>
+                                    <b-dropdown-item >Download tree as PhyloXML</b-dropdown-item>
+                                    <b-dropdown-item>Download gene table as text</b-dropdown-item>
+                                    <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
+                                    <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
+                                    <b-dropdown-item>Prune tree by species</b-dropdown-item>
+                                </b-dropdown>
+                                <button v-b-tooltip.hover title="Compact View" class="btn bg-white"><i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
+                                <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
+                                            @click="expandAll"><i class="fas fa-arrows-alt-v fa-2x fa-fw"></i></button>
+                                <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
+                                        @click="showLegend" id="legendButton"><i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>     
+                                </button>
+                                <b-tooltip :show.sync="showLegendTip" target="legendButton" placement="top">
+                                    {{showLegendButtonIcon.title}}
+                                </b-tooltip>
                                 <!-- For Testing -->
                                 <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
                                         <!--@click="moveUp">Move UP</button>-->
@@ -99,8 +108,16 @@
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
                 store_getTreeMetadata: types.TREE_GET_METADATA
             }),
-            showLegendButtonText(){
-                return this.legend?'Hide Legend':'Show Legend';
+            showLegendButtonIcon(){
+                return this.legend?
+                {
+                    title: 'Hide Legend',
+                    buttonIcon: 'fas fa-angle-double-up'
+                }:
+                {
+                    title: 'Show Legend',
+                    buttonIcon: 'fas fa-angle-double-down'
+                };
             }
         },
         watch: {
@@ -131,6 +148,7 @@
         },
         data() {
             return {
+                showLegendTip: false,
                 treeId: null,
                 branchLength: "N/A",
                 completeData: null,
@@ -552,7 +570,6 @@
         box-sizing: border-box;
         box-shadow: 0 0 4px 0 rgba(0,0,0,.1);
         padding: 15px;
-        overflow: hidden;
     }
     @media (max-height: 948px) {
         .pg-panel { padding-top: 1px; }
