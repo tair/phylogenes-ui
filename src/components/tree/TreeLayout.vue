@@ -1159,6 +1159,7 @@
                         d.children = d._children;
                         d._children = null;
                     }
+                    this.addFlask(d);
                 });
                 this.updateTree();
             },
