@@ -37,7 +37,7 @@
                                     <b-dropdown-item>Download gene table as text</b-dropdown-item>
                                     <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
                                     <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
-                                    <b-dropdown-item>Prune tree by species</b-dropdown-item>
+                                    <b-dropdown-item>Prune tree by organism</b-dropdown-item>
                                 </b-dropdown>
                                 <button v-b-tooltip.hover title="Compact View" class="btn bg-white"><i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
                                 <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
