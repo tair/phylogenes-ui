@@ -6,6 +6,14 @@
                 <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
+            <template slot="footer"> 
+                <button class="modal-default-button" @click="onPrune">
+                    Prune
+                </button>
+                <button class="modal-default-button" @click="showPopup = false">
+                                OK
+                </button>
+            </template>
         </modal>
         <div class="row flex-fill">
             <!-- Metadata Band -->
@@ -37,7 +45,7 @@
                                     <b-dropdown-item>Download gene table as text</b-dropdown-item>
                                     <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
                                     <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
-                                    <b-dropdown-item>Prune tree by species</b-dropdown-item>
+                                    <b-dropdown-item @click="pruneTree">Prune tree by species</b-dropdown-item>
                                 </b-dropdown>
                                 <button v-b-tooltip.hover title="Compact View" class="btn bg-white"><i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
                                 <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
@@ -84,6 +92,7 @@
     import searchBox from '../components/search/SearchBox';
 
     import * as d3 from 'd3';
+    import axios from "axios/index";
     import {mapActions} from 'vuex';
     import {mapGetters} from 'vuex';
 
@@ -168,16 +177,21 @@
                         totalCount: 0,
                         organisms: []
                     },
+                    totalTaxonId: [
+                        13333,3702,15368,51351,3055,2711,3659,4155,3847,3635,4232,112509,3880,214687,4097,
+                        39947,70448,42345,3218,3694,3760,3988,4555,4081,4558,3641,4565,29760,4577,29655,6239,
+                        7955,44689,7227,83333,9606,10090,10116,559292,284812
+                    ],
                     spannedTaxon: ""
                 },
                 showPopup: false,
                 popupHeader: "Organisms",
-                popupCols: ["Organism", "Number of genes"],
+                popupCols: ["checkbox", "Organism", "Number of genes"],
                 popupData: [],
                 popupTableConfig: {
                     tableHeight: 'auto',
                     tableWidth: 'auto',
-                    colsWidth: ['300px', '100px']
+                    colsWidth: ['50px', '300px', '100px']
                 }
             }
         },
@@ -201,8 +215,10 @@
                 this.popupData = [];
                 this.metadata.uniqueOrganisms.organisms.forEach(o => {
                     let singleRow = [];
+                    singleRow.push({type: "checkbox", label: "txt", checked: true});
                     singleRow.push(o.name);
                     singleRow.push(o.count);
+                    singleRow.push(o.taxonId);
                     this.popupData.push(singleRow); 
                 });
             },
@@ -229,6 +245,36 @@
                     this.matchNodes = [];
                 }
                 this.store_setMatchedNodes(this.matchNodes);
+            },
+            pruneTree(taxonList) {
+                this.$refs.treeLayout.onPruneLoading(true);
+                axios({
+                    method: 'POST',
+                    url: 'http://localhost:8080/hello/' + this.treeId,
+                    data: {
+                        taxonIdsToShow: taxonList
+                    }
+                })
+                .then(res => {
+                    this.isLoading = false;
+                    this.showPopup = false;
+                    let prunedJson = res.data;
+                    this.loadPrunedJson(prunedJson);
+                    this.$refs.treeLayout.onPruneLoading(false);
+                })
+            },
+            onPrune() {
+                let filteredOrganisms = this.popupData.filter(pd => {
+                    return pd[0].checked == true;
+                });
+                let unprunedTaxonIds = filteredOrganisms.map(o => o[3]);
+                this.pruneTree(unprunedTaxonIds);
+            },
+            loadPrunedJson(treeJson) {
+                treeJson = treeJson.search.annotation_node;
+                this.formatJson(treeJson);
+                console.log(treeJson);
+                this.processJson(treeJson);
             },
             loadJson(jsonString) {
                 var treeJson = JSON.parse(jsonString);
@@ -314,6 +360,7 @@
                     var found_mapping = this.mappingData.find(o => o.Organism.toLowerCase() === node.organism.toLowerCase());
                     if(found_mapping) {
                         node.displayName = found_mapping.displayName.trim();
+                        node.taxonId = found_mapping.taxonID;
                     }
                 }
                 //Set Text for each node if present
@@ -454,6 +501,7 @@
                             } else {
                                 let org = {
                                     name: n.data.organism,
+                                    taxonId: n.data.taxonId,
                                     count: 1
                                 }
                                 uniqueOrganisms.push(org);

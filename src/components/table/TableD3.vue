@@ -82,7 +82,8 @@
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
-                store_annoMapping: types.TREE_GET_ANNO_MAPPING
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
             })
         },
         watch: {
@@ -112,6 +113,13 @@
                         this.topMargin = 35;
                     } else {
                         this.topMargin = 0;
+                    }
+                }
+            },
+            store_tableIsLoading: {
+                handler: function(val, oldval) {
+                    if(val) {
+                        this.isLoading = true;
                     }
                 }
             }

@@ -3,18 +3,22 @@
         <table class="popupTable">
             <thead id="head">
                 <tr>
-                    <th v-for="(col,i) in cols" :style="getStyle(i)">{{col}}</th>
+                    <th v-for="(col,i) in cols" :key="i" :style="getStyle(i)">{{col}}</th>
                 </tr>
             </thead>
             <tr v-for="row in data">
-                <td v-for="(cell, i) in row" :style="getStyle(i)">
+                <td v-for="(cell, i) in row" :style="getStyle(i)" :key="i">
                     <span v-if="!cell.type">{{cell}}</span>
                     <!--If Cell type is 'link', render a single hyperlink-->
                     <a v-if="cell.type=='link'" v-bind:href="cell.link" target="_blank">{{cell.text}}</a>
                     <!--If Cell type is 'links', render multiple hyperlinks-->
                     <a v-if="cell.type=='links'"
-                       v-for="(ref, i) in cell.links" v-bind:href="ref.link" target="_blank">{{ref.text}}<span v-if="i != cell.links.length - 1">,</span>
-                    </a>
+                       v-for="(ref, i) in cell.links" v-bind:href="ref.link" :key="i" target="_blank">{{ref.text}}<span v-if="i != cell.links.length - 1">,</span>
+                    </a> 
+                    <div v-if="cell.type=='checkbox'" class="form-check">
+                        <input class="form-check-input" type="checkbox" v-model="cell.checked" id="defaultCheck1">
+                    </div>
+                    <!-- <span >{{cell}}</span> -->
                 </td>
             </tr>
         </table>
@@ -46,7 +50,7 @@
         },
         methods: {
             getStyle(i) {
-                if(i == 0) {
+                if(i == 1) {
                     return "width: 300px";
                 } else {
                     return "width: 100px";
