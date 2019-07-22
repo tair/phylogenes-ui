@@ -113,7 +113,7 @@
                 isLazyLoad: true,
                 isAnimated: true,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 //constants
                 rowLimit_lazyLoad: 25,
@@ -1012,7 +1012,13 @@
                 this.updateTree();
             },
             onExpandAll() {
-                commonTreeUtils.expandAllNodes(this.rootNode);
+                this.rootNode.each(d => {
+                    if(d._children) {
+                        d.children = d._children;
+                        d._children = null;
+                    }
+                    this.addFlask(d);
+                });
                 this.updateTree();
             },
             onShowLegend() {

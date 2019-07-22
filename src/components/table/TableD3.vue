@@ -494,7 +494,7 @@
          #secTr th { height: 35px !important; }
     }
     @media (min-height: 960px) {
-         #secTr th { height: 55px !important; }
+         #secTr th { height: 35px !important; }
     }
     .mainTable tbody {
         overflow: scroll;
