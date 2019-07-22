@@ -1,5 +1,5 @@
 <template>
-    <div id="main" class="container-fluid main_container bg-pggrey d-flex">
+    <div id="main" class="container-fluid main_container d-flex">
         <modal v-if="showPopup" @close="showPopup = false">
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
