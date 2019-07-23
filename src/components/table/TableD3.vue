@@ -8,7 +8,7 @@
             </template>
         </modal>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-else class="mainTable" :style="{marginTop: topMargin+'px'}"> 
+        <table v-else class="mainTable"> 
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
@@ -70,7 +70,6 @@
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
-                topMargin: 0,
                 isLoading: false,
                 firstLoad: false,
                 ticking: false,
@@ -101,6 +100,10 @@
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
                     var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
+                    if(!foundRow) {
+                        let accession = val.data.accession;
+                        foundRow = this.stateTreeData.find(d => d["accession"] === accession);
+                    }
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
                     }
@@ -109,11 +112,6 @@
             store_annoMapping: {
                 handler: function (val, oldVal) {
                     this.extraCols = val.headers;
-                    if(this.extraCols.length === 0) {
-                        this.topMargin = 35;
-                    } else {
-                        this.topMargin = 0;
-                    }
                 }
             },
             store_tableIsLoading: {
@@ -236,8 +234,9 @@
             scrollTreeFromTable(amount) {
                 var rowNumber = amount/this.rowHeight;
                 rowNumber = Math.round(rowNumber);
-                var geneId = this.stateTreeData[rowNumber]["Gene ID"];
-                var scroll = {i: rowNumber, id: geneId};
+                var rowId = this.stateTreeData[rowNumber]["Gene ID"];
+                var accession = this.stateTreeData[rowNumber]["accession"];
+                var scroll = {i: rowNumber, id: rowId, accession: accession};
                 this.rowsScrolled = rowNumber;
                 this.updateRows();
                 this.stateSetTableScroll(scroll);

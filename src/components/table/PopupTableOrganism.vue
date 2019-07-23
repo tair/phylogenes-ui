@@ -1,9 +1,16 @@
 <template>
     <div class="align-middle">
+        <!-- <button class="btn bg-white" @click="checkAll">Check All</button>
+        <button class="btn bg-white" @click="uncheckAll">Uncheck All</button> -->
         <table class="popupTable">
             <thead id="head">
                 <tr>
-                    <th v-for="(col,i) in cols" :key="i" :style="getStyle(i)">{{col}}</th>
+                    <th v-for="(col,i) in cols" :key="i"
+                        :style="getStyle(i)">
+                        <span v-if="!col.type">{{col}}</span>
+                        <input v-if="col.type=='checkbox'" v-model="col.val" @click="checkall(col.val)"
+                               type="checkbox" id="defaultCheckHeader">
+                    </th>
                 </tr>
             </thead>
             <tr v-for="row in data">
@@ -49,6 +56,16 @@
             }
         },
         methods: {
+            uncheckAll() {
+                this.$emit("uncheck-all");
+            },
+            checkall(val) {
+                if(!val) {
+                    this.$emit("check-all");
+                } else {
+                    this.$emit("uncheck-all");
+                }
+            },
             getStyle(i) {
                 if(i == 1) {
                     return "width: 300px";

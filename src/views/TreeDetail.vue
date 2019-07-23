@@ -1,9 +1,11 @@
 <template>
-    <div id="main" class="container-fluid main_container bg-pggrey d-flex">
+    <div id="main" class="container-fluid main_container d-flex">
         <modal v-if="showPopup" @close="showPopup = false">
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
-                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
+                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"
+                            v-on:uncheck-all="onUncheckAll"
+                            v-on:check-all="onCheckAll"></popupTable>
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
             <template slot="footer"> 
@@ -34,7 +36,8 @@
                     <div class="col-sm-12">
                         <div class="row align-items-center justify-content-between">
                             <div class="col-auto align-items-center">
-                                <search-box v-on:search="onSearch"></search-box>
+                                <search-box ref="searchBox" 
+                                            v-on:search="onSearch" :defaultText="defaultSearchText"></search-box>
                             </div>
                             <div class="col-auto align-items-center">
                                 <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
@@ -45,9 +48,10 @@
                                     <b-dropdown-item>Download gene table as text</b-dropdown-item>
                                     <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
                                     <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
-                                    <b-dropdown-item @click="pruneTree">Prune tree by species</b-dropdown-item>
+                                    <b-dropdown-item @click="pruneTree">Prune tree by organism</b-dropdown-item>
                                 </b-dropdown>
-                                <button v-b-tooltip.hover title="Compact View" class="btn bg-white"><i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
+                                <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
+                                    <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
                                 <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
                                             @click="expandAll"><i class="fas fa-arrows-alt-v fa-2x fa-fw"></i></button>
                                 <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
@@ -115,7 +119,9 @@
                 stateTreeJson: types.TREE_GET_JSON,
                 stateTreeData: types.TREE_GET_DATA,
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
-                store_getTreeMetadata: types.TREE_GET_METADATA
+                store_getTreeMetadata: types.TREE_GET_METADATA,
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
             }),
             showLegendButtonIcon(){
                 return this.legend?
@@ -153,6 +159,21 @@
                     this.metadata.spannedTaxon = val.taxonRange;
                     this.metadata.isLoading = false;
                 }
+            },
+            store_tableIsLoading: {
+                handler: function(val, oldval) {
+                    if(!val) {
+                        if(this.store_getSearchTxtWthn != null) {
+                            this.defaultSearchText = this.store_getSearchTxtWthn;
+                            this.onSearch(this.store_getSearchTxtWthn);
+                        } else {
+                            this.defaultSearchText = "";
+                            this.searchText = "";
+                            this.matchNodes = [];
+                            this.store_setMatchedNodes(null);
+                        }
+                    }
+                }
             }
         },
         data() {
@@ -165,6 +186,7 @@
                 mappingData: null,
                 baseUrl: process.env.BASE_URL,
                 searchText: "",
+                defaultSearchText: "",
                 matchNodes: [],
                 anno_mapping: {},
                 anno_headers: [],
@@ -186,7 +208,9 @@
                 },
                 showPopup: false,
                 popupHeader: "Organisms",
-                popupCols: ["checkbox", "Organism", "Number of genes"],
+                popupCols: [{type:'checkbox', val:true}, 
+                            "Organism",
+                            "Number of genes"],
                 popupData: [],
                 popupTableConfig: {
                     tableHeight: 'auto',
@@ -209,7 +233,28 @@
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
+                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN
             }),
+            onUncheckAll() {
+                this.popupData = this.popupData.map(pd => {
+                    pd[0].checked = false;
+                    return pd
+                });
+                let filteredOrganisms = this.popupData.filter(pd => {
+                    return pd[0].checked == true;
+                });
+                console.log(filteredOrganisms);
+            },
+            onCheckAll() {
+                this.popupData = this.popupData.map(pd => {
+                    pd[0].checked = true;
+                    return pd
+                });
+                let filteredOrganisms = this.popupData.filter(pd => {
+                    return pd[0].checked == true;
+                });
+                console.log(filteredOrganisms);
+            },
             showOrganismPopup() {
                 this.showPopup = true;
                 this.popupData = [];
@@ -262,6 +307,12 @@
                     this.loadPrunedJson(prunedJson);
                     this.$refs.treeLayout.onPruneLoading(false);
                 })
+                .catch(err => {
+                    console.log("error");
+                    this.isLoading = false;
+                    this.showPopup = false;
+                    this.$refs.treeLayout.onPruneLoading(true);
+                });
             },
             onPrune() {
                 let filteredOrganisms = this.popupData.filter(pd => {
@@ -528,6 +579,10 @@
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
             },
+            onDefaultView() {
+                this.$refs.treeLayout.onDefaultView();
+                this.$refs.searchBox.onReset();
+            },
             exportPNG() {
                 this.$refs.treeLayout.onExportPng(this.treeId);
             },
@@ -587,6 +642,11 @@
                         tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily Name"] = n.data.sf_name;
+                        if(n._children) {
+                            if(n.data.accession) {
+                                tableNode["accession"] = n.data.accession;
+                            }
+                        }
                         tabularData.push(tableNode);
                     }
                 });
