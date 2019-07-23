@@ -29,6 +29,7 @@
     import {mapActions, mapGetters} from 'vuex';
 
     import * as types from '../../store/types_treedata';
+    import * as types_tree from '../../store/types_tree';
 
     import baseNode from '../tree/nodes/BaseTreeNode';
     import baseLink from '../tree/links/BaseTreeLink';
@@ -36,7 +37,11 @@
     import contextMenu from '../menu/ContextMenu';
     import treeLegend from '../tree/Legend';
 
+    import nodesUtils from './utils/matchedNote';
+    import exportUtils from './utils/exportSvg';
     import intersectUtil from "../../util/intersect";
+    import commonTreeUtils from './utils/commonTreeUtils';
+    import updateDisplayUtils from './utils/updateDisplayUtils';
 
     export default {
         name: "treelayout",
@@ -53,7 +58,8 @@
                 stateTableScroll: types.TABLE_GET_SCROLL,
                 stateTreeData: types.TREE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
-                store_annoMapping: types.TREE_GET_ANNO_MAPPING
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
             })
         },
         watch: {
@@ -69,9 +75,7 @@
             },
             store_matchedNodes: {
                 handler: function (val, oldVal) {
-                    if(!this.isLoading) {
-                        this.processMatchedNodes(val);
-                    }
+                    this.processMatchedNodes(val);
                 }
             },
             stateTreeData: {
@@ -85,8 +89,15 @@
             stateTableScroll: {
                 handler: function (val, oldVal) {
                     var nodes = this.rootNode.descendants();
-                    var treeNode = nodes.find(n => n.geneId == val.id);
-                    this.moveTreeToNodePosition(treeNode);
+                    var treeNode = null;
+                    if(val.id != undefined) {
+                        treeNode = nodes.find(n => n.geneId == val.id);
+                    } else {
+                        treeNode = nodes.find(n => n.data.accession == val.accession);
+                    }
+                    if(treeNode) {
+                        this.moveTreeToNodePosition(treeNode);
+                    }
                 }
             },
             store_tableIsLoading: {
@@ -172,8 +183,10 @@
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
+                
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
+                this.makeDisplayCompact();
                 this.initTreeLayout(this.rootNode);
                 this.$emit('init-tree', nodes);
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -227,7 +240,7 @@
             },
             //Update Tree during every interaction with tree
             // which modifies the tree structure (eg. toggleNode)
-            updateTree() {
+            async updateTree() {
                 this.saveOldPositions(this.rootNode);
 
                 var modifiedNodes = this.rootNode.descendants();
@@ -240,6 +253,8 @@
                 this.renderLinks(modifiedNodes);
 
                 this.setLeafNodesByDepth(modifiedNodes);
+
+                return 1;
             },
             // ~~~~~~~~~ Nodes
             renderNodes(nodes){
@@ -341,22 +356,30 @@
             //Add node content from d3 updatedNodes to an array sorted by n.id and customized
             getModifiedUpdatedNodes(updatedNodes) {
                 var tempArray = [];
-                let enterNodesArr = [];
+                let clickedNodeChildren = [];
                 if (this.isAnimated && this.clickedNode) {
-                    enterNodesArr = this.getChildrenIdList(this.clickedNode.source);
+                    //add all the children of the clicked node to an array
+                    clickedNodeChildren = this.getChildrenIdList(this.clickedNode.source);
                 }
                 updatedNodes.nodes().forEach(n => {
                     var node_content = n.__data__;
                     if(this.isAnimated) {
+                        //the old positions are changed for new entering nodes to be clicked node's position,
+                        // so that animation starts from clicked node, and translates to the current posn.
                         if (n.constructor && n.constructor.name === "EnterNode") {
                             if (this.clickedNode) {
-                                if(enterNodesArr.includes(node_content.id)) {
+                                //Not all "EnterNode" would be just the nodes expanding from the clicked node.
+                                // Some are nodes entering because of lazy loading, and we don't need to update it's
+                                //old positions.
+                                if(clickedNodeChildren.includes(node_content.id)) {
                                     node_content.xo = this.clickedNode.x;
                                     node_content.yo = this.clickedNode.y;
                                 }
                             }
                         }
                     } else {
+                        //If the nodes are just updating, then old positions are nodes position before
+                        // updating the tree layout
                         node_content.xo = node_content.x;
                         node_content.yo = node_content.y;
                     }
@@ -365,6 +388,7 @@
 
                 });
 
+                //We need to sort the array added by id, because d3 renders based on id of the nodes.
                 tempArray.sort((a, b) => {
                     return b.id < a.id;
                 });
@@ -446,7 +470,8 @@
                     this.store_setCenterNode(currCenterNode);
                 }, 500);
             },
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+                     
+            // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
 
@@ -508,101 +533,24 @@
                 return splitArr;
             },
 
-            // ~~~~~~~~~~~~~~~~ Search Within Matched Node Specific ~~~~~~~~~~~~~~~~~//
+            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Make the tree layout compact by following some rules defined.
+            makeDisplayCompact() {
+                updateDisplayUtils.processCompactTree(this.rootNode, this.store_annoMapping.annoMap);
+            },
+
+            // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
             processMatchedNodes(matchedNodes) {
-                if(matchedNodes.length == 0) {
-                    this.resetMatchedNodes();
-                    return;
-                }
-                let allNodes = this.rootNode.descendants();
-                allNodes.forEach(d => {
-                    d.matched = false;
-                    if(!d.children) {
-                        let found = this.isMatchWithNode(d, matchedNodes);
-                        if(found) {
-                            d.matched = true;
-                        }
-                    }
-                    if(d._children) {
-                        if(this.findMatNodesInChildren(d, matchedNodes)) {
-                            this.expandAllFromNode(d);
-                        }
-                    }
-                });
-                this.updateTree();
-
-                //Center the tree to the fist found node after updating tree is done.
-                setTimeout(() => {
-                    let firstMatchedNode = this.findFirstMatchedNodeInTree();
-                    this.centerTreeToGivenNode(firstMatchedNode);
-                }, 1000);
-            },
-            findFirstMatchedNodeInTree() {
-                let leafNodes = this.getLeafNodesByDepth();
-                let firstNode = leafNodes.find(n => {return n.matched});
-                return firstNode;
-            },
-            resetMatchedNodes() {
-                if(!this.rootNode) return;
-
-                let allNodes = this.rootNode.descendants();
-                allNodes.forEach(d => {
-                    d.matched = false;
-                });
-                this.updateTree();
-            },
-            findMatNodesInChildren(d, matNodes) {
-                var foundAny = false;
-                if(d.children) {
-                    d.children.forEach(dc => {
-                        let found = this.isMatchWithNode(dc, matNodes);
-                        if(found) {
-                            dc.matched = true;
-                            foundAny = true;
-                        }
-                        var ff = this.findMatNodesInChildren(dc, matNodes);
-                        if(ff) {
-                            foundAny = true;
-                        }
+                var allNodes = this.rootNode.descendants();
+                nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
+                    this.updateTree().then(() => {
+                        let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
+                        this.centerTreeToGivenNode(firstMatchedNode);
                     });
-                }
-                if(d._children) {
-                    d._children.forEach(dc => {
-                        let found = this.isMatchWithNode(dc, matNodes);
-                        if(found) {
-                            dc.matched = true;
-                            foundAny = true;
-                        }
-                        var ff = this.findMatNodesInChildren(dc, matNodes);
-                        if(ff) {
-                            foundAny = true;
-                        }
-                    });
-                }
-                return foundAny;
+                });
             },
-            isMatchWithNode(d, matNodes) {
-                return matNodes.find(v => v["Uniprot ID"] === d.data.uniprotId);
-            },
-            // ~~~~~~~~~~~~~~~~ *** ~~~~~~~~~~~~~~~~~//
-            
+
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            //  Get all uniprotIds for one node
-            getUniprotIds(node, uniprotIds){
-                if (node.data.uniprotId){
-                    uniprotIds.push(node.data.uniprotId);
-                }
-                if (node._children){
-                    node._children.forEach((child)=>{
-                        this.getUniprotIds(child, uniprotIds);
-                    });
-                }
-                if (node.children){
-                    node.children.forEach((child)=>{
-                        this.getUniprotIds(child, uniprotIds);
-                    })
-                }
-            },
             // Add hasFunc to show flask icon
             addFlask(node){
                 node.data.hasFunc = false;
@@ -632,6 +580,7 @@
                     if(n.data.text) {
                         n.text = n.data.text;
                     }
+                    // n.text = n.id;
                     if(n.data.fillColor) {
                         n.fillColor = n.data.fillColor;
                     }
@@ -683,7 +632,7 @@
             },
             //Overwrite each Node positions with custom logic
             setCustomPositionX(d) {
-
+                /** */
             },
             setCustomPositionY(d, tree_depth) {
                 // tree_depth required to divide 'y' equally  based on treeWidth and depth of tree.
@@ -705,26 +654,19 @@
                     this.setCustomPositionY(d, totalDepth);
                 });
             },
+            
             // ~~~~~~~~~~~~~~~~ Export PNG/SVG ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             onExportSvg(treeId) {
                 this.isLoading = true;
                 //Svg size is increased to the complete tree size
                 this.adjustSvgForExport(false);
                 setTimeout(() => {
-                    var url = this.getSvgBlobUrl();
-                    //Create a temp link to download the svg
-                    let a = document.createElement("a"); 
-                    a.href = url;
-                    a.download = treeId+".svg";
-                    document.body.appendChild(a);
-                    //Downloads the link as a file
-                    a.click();
-                    //remove the temp link created
-                    document.body.removeChild(a);
-                    setTimeout(() => {
-                        //Reset the svg to it's original size
-                        this.resetSvgAfterExport();
-                    }, 100);
+                    var svgNode = d3.select('#treeSvg').node();
+                    exportUtils.downloadSvgLocal(svgNode, treeId)
+                        .then(() => {
+                            //Reset the svg to it's original size
+                            this.resetSvgAfterExport();
+                        });
                 }, 1000);
             },
             onExportPng(treeId) {
@@ -732,7 +674,8 @@
                 //Svg size is increased to the complete tree size
                 this.adjustSvgForExport(true);
                 setTimeout(() => {
-                    var url = this.getSvgBlobUrl();
+                    var svgNode = d3.select('#treeSvg').node();
+                    var url = exportUtils.createSvgBlobUrl(svgNode);
                     var img = d3.select('span').append('img').node();
                     this.isLoading = false;
                     // start loading the image with the svg blob
@@ -781,83 +724,6 @@
                     d3.select('#treeSvg').style("position", "fixed");
                 } 
             },
-             // Convert the svg into a Blob which contains svg xml string format. Return as a URL.
-             // This URL is used to download as .svg file, or conversion into png/jpeg format.
-            getSvgBlobUrl() {
-                var svgNode = d3.select('#treeSvg').node();
-
-                //svgNode without appended css only has default css, and does not get custom
-                // vue component css. So we need to add those to the svg before converting into a blob.
-                var cssStyleText = this.getCSSStyles(svgNode);
-                this.appendCss(cssStyleText, svgNode);
-                
-                // serialize our SVG XML to a string.
-                var doctype = '<?xml version="1.0" standalone="no"?>'
-                            + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-                var source = (new XMLSerializer()).serializeToString(svgNode);
-                var blob = new Blob([ doctype + source], { type: 'image/svg+xml;charset=utf-8' });
-                
-                var url = window.URL.createObjectURL(blob);
-                return url;
-            },
-            //Returns CSS styles for components which have custom styles, which needs to be added
-            // to the svg, else the render uses default css for this d3 components.
-            // Custom components are:
-            // 1. #treeSvg 2. #node-? (all node components incl. text) 3. #link-? (all link component)
-            //Returns a single string with all the css added.
-            getCSSStyles(parentElement) {
-                var selectorTextArr = [];
-                // Add Parent element Id and Classes to the list
-                selectorTextArr.push( '#'+parentElement.id );
-
-                for (var c = 0; c < parentElement.classList.length; c++)
-                    if ( !selectorTextArr.includes('.'+parentElement.classList[c]) )
-                        selectorTextArr.push( '.'+parentElement.classList[c] );
-
-                // Add Children element Ids and Classes to the list
-                var nodes = parentElement.getElementsByTagName("*");
-                for (var i = 0; i < nodes.length; i++) {
-                    var id = nodes[i].id;
-                    if ( !selectorTextArr.includes('#'+id) )
-                        selectorTextArr.push( '#'+id );
-
-                    var classes = nodes[i].classList;
-                    for (var c = 0; c < classes.length; c++)
-                        if ( !selectorTextArr.includes('.'+classes[c]) )
-                            selectorTextArr.push( '.'+classes[c] );
-                }
-
-                // Extract CSS Rules
-                var extractedCSSText = "";
-                for (var i = 0; i < document.styleSheets.length; i++) {
-                    var s = document.styleSheets[i];
-                    try {
-                        if(!s.cssRules) continue;
-                    } catch( e ) {
-                        if(e.name !== 'SecurityError') throw e; // for Firefox
-                        continue;
-                    }
-                    
-                    var cssRules = s.cssRules;
-                    for (var r = 0; r < cssRules.length; r++) {
-                        if(cssRules[r].selectorText && 
-                            (cssRules[r].selectorText.includes("#node") ||
-                                cssRules[r].selectorText.includes("#link") ||
-                                    cssRules[r].selectorText.includes("#treeSvg"))) {
-                            extractedCSSText += cssRules[r].cssText;
-                        }
-                    }
-                }
-                return extractedCSSText;
-            },
-            //Appends the extracted custom css to the 'element' which is svg node.
-            appendCss(cssText, element) {
-                var styleElement = document.createElement("style");
-                styleElement.setAttribute("type","text/css"); 
-                styleElement.innerHTML = cssText;
-                var refNode = element.hasChildNodes() ? element.children[0] : null;
-                element.insertBefore( styleElement, refNode );
-            },
             //Draw a canvas element with the 'img' of the svg.
             drawCanvas(img, treeId) {
                 //Now that the image has loaded, put the image into a canvas element.
@@ -866,41 +732,19 @@
                 // divided into 10000 pixels each and saved in parts.
                 if(svgHeight > 42000) {
                     for(var i = 0; i< this.$refs.treesvg.clientHeight/10000; i++) {
-                        var canvas = d3.select('body').append('canvas').node();
-                        canvas.width = this.$refs.treesvg.clientWidth;
-                        canvas.height = 10000;
-                        var ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, canvas.height*i, canvas.width, canvas.height,
-                                        0, 0, canvas.width, canvas.height);
-                        this.canvasToPng(canvas, treeId + "_"+i);
+                        let canvasWidth = this.$refs.treesvg.clientWidth;
+                        let canvasHeight = 10000;
+                        exportUtils.canvasToPng(img, treeId + "_"+i, canvasWidth, canvasHeight, true, canvasHeight*i);
                     }
                 } else {
-                    var canvas = d3.select('body').append('canvas').node();
-                    canvas.width = this.$refs.treesvg.clientWidth;
-                    canvas.height = this.$refs.treesvg.clientHeight;
-                    if(canvas.height > 34000) {
-                        canvas.height = 34000;
+                    let canvasWidth = this.$refs.treesvg.clientWidth;
+                    let canvasHeight = this.$refs.treesvg.clientHeight;
+                    if(canvasHeight > 34000) {
+                        canvasHeight = 34000;
                     }
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    this.canvasToPng(canvas, treeId);
+                    exportUtils.canvasToPng(img, treeId, canvasWidth, canvasHeight, false);
                 }
                 this.resetSvgAfterExport();
-            },
-            canvasToPng(canvas, fileName) {
-                canvas.toBlob((blob) => {
-                    let URLObj = window.URL || window.webkitURL;
-                    let a = document.createElement("a"); 
-                    a.href = URLObj.createObjectURL(blob);
-                    a.download = fileName+".png";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    let canvasNodes = d3.selectAll('canvas');
-                    if(canvasNodes) {
-                        canvasNodes.remove();
-                    }
-                })
             },
             resetSvgAfterExport() {
                 d3.select('#treeSvg').attr("width", "100%").attr("height", "100%")
@@ -908,7 +752,14 @@
                     
                 this.isLoading = false;
             },
+
             // ~~~~~~~~~~~~~~~~ Tree Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            saveOldPositions(root) {
+                root.each(d => {
+                    d.xo = d.x;
+                    d.yo = d.y;
+                });
+            },
             //sort nodes by 'x' posn in the tree layout (top to bottom)
             sortArrayByX(arr) {
                 arr.sort((a, b) => {
@@ -942,6 +793,13 @@
                 });
                 return totalDepth;
             },
+            //Get the total count of all the leaf nodes in the tree
+            getTotalLeafNodes() {
+                var nodes = this.rootNode.descendants();
+                this.sortArrayByX(nodes);
+                var leafNodes = nodes.filter(n => !n.children);
+                return leafNodes.length;
+            },
             getTopmostNode(nodes) {
                 this.sortArrayByX(nodes);
 
@@ -956,6 +814,9 @@
                 var paddingTop = 50;
                 this.topMostNodePos.y = -1 * node.x + paddingTop;
                 this.topMostNodePos.x = 80;
+            },
+            setCurrentTopNode(pos) {
+                this.currentTopNodePos = pos;
             },
             getChildrenIdList(node) {
                 let idList = [];
@@ -994,12 +855,7 @@
                     console.log("Id: " + n.id + " DataId: " + n.data.id);
                 }
             },
-            saveOldPositions(root) {
-                root.each(d => {
-                    d.xo = d.x;
-                    d.yo = d.y;
-                });
-            },
+            
             getTreePanelHeight() {
                 if(this.$refs.treesvg) {
                     return this.$refs.treesvg.clientHeight;
@@ -1013,6 +869,11 @@
             setLeafNodesByDepth(nodes) {
                 this.sortArrayByX(nodes);
                 this.leafNodesByDepth = nodes.filter(n => !n.children);
+            },
+            getRightmostNode() {
+                var nodes = this.rootNode.descendants();
+                this.sortArrayByY(nodes);
+                return nodes[nodes.length-1];
             },
             // ~~~~~~~~~~~~~~~~ Methods for Additional Info for each Node ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             getNodeType(d) {
@@ -1036,7 +897,22 @@
                 }
                 return geneId;
             },
-
+            //Recursively Get all uniprotIds for one node
+            getUniprotIds(node, uniprotIds){
+                if (node.data.uniprotId){
+                    uniprotIds.push(node.data.uniprotId);
+                }
+                if (node._children){
+                    node._children.forEach((child)=>{
+                        this.getUniprotIds(child, uniprotIds);
+                    });
+                }
+                if (node.children){
+                    node.children.forEach((child)=>{
+                        this.getUniprotIds(child, uniprotIds);
+                    })
+                }
+            },
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setZoomListener(g) {
                 let startTransform = {x:0, y:0};
@@ -1130,28 +1006,10 @@
                 if(opt === "Delete") {
                     this.deleteNode(nodeId);
                 }
-            },
-            expandAllFromNode(givenNode) {
-                if(givenNode._children) {
-                    givenNode.children = givenNode._children;
-                    givenNode._children = null;
-                }
-                if(givenNode.children) {
-                    givenNode.children.forEach(n => {
-                        this.expandAllFromNode(n);
-                    });
-                }
-            },
-            getTotalLeafNodes(nodes) {
-                var nodes = this.rootNode.descendants();
-                this.sortArrayByX(nodes);
-                var leafNodes = nodes.filter(n => !n.children);
-                return leafNodes.length;
-            },
-            getRightmostNode() {
-                var nodes = this.rootNode.descendants();
-                this.sortArrayByY(nodes);
-                return nodes[nodes.length-1];
+            },           
+            onDefaultView() {
+                this.makeDisplayCompact();
+                this.updateTree();
             },
             onExpandAll() {
                 this.rootNode.each(d => {
@@ -1166,9 +1024,7 @@
             onShowLegend() {
                 this.showLegend = !this.showLegend;
             },
-            setCurrentTopNode(pos) {
-                this.currentTopNodePos = pos;
-            },
+            
             deleteNode(nodeId) {
                 var nodes = this.rootNode.descendants();
                 var nodeToDelete = nodes.find(n => n.id == nodeId);

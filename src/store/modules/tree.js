@@ -143,7 +143,7 @@ const actions = {
                         jsonData['count'] = res.data.facet_counts.facet_fields.organisms[i++];
                         context.state.tree.data.facets.organisms.push(jsonData);
                     }
-                }
+                }                                              
 
                 if(res.data.facet_counts.facet_fields.species_list != null) {
                     for(var i = 0; i < res.data.facet_counts.facet_fields.species_list.length;) {

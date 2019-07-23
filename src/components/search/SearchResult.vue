@@ -40,6 +40,7 @@
     import ResultItem from '@/components/search/SearchResultItem'
 
     import * as types from '../../store/types_tree';
+    import * as types_data from '../../store/types_treedata';
     import {mapActions} from 'vuex';
     import {mapGetters} from 'vuex';
 
@@ -55,8 +56,10 @@
                 immediate: true,
                 handler (val, oldVal) {
                     if(val.numFound == 1) {
-                        // console.log();
+                        this.store_setSearchTxtWthn(this.stateSearchText);
                         this.$router.push({path: 'tree/' + val.results[0].id})
+                    } else {
+                        this.store_setSearchTxtWthn(null);
                     }
                 }
             },
@@ -105,7 +108,8 @@
         methods: {
             ...mapActions({
                 stateTreePaginate: types.TREE_ACTION_PAGINATE,
-                setFilter: types.TREE_ACTION_SET_FILTER
+                setFilter: types.TREE_ACTION_SET_FILTER,
+                store_setSearchTxtWthn: types_data.TREE_ACTION_SET_SEARCHTEXTWTN
             }),
             getRestatedText() {
                 var text = "You searched for '" + this.stateSearchText + "'.";
