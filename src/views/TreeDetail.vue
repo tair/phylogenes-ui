@@ -43,7 +43,7 @@
                                 <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
                                     <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
                                 <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
-                                            @click="expandAll"><i class="fas fa-arrows-alt-v fa-2x fa-fw"></i></button>
+                                            @click="expandAll"><i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i></button>
                                 <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
                                         @click="showLegend" id="legendButton"><i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>     
                                 </button>
