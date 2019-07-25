@@ -16,6 +16,7 @@
             <tr v-for="row in data">
                 <td v-for="(cell, i) in row" :style="getStyle(i)" :key="i">
                     <span v-if="!cell.type">{{cell}}</span>
+                    <span v-if="cell.type=='text'">{{cell.val}}</span>
                     <!--If Cell type is 'link', render a single hyperlink-->
                     <a v-if="cell.type=='link'" v-bind:href="cell.link" target="_blank">{{cell.text}}</a>
                     <!--If Cell type is 'links', render multiple hyperlinks-->
@@ -23,7 +24,7 @@
                        v-for="(ref, i) in cell.links" v-bind:href="ref.link" :key="i" target="_blank">{{ref.text}}<span v-if="i != cell.links.length - 1">,</span>
                     </a> 
                     <div v-if="cell.type=='checkbox'" class="form-check">
-                        <input class="form-check-input" type="checkbox" v-model="cell.checked" id="defaultCheck1">
+                        <input type="checkbox" v-model="cell.checked" id="defaultCheck1">
                     </div>
                     <!-- <span >{{cell}}</span> -->
                 </td>
