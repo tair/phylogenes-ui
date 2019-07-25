@@ -271,15 +271,11 @@
                 // "Updated" nodes based on change in the data.
                 // The data we associate is the array of tree nodes "treenodes[]"
                 // The treenodes array is still the old array, which is updated using d3 later.
-                // var oldNodes2 = d3.select('.nodes')
-                //     .selectAll('g.shape');
-                // console.log(oldNodes2);
                 var oldNodes = d3.select('.nodes')
                     .selectAll('g.shape')
                     .data(this.treenodes_view);
                 //modifiedNodes tells d3 which nodes have been modified compared to previously rendered
                 // 'treenodes'.
-                // console.log(nodes);
                 var nodesData = d3.select('.nodes')
                     .selectAll('g.shape')
                     .data(nodes, function (d) {
