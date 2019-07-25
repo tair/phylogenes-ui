@@ -217,7 +217,7 @@
                     colsWidth: ['50px', '300px', '100px']
                 },
                 //Pruning
-                PRUNING_PANTHER_API: "http://35.165.70.47:8080/hello/",
+                PRUNING_PANTHER_API: "http://35.165.70.47:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
                 originalTaxonIdsLength: 0
