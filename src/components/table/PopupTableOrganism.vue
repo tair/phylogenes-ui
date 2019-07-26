@@ -1,7 +1,5 @@
 <template>
     <div class="align-middle">
-        <!-- <button class="btn bg-white" @click="checkAll">Check All</button>
-        <button class="btn bg-white" @click="uncheckAll">Uncheck All</button> -->
         <table class="popupTable">
             <thead id="head">
                 <tr>
@@ -26,7 +24,6 @@
                     <div v-if="cell.type=='checkbox'" class="form-check">
                         <input type="checkbox" v-model="cell.checked" id="defaultCheck1">
                     </div>
-                    <!-- <span >{{cell}}</span> -->
                 </td>
             </tr>
         </table>
