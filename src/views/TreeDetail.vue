@@ -45,8 +45,6 @@
                                         <i class="fas fa-tools fa-2x fa-fw"></i>
                                     </template>
                                     <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
-                                    <b-dropdown-item>Download gene table as text</b-dropdown-item>
-                                    <b-dropdown-item >Download tree as PhyloXML</b-dropdown-item>
                                     <!-- using vue-json-csv. reference: https://www.npmjs.com/package/vue-json-csv -->
                                     <json-csv 
                                         :data="tableCsvData" 
