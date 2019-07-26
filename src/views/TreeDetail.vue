@@ -509,7 +509,6 @@
                 this.completeData = tabularData;
 
                 this.tableCsvData = Object.assign([], tabularData);
-                console.log(this.tableCsvData);
                 // convert * to 1 and blank to 0 for exporting csv
                 this.anno_headers.forEach( anno_header => {
                     this.tableCsvFields.push(anno_header)
