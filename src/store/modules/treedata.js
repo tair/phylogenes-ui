@@ -13,6 +13,7 @@ const state = {
         data: null,
         jsonString: null,
         go_annotations: null,
+        publications: null,
         metadata: {
             familyName: [],
             taxonRange: ''
@@ -68,6 +69,9 @@ const getters = {
     [types.TABLE_GET_ISTABLELOADING]: state => {
         return state.treedata.isTableLoading;
     },
+    [types.TREE_GET_PUBLICATIONS]: state => {
+        return state.treedata.publications;
+    }
 };
 
 const actions = {
@@ -124,6 +128,9 @@ const actions = {
                         context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
                     } else if (!res.data.response.docs[0].go_annotations) {
                         context.state.treedata.go_annotations = null;
+                    }
+                    if(res.data.response.docs[0].publications) {
+                        context.state.treedata.publications = JSON.parse(res.data.response.docs[0].publications);
                     }
                 }
                 // tree data

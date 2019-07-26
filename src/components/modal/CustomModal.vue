@@ -32,6 +32,7 @@
 <script>
     export default {
         name: 'customModal',
+        props: ['type'],
         components: {
 
         },
@@ -39,7 +40,12 @@
             return {}
         },
         computed: {},
-        methods: {}
+        methods: {},
+        mounted(){
+            if (this.type = 'publicationModal'){
+                document.getElementsByClassName('modal-container')[0].style.width = '1100px';
+            }
+        }
     }
 </script>
 

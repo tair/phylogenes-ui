@@ -7,6 +7,12 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
+        <modal type="publicationModal" v-if="showPublicationPopup" @close="showPublicationPopup = false">
+            <div slot="header">{{publicationPopupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <popupTablePublication v-if="publicationPopupData.length > 0" :data="publicationPopupData" :cols="publicationPopupCols"></popupTablePublication>
+            </template>
+        </modal>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         <table v-else class="mainTable"> 
             <thead id="head" ref="thead">
@@ -45,6 +51,7 @@
     import { mapGetters, mapActions } from 'vuex';
 
     import popupTable from './PopupTable';
+    import popupTablePublication from './PopupTablePublication';
     import customModal from '@/components/modal/CustomModal';
     import tablecell from '@/components/table/TableCellD3';
 
@@ -52,6 +59,7 @@
         name: "tablelayout",
         components: {
             popupTable: popupTable,
+            popupTablePublication: popupTablePublication,
             'modal': customModal,
             tablecell: tablecell
         },
@@ -67,9 +75,12 @@
                 scrollFromTree: false,
                 scrollTop_old: 0,
                 showPopup: false,
+                showPublicationPopup: false,
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
+                publicationPopupCols: ["Title", "Year", "Author"],
                 popupData: [],
+                pubPopupData: [],
                 isLoading: false,
                 firstLoad: false,
                 ticking: false,
@@ -81,7 +92,8 @@
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
-                store_annoMapping: types.TREE_GET_ANNO_MAPPING
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+                stateTreePublications: types.TREE_GET_PUBLICATIONS
             })
         },
         watch: {
@@ -266,8 +278,12 @@
                 this.popupData = this.getPopupData(annoList);
             },
             tdClicked(c, row) {
-                if(row[c] != '*') return;
                 let uniprotId = row["Uniprot ID"];
+                if(c == 'Publications'){
+                    const publicationHeader = "Publications";
+                    this.displayPublicationPopup(publicationHeader, uniprotId);
+                }
+                if(row[c] != '*') return;
                 if(uniprotId) {
                     uniprotId = uniprotId.toLowerCase();
                 } else {
@@ -285,6 +301,13 @@
                 this.popupData = this.getPopupData(data);
                 this.showPopup = true;
             },
+            displayPublicationPopup(header, data) {
+                this.publicationPopupHeader = header;
+                this.publicationPopupData = this.getPublicationPopupData(data);
+                if (this.publicationPopupData.length > 0){
+                    this.showPublicationPopup = true;
+                }
+            },//TODO: use one modal as template
             getDBLink(r) {
                 let link = "";
                 switch(r.db){
@@ -400,6 +423,21 @@
                     }
                 });
                 return annoList;
+            },
+            getPublicationPopupData(uniprotId){
+                const pubMap = this.stateTreePublications;
+                let pubList = [];
+                if(pubMap[uniprotId]){
+                    pubList = pubMap[uniprotId].map(p => {
+                        let pubObj =  JSON.parse(p);
+                        let authorList = pubObj['authorList']['person'].map(a => {
+                            return a['name'];
+                        }).join(',');
+                        let pubFlat = [pubObj['title'], pubObj['date'], authorList];
+                        return pubFlat;
+                    })
+                }
+                return pubList;
             },
             getPopupData(annoList) {
                 let popUpTableData = [];

@@ -119,6 +119,7 @@
                 store_getTreeMetadata: types.TREE_GET_METADATA,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
+                stateTreePublications: types.TREE_GET_PUBLICATIONS
             }),
             showLegendButtonIcon(){
                 return this.legend?
@@ -589,6 +590,7 @@
             updateTableData(nodes) {
                 var tabularData = [];
                 var index = 0;
+                const pubMap = this.stateTreePublications;
                 nodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
@@ -623,6 +625,13 @@
                         if(n._children) {
                             if(n.data.accession) {
                                 tableNode["accession"] = n.data.accession;
+                            }
+                        }
+                        tableNode["Publications"] = 0;
+                        if (n.data.uniprotId) {
+                            const uniprotId = n.data.uniprotId;
+                            if (pubMap[uniprotId]){
+                                tableNode["Publications"] = pubMap[uniprotId].length;
                             }
                         }
                         tabularData.push(tableNode);

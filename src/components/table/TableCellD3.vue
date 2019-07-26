@@ -1,6 +1,6 @@
 <template>
     <span>
-        <span v-if="cellText != '*' && type != 'Uniprot ID'" 
+        <span v-if="cellText != '*' && type != 'Uniprot ID' && type != 'Publications'" 
                 class="spanText"
                 data-toggle="tooltip" :title="computedText">
                 {{computedText}}
@@ -9,6 +9,11 @@
                 class="spanText"
                 data-toggle="tooltip" :title="computedText"
                 :href="'https://www.uniprot.org/uniprot/'+computedText" target="_blank">
+                {{computedText}}
+        </a>
+        <a v-else-if="cellText != '*' && type == 'Publications'" 
+                class="spanText"
+                data-toggle="tooltip" :title="computedText" href="#">
                 {{computedText}}
         </a>
         <span v-else>
