@@ -29,7 +29,7 @@
                 <tr v-for="(row) in rowsToRender" >
                     <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(row[key], i)">
-                        <tablecell :cellText="row[key]"></tablecell>
+                        <tablecell :cellText="row[key]" :type="key"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -81,7 +81,8 @@
             ...mapGetters({
                 stateTreeData: types.TREE_GET_DATA,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
-                store_annoMapping: types.TREE_GET_ANNO_MAPPING
+                store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
             })
         },
         watch: {
@@ -112,6 +113,13 @@
                 handler: function (val, oldVal) {
                     this.extraCols = val.headers;
                 }
+            },
+            store_tableIsLoading: {
+                handler: function(val, oldval) {
+                    if(val) {
+                        this.isLoading = true;
+                    }
+                }
             }
         },
         mounted: function () {
@@ -130,15 +138,20 @@
                 setTimeout(() => {
                     //handleScroll is called with a throttle of 10 ms, this is to control the number of 
                     // calls made to the function, on scorlling of mouse.
-                    this.$refs.tbody.addEventListener('scroll', 
+                    if(this.$refs.tbody) {
+                        this.$refs.tbody.addEventListener('scroll', 
                             _.throttle(this.handleScroll, 10));
-                    this.extraCols = this.store_annoMapping.headers;
+                        this.extraCols = this.store_annoMapping.headers;
+                    }
                 },10);
             },
             //Is called on every change to the store data
             update() {
                 var titles = d3.keys(this.stateTreeData[0]);
                 titles = titles.splice(1);
+                if(titles.includes("accession")) {
+                    titles = titles.splice(0, titles.length-1);
+                }
                 this.cols = titles;
                 this.rowsToRender = [];
                 //If the total number of rows is > 
