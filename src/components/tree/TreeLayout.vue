@@ -154,12 +154,18 @@
                 stateTreeNodes: types.TREE_ACTION_SET_NODES,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            onPruneLoading(isLoad) {
+                this.isLoading = isLoad;
+            },
             //Resets the d3 wrapper, empties the links and nodes array,
             // which removes the currently displayed tree and all it's components
             refreshView() {
                 this.resetRootPosition();
-                this.treelinks_view = [];
-                this.treenodes_view = [];
+                this.treenodes_view.splice(0, this.treenodes_view.length);
+                setTimeout(() => {
+                    this.treenodes_view = [];
+                    this.treelinks_view = [];
+                });
             },
             //Set the d3 svg to it's original position before moving around with mouse
             resetRootPosition() {
@@ -247,8 +253,10 @@
                 this.updateExtraInfo(modifiedNodes);
 
                 this.resetTreeLayout();
-                this.$emit('updated-tree', modifiedNodes);
-
+                setTimeout(() => {
+                    this.$emit('updated-tree', modifiedNodes);
+                });
+               
                 this.renderNodes(modifiedNodes);
                 this.renderLinks(modifiedNodes);
 
@@ -271,7 +279,9 @@
                 var nodesData = d3.select('.nodes')
                     .selectAll('g.shape')
                     .data(nodes, function (d) {
-                        return d.id;
+                        if(d) {
+                            return d.id;
+                        }
                     });
                 //enteringNodes gives any new nodes added to the tree (expand)
                 //type: EnterNode. EnterNode.nodes() gives array of nodes.
@@ -319,7 +329,9 @@
                 var linksData = d3.select('.links')
                     .selectAll('path')
                     .data(nodes, function (d) {
-                        return d.id;
+                        if(d) {
+                            return d.id;
+                        }
                     });
 
                 const enteringLinks = linksData.enter();
