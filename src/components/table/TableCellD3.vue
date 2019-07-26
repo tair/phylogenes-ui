@@ -1,10 +1,16 @@
 <template>
     <span>
-        <span v-if="cellText != '*'" 
+        <span v-if="cellText != '*' && type != 'Uniprot ID'" 
                 class="spanText"
                 data-toggle="tooltip" :title="computedText">
                 {{computedText}}
         </span>
+        <a v-else-if="cellText != '*' && type == 'Uniprot ID'" 
+                class="spanText"
+                data-toggle="tooltip" :title="computedText"
+                :href="'https://www.uniprot.org/uniprot/'+computedText" target="_blank">
+                {{computedText}}
+        </a>
         <span v-else>
             <svg :width=tdWidth :height=tdHeight>
                 <g>
