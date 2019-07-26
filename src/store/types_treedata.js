@@ -11,6 +11,7 @@ export const TREE_GET_ZOOM = 'treedata/stateTreeZoom';
 export const TREE_GET_SEARCHTEXTWTN = 'treedata/store_getSearchTxtWthn'
 export const TABLE_GET_SCROLL = 'treedata/stateTableScroll';
 export const TABLE_GET_ISTABLELOADING = 'treedata/store_tableIsLoading';
+export const TREE_GET_PUBLICATIONS = 'treedata/stateTreePublications';
 
 //actions
 export const TREE_ACTION_SET_DATA = 'treedata/stateSetTreeData';
