@@ -45,7 +45,15 @@
                                         <i class="fas fa-tools fa-2x fa-fw"></i>
                                     </template>
                                     <b-dropdown-item >Download tree as PhyloXML</b-dropdown-item>
-                                    <b-dropdown-item>Download gene table as text</b-dropdown-item>
+                                    <!-- using vue-json-csv. reference: https://www.npmjs.com/package/vue-json-csv -->
+                                    <json-csv 
+                                        :data="tableCsvData" 
+                                        :name="treeId+'.csv'" 
+                                        :fields="tableCsvFields"
+                                        :labels="tableCsvLabels"
+                                    >
+                                        <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
+                                    </json-csv>
                                     <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
                                     <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
                                     <b-dropdown-item @click="pruneTreeFromMenu">Prune tree by organism</b-dropdown-item>
@@ -53,7 +61,7 @@
                                 <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
                                     <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
                                 <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
-                                            @click="expandAll"><i class="fas fa-arrows-alt-v fa-2x fa-fw"></i></button>
+                                            @click="expandAll"><i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i></button>
                                 <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
                                         @click="showLegend" id="legendButton"><i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>     
                                 </button>
@@ -220,7 +228,19 @@
                 PRUNING_PANTHER_API: "http://35.165.70.47:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
-                originalTaxonIdsLength: 0
+                originalTaxonIdsLength: 0,
+                tableCsvData: [],
+                tableCsvFields:[
+                    'Uniprot ID',
+                    'Gene ID',
+                    'Gene name',
+                    'Organism',
+                    'Protein function',
+                    'Subfamily name'
+                ],
+                tableCsvLabels:{
+                    'Protein function':'Protein name'
+                }
             }
         },
         mounted() {
@@ -481,6 +501,24 @@
                         tableNode["Gene ID"] = geneId;
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
+                        tableNode["Subfamily name"] = n.data.sf_name;
+                        this.anno_headers.sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        });
+                        this.anno_headers.forEach(a => {
+                            tableNode[a] = "";
+                            if(n.data.uniprotId) {
+                                let uniprotId = n.data.uniprotId.toLowerCase();
+                                if(this.anno_mapping[uniprotId]) {
+                                    let currAnno = this.anno_mapping[uniprotId];
+                                    currAnno.forEach(c => {
+                                        if(c.goName === a) {
+                                            tableNode[a] = "*";
+                                        }
+                                    });
+                                }
+                            }
+                        });
 
                         if(n.data.organism) {
                             let org = uniqueOrganisms.find(o => o.name === n.data.organism);
@@ -507,6 +545,24 @@
                 } 
 
                 this.completeData = tabularData;
+
+                this.tableCsvData = Object.assign([], tabularData);
+                // convert * to 1 and blank to 0 for exporting csv
+                this.anno_headers.forEach( anno_header => {
+                    this.tableCsvFields.push(anno_header)
+                    this.tableCsvData.forEach( node => {
+                        if (node[anno_header] == "*"){
+                            node[anno_header] = 1;
+                        } else {
+                            node[anno_header] = 0;
+                        }
+                    })  
+                })
+                this.tableCsvData.forEach( node => {
+                    node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
+                })
+                this.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');    
+            
             },
             onTreeUpdate(nodes) {
                 this.metadata.isLoading = false;

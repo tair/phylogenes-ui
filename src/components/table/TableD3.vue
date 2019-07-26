@@ -29,7 +29,7 @@
                 <tr v-for="(row) in rowsToRender" >
                     <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(row[key], i)">
-                        <tablecell :cellText="row[key]"></tablecell>
+                        <tablecell :cellText="row[key]" :type="key"></tablecell>
                     </td>
                 </tr>
             </tbody>
