@@ -44,7 +44,7 @@
                                     <template slot="button-content">
                                         <i class="fas fa-tools fa-2x fa-fw"></i>
                                     </template>
-                                    <b-dropdown-item >Download tree as PhyloXML</b-dropdown-item>
+                                    <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
                                     <!-- using vue-json-csv. reference: https://www.npmjs.com/package/vue-json-csv -->
                                     <json-csv 
                                         :data="tableCsvData" 
@@ -197,6 +197,7 @@
                 jsonData: null,
                 mappingData: null,
                 baseUrl: process.env.BASE_URL,
+                phyloXML_URL: "https://phyloxml.s3-us-west-2.amazonaws.com/",
                 searchText: "",
                 defaultSearchText: "",
                 matchNodes: [],
@@ -578,6 +579,9 @@
                 this.$refs.treeLayout.onDefaultView();
                 this.$refs.searchBox.onReset();
             },
+            exportXML() {
+                this.downloadXmlWithAxios();
+            },
             exportPNG() {
                 this.$refs.treeLayout.onExportPng(this.treeId);
             },
@@ -601,6 +605,26 @@
                     }
                     return 0;
                 });
+            },
+            downloadXmlWithAxios(){
+                axios({
+                    method: 'get',
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
+                    },
+                    url: this.phyloXML_URL+this.treeId+".xml",
+                    responseType: 'arraybuffer'
+                })
+                .then(response => {
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', this.treeId+'.xml'); //or any other extension
+                    document.body.appendChild(link);
+                    link.click();
+                })
+                .catch(() => console.log('error occured'))
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
