@@ -487,7 +487,7 @@
                 var index = 0;
                 let uniqueOrganisms = [];
                 nodes.forEach(n => {
-                    if(!n.children) {
+                    if(!n.children && n.data.uniprotId) {
                         var tableNode = {};
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
