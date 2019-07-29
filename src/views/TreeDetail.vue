@@ -576,7 +576,6 @@
                                 }
                             }
                         });
-                        console.log(tableNode);
                         this.tableCsvData.push(tableNode);
                     }
                 });
@@ -669,7 +668,6 @@
                                 tableNode["accession"] = n.data.accession;
                             }
                         }
-                        console.log(tableNode);
                         tabularData.push(tableNode);
                     }
                 });
