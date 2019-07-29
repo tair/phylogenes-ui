@@ -50,7 +50,6 @@
                                         :data="tableCsvData" 
                                         :name="treeId+'.csv'" 
                                         :fields="tableCsvFields"
-                                        :labels="tableCsvLabels"
                                     >
                                         <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
                                     </json-csv>
@@ -78,6 +77,7 @@
                     <div class="col-sm-12 h-95">
                         <treelayout  :jsonData="jsonData" :mappingData="mappingData"
                                         ref="treeLayout"
+                                        v-on:get-table-csv-data="getTableCsvData"
                                         v-on:init-tree="onTreeInit"
                                         v-on:updated-tree="onTreeUpdate"></treelayout>
                     </div>
@@ -239,9 +239,6 @@
                     'Protein function',
                     'Subfamily name'
                 ],
-                tableCsvLabels:{
-                    'Protein function':'Protein name'
-                }
             }
         },
         mounted() {
@@ -502,24 +499,6 @@
                         tableNode["Gene ID"] = geneId;
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
-                        tableNode["Subfamily name"] = n.data.sf_name;
-                        this.anno_headers.sort(function (a, b) {
-                            return a.toLowerCase().localeCompare(b.toLowerCase());
-                        });
-                        this.anno_headers.forEach(a => {
-                            tableNode[a] = "";
-                            if(n.data.uniprotId) {
-                                let uniprotId = n.data.uniprotId.toLowerCase();
-                                if(this.anno_mapping[uniprotId]) {
-                                    let currAnno = this.anno_mapping[uniprotId];
-                                    currAnno.forEach(c => {
-                                        if(c.goName === a) {
-                                            tableNode[a] = "*";
-                                        }
-                                    });
-                                }
-                            }
-                        });
 
                         if(n.data.organism) {
                             let org = uniqueOrganisms.find(o => o.name === n.data.organism);
@@ -545,25 +524,7 @@
                     this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
                 } 
 
-                this.completeData = tabularData;
-
-                this.tableCsvData = Object.assign([], tabularData);
-                // convert * to 1 and blank to 0 for exporting csv
-                this.anno_headers.forEach( anno_header => {
-                    this.tableCsvFields.push(anno_header)
-                    this.tableCsvData.forEach( node => {
-                        if (node[anno_header] == "*"){
-                            node[anno_header] = 1;
-                        } else {
-                            node[anno_header] = 0;
-                        }
-                    })  
-                })
-                this.tableCsvData.forEach( node => {
-                    node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
-                })
-                this.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');    
-            
+                this.completeData = tabularData;           
             },
             onTreeUpdate(nodes) {
                 this.metadata.isLoading = false;
@@ -581,6 +542,48 @@
             },
             exportXML() {
                 this.downloadXmlWithAxios();
+            },
+            getTableCsvData(nodes) {
+                this.sortArrayByX(nodes);
+                nodes.forEach(n => {
+                    if(!n.children) {
+                        var tableNode = {};
+                        tableNode["Gene name"] = n.data.gene_symbol;
+                        tableNode["Organism"] = n.data.organism;
+                        var geneId = n.data.gene_id;
+                        if (geneId) {
+                            geneId = geneId.split(':')[1];
+                        }
+                        tableNode["Gene ID"] = geneId;
+                        tableNode["Protein name"] = n.data.definition;
+                        tableNode["Uniprot ID"] = n.data.uniprotId;
+                        tableNode["Subfamily name"] = n.data.sf_name;
+                        this.anno_headers.sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        });
+                        this.anno_headers.forEach(a => {
+                            this.tableCsvFields.push(a);
+                            tableNode[a] = 0;
+                            if(n.data.uniprotId) {
+                                let uniprotId = n.data.uniprotId.toLowerCase();
+                                if(this.anno_mapping[uniprotId]) {
+                                    let currAnno = this.anno_mapping[uniprotId];
+                                    currAnno.forEach(c => {
+                                        if(c.goName === a) {
+                                            tableNode[a] = 1;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                        console.log(tableNode);
+                        this.tableCsvData.push(tableNode);
+                    }
+                });
+                this.tableCsvData.forEach( node => {
+                    node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
+                })
+                this.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');
             },
             exportPNG() {
                 this.$refs.treeLayout.onExportPng(this.treeId);
@@ -666,6 +669,7 @@
                                 tableNode["accession"] = n.data.accession;
                             }
                         }
+                        console.log(tableNode);
                         tabularData.push(tableNode);
                     }
                 });
