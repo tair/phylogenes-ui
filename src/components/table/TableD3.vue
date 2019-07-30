@@ -1,3 +1,6 @@
+// <b-button triggers="focus" variant="light" 
+//   title="Known Function"><i class="fas fa-info-circle fa-lg"></i></b-button>        
+
 <template>
     <div id="parent">
         <modal v-if="showPopup" @close="showPopup = false">
@@ -15,13 +18,64 @@
                 <tr id="secTr">
                     <th colspan="2" class="thInvis"></th>
                     <th v-if="extraCols.length > 0" 
-                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
-                    <th colspan="4" class="thInvis"></th>
+                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
+                            <b-button id="popover-1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <b-popover
+                            target="popover-1"
+                            title="Known Function"
+                            triggers="focus"
+                            >
+This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>.
+Only Molecular Function annotations with Experimental Evidence are shown.
+                            </b-popover>
+                    </th>
+            <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
                     <th v-for="(col,i) in cols" :key="col" 
                         :class="{thSubColSp: i>1&&i<extraCols.length+1}">
-                            <tablecell :cellText="col" :type="'th'"></tablecell>
+                            <tablecell :cellText="col" :type="'th'">
+                            </tablecell>
+
+                            <b-button v-if="col === 'Gene name'" id="popover-2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <b-popover
+                            target="popover-2"
+                            title="Gene Name"
+                            triggers="focus"
+                            >
+A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta 
+file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.
+                            </b-popover>
+
+                            <b-button v-if="col === 'Gene ID'" id="popover-3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <b-popover
+                            target="popover-3"
+                            title="Gene ID"
+                            triggers="focus"
+                            >
+A gene ID is acanonical accession extracted from the Reference Proteomes gene2acc 
+gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.
+                            </b-popover>
+
+                            <b-button v-if="col === 'Protein name'" id="popover-4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <b-popover
+                            target="popover-4"
+                            title="Protein name"
+                            triggers="focus"
+                            >
+This information was extracted from the ProteinName filed of a fasta header in the UniProt 
+protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.
+                            </b-popover>
+
+                            <b-button v-if="col === 'Subfamily Name'" id="popover-5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <b-popover
+                            target="popover-5"
+                            title="Subfamily Name"
+                            triggers="focus"
+                            >
+The name of a subfamily is transferred from the representative member 
+of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>
+                            </b-popover>
                     </th>
                 </tr>
             </thead>
@@ -571,5 +625,21 @@
         stroke: steelblue;
         stroke-width: 2px;
     }
+
+    .btn-primary-outline {
+    background-color: transparent;
+    border-color: #ccc;
+    }
+
+    /* .btn-primary-outline {
+    background: transparent;
+    color: #F2F2F2;
+    -webkit-transition: background .2s ease-in-out, border .2s ease-in-out;
+    -moz-transition: background .2s ease-in-out, border .2s ease-in-out;
+    -o-transition: background .2s ease-in-out, border .2s ease-in-out;
+    transition: background .2s ease-in-out, border .2s ease-in-out;
+    border: 2px solid #4992B7;
+} */
+   
 </style>
 
