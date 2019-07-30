@@ -4,13 +4,14 @@
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
                 <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"
+                            v-on:check-change="onAnyCheckboxChange"
                             v-on:uncheck-all="onUncheckAll"
                             v-on:check-all="onCheckAll"></popupTable>
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
             <template slot="footer"> 
                 <button class="modal-default-button" @click="onPrune">
-                    Prune
+                    Update tree
                 </button>
                 <button class="modal-default-button" @click="showPopup = false">
                     Close
@@ -44,13 +45,12 @@
                                     <template slot="button-content">
                                         <i class="fas fa-tools fa-2x fa-fw"></i>
                                     </template>
-                                    <b-dropdown-item >Download tree as PhyloXML</b-dropdown-item>
+                                    <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
                                     <!-- using vue-json-csv. reference: https://www.npmjs.com/package/vue-json-csv -->
                                     <json-csv 
                                         :data="tableCsvData" 
                                         :name="treeId+'.csv'" 
                                         :fields="tableCsvFields"
-                                        :labels="tableCsvLabels"
                                     >
                                         <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
                                     </json-csv>
@@ -78,6 +78,7 @@
                     <div class="col-sm-12 h-95">
                         <treelayout  :jsonData="jsonData" :mappingData="mappingData"
                                         ref="treeLayout"
+                                        v-on:get-table-csv-data="getTableCsvData"
                                         v-on:init-tree="onTreeInit"
                                         v-on:updated-tree="onTreeUpdate"></treelayout>
                     </div>
@@ -111,6 +112,7 @@
     import * as types from '../store/types_treedata';
     import customModal from '@/components/modal/CustomModal';
     import popupTableOrganism from '@/components/table/PopupTableOrganism';
+import { setTimeout } from 'timers';
 
     export default {
         name: "TreeDetail",
@@ -197,6 +199,7 @@
                 jsonData: null,
                 mappingData: null,
                 baseUrl: process.env.BASE_URL,
+                phyloXML_URL: "https://phyloxml.s3-us-west-2.amazonaws.com/",
                 searchText: "",
                 defaultSearchText: "",
                 matchNodes: [],
@@ -238,9 +241,6 @@
                     'Protein function',
                     'Subfamily name'
                 ],
-                tableCsvLabels:{
-                    'Protein function':'Protein name'
-                }
             }
         },
         mounted() {
@@ -398,12 +398,16 @@
                     if (d.event_type === "DUPLICATION") {
                         if (d.speciation_event) {
                             text += d.speciation_event;
+                        } else if(d.taxonomic_range) {
+                            text += d.taxonomic_range;
                         } else {
                             text += this.getLeafNodeText(d);
                         }
                     } else if(d.event_type === "SPECIATION") {
                         if (d.speciation_event) {
                             text += d.speciation_event;
+                        } else if(d.taxonomic_range) {
+                            text += d.taxonomic_range;
                         }
                     } else if(d.event_type === "HORIZONTAL_TRANSFER" ||
                         d.event_type === "HORIZ_TRANSFER") {
@@ -489,7 +493,7 @@
                 var index = 0;
                 let uniqueOrganisms = [];
                 nodes.forEach(n => {
-                    if(!n.children) {
+                    if(!n.children && n.data.uniprotId) {
                         var tableNode = {};
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
@@ -501,24 +505,6 @@
                         tableNode["Gene ID"] = geneId;
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
-                        tableNode["Subfamily name"] = n.data.sf_name;
-                        this.anno_headers.sort(function (a, b) {
-                            return a.toLowerCase().localeCompare(b.toLowerCase());
-                        });
-                        this.anno_headers.forEach(a => {
-                            tableNode[a] = "";
-                            if(n.data.uniprotId) {
-                                let uniprotId = n.data.uniprotId.toLowerCase();
-                                if(this.anno_mapping[uniprotId]) {
-                                    let currAnno = this.anno_mapping[uniprotId];
-                                    currAnno.forEach(c => {
-                                        if(c.goName === a) {
-                                            tableNode[a] = "*";
-                                        }
-                                    });
-                                }
-                            }
-                        });
 
                         if(n.data.organism) {
                             let org = uniqueOrganisms.find(o => o.name === n.data.organism);
@@ -544,25 +530,7 @@
                     this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
                 } 
 
-                this.completeData = tabularData;
-
-                this.tableCsvData = Object.assign([], tabularData);
-                // convert * to 1 and blank to 0 for exporting csv
-                this.anno_headers.forEach( anno_header => {
-                    this.tableCsvFields.push(anno_header)
-                    this.tableCsvData.forEach( node => {
-                        if (node[anno_header] == "*"){
-                            node[anno_header] = 1;
-                        } else {
-                            node[anno_header] = 0;
-                        }
-                    })  
-                })
-                this.tableCsvData.forEach( node => {
-                    node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
-                })
-                this.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');    
-            
+                this.completeData = tabularData;           
             },
             onTreeUpdate(nodes) {
                 this.metadata.isLoading = false;
@@ -577,6 +545,50 @@
             onDefaultView() {
                 this.$refs.treeLayout.onDefaultView();
                 this.$refs.searchBox.onReset();
+            },
+            exportXML() {
+                this.downloadXmlWithAxios();
+            },
+            getTableCsvData(nodes) {
+                this.sortArrayByX(nodes);
+                nodes.forEach(n => {
+                    if(!n.children) {
+                        var tableNode = {};
+                        tableNode["Gene name"] = n.data.gene_symbol;
+                        tableNode["Organism"] = n.data.organism;
+                        var geneId = n.data.gene_id;
+                        if (geneId) {
+                            geneId = geneId.split(':')[1];
+                        }
+                        tableNode["Gene ID"] = geneId;
+                        tableNode["Protein name"] = n.data.definition;
+                        tableNode["Uniprot ID"] = n.data.uniprotId;
+                        tableNode["Subfamily name"] = n.data.sf_name;
+                        this.anno_headers.sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        });
+                        this.anno_headers.forEach(a => {
+                            this.tableCsvFields.push(a);
+                            tableNode[a] = 0;
+                            if(n.data.uniprotId) {
+                                let uniprotId = n.data.uniprotId.toLowerCase();
+                                if(this.anno_mapping[uniprotId]) {
+                                    let currAnno = this.anno_mapping[uniprotId];
+                                    currAnno.forEach(c => {
+                                        if(c.goName === a) {
+                                            tableNode[a] = 1;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                        this.tableCsvData.push(tableNode);
+                    }
+                });
+                this.tableCsvData.forEach( node => {
+                    node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
+                })
+                this.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');
             },
             exportPNG() {
                 this.$refs.treeLayout.onExportPng(this.treeId);
@@ -601,6 +613,26 @@
                     }
                     return 0;
                 });
+            },
+            downloadXmlWithAxios(){
+                axios({
+                    method: 'get',
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
+                    },
+                    url: this.phyloXML_URL+this.treeId+".xml",
+                    responseType: 'arraybuffer'
+                })
+                .then(response => {
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', this.treeId+'.xml'); //or any other extension
+                    document.body.appendChild(link);
+                    link.click();
+                })
+                .catch(() => console.log('error occured'))
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
@@ -684,6 +716,20 @@
                 let filteredOrganisms = this.popupData.filter(pd => {
                     return pd[0].checked == true;
                 });
+            },
+            onAnyCheckboxChange() {
+                //Timeout required becauses the "change" event is emitted before the value of the checkbox is updated.
+                //So we need to perform any logic after a frame
+                setTimeout(() => {
+                    let anyUnchecked = this.popupData
+                                        .map(pd => {return pd[0].checked;})
+                                        .some(res => {return !res});
+                    if(anyUnchecked) {
+                        this.popupCols[0].val = false;
+                    } else {
+                        this.popupCols[0].val = true;
+                    }
+                }); 
             },
             resetPruning() {
                 this.unprunedTaxonIds = 0;

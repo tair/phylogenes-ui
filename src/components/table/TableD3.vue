@@ -405,11 +405,17 @@
                             sourceLink: "https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=" + uniprotId
                         });
                     } else {
-                        findGoId.reference.push({
-                            count: findGoId.reference.length + 1,
-                            link: refLink
+                        let refLinksList = findGoId.reference.map(r => {
+                            return r.link;
                         });
-                        findGoId.withFrom.concat(withFromList);
+
+                        if(!refLinksList.includes(refLink)) {
+                            findGoId.reference.push({
+                                count: findGoId.reference.length + 1,
+                                link: refLink
+                            });
+                            findGoId.withFrom.concat(withFromList);
+                        }
                     }
                 });
                 return annoList;
