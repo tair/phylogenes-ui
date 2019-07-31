@@ -4,13 +4,14 @@
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
                 <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"
+                            v-on:check-change="onAnyCheckboxChange"
                             v-on:uncheck-all="onUncheckAll"
                             v-on:check-all="onCheckAll"></popupTable>
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
             <template slot="footer"> 
                 <button class="modal-default-button" @click="onPrune">
-                    Prune
+                    Update tree
                 </button>
                 <button class="modal-default-button" @click="showPopup = false">
                     Close
@@ -111,6 +112,7 @@
     import * as types from '../store/types_treedata';
     import customModal from '@/components/modal/CustomModal';
     import popupTableOrganism from '@/components/table/PopupTableOrganism';
+import { setTimeout } from 'timers';
 
     export default {
         name: "TreeDetail",
@@ -150,7 +152,6 @@
                 this.loadJsonFromDB(this.treeId);
                 this.stateSetTreeData([]);
                 this.metadata.isLoading = true;
-                this.prunedLoaded = false;
                 this.resetPruning();
             },
             stateTreeJson: {
@@ -215,7 +216,7 @@
                     spannedTaxon: ""
                 },
                 showPopup: false,
-                popupHeader: "Organisms",
+                popupHeader: "Organisms (uncheck an organism to remove from tree)",
                 popupCols: [{type:'checkbox', val:true}, 
                             "Organism",
                             "Number of genes"],
@@ -223,10 +224,10 @@
                 popupTableConfig: {
                     tableHeight: 'auto',
                     tableWidth: 'auto',
-                    colsWidth: ['50px', '300px', '100px']
+                    colsWidth: ['50px', '350px', '100px']
                 },
                 //Pruning
-                PRUNING_PANTHER_API: "http://35.165.70.47:8080/panther/pruning/",
+                PRUNING_PANTHER_API: "http://54.68.67.235:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
                 originalTaxonIdsLength: 0,
@@ -292,7 +293,7 @@
             loadJsonFromFile(fileName) {
               d3.json("/sam_annotations_simple.json", (err, data) => {
                   if (err) {
-                      console.log(err);
+                      console.error(err);
                   } else {
                       this.loadAnnotations(data);
                   }
@@ -332,7 +333,7 @@
             processJson(treeJson) {
                 d3.csv("/organism_to_display.csv", (err, data) => {
                     if (err) {
-                        console.log(err);
+                        console.error(err);
                     } else {
                         this.mappingData = data;
                         this.mapOrganismToDisplayName(treeJson);
@@ -396,12 +397,16 @@
                     if (d.event_type === "DUPLICATION") {
                         if (d.speciation_event) {
                             text += d.speciation_event;
+                        } else if(d.taxonomic_range) {
+                            text += d.taxonomic_range;
                         } else {
                             text += this.getLeafNodeText(d);
                         }
                     } else if(d.event_type === "SPECIATION") {
                         if (d.speciation_event) {
                             text += d.speciation_event;
+                        } else if(d.taxonomic_range) {
+                            text += d.taxonomic_range;
                         }
                     } else if(d.event_type === "HORIZONTAL_TRANSFER" ||
                         d.event_type === "HORIZ_TRANSFER") {
@@ -454,22 +459,18 @@
             // loadJson() {
             //     d3.json("/panther.json", (err, data) => {
             //         if(err) {
-            //             console.log(err);
+            //             console.error(err);
             //         } else {
-            //             //console.log(data);
             //             data = data.search.annotation_node;
             //             this.formatJson(data);
             //             this.setNodeColor(data);
             //
-            //             console.log(data);
             //             //  assigns the data to a hierarchy using parent-child relationships
             //             var nodes = d3.hierarchy(data, function(d) {
             //                 return d.children;
             //             });
             //
             //             this.jsonData = data;
-            //             console.log("Json loaded");
-            //             // console.log(nodes);
             //         }
             //     });
 
@@ -507,6 +508,7 @@
                             } else {
                                 let org = {
                                     name: n.data.organism,
+                                    commonName: n.data.displayName,
                                     taxonId: n.data.taxonId,
                                     count: 1
                                 }
@@ -626,7 +628,7 @@
                     document.body.appendChild(link);
                     link.click();
                 })
-                .catch(() => console.log('error occured'))
+                .catch(() => console.error('error occured'))
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
@@ -680,6 +682,15 @@
             showOrganismPopup() {
                 this.showPopup = true;
                 this.popupData = [];
+                this.popupCols[0].val = true;
+                
+                setTimeout(() => {
+                    let anyUnchecked = this.popupData
+                                            .map(pd => {return pd[0].checked;})
+                                            .some(res => {return !res});
+                    if(anyUnchecked) this.popupCols[0].val = false;
+                });
+
                 this.metadata.uniqueOrganisms.organisms.forEach(o => {
                     let singleRow = [];
                     let checkedV = true;
@@ -688,7 +699,8 @@
                         checkedV = false;
                     }
                     singleRow.push({type: "checkbox", label: "txt", checked: checkedV});
-                    singleRow.push({type: "text", val: o.name, id: o.taxonId});
+                    let organismDisplayName = o.name + " (" + o.commonName + ")";
+                    singleRow.push({type: "text", val: organismDisplayName, id: o.taxonId});
                     singleRow.push(o.count);
                     this.popupData.push(singleRow);
                 });
@@ -710,6 +722,20 @@
                 let filteredOrganisms = this.popupData.filter(pd => {
                     return pd[0].checked == true;
                 });
+            },
+            onAnyCheckboxChange() {
+                //Timeout required becauses the "change" event is emitted before the value of the checkbox is updated.
+                //So we need to perform any logic after a frame
+                setTimeout(() => {
+                    let anyUnchecked = this.popupData
+                                        .map(pd => {return pd[0].checked;})
+                                        .some(res => {return !res});
+                    if(anyUnchecked) {
+                        this.popupCols[0].val = false;
+                    } else {
+                        this.popupCols[0].val = true;
+                    }
+                }); 
             },
             resetPruning() {
                 this.unprunedTaxonIds = 0;
@@ -742,7 +768,7 @@
                             this.$refs.treeLayout.onPruneLoading(false);
                         })
                         .catch(err => {
-                            console.log("error");
+                            console.error("error");
                             this.isLoading = false;
                             this.resetPruning();
                             this.$refs.treeLayout.onPruneLoading(false);

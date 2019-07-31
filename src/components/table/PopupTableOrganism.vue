@@ -22,7 +22,7 @@
                        v-for="(ref, i) in cell.links" v-bind:href="ref.link" :key="i" target="_blank">{{ref.text}}<span v-if="i != cell.links.length - 1">,</span>
                     </a> 
                     <div v-if="cell.type=='checkbox'" class="form-check">
-                        <input type="checkbox" v-model="cell.checked" id="defaultCheck1">
+                        <input type="checkbox" v-model="cell.checked" @click="onChange(cell)" id="defaultCheck1">
                     </div>
                 </td>
             </tr>
@@ -63,6 +63,9 @@
                 } else {
                     this.$emit("uncheck-all");
                 }
+            },
+            onChange(val) {
+                this.$emit("check-change");
             },
             getStyle(i) {
                 if(i == 1) {
