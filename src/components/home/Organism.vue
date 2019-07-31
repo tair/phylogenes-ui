@@ -4,7 +4,7 @@
 		<button class="btn btn-default btn-organism" @click.prevent="switchView()" v-if="showText">View species tree</button>
 		<button class="btn btn-default btn-organism" @click.prevent="switchView()" v-if="!showText">Switch to see full list of species in plain text</button>		
 		<div class="scroll-div bg-white my-2 px-5" v-if="showText">
-			<p class="text-lg mr-5 pr-5">Protein sequences from these plant species are included in the current PhyloGenes release (version 1.0):</p>
+			<p class="text-lg mr-5 pr-5">Protein sequences from these plant species are included in the current PhyloGenes release (version 1.1):</p>
 
 			<p>
 				<a v-for="data in plantSpecies" :href="'https://conf.arabidopsis.org/display/PHGSUP/'+data.sciName.replace(' ','+')"><i>{{data.sciName}}</i>&nbsp;<template v-if="data.cmnName">({{data.cmnName}})</template><br></a>
@@ -60,6 +60,7 @@
 					{sciName:'Triticum aestivum',cmnName:'wheat'},
 					{sciName:'Vitis vinifera',cmnName:'grape'},
 					{sciName:'Zea mays',cmnName:'corn'},
+					{sciName:'Zostera marina',cmnName:'eelgrass'}
                 ],
                 nonPlantSpecies: [
                 	{sciName:'Caenorhabditis elegans',cmnName:'nematode worm'},
