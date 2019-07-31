@@ -152,7 +152,6 @@ import { setTimeout } from 'timers';
                 this.loadJsonFromDB(this.treeId);
                 this.stateSetTreeData([]);
                 this.metadata.isLoading = true;
-                this.prunedLoaded = false;
                 this.resetPruning();
             },
             stateTreeJson: {
@@ -217,7 +216,7 @@ import { setTimeout } from 'timers';
                     spannedTaxon: ""
                 },
                 showPopup: false,
-                popupHeader: "Organisms",
+                popupHeader: "Organisms (uncheck an organism to remove from tree)",
                 popupCols: [{type:'checkbox', val:true}, 
                             "Organism",
                             "Number of genes"],
@@ -225,10 +224,10 @@ import { setTimeout } from 'timers';
                 popupTableConfig: {
                     tableHeight: 'auto',
                     tableWidth: 'auto',
-                    colsWidth: ['50px', '300px', '100px']
+                    colsWidth: ['50px', '350px', '100px']
                 },
                 //Pruning
-                PRUNING_PANTHER_API: "http://35.165.70.47:8080/panther/pruning/",
+                PRUNING_PANTHER_API: "http://54.68.67.235:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
                 originalTaxonIdsLength: 0,
@@ -294,7 +293,7 @@ import { setTimeout } from 'timers';
             loadJsonFromFile(fileName) {
               d3.json("/sam_annotations_simple.json", (err, data) => {
                   if (err) {
-                      console.log(err);
+                      console.error(err);
                   } else {
                       this.loadAnnotations(data);
                   }
@@ -334,7 +333,7 @@ import { setTimeout } from 'timers';
             processJson(treeJson) {
                 d3.csv("/organism_to_display.csv", (err, data) => {
                     if (err) {
-                        console.log(err);
+                        console.error(err);
                     } else {
                         this.mappingData = data;
                         this.mapOrganismToDisplayName(treeJson);
@@ -460,22 +459,18 @@ import { setTimeout } from 'timers';
             // loadJson() {
             //     d3.json("/panther.json", (err, data) => {
             //         if(err) {
-            //             console.log(err);
+            //             console.error(err);
             //         } else {
-            //             //console.log(data);
             //             data = data.search.annotation_node;
             //             this.formatJson(data);
             //             this.setNodeColor(data);
             //
-            //             console.log(data);
             //             //  assigns the data to a hierarchy using parent-child relationships
             //             var nodes = d3.hierarchy(data, function(d) {
             //                 return d.children;
             //             });
             //
             //             this.jsonData = data;
-            //             console.log("Json loaded");
-            //             // console.log(nodes);
             //         }
             //     });
 
@@ -513,6 +508,7 @@ import { setTimeout } from 'timers';
                             } else {
                                 let org = {
                                     name: n.data.organism,
+                                    commonName: n.data.displayName,
                                     taxonId: n.data.taxonId,
                                     count: 1
                                 }
@@ -632,7 +628,7 @@ import { setTimeout } from 'timers';
                     document.body.appendChild(link);
                     link.click();
                 })
-                .catch(() => console.log('error occured'))
+                .catch(() => console.error('error occured'))
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateTableData(nodes) {
@@ -686,6 +682,15 @@ import { setTimeout } from 'timers';
             showOrganismPopup() {
                 this.showPopup = true;
                 this.popupData = [];
+                this.popupCols[0].val = true;
+                
+                setTimeout(() => {
+                    let anyUnchecked = this.popupData
+                                            .map(pd => {return pd[0].checked;})
+                                            .some(res => {return !res});
+                    if(anyUnchecked) this.popupCols[0].val = false;
+                });
+
                 this.metadata.uniqueOrganisms.organisms.forEach(o => {
                     let singleRow = [];
                     let checkedV = true;
@@ -694,7 +699,8 @@ import { setTimeout } from 'timers';
                         checkedV = false;
                     }
                     singleRow.push({type: "checkbox", label: "txt", checked: checkedV});
-                    singleRow.push({type: "text", val: o.name, id: o.taxonId});
+                    let organismDisplayName = o.name + " (" + o.commonName + ")";
+                    singleRow.push({type: "text", val: organismDisplayName, id: o.taxonId});
                     singleRow.push(o.count);
                     this.popupData.push(singleRow);
                 });
@@ -762,7 +768,7 @@ import { setTimeout } from 'timers';
                             this.$refs.treeLayout.onPruneLoading(false);
                         })
                         .catch(err => {
-                            console.log("error");
+                            console.error("error");
                             this.isLoading = false;
                             this.resetPruning();
                             this.$refs.treeLayout.onPruneLoading(false);
