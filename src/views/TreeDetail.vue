@@ -204,6 +204,7 @@ import { setTimeout } from 'timers';
                 matchNodes: [],
                 anno_mapping: {},
                 anno_headers: [],
+                go_mapping: {},
                 legend: true,
                 metadata: {
                     isLoading: false,
@@ -249,6 +250,7 @@ import { setTimeout } from 'timers';
             this.matchNodes = [];
             this.popupData = [];
             this.metadata.isLoading = true;
+
         },
         methods: {
             ...mapActions({
@@ -302,6 +304,7 @@ import { setTimeout } from 'timers';
             loadAnnotations(annotations) {
                 this.anno_mapping = {};
                 this.anno_headers = [];
+                this.go_mapping = {};
                 if(!annotations) {
                     var annoObj = {
                         headers: this.anno_headers,
@@ -321,6 +324,9 @@ import { setTimeout } from 'timers';
                         if(!this.anno_headers.includes(singleAnno.goName)) {
                            this.anno_headers.push(singleAnno.goName);
                        }
+                        if(!(singleAnno.goId in this.go_mapping)) {
+                           this.go_mapping[singleAnno.goName] = singleAnno.goId;
+                        }
                     });
                 });
 
@@ -564,15 +570,16 @@ import { setTimeout } from 'timers';
                             return a.toLowerCase().localeCompare(b.toLowerCase());
                         });
                         this.anno_headers.forEach(a => {
-                            this.tableCsvFields.push(a);
-                            tableNode[a] = 0;
+                            const goNameHeader = `${a}(${this.go_mapping[a]})`;
+                            this.tableCsvFields.push(goNameHeader);
+                            tableNode[goNameHeader] = 0;
                             if(n.data.uniprotId) {
                                 let uniprotId = n.data.uniprotId.toLowerCase();
                                 if(this.anno_mapping[uniprotId]) {
                                     let currAnno = this.anno_mapping[uniprotId];
                                     currAnno.forEach(c => {
                                         if(c.goName === a) {
-                                            tableNode[a] = 1;
+                                            tableNode[goNameHeader] = 1;
                                         }
                                     });
                                 }
