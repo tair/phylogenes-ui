@@ -250,7 +250,6 @@ import { setTimeout } from 'timers';
             this.matchNodes = [];
             this.popupData = [];
             this.metadata.isLoading = true;
-
         },
         methods: {
             ...mapActions({
