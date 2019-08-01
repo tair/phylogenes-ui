@@ -1,4 +1,5 @@
 <template>
+  <div class="col-sm-12">
     <div class="row bg-mblue">
       <b-input-group class="my-1">
         <b-input-group-prepend class="mx-2 align-items-center">
@@ -19,6 +20,7 @@
         </b-input-group-append>
       </b-input-group>
     </div>
+  </div>
 </template>
 <script>
 
@@ -27,6 +29,7 @@ import {mapActions, mapGetters} from 'vuex';
 
 export default {
 name: "searchBox",
+props: ['defaultText'],
 data() {
   return {
       searchText: "",
@@ -41,8 +44,19 @@ computed: {
   })
 },
 watch: {
+  //Set a default search text (Called when searched from outside the tree layout)
+  defaultText: {
+      handler: function (val, oldVal) {
+         this.searchText = this.defaultText;
+         this.isSearched = true;
+      }
+  },
   store_matchedNodes: {
       handler: function (val, oldVal) {
+          if(val == null) {
+             this.onReset();
+             return;
+          }
           if(this.isSearched) {
               this.matchText = val.length + " Matched";
           }

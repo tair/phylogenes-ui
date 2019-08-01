@@ -1,6 +1,6 @@
 <template>
     <g>
-        <text dy=".35em" :x="textPosn.x" :y="textPosn.y" :fill="color">{{getText()}}</text>
+        <text id="nodeText" dy=".35em" :x="textPosn.x" :y="textPosn.y" :fill="color">{{getText()}}</text>
     </g>
 </template>
 
@@ -56,9 +56,9 @@
     }
 </script>
 <style scoped>
-    text {
+    #nodeText {
         font-size: 14px;
-        font-family: "sans-serif";
+        font-family: sans-serif;
         font-weight: bold;
     }
 </style>

@@ -1,14 +1,14 @@
 import * as types from '../types_treedata';
-import util from "./util";
 import axios from "axios/index";
 
-// const SOLR_URL = 'http://localhost:8983/solr/panther/select';
-// const SOLR_URL = 'http://54.68.67.235:8983/solr/panther/select';
-const SOLR_URL = 'http://52.37.99.223:8983/solr/panther/select';
+// const API_URL = 'http://localhost:3000/api/panther';
+const API_URL = 'http://54.68.67.235:3000/api/panther';
+// const API_URL = 'http://52.37.99.223:3000/api/panther';
 
 const state = {
     treedata: {
         isLoading: false,
+        isTableLoading: false,
         iserror: false,
         data: null,
         jsonString: null,
@@ -26,7 +26,8 @@ const state = {
         matchedNodes: null,
         zoom: null,
         scroll: null,
-        topPaddingY: 0
+        topPaddingY: 0,
+        searchTextWithin: null
     }
 };
 
@@ -58,8 +59,14 @@ const getters = {
     [types.TREE_GET_ZOOM]: state => {
         return state.treedata.zoom;
     },
+    [types.TREE_GET_SEARCHTEXTWTN]: state => {
+        return state.treedata.searchTextWithin;
+    },
     [types.TABLE_GET_SCROLL]: state => {
         return state.treedata.scroll;
+    },
+    [types.TABLE_GET_ISTABLELOADING]: state => {
+        return state.treedata.isTableLoading;
     },
 };
 
@@ -93,21 +100,14 @@ const actions = {
         //console.log("Action" + payload);
         context.state.treedata.scroll = payload;
     },
+    [types.TREE_ACTION_SET_SEARCHTEXTWTN]: (context, payload) => {
+        context.state.treedata.searchTextWithin = payload;
+    },
     [types.TREE_ACTION_GET_JSON]: (context, payload) => {
-        var q = "";
-        if(payload != null) {
-            q = util.getQueryForPantherId(payload);
-            if(q == "")
-                q = "*:*";
-        }
-        // console.log('QQQQ: ' + q);
-
+        if (!payload) return;
         axios({
             method: 'GET',
-            url: SOLR_URL +
-            '?fl=' + 'family_name,speciation_events,jsonString,go_annotations' +
-            '&rows=1' + '&start=0' +
-            '&q=' + q
+            url: API_URL + '/tree/' + payload
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
@@ -122,6 +122,8 @@ const actions = {
                     }
                     if(res.data.response.docs[0].go_annotations) {
                         context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                    } else if (!res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = null;
                     }
                 }
                 // tree data
@@ -136,20 +138,9 @@ const actions = {
             })
     },
     [types.TREE_ACTION_GET_ANNOTATIONS]: (context, payload) => {
-        var q = "";
-        if(payload != null) {
-            q = util.getQueryForPantherId(payload);
-            if(q == "")
-                q = "*:*";
-        }
-        // console.log('QQQQ: ' + q);
-
         axios({
             method: 'GET',
-            url: SOLR_URL +
-            '?fl=' + 'go_annotations' +
-            '&rows=1' + '&start=0' +
-            '&q=' + q
+            url: API_URL + '/go_annotations/' + payload
         })
             .then(res => {
                 if(res.data.response.docs.length > 0) {
@@ -159,6 +150,9 @@ const actions = {
             .catch(error => {
                 console.log('Error while reading data (E8273): ' + JSON.stringify(error));
             })
+    },
+    [types.TABLE_ACTION_SET_TABLE_ISLOADING]: (context, payload) => {
+        context.state.treedata.isTableLoading = payload;
     }
 };
 

@@ -12,6 +12,7 @@ across all treenode types (eg. translate, exit movement).
         >
 
         </component>
+        <image v-if="content.data.hasFunc" v-b-tooltip.hover title="Has Known Function" :v-if="content.hasFunc" xlink:href="/flask-yellow.png" height="15" width="15" y="-7"/>
     </g>
 
 </template>
@@ -58,7 +59,8 @@ across all treenode types (eg. translate, exit movement).
             onExit(node) {
                 if(!node) return;
                 // console.log("ON Exit ", node);
-                this.el.transition().duration(this.duration)
+                this.el
+                    .transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + node.y + "," + node.x + ")";
                     });
@@ -72,10 +74,15 @@ across all treenode types (eg. translate, exit movement).
                 this.el.attr("transform", d => {
                     return "translate(" + this.content.yo + "," + this.content.xo + ")";
                 });
-                this.el.transition().duration(this.duration)
+                this.el
+                    .transition().duration(this.duration)
                     .attr("transform", d => {
                         return "translate(" + this.content.y + "," + this.content.x + ")";
                     });
+                if (this.content.data.hasFunc){
+                    let textLength = this.el.select('text').node().textLength.baseVal.value;
+                    this.el.select('image').attr('x', textLength + 20);
+                }
             },
             toggleChildren(d) {
                 if (d.children) {
