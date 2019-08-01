@@ -69,7 +69,7 @@
             },
             getStyle(i) {
                 if(i == 1) {
-                    return "width: 300px";
+                    return "width: 500px";
                 } else {
                     return "width: 100px";
                 }
@@ -83,8 +83,8 @@
         margin: 0px auto;
         overflow: scroll;
         height: auto;
-        width: 400px;
-        max-width: 400px;
+        width: 475px;
+        max-width: 500px;
         max-height: 400px;
     }
 
