@@ -569,7 +569,7 @@ import { setTimeout } from 'timers';
                             return a.toLowerCase().localeCompare(b.toLowerCase());
                         });
                         this.anno_headers.forEach(a => {
-                            const goNameHeader = `${a}(${this.go_mapping[a]})`;
+                            const goNameHeader = `${a} (${this.go_mapping[a]})`;
                             this.tableCsvFields.push(goNameHeader);
                             tableNode[goNameHeader] = 0;
                             if(n.data.uniprotId) {
