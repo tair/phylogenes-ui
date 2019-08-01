@@ -323,7 +323,7 @@ import { setTimeout } from 'timers';
                         if(!this.anno_headers.includes(singleAnno.goName)) {
                            this.anno_headers.push(singleAnno.goName);
                        }
-                        if(!(singleAnno.goId in this.go_mapping)) {
+                        if(!(singleAnno.goName in this.go_mapping)) {
                            this.go_mapping[singleAnno.goName] = singleAnno.goId;
                         }
                     });
