@@ -112,7 +112,7 @@
     import * as types from '../store/types_treedata';
     import customModal from '@/components/modal/CustomModal';
     import popupTableOrganism from '@/components/table/PopupTableOrganism';
-import { setTimeout } from 'timers';
+    import { setTimeout } from 'timers';
 
     export default {
         name: "TreeDetail",
@@ -228,7 +228,7 @@ import { setTimeout } from 'timers';
                     colsWidth: ['50px', '350px', '100px']
                 },
                 //Pruning
-                PRUNING_PANTHER_API: "http://54.68.67.235:8080/panther/pruning/",
+                PRUNING_PANTHER_API: "http://52.37.99.223:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
                 originalTaxonIdsLength: 0,
