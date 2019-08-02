@@ -2,6 +2,7 @@
 node_modules
 /dist
 _s3-upload/
+package-lock.json
 
 # local env files
 .env.local
