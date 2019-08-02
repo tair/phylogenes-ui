@@ -610,21 +610,6 @@
         stroke: steelblue;
         stroke-width: 2px;
     }
-
-    .btn-primary-outline {
-    background-color: transparent;
-    border-color: #ccc;
-    }
-
-    /* .btn-primary-outline {
-    background: transparent;
-    color: #F2F2F2;
-    -webkit-transition: background .2s ease-in-out, border .2s ease-in-out;
-    -moz-transition: background .2s ease-in-out, border .2s ease-in-out;
-    -o-transition: background .2s ease-in-out, border .2s ease-in-out;
-    transition: background .2s ease-in-out, border .2s ease-in-out;
-    border: 2px solid #4992B7;
-} */
    
 </style>
 
