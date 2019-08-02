@@ -5,7 +5,7 @@
         triggers="focus"
         :placement= placement
         >
-        {{text}}
+        <span v-html="text"></span>
         </b-popover>
 </template>
 

@@ -26,11 +26,9 @@
         <div>
             <label for="famName" class="text-dark text-md-left my-1">Filter by</label>
             <div class="text-bold text-dark py-2 pt-0" style="border-bottom: 1px solid #dfdfdf">Taxonomic Range
-                
                 <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                 <popover :text=popover1Text title="Taxonomic Range" placement='bottom' target='popover1'></popover>
             </div>
-
             <div class="list-group" style="max-height: 200px; overflow: auto;">
                 <div v-for="data in orderedSpecies" :key="data.key" class="list-group-item list-group-item-action borderless text-muted">
                     <input class="ml-2" type="checkbox" :value="data.key" v-on:change="onFiltersChange()" v-model="treeFilters.species">

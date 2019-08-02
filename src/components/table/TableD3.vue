@@ -19,15 +19,8 @@
                     <th colspan="2" class="thInvis"></th>
                     <th v-if="extraCols.length > 0" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
-                            <b-button id="popover-1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <b-popover
-                            target="popover-1"
-                            title="Known Function"
-                            triggers="focus"
-                            >
-This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>.
-Only Molecular Function annotations with Experimental Evidence are shown.
-                            </b-popover>
+                            <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
                     </th>
             <th colspan="4" class="thInvis"></th>
                 </tr>
@@ -36,46 +29,14 @@ Only Molecular Function annotations with Experimental Evidence are shown.
                         :class="{thSubColSp: i>1&&i<extraCols.length+1}">
                             <tablecell :cellText="col" :type="'th'">
                             </tablecell>
-
-                            <b-button v-if="col === 'Gene name'" id="popover-2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <b-popover
-                            target="popover-2"
-                            title="Gene Name"
-                            triggers="focus"
-                            >
-A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta 
-file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.
-                            </b-popover>
-
-                            <b-button v-if="col === 'Gene ID'" id="popover-3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <b-popover
-                            target="popover-3"
-                            title="Gene ID"
-                            triggers="focus"
-                            >
-A gene ID is acanonical accession extracted from the Reference Proteomes gene2acc 
-gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.
-                            </b-popover>
-
-                            <b-button v-if="col === 'Protein name'" id="popover-4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <b-popover
-                            target="popover-4"
-                            title="Protein name"
-                            triggers="focus"
-                            >
-This information was extracted from the ProteinName filed of a fasta header in the UniProt 
-protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.
-                            </b-popover>
-
-                            <b-button v-if="col === 'Subfamily Name'" id="popover-5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <b-popover
-                            target="popover-5"
-                            title="Subfamily Name"
-                            triggers="focus"
-                            >
-The name of a subfamily is transferred from the representative member 
-of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>
-                            </b-popover>
+                            <b-button v-if="col === 'Gene name'" id="popover2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover2Text title="Gene Name" placement='right' target='popover2'></popover>
+                            <b-button v-if="col === 'Gene ID'" id="popover3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover3Text title="Gene ID" placement='left' target='popover3'></popover>
+                            <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
+                            <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover5Text title="Protein name" placement='left' target='popover5'></popover>
                     </th>
                 </tr>
             </thead>
@@ -128,7 +89,12 @@ of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" targe
                 firstLoad: false,
                 ticking: false,
                 rowsScrolled: 0,
-                upperLimit: 100
+                upperLimit: 100,
+                popover1Text: 'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
+                popover2Text: 'A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
+                popover3Text: 'A gene ID is acanonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
+                popover4Text: 'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
+                popover5Text: 'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
             }
         },
         computed: {
