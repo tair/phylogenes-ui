@@ -234,7 +234,7 @@
                     colsWidth: ['50px', '350px', '100px']
                 },
                 //Pruning
-                PRUNING_PANTHER_API: "http://52.37.99.223:8080/panther/pruning/",
+                PRUNING_PANTHER_API: "http://54.68.67.235:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
                 originalTaxonIdsLength: 0,
@@ -346,6 +346,8 @@
             // Process json with external mappings (if any) by adding more fields
             // Current external mapping: organism_to_display.csv, to map common name to organism
             async processJson(treeJson) {
+                //Since 'getMappingFromCsv' is an asynchronous call, we use await, which stops execution until the function
+                // returns data
                 const mappingCsvData = await this.getMappingFromCsv("/organism_to_display.csv");
                 this.mappingData = mappingCsvData;
                 this.addFieldsToAllNodes(treeJson);
@@ -834,7 +836,13 @@
             loadPrunedJson(treeJson) {
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
-                this.processJson(treeJson);
+                this.processJson(treeJson)
+                    .then(res => {
+                        this.treeData_Json = res;
+                    })
+                    .catch(e => {
+                        console.error("Process json failed!");
+                    });
             },
         },
         created() {
