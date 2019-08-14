@@ -1,8 +1,8 @@
 import * as types from '../types_treedata';
 import axios from "axios/index";
 
-// const API_URL = 'http://localhost:3000/api/panther';
-const API_URL = 'http://54.68.67.235:3000/api/panther';
+const API_URL = 'http://localhost:3000/api/panther';
+// const API_URL = 'http://54.68.67.235:3000/api/panther';
 // const API_URL = 'http://52.37.99.223:3000/api/panther';
 
 const state = {
@@ -13,6 +13,7 @@ const state = {
         data: null,
         jsonString: null,
         go_annotations: null,
+        msa_data: new Map(),
         metadata: {
             familyName: [],
             taxonRange: ''
@@ -46,6 +47,9 @@ const getters = {
     },
     [types.TREE_GET_ANNO_MAPPING]: state => {
       return state.treedata.anno_mapping;
+    },
+    [types.TREE_GET_MSADATA]: state => {
+        return state.treedata.msa_data;
     },
     [types.TREE_GET_NODES]: state => {
         return state.treedata.nodes;
@@ -89,6 +93,10 @@ const actions = {
         //console.log("Action" + payload);
         context.state.treedata.anno_mapping = payload;
     },
+    [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
+        //console.log("Action" + payload);
+        context.state.treedata.msa_data = payload;
+    },
     [types.TREE_ACTION_SET_CENTER_NODE]: (context, payload) => {
         context.state.treedata.nodeAtCenter = payload;
     },
@@ -103,7 +111,7 @@ const actions = {
     [types.TREE_ACTION_SET_SEARCHTEXTWTN]: (context, payload) => {
         context.state.treedata.searchTextWithin = payload;
     },
-    [types.TREE_ACTION_GET_JSON]: (context, payload) => {
+    [types.TREE_ACTION_SET_PANTHER_TREE]: (context, payload) => {
         if (!payload) return;
         axios({
             method: 'GET',
@@ -126,12 +134,28 @@ const actions = {
                         context.state.treedata.go_annotations = null;
                     }
                 }
-                // tree data
-                // context.state.treeData.data.results = res.data.response.docs;
-                // context.state2.treeData.data.queryTime = res.data.responseHeader.QTime;
-                // context.state2.treeData.data.rows = res.data.responseHeader.params.rows;
-                // context.state2.treeData.data.startRow = res.data.response.start;
-
+            })
+            .catch(error => {
+                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+            })
+    },
+    [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
+        if (!payload) return;
+        axios({
+            method: 'GET',
+            url: API_URL + '/msa/' + payload
+        })
+            .then(res => {
+                if (res.data.response.docs.length > 0) {
+                    let msa_list = res.data.response.docs[0].msa_data;
+                    let msa_data = new Map();
+                    msa_list.forEach(m => {
+                        var msaObj = JSON.parse(m);
+                        let anno_id = msaObj.annotation_node_id.split(":")[1];
+                        msa_data.set(anno_id, msaObj.full_sequence);
+                    });
+                    context.state.treedata.msa_data = msa_data;
+                }
             })
             .catch(error => {
                 console.log('Error while reading data (E8273): ' + JSON.stringify(error));
