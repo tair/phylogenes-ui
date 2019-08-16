@@ -29,7 +29,7 @@
                 <tr v-for="(row) in rowsToRender" >
                     <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(row[key], i)">
-                        <tablecell :cellText="row[key]" :type="key"></tablecell>
+                        <tablecell :content="getContent(key, row[key])"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -47,13 +47,15 @@
     import popupTable from './PopupTable';
     import customModal from '@/components/modal/CustomModal';
     import tablecell from '@/components/table/TableCellD3';
+    import baseCell from '@/components/table/cells/BaseTableCell';
 
     export default {
         name: "tablelayout",
         components: {
             popupTable: popupTable,
             'modal': customModal,
-            tablecell: tablecell
+            // tablecell: tablecell,
+            tablecell: baseCell
         },
         data() {
             return {
@@ -134,6 +136,17 @@
                 stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            getContent(row, celltxt) {
+                let content = {text: celltxt};
+                if(celltxt == "*") {
+                    content['type'] = 'annotation';
+                }
+                if(row == "Uniprot ID") {
+                    content['type'] = 'link';
+                    content['link'] = 'https://www.uniprot.org/uniprot/'+celltxt;
+                }
+                return content; 
+            },
             initAfterLoad() {
                 setTimeout(() => {
                     //handleScroll is called with a throttle of 10 ms, this is to control the number of 

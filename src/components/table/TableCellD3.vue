@@ -1,6 +1,6 @@
 <template>
     <span>
-        <span v-if="cellText != '*' && type != 'Uniprot ID'" 
+        <span v-if="cellText != '*' && type != 'Uniprot ID'  && type != 'MSA'"
                 class="spanText"
                 data-toggle="tooltip" :title="computedText">
                 {{computedText}}
@@ -11,6 +11,15 @@
                 :href="'https://www.uniprot.org/uniprot/'+computedText" target="_blank">
                 {{computedText}}
         </a>
+        <span v-else-if="cellText != '*' && type == 'MSA'">
+            <svg :width=tdWidth :height=tdHeight>
+                <g v-for="(c,i) in textArr" :key=i>
+                    <rect :x=10+i*8.5 y=8 width=10 height=80></rect>
+                    <text dx=".35em" dy=".35em" :x=5+i*8.5 y=17 
+                          class="msaText">{{c}}</text>
+                </g>
+            </svg>
+        </span>
         <span v-else>
             <svg :width=tdWidth :height=tdHeight>
                 <g>
@@ -42,9 +51,11 @@
                 el: null,
                 origText: "",
                 computedText: "",
+                textArr: [],
                 cellWidth: 180,
                 isEllipsis: false
             }
+            
         },
         computed: {
             
@@ -84,22 +95,25 @@
                         }
                     }, 100);
                 }
+                if(this.type == "MSA") {
+                    this.textArr = this.computedText.split('');
+                }
             },
             processOnMouseHover() {
-                this.el.on("mouseenter", () => {
-                    let lineNumber = this.wrapText(this.cellText, this.cellWidth);
-                    if(lineNumber == 3) {
-                        this.tdHeight = '60px';
-                    } else if(lineNumber == 2) {
-                        this.tdHeight = '50px';
-                    } else {
-                        this.tdHeight = '40px';
-                    }
-                })
-                .on("mouseleave", () => {
-                    this.tdHeight = '30px';
-                    this.el.select('text').attr('y', 17).text(this.computedText);
-                });
+                // this.el.on("mouseenter", () => {
+                //     let lineNumber = this.wrapText(this.cellText, this.cellWidth);
+                //     if(lineNumber == 3) {
+                //         this.tdHeight = '60px';
+                //     } else if(lineNumber == 2) {
+                //         this.tdHeight = '50px';
+                //     } else {
+                //         this.tdHeight = '40px';
+                //     }
+                // })
+                // .on("mouseleave", () => {
+                //     this.tdHeight = '30px';
+                //     this.el.select('text').attr('y', 17).text(this.computedText);
+                // });
             },
             //Modified from: https://bl.ocks.org/mbostock/5247027
             wrapText(celltext, width) {
@@ -131,6 +145,10 @@
                     return 'thClass'
                 }
                 return "";
+            },
+            getSpanTextClass() {
+                if(this.type === 'MSA') return 'msaText';
+                return 'spanText';
             }
         },
         destroyed: function () {
@@ -152,6 +170,17 @@
     }
     .spanText {
         padding-left: 10px;
+    }
+    .msaText {
+        padding-left: 10px;
+        font-family: monospace;
+    }
+    rect {
+        fill: black;
+        stroke: #000;
+        stroke-width: 0.1px;
+        stroke-opacity: 0.3;
+        fill-opacity: 0.3;
     }
 </style>
 
