@@ -14,6 +14,7 @@ const state = {
         jsonString: null,
         go_annotations: null,
         msa_data: new Map(),
+        max_msa_length: 0,
         metadata: {
             familyName: [],
             taxonRange: ''
@@ -50,6 +51,9 @@ const getters = {
     },
     [types.TREE_GET_MSADATA]: state => {
         return state.treedata.msa_data;
+    },
+    [types.TREE_GET_MAXMSAL]: state => {
+        return state.treedata.max_msa_length;
     },
     [types.TREE_GET_NODES]: state => {
         return state.treedata.nodes;
@@ -113,53 +117,67 @@ const actions = {
     },
     [types.TREE_ACTION_SET_PANTHER_TREE]: (context, payload) => {
         if (!payload) return;
-        axios({
-            method: 'GET',
-            url: API_URL + '/tree/' + payload
-        })
-            .then(res => {
-                if(res.data.response.docs.length > 0) {
-                    if(res.data.response.docs[0].jsonString) {
-                        context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
-                    }
-                    if(res.data.response.docs[0].family_name) {
-                        context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
-                    }
-                    if(res.data.response.docs[0].speciation_events) {
-                        context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
-                    }
-                    if(res.data.response.docs[0].go_annotations) {
-                        context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
-                    } else if (!res.data.response.docs[0].go_annotations) {
-                        context.state.treedata.go_annotations = null;
-                    }
-                }
+        return new Promise((result, rej) => {
+            axios({
+                method: 'GET',
+                url: API_URL + '/tree/' + payload
             })
-            .catch(error => {
-                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-            })
+                .then(res => {
+                    if (res.data.response.docs.length > 0) {
+                        if (res.data.response.docs[0].jsonString) {
+                            context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
+                        }
+                        if (res.data.response.docs[0].family_name) {
+                            context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
+                        }
+                        if (res.data.response.docs[0].speciation_events) {
+                            context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
+                        }
+                        if (res.data.response.docs[0].go_annotations) {
+                            context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                        } else if (!res.data.response.docs[0].go_annotations) {
+                            context.state.treedata.go_annotations = null;
+                        }
+                    }
+                    result("panther tree");
+                })
+                .catch(error => {
+                    console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                    rej();
+                })
+        });
     },
     [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
         if (!payload) return;
-        axios({
-            method: 'GET',
-            url: API_URL + '/msa/' + payload
-        })
-            .then(res => {
-                if (res.data.response.docs.length > 0) {
-                    let msa_list = res.data.response.docs[0].msa_data;
-                    let msa_data = new Map();
-                    msa_list.forEach(m => {
-                        var msaObj = JSON.parse(m);
-                        let anno_id = msaObj.annotation_node_id.split(":")[1];
-                        msa_data.set(anno_id, msaObj.full_sequence);
-                    });
-                    context.state.treedata.msa_data = msa_data;
-                }
+        return new Promise((result, rej) => {
+            axios({
+                method: 'GET',
+                url: API_URL + '/msa/' + payload
             })
-            .catch(error => {
-                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-            })
+                .then(res => {
+                    if (res.data.response.docs.length > 0) {
+                        let msa_list = res.data.response.docs[0].msa_data;
+                        let msa_data = new Map();
+                        let maxSeqLength = 0;
+                        msa_list.forEach(m => {
+                            var msaObj = JSON.parse(m);
+                            let anno_id = msaObj.annotation_node_id.split(":")[1];
+                            if (msaObj.full_sequence.length > maxSeqLength) {
+                                maxSeqLength = msaObj.full_sequence.length;
+                            }
+                            msa_data.set(anno_id, msaObj.full_sequence);
+                        });
+                        context.state.treedata.msa_data = msa_data;
+                        context.state.treedata.max_msa_length = maxSeqLength;
+                        result("msa data");
+                    }
+                })
+                .catch(error => {
+                    console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                    rej();
+                })
+        });
+        
     },
     [types.TREE_ACTION_GET_ANNOTATIONS]: (context, payload) => {
         axios({

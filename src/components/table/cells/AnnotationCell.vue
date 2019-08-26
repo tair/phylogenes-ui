@@ -1,8 +1,4 @@
 <template>
-    <!-- <span class="spanText"
-          data-toggle="tooltip" :title="this.content.text">
-          Annotate{{this.content.text}}
-    </span> -->
     <svg :width=tdWidth :height=tdHeight>
         <g> 
             <circle class="anno_circle"

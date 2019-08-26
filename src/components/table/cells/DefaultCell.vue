@@ -1,7 +1,7 @@
 <template>
     <span class="spanText"
-          data-toggle="tooltip" :title="this.content.text">
-          {{this.content.text}}
+          data-toggle="tooltip" :title="this.content.text" v-html="this.content.text">
+          <!-- {{this.content.text}} -->
     </span>
 </template>
 
@@ -16,6 +16,7 @@
             }
         },
         mounted() {
+            
         },
         data() {
             return {

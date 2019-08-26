@@ -19,16 +19,16 @@
                     <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in cols" :key="col" 
-                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">
-                            <tablecell :cellText="col" :type="'th'"></tablecell>
+                    <th v-for="(col,i) in cols" :key="i" 
+                        :class="getThClasses(col, i)"> 
+                            <tablecell :content="getHeader(col)"></tablecell>
                     </th>
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row) in rowsToRender" >
+                <tr v-for="(row, i) in rowsToRender" :key=i>
                     <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
-                        :class="getTdClasses(row[key], i)">
+                        :class="getTdClasses(key, row[key], i)">
                         <tablecell :content="getContent(key, row[key])"></tablecell>
                     </td>
                 </tr>
@@ -51,6 +51,7 @@
 
     export default {
         name: "tablelayout",
+        props: ["headerMap"],
         components: {
             popupTable: popupTable,
             'modal': customModal,
@@ -136,17 +137,6 @@
                 stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
-            getContent(row, celltxt) {
-                let content = {text: celltxt};
-                if(celltxt == "*") {
-                    content['type'] = 'annotation';
-                }
-                if(row == "Uniprot ID") {
-                    content['type'] = 'link';
-                    content['link'] = 'https://www.uniprot.org/uniprot/'+celltxt;
-                }
-                return content; 
-            },
             initAfterLoad() {
                 setTimeout(() => {
                     //handleScroll is called with a throttle of 10 ms, this is to control the number of 
@@ -161,14 +151,12 @@
             //Is called on every change to the store data
             update() {
                 var titles = d3.keys(this.stateTreeData[0]);
-                titles = titles.splice(1);
-                if(titles.includes("accession")) {
-                    titles = titles.splice(0, titles.length-1);
-                }
+                titles = titles.filter(t => t != "id" && t != "accession");
+              
                 this.cols = titles;
                 this.rowsToRender = [];
                 //If the total number of rows is > 
-                if(this.stateTreeData.length > 1000) {
+                if(this.stateTreeData.length > 10) {
                     this.lazyLoad = true;
                     this.updateRows();
                 } else {
@@ -188,7 +176,6 @@
             //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
             updateRows() {
                 if(!this.lazyLoad) return;
-
                 //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
                 //We add all the rows scolled to the table
                 let noOfRowsToAdd = 30 + this.rowsScrolled*2;
@@ -265,18 +252,23 @@
                 var centerRowNumber = rowNumber-8;
                 if(this.lazyLoad && this.rowsScrolled > 500) {
                     //Lazy Load - correct scrolling
+
                     setTimeout(() => {
                         centerRowNumber -= this.rowsScrolled - 101;
                         const tbody = document.getElementById("body");
-                        tbody.scrollTop = 40*centerRowNumber;
+                        if(tbody) {
+                           tbody.scrollTop = 40*centerRowNumber;
+                        }
+ 
                     }, 1000);
 
                 } else {
                     //Normal scrolling
                     const tbody = document.getElementById("body");
-                    tbody.scrollTop = 40*centerRowNumber;
+                    if(tbody) {
+                        tbody.scrollTop = 40*centerRowNumber;
+                    }
                 }
-                
                 this.scrollFromTree = true;
             },
             rowClicked(d) {
@@ -464,8 +456,50 @@
                 });
                 return popUpTableData;
             },
-            getTdClasses(cellValue, col_idx) {
+            getHeader(title) {
+                let header = {text: title};
+                if(this.headerMap[title]) {
+                    header['text'] = this.headerMap[title];
+                }
+                return header;
+            },
+            getContent(colName, celltxt) {
+                let content = {text: celltxt};
+                if(celltxt == "*") {
+                    content['type'] = 'annotation';
+                }
+                if(colName == "Uniprot ID") {
+                    content['type'] = 'link';
+                    content['link'] = 'https://www.uniprot.org/uniprot/'+celltxt;
+                }
+                if(colName == "MSA") {
+                    if(celltxt.type && celltxt.type == 'custom') {
+                        content['text'] = celltxt.value;
+                    }
+                    content['type'] = 'msa';
+                }
+                return content; 
+            },
+            getThClasses(row, i) {
                 let classes = [];
+                if(row == "MSA") {
+                    classes.push('widthMax');
+                } else {
+                    classes.push('widthDefault');
+                }
+                
+                if(i > 1&&i<this.extraCols.length+1) {
+                    classes.push('thSubColSp');
+                }
+                return classes;
+            },
+            getTdClasses(row, cellValue, col_idx) {
+                let classes = [];
+                if(row == "MSA") {
+                    classes.push('widthMax');
+                } else {
+                    classes.push('widthDefault');
+                }
                 if(cellValue == '*') {
                     classes.push('tdHover');
                 }
@@ -548,9 +582,6 @@
         visibility: hidden;
     }
     .mainTable th, .mainTable td {
-        min-width: 200px;
-        width: 200px;
-        max-width: 200px;
         border-right: 3px solid #f1f1f0;
         white-space: nowrap;
         overflow: hidden;
@@ -587,6 +618,16 @@
     }
     .thSubColSp {
         border-right: 1px solid #f1f1f0 !important;
+    }
+    .widthDefault {
+        min-width: 200px;
+        width: 200px;
+        max-width: 200px;
+    }
+    .widthMax {
+        white-space: nowrap;
+        max-width: 100%;
+        font-family: monospace;
     }
     .tdSubCol {
         border-right: 1px solid #f1f1f0 !important;

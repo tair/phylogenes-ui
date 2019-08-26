@@ -13,6 +13,7 @@
     import cellDefault from '../cells/DefaultCell';
     import cellLink from '../cells/LinkCell';
     import cellAnnotation from '../cells/AnnotationCell';
+    import cellMsa from '../cells/MSACell';
 
     export default {
         name: "base-cell",
@@ -20,7 +21,8 @@
         components: {
             cellDefault: cellDefault,
             cellLink: cellLink,
-            cellAnnotation: cellAnnotation
+            cellAnnotation: cellAnnotation,
+            cellMsa: cellMsa
         },
         data() {
             return {

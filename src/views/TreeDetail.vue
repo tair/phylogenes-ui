@@ -89,7 +89,7 @@
                 <div class="row h-100">
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
-                        <tablelayout></tablelayout>
+                        <tablelayout :headerMap="headerMap"></tablelayout>
                     </div>
                 </div>
             </div>
@@ -113,6 +113,7 @@
     import customModal from '@/components/modal/CustomModal';
     import popupTableOrganism from '@/components/table/PopupTableOrganism';
     import { setTimeout } from 'timers';
+import { Promise } from 'q';
 
     export default {
         name: "TreeDetail",
@@ -133,6 +134,7 @@
                 store_treeMsaData: types.TREE_GET_MSADATA,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
+                store_maxMsaLength: types.TREE_GET_MAXMSAL
             }),
             showLegendButtonIcon(){
                 return this.legend?
@@ -157,9 +159,9 @@
             },
             store_treeJsonString: {
                 handler: function (val, oldVal) {
-                    this.initTreeData(val);
-                    this.prunedLoaded = false;
-                    this.resetPruning();
+                    // this.initTreeData(val);
+                    // this.prunedLoaded = false;
+                    // this.resetPruning();
                 }
             },
             stateTreeAnnotations: {
@@ -208,6 +210,7 @@
                 searchText: "",
                 defaultSearchText: "",
                 matchNodes: [],
+                headerMap: {},
                 anno_mapping: {},
                 anno_headers: [],
                 go_mapping: {},
@@ -265,14 +268,21 @@
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 stateSetTreeData: types.TREE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
-                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN
+                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
+                // store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
             //Load tree data needed from the API.
             loadTreeFromApi() {
                 //Saves the panther tree in json String onto the vue store.
-                this.store_setPantherTreeFromApi(this.treeId);
-                //Saves msa data for the tree on the vue store.
-                this.store_setMsaFromApi(this.treeId);
+                var p1 = this.store_setPantherTreeFromApi(this.treeId);
+                var p2 = this.store_setMsaFromApi(this.treeId);
+                Promise.all([p1, p2]).then(vals => {
+                    console.log(vals);
+                    if(vals.length > 1) {
+                        this.resetPruning();
+                        this.initTreeData(this.store_treeJsonString);
+                    }
+                });
             },
             // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
             initTreeData(jsonString) {
@@ -580,6 +590,7 @@
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
                 this.sortArrayByX(nodes);
+                console.log(nodes.length);
                 this.updateTableData(nodes);
             },
             expandAll() {
@@ -682,12 +693,13 @@
             updateTableData(nodes) {
                 var tabularData = [];
                 var index = 0;
+                
+                this.headerMap["MSA"] = this.setMsaHeaderTitle();
+                console.log("Start Updating table");
                 nodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
                         tableNode["id"] = index++;
-                        tableNode["Accession"] = n.data.accession;
-                        tableNode["MSA"] = n.data.sequence;
                         tableNode["Gene name"] = n.data.gene_symbol;
                         var geneId = n.data.gene_id;
                         if (geneId) {
@@ -720,10 +732,32 @@
                                 tableNode["accession"] = n.data.accession;
                             }
                         }
+
+                        tableNode["MSA"] = {type: 'custom', value: n.data.sequence};
                         tabularData.push(tableNode);
                     }
                 });
+                console.log("Finish Updating table");
+                // this.store_setTableIsLoading(false);
                 this.stateSetTreeData(tabularData);
+            },
+            setMsaHeaderTitle() {
+                let msa_header ="MSA: ";
+                let max_ruler_len = this.store_maxMsaLength;
+                let ruler_gap = 25;
+                let c = msa_header.length;
+                while(c < max_ruler_len) {
+                    let digits = 2;
+                    if((c+digits)%ruler_gap == 0) {
+                        msa_header += c+digits;
+                        msa_header += "|";
+                        c += digits+1;
+                    } else {
+                        msa_header += "&nbsp";
+                        c++;
+                    }
+                }
+                return msa_header;
             },
             // ~~~~~~~~~~~~~~~~ Pruning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             pruneTreeFromMenu() {

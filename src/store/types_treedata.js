@@ -3,6 +3,7 @@ export const TREE_GET_JSON = 'tree/store_treeJsonString';
 export const TREE_GET_DATA = 'treedata/stateTreeData';
 export const TREE_GET_ANNOTATIONS = 'treedata/stateTreeAnnotations';
 export const TREE_GET_MSADATA = 'treedata/store_treeMsaData';
+export const TREE_GET_MAXMSAL = 'treedata/store_maxMsaLength';
 export const TREE_GET_METADATA = 'treedata/store_getTreeMetadata';
 export const TREE_GET_ANNO_MAPPING = 'treedata/store_annoMapping';
 export const TREE_GET_NODES = 'treedata/stateTreeNodes';
