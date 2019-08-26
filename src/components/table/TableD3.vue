@@ -82,14 +82,14 @@
         },
         computed: {
             ...mapGetters({
-                stateTreeData: types.TREE_GET_DATA,
+                store_treeGeneralData: types.TREE_GET_DATA,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
             })
         },
         watch: {
-            stateTreeData: {
+            store_treeGeneralData: {
                 handler: function (val, oldVal) {
                     if(val.length == 0) {
                         this.isLoading = true;
@@ -102,10 +102,10 @@
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
-                    var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
+                    var foundRow = this.store_treeGeneralData.find(d => d["Gene ID"] === val.geneId);
                     if(!foundRow) {
                         let accession = val.data.accession;
-                        foundRow = this.stateTreeData.find(d => d["accession"] === accession);
+                        foundRow = this.store_treeGeneralData.find(d => d["accession"] === accession);
                     }
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
@@ -127,7 +127,7 @@
         },
         mounted: function () {
             this.isLoading = true;
-            if(this.stateTreeData) {
+            if(this.store_treeGeneralData) {
                 this.update();
             }
             this.store_setTableIsLoading(true);
@@ -150,17 +150,17 @@
             },
             //Is called on every change to the store data
             update() {
-                var titles = d3.keys(this.stateTreeData[0]);
+                var titles = d3.keys(this.store_treeGeneralData[0]);
                 titles = titles.filter(t => t != "id" && t != "accession");
               
                 this.cols = titles;
                 this.rowsToRender = [];
                 //If the total number of rows is > 
-                if(this.stateTreeData.length > 10) {
+                if(this.store_treeGeneralData.length > 10) {
                     this.lazyLoad = true;
                     this.updateRows();
                 } else {
-                    this.rowsToRender = this.stateTreeData;
+                    this.rowsToRender = this.store_treeGeneralData;
                 }
                 
                 if(this.isLoading) {
@@ -190,7 +190,7 @@
                 let i = 0;
                 this.rowsToRender = [];
                 //this.rowsToRender - add rows ranging from index [noOfTopRowsToRemove] to [noOfRowsToAdd].
-                this.stateTreeData.some(n => {
+                this.store_treeGeneralData.some(n => {
                     //Only add rows after the 'noOfTopRowsToRemove'
                     if(i >= noOfTopRowsToRemove) {
                         this.rowsToRender.push(n);
@@ -239,8 +239,8 @@
             scrollTreeFromTable(amount) {
                 var rowNumber = amount/this.rowHeight;
                 rowNumber = Math.round(rowNumber);
-                var rowId = this.stateTreeData[rowNumber]["Gene ID"];
-                var accession = this.stateTreeData[rowNumber]["accession"];
+                var rowId = this.store_treeGeneralData[rowNumber]["Gene ID"];
+                var accession = this.store_treeGeneralData[rowNumber]["accession"];
                 var scroll = {i: rowNumber, id: rowId, accession: accession};
                 this.rowsScrolled = rowNumber;
                 this.updateRows();

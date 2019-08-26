@@ -128,7 +128,7 @@ import { Promise } from 'q';
         computed: {
             ...mapGetters({
                 store_treeJsonString: types.TREE_GET_JSON,
-                stateTreeData: types.TREE_GET_DATA,
+                store_treeGeneralData: types.TREE_GET_DATA,
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
                 store_getTreeMetadata: types.TREE_GET_METADATA,
                 store_treeMsaData: types.TREE_GET_MSADATA,

@@ -56,7 +56,7 @@
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
                 stateTableScroll: types.TABLE_GET_SCROLL,
-                stateTreeData: types.TREE_GET_DATA,
+                store_treeGeneralData: types.TREE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
@@ -78,7 +78,7 @@
                     this.processMatchedNodes(val);
                 }
             },
-            stateTreeData: {
+            store_treeGeneralData: {
                 handler: function (val, oldVal) {
                     if(val.length == 0) {
                         this.isLoading = true;
