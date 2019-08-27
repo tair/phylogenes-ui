@@ -187,6 +187,8 @@
                     noOfRowsToAdd = 30 + this.rowsScrolled;
                 }
 
+                this.analyzeMsaData();
+
                 let i = 0;
                 this.rowsToRender = [];
                 //this.rowsToRender - add rows ranging from index [noOfTopRowsToRemove] to [noOfRowsToAdd].
@@ -198,6 +200,76 @@
                     i++;
                     return i > noOfRowsToAdd;
                 });
+            },
+            analyzeMsaData() {
+                let msa_split = this.store_treeGeneralData.map(s => {
+                    let msa_arr = [];
+                    if(s["MSA"].value) {
+                        msa_arr = s["MSA"].value.split('');
+                    }
+                    return msa_arr;
+                });
+                let maxLength = msa_split[0].length;
+                let analysis_arr = new Array(maxLength).fill({});
+
+                msa_split.forEach(seq_arr => {
+                    let seq_i = 0;
+                    seq_arr.forEach(letter => {
+                        let seqObj = {};
+                        Object.assign(seqObj, analysis_arr[seq_i]);
+                        if(letter) {
+                            if(seqObj[letter]) {
+                                seqObj[letter]++;
+                            } else {
+                                seqObj[letter] = 1;
+                            }
+                        }
+                        
+                        analysis_arr[seq_i] = seqObj;
+                        seq_i++;
+                    });
+                });
+
+                let freq_seq_arr = [];
+                analysis_arr.forEach(e => {
+                    freq_seq_arr.push(this.getMsaByRow(e));
+                });
+
+                this.store_treeGeneralData.forEach(f => {
+                    if(f["MSA"].value) {
+                        let i = 0;
+                        f["MSA"].splitByLetter.forEach(l => {
+                            let highestFreqLetter = freq_seq_arr[i][0];
+                            if(l.letter == "." || l.letter == "-") l.highlight = false;
+                            else if(highestFreqLetter.percent < 50) l.highlight = false;
+                            else if(l.letter != highestFreqLetter.letter) l.highlight = false;
+                            else {
+                                l.highlight = true; 
+                                if(highestFreqLetter.percent > 90) l.highlightType = 'dark';
+                                else l.highlightType = 'light';
+                            }
+                            i++;
+                        });
+                    }
+                });
+            },
+            getMsaByRow(freqOfLetters) {
+                let seqObjArr = [];
+                let letters = Object.keys(freqOfLetters);
+                let total = 0;
+                letters.forEach(l => {
+                    let freq = freqOfLetters[l];
+                    seqObjArr.push({letter: l, freq: freq});
+                    total += freq;
+                });
+
+                seqObjArr.map(e => {
+                    e.percent = e.freq/total*100;
+                });
+                seqObjArr = seqObjArr.sort((a,b) => {
+                    return b.percent - a.percent;
+                });
+                return seqObjArr;
             },
             handleScroll() {
                 //If scrolling is from tree (programattic), handleScroll is still being called.
@@ -475,6 +547,7 @@
                 if(colName == "MSA") {
                     if(celltxt.type && celltxt.type == 'custom') {
                         content['text'] = celltxt.value;
+                        content['splitByLetter'] = celltxt.splitByLetter;
                     }
                     content['type'] = 'msa';
                 }

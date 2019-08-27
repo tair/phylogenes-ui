@@ -2,9 +2,9 @@
     <div><!-- <div style="overflow:scroll;"> -->
         <svg :width=tdWidth :height=tdHeight>
             <g v-for="(c,i) in textArr" :key=i>
-                <!-- <rect :x=10+i*8.5 y=8 width=10 height=80></rect> -->
+                <rect v-if='c.highlight' :class='getRectClass(c)' :x=10+i*8.5 y=8 width=10 height=80></rect>
                 <text dx=".35em" dy=".35em" :x=5+i*8.5 y=17 
-                        class="msaText">{{c}}</text>
+                        class="msaText">{{c.letter}}</text>
             </g>
         </svg>
     </div>
@@ -24,7 +24,7 @@
         },
         mounted() {
             if(this.content && this.content.text) {
-                this.textArr = this.content.text.split('');
+                this.textArr = this.content.splitByLetter;
                 this.tdWidth = 20 + this.textArr.length*8.5;
             }
         },
@@ -36,11 +36,23 @@
             }
         },
         methods: {
-            
+            getRectClass(letter) {
+                if(letter.highlightType == "dark") return 'darkRect';
+                else return 'lightRect';
+                
+            }
         }
     }
 </script>
 <style scoped> 
+    .darkRect {
+        fill: #c9641d;
+        fill-opacity: 0.7;
+    }
+    .lightRect {
+        fill: #eca979;
+        fill-opacity: 0.7;
+    }
     .msaText {
         padding-left: 10px;
         font-family: monospace;

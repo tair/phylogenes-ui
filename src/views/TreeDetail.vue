@@ -733,13 +733,25 @@ import { Promise } from 'q';
                             }
                         }
 
-                        tableNode["MSA"] = {type: 'custom', value: n.data.sequence};
+                        tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
                         tabularData.push(tableNode);
                     }
                 });
                 console.log("Finish Updating table");
                 // this.store_setTableIsLoading(false);
                 this.stateSetTreeData(tabularData);
+            },
+            setTableContentforMsa(seq) {
+                let obj = {};
+                obj.type = 'custom';
+                obj.value = seq;
+                let splitByLetter = [];
+                if(seq) {
+                    obj.splitByLetter = seq.split('').map(val => {
+                        return {letter: val, highlight: true};
+                    });
+                }
+                return obj;
             },
             setMsaHeaderTitle() {
                 let msa_header ="MSA: ";
