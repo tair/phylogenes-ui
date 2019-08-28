@@ -153,7 +153,7 @@ import { Promise } from 'q';
                 this.treeId = id;
                 this.treeData_Json = null;
                 this.loadTreeFromApi();
-                this.stateSetTreeData([]);
+                this.store_setTableData([]);
                 this.metadata.isLoading = true;
                 this.resetPruning();
             },
@@ -266,7 +266,7 @@ import { Promise } from 'q';
                 store_setMsaFromApi: types.TREE_ACTION_SET_MSADATA,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
-                stateSetTreeData: types.TREE_ACTION_SET_DATA,
+                store_setTableData: types.TABLE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
                 // store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
@@ -590,7 +590,6 @@ import { Promise } from 'q';
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
                 this.sortArrayByX(nodes);
-                console.log(nodes.length);
                 this.updateTableData(nodes);
             },
             expandAll() {
@@ -693,7 +692,10 @@ import { Promise } from 'q';
             updateTableData(nodes) {
                 var tabularData = [];
                 var index = 0;
-                
+                let tableColsToShow = [
+                    "Gene name", "Organism"
+                ];
+
                 this.headerMap["MSA"] = this.setMsaHeaderTitle();
                 console.log("Start Updating table");
                 nodes.forEach(n => {
@@ -701,45 +703,45 @@ import { Promise } from 'q';
                         var tableNode = {};
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
-                        var geneId = n.data.gene_id;
-                        if (geneId) {
-                            geneId = geneId.split(':')[1];
-                        }
+                        // var geneId = n.data.gene_id;
+                        // if (geneId) {
+                        //     geneId = geneId.split(':')[1];
+                        // }
                         tableNode["Organism"] = n.data.organism;
-                        this.anno_headers.sort(function (a, b) {
-                            return a.toLowerCase().localeCompare(b.toLowerCase());
-                        });
-                        this.anno_headers.forEach(a => {
-                            tableNode[a] = "";
-                            if(n.data.uniprotId) {
-                                let uniprotId = n.data.uniprotId.toLowerCase();
-                                if(this.anno_mapping[uniprotId]) {
-                                    let currAnno = this.anno_mapping[uniprotId];
-                                    currAnno.forEach(c => {
-                                        if(c.goName === a) {
-                                            tableNode[a] = "*";
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                        tableNode["Gene ID"] = geneId;
-                        tableNode["Protein name"] = n.data.definition;
-                        tableNode["Uniprot ID"] = n.data.uniprotId;
-                        tableNode["Subfamily Name"] = n.data.sf_name;
-                        if(n._children) {
-                            if(n.data.accession) {
-                                tableNode["accession"] = n.data.accession;
-                            }
-                        }
+                        // this.anno_headers.sort(function (a, b) {
+                        //     return a.toLowerCase().localeCompare(b.toLowerCase());
+                        // });
+                        // this.anno_headers.forEach(a => {
+                        //     tableNode[a] = "";
+                        //     if(n.data.uniprotId) {
+                        //         let uniprotId = n.data.uniprotId.toLowerCase();
+                        //         if(this.anno_mapping[uniprotId]) {
+                        //             let currAnno = this.anno_mapping[uniprotId];
+                        //             currAnno.forEach(c => {
+                        //                 if(c.goName === a) {
+                        //                     tableNode[a] = "*";
+                        //                 }
+                        //             });
+                        //         }
+                        //     }
+                        // });
+                        // tableNode["Gene ID"] = geneId;
+                        // tableNode["Protein name"] = n.data.definition;
+                        // tableNode["Uniprot ID"] = n.data.uniprotId;
+                        // tableNode["Subfamily Name"] = n.data.sf_name;
+                        // if(n._children) {
+                        //     if(n.data.accession) {
+                        //         tableNode["accession"] = n.data.accession;
+                        //     }
+                        // }
 
-                        tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
+                        // tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
                         tabularData.push(tableNode);
                     }
                 });
                 console.log("Finish Updating table");
                 // this.store_setTableIsLoading(false);
-                this.stateSetTreeData(tabularData);
+                this.store_setTableData(tabularData);
             },
             setTableContentforMsa(seq) {
                 let obj = {};

@@ -7,6 +7,7 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
+        <button class="btn btn-default btn-organism" @click.prevent="toggleMsa()">Show MSA</button>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         <table v-else class="mainTable"> 
             <thead id="head" ref="thead">
@@ -19,7 +20,7 @@
                     <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in cols" :key="i" 
+                    <th v-for="(col,i) in colsToRender" :key="i" 
                         :class="getThClasses(col, i)"> 
                             <tablecell :content="getHeader(col)"></tablecell>
                     </th>
@@ -27,7 +28,7 @@
             </thead>
             <tbody id="body" ref="tbody">
                 <tr v-for="(row, i) in rowsToRender" :key=i>
-                    <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
+                    <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(key, row[key], i)">
                         <tablecell :content="getContent(key, row[key])"></tablecell>
                     </td>
@@ -51,7 +52,7 @@
 
     export default {
         name: "tablelayout",
-        props: ["headerMap"],
+        props: ["headerMap", "colsFromProp"],
         components: {
             popupTable: popupTable,
             'modal': customModal,
@@ -61,7 +62,7 @@
         data() {
             return {
                 lazyLoad: false, //lazy load flag for rendering rows only within view
-                cols: [],
+                colsToRender: [],
                 rowsToRender: [],
                 extraCols: [],
                 tdWidth: '190px',
@@ -152,8 +153,8 @@
             update() {
                 var titles = d3.keys(this.store_treeGeneralData[0]);
                 titles = titles.filter(t => t != "id" && t != "accession");
-              
-                this.cols = titles;
+
+                this.colsToRender = titles;
                 this.rowsToRender = [];
                 //If the total number of rows is > 
                 if(this.store_treeGeneralData.length > 10) {
@@ -204,7 +205,7 @@
             analyzeMsaData() {
                 let msa_split = this.store_treeGeneralData.map(s => {
                     let msa_arr = [];
-                    if(s["MSA"].value) {
+                    if(s["MSA"] && s["MSA"].value) {
                         msa_arr = s["MSA"].value.split('');
                     }
                     return msa_arr;
@@ -236,7 +237,7 @@
                 });
 
                 this.store_treeGeneralData.forEach(f => {
-                    if(f["MSA"].value) {
+                    if(f["MSA"] && f["MSA"].value) {
                         let i = 0;
                         f["MSA"].splitByLetter.forEach(l => {
                             let highestFreqLetter = freq_seq_arr[i][0];

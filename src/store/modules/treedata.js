@@ -79,7 +79,7 @@ const getters = {
 };
 
 const actions = {
-    [types.TREE_ACTION_SET_DATA]: (context, payload) => {
+    [types.TABLE_ACTION_SET_DATA]: (context, payload) => {
         context.state.treedata.data = payload;
     },
     [types.TREE_ACTION_SET_NODES]: (context, payload) => {
