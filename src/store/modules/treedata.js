@@ -34,7 +34,7 @@ const state = {
 };
 
 const getters = {
-    [types.TREE_GET_DATA]: state => {
+    [types.TABLE_GET_DATA]: state => {
         return state.treedata.data;
     },
     [types.TREE_GET_JSON]: state => {

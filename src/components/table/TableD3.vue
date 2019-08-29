@@ -7,7 +7,6 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-        <button class="btn btn-default btn-organism" @click.prevent="toggleMsa()">Show MSA</button>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         <table v-else class="mainTable"> 
             <thead id="head" ref="thead">
@@ -83,14 +82,14 @@
         },
         computed: {
             ...mapGetters({
-                store_treeGeneralData: types.TREE_GET_DATA,
+                store_tableData: types.TABLE_GET_DATA,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
             })
         },
         watch: {
-            store_treeGeneralData: {
+            store_tableData: {
                 handler: function (val, oldVal) {
                     if(val.length == 0) {
                         this.isLoading = true;
@@ -103,19 +102,19 @@
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
-                    var foundRow = this.store_treeGeneralData.find(d => d["Gene ID"] === val.geneId);
+                    var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
                     if(!foundRow) {
                         let accession = val.data.accession;
-                        foundRow = this.store_treeGeneralData.find(d => d["accession"] === accession);
+                        foundRow = this.store_tableData.find(d => d["accession"] === accession);
                     }
                     if(foundRow) {
-                        this.setScrollToRow(foundRow.id);
+                        // this.setScrollToRow(foundRow.id);
                     }
                 }
             },
             store_annoMapping: {
                 handler: function (val, oldVal) {
-                    this.extraCols = val.headers;
+                    // this.extraCols = val.headers;
                 }
             },
             store_tableIsLoading: {
@@ -124,14 +123,24 @@
                         this.isLoading = true;
                     }
                 }
+            },
+            colsFromProp: {
+                handler: function(val, oldval) {
+                    // this.update();
+                }
             }
         },
         mounted: function () {
             this.isLoading = true;
-            if(this.store_treeGeneralData) {
+            if(this.store_tableData) {
                 this.update();
             }
             this.store_setTableIsLoading(true);
+        },
+        updated() {
+            this.$nextTick(function () {
+                console.log("Updated Table");
+            });
         },
         methods: {
             ...mapActions({
@@ -145,24 +154,29 @@
                     if(this.$refs.tbody) {
                         this.$refs.tbody.addEventListener('scroll', 
                             _.throttle(this.handleScroll, 10));
-                        this.extraCols = this.store_annoMapping.headers;
+                        // this.extraCols = this.store_annoMapping.headers;
                     }
                 },10);
             },
             //Is called on every change to the store data
-            update() {
-                var titles = d3.keys(this.store_treeGeneralData[0]);
-                titles = titles.filter(t => t != "id" && t != "accession");
+            update(pm) {
+                if(!this.colsFromProp) return;
+
+                var titles = d3.keys(this.store_tableData[0]);
+                // titles = titles.filter(t => t != "id" && t != "accession");
+                titles = titles.filter(t => this.colsFromProp.includes(t));
 
                 this.colsToRender = titles;
                 this.rowsToRender = [];
+                this.lazyLoad = true;
+                this.updateRows("update");
+                
                 //If the total number of rows is > 
-                if(this.store_treeGeneralData.length > 10) {
-                    this.lazyLoad = true;
-                    this.updateRows();
-                } else {
-                    this.rowsToRender = this.store_treeGeneralData;
-                }
+                // if(this.store_tableData.length > 10) {
+                    
+                // } else {
+                //     this.rowsToRender = this.store_tableData;
+                // }
                 
                 if(this.isLoading) {
                     setTimeout(() => {
@@ -175,25 +189,30 @@
             //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
             //This depends on rowsScrolled var.
             //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
-            updateRows() {
+            updateRows(parentMethod) {
+                console.log("called by "+ parentMethod);
                 if(!this.lazyLoad) return;
                 //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
                 //We add all the rows scolled to the table
-                let noOfRowsToAdd = 30 + this.rowsScrolled*2;
+                let maxRows = 120;
+                let noOfRowsToAdd = maxRows + this.rowsScrolled;
                 let noOfTopRowsToRemove = 0;
-                if(this.rowsScrolled > 500) {
-                    //If the rowsScrolled becomes greater than 500, then the table rendering becomes slow.
-                    // So, we remove some of the top rows from being rendered too.
-                    noOfTopRowsToRemove = this.rowsScrolled - this.upperLimit;
-                    noOfRowsToAdd = 30 + this.rowsScrolled;
+                if(this.rowsScrolled > 10) {
+                    noOfTopRowsToRemove = this.rowsScrolled;
                 }
-
-                this.analyzeMsaData();
-
+                // if(this.rowsScrolled > 500) {
+                //     //If the rowsScrolled becomes greater than 500, then the table rendering becomes slow.
+                //     // So, we remove some of the top rows from being rendered too.
+                //     noOfTopRowsToRemove = this.rowsScrolled - this.upperLimit;
+                //     noOfRowsToAdd = 30 + this.rowsScrolled;
+                // }
+                // console.log("analyze began");
+                // this.analyzeMsaData();
+                // console.log("analyze end");
                 let i = 0;
                 this.rowsToRender = [];
                 //this.rowsToRender - add rows ranging from index [noOfTopRowsToRemove] to [noOfRowsToAdd].
-                this.store_treeGeneralData.some(n => {
+                this.store_tableData.some(n => {
                     //Only add rows after the 'noOfTopRowsToRemove'
                     if(i >= noOfTopRowsToRemove) {
                         this.rowsToRender.push(n);
@@ -201,77 +220,9 @@
                     i++;
                     return i > noOfRowsToAdd;
                 });
+                console.log("render count " + this.rowsToRender.length);
             },
-            analyzeMsaData() {
-                let msa_split = this.store_treeGeneralData.map(s => {
-                    let msa_arr = [];
-                    if(s["MSA"] && s["MSA"].value) {
-                        msa_arr = s["MSA"].value.split('');
-                    }
-                    return msa_arr;
-                });
-                let maxLength = msa_split[0].length;
-                let analysis_arr = new Array(maxLength).fill({});
-
-                msa_split.forEach(seq_arr => {
-                    let seq_i = 0;
-                    seq_arr.forEach(letter => {
-                        let seqObj = {};
-                        Object.assign(seqObj, analysis_arr[seq_i]);
-                        if(letter) {
-                            if(seqObj[letter]) {
-                                seqObj[letter]++;
-                            } else {
-                                seqObj[letter] = 1;
-                            }
-                        }
-                        
-                        analysis_arr[seq_i] = seqObj;
-                        seq_i++;
-                    });
-                });
-
-                let freq_seq_arr = [];
-                analysis_arr.forEach(e => {
-                    freq_seq_arr.push(this.getMsaByRow(e));
-                });
-
-                this.store_treeGeneralData.forEach(f => {
-                    if(f["MSA"] && f["MSA"].value) {
-                        let i = 0;
-                        f["MSA"].splitByLetter.forEach(l => {
-                            let highestFreqLetter = freq_seq_arr[i][0];
-                            if(l.letter == "." || l.letter == "-") l.highlight = false;
-                            else if(highestFreqLetter.percent < 50) l.highlight = false;
-                            else if(l.letter != highestFreqLetter.letter) l.highlight = false;
-                            else {
-                                l.highlight = true; 
-                                if(highestFreqLetter.percent > 90) l.highlightType = 'dark';
-                                else l.highlightType = 'light';
-                            }
-                            i++;
-                        });
-                    }
-                });
-            },
-            getMsaByRow(freqOfLetters) {
-                let seqObjArr = [];
-                let letters = Object.keys(freqOfLetters);
-                let total = 0;
-                letters.forEach(l => {
-                    let freq = freqOfLetters[l];
-                    seqObjArr.push({letter: l, freq: freq});
-                    total += freq;
-                });
-
-                seqObjArr.map(e => {
-                    e.percent = e.freq/total*100;
-                });
-                seqObjArr = seqObjArr.sort((a,b) => {
-                    return b.percent - a.percent;
-                });
-                return seqObjArr;
-            },
+            
             handleScroll() {
                 //If scrolling is from tree (programattic), handleScroll is still being called.
                 // So we just return without changing anything.
@@ -294,7 +245,7 @@
                             this.scrollTop_old = scrollTop_curr;
                             this.scrollTreeFromTable(this.scrollTop_old);
                             //Updates rowsToRender based on the scrolled value.
-                            this.updateRows();
+                            this.updateRows("handleScroll");
                         } 
                     }, 1000);
                 }
@@ -312,16 +263,16 @@
             scrollTreeFromTable(amount) {
                 var rowNumber = amount/this.rowHeight;
                 rowNumber = Math.round(rowNumber);
-                var rowId = this.store_treeGeneralData[rowNumber]["Gene ID"];
-                var accession = this.store_treeGeneralData[rowNumber]["accession"];
+                var rowId = this.store_tableData[rowNumber]["Gene ID"];
+                var accession = this.store_tableData[rowNumber]["accession"];
                 var scroll = {i: rowNumber, id: rowId, accession: accession};
                 this.rowsScrolled = rowNumber;
-                this.updateRows();
+                this.updateRows("scrollTreeFromTable");
                 this.stateSetTableScroll(scroll);
             },
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber;
-                this.updateRows();
+                this.updateRows("setScrollToRow");
                 var centerRowNumber = rowNumber-8;
                 if(this.lazyLoad && this.rowsScrolled > 500) {
                     //Lazy Load - correct scrolling

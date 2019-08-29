@@ -56,7 +56,7 @@
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
                 stateTableScroll: types.TABLE_GET_SCROLL,
-                store_treeGeneralData: types.TREE_GET_DATA,
+                store_tableData: types.TABLE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
@@ -78,7 +78,7 @@
                     this.processMatchedNodes(val);
                 }
             },
-            store_treeGeneralData: {
+            store_tableData: {
                 handler: function (val, oldVal) {
                     if(val.length == 0) {
                         this.isLoading = true;
@@ -113,7 +113,7 @@
                 isLazyLoad: true,
                 isAnimated: true,
                 enableMenu: false,
-                showLegend: true,
+                showLegend: false,
                 showBranchLength: true,
                 //constants
                 rowLimit_lazyLoad: 25,
@@ -193,7 +193,7 @@
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
                 this.$emit('get-table-csv-data', nodes);
-                this.makeDisplayCompact();
+                // this.makeDisplayCompact();
                 this.initTreeLayout(this.rootNode);
                 this.$emit('init-tree', nodes);
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//

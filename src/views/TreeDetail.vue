@@ -89,7 +89,8 @@
                 <div class="row h-100">
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
-                        <tablelayout :headerMap="headerMap"></tablelayout>
+                        <button class="btn btn-default btn-organism" @click.prevent="toggleMsa()">Show MSA</button>
+                        <tablelayout :colsFromProp="tableColsToRender" :headerMap="headerMap"></tablelayout>
                     </div>
                 </div>
             </div>
@@ -128,7 +129,7 @@ import { Promise } from 'q';
         computed: {
             ...mapGetters({
                 store_treeJsonString: types.TREE_GET_JSON,
-                store_treeGeneralData: types.TREE_GET_DATA,
+                store_tableData: types.TABLE_GET_DATA,
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
                 store_getTreeMetadata: types.TREE_GET_METADATA,
                 store_treeMsaData: types.TREE_GET_MSADATA,
@@ -201,6 +202,8 @@ import { Promise } from 'q';
             return {
                 showLegendTip: false,
                 treeId: null,
+                //~~~~~~~~~~~~ Render Options ~~~~~~~~~~~~~//
+                tableColsToRender: [],
                 branchLength: "N/A",
                 completeData: null,
                 treeData_Json: null,
@@ -250,6 +253,7 @@ import { Promise } from 'q';
                     'Protein function',
                     'Subfamily name'
                 ],
+                showMsa: false
             }
         },
         mounted() {
@@ -269,7 +273,7 @@ import { Promise } from 'q';
                 store_setTableData: types.TABLE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
-                // store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
+                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
             //Load tree data needed from the API.
             loadTreeFromApi() {
@@ -277,7 +281,6 @@ import { Promise } from 'q';
                 var p1 = this.store_setPantherTreeFromApi(this.treeId);
                 var p2 = this.store_setMsaFromApi(this.treeId);
                 Promise.all([p1, p2]).then(vals => {
-                    console.log(vals);
                     if(vals.length > 1) {
                         this.resetPruning();
                         this.initTreeData(this.store_treeJsonString);
@@ -689,25 +692,39 @@ import { Promise } from 'q';
                 .catch(() => console.error('error occured'))
             },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            toggleMsa() {
+                this.showMsa = !this.showMsa;
+                if(this.showMsa) {
+                    this.tableColsToRender = [
+                        "Gene name", "MSA"
+                    ];
+                } else {
+                    this.tableColsToRender = [
+                        "Gene name", "Organism"
+                    ];
+                }
+            },
             updateTableData(nodes) {
                 var tabularData = [];
                 var index = 0;
-                let tableColsToShow = [
-                    "Gene name", "Organism"
+                this.tableColsToRender = [
+                        "Gene name", "MSA"
                 ];
 
                 this.headerMap["MSA"] = this.setMsaHeaderTitle();
-                console.log("Start Updating table");
+                console.log("Start Storing table");
                 nodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
                         tableNode["id"] = index++;
                         tableNode["Gene name"] = n.data.gene_symbol;
-                        // var geneId = n.data.gene_id;
-                        // if (geneId) {
-                        //     geneId = geneId.split(':')[1];
-                        // }
                         tableNode["Organism"] = n.data.organism;
+
+                        var geneId = n.data.gene_id;
+                        if (geneId) {
+                            geneId = geneId.split(':')[1];
+                        }
+                        tableNode["Gene ID"] = geneId;
                         // this.anno_headers.sort(function (a, b) {
                         //     return a.toLowerCase().localeCompare(b.toLowerCase());
                         // });
@@ -725,7 +742,7 @@ import { Promise } from 'q';
                         //         }
                         //     }
                         // });
-                        // tableNode["Gene ID"] = geneId;
+                        
                         // tableNode["Protein name"] = n.data.definition;
                         // tableNode["Uniprot ID"] = n.data.uniprotId;
                         // tableNode["Subfamily Name"] = n.data.sf_name;
@@ -735,24 +752,22 @@ import { Promise } from 'q';
                         //     }
                         // }
 
-                        // tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
+                        tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
                         tabularData.push(tableNode);
                     }
                 });
-                console.log("Finish Updating table");
+                console.log("Finish Storing table");
                 // this.store_setTableIsLoading(false);
+                console.log("analyze began");
+                this.analyzeMsaData(tabularData);
+                console.log("analyze end");
                 this.store_setTableData(tabularData);
             },
             setTableContentforMsa(seq) {
                 let obj = {};
                 obj.type = 'custom';
                 obj.value = seq;
-                let splitByLetter = [];
-                if(seq) {
-                    obj.splitByLetter = seq.split('').map(val => {
-                        return {letter: val, highlight: true};
-                    });
-                }
+                obj.splitByLetter = []; //analysis of each letter goes here.
                 return obj;
             },
             setMsaHeaderTitle() {
@@ -772,6 +787,93 @@ import { Promise } from 'q';
                     }
                 }
                 return msa_header;
+            },
+            analyzeMsaData(tabularData) {
+                let msa_split = [];
+                tabularData.forEach(s => {
+                    let msa_arr = [];
+                    if(s["MSA"] && s["MSA"].value) {
+                        msa_arr = s["MSA"].value.split('');
+                        let i = 0;
+                        s["MSA"].splitByLetter = msa_arr.map(l => {
+                            return {index: i++, letter: l, highlight: false};
+                        });
+                        // s["MSA"].splitByLetter = msa_arr;
+                    }
+                    msa_split.push(msa_arr);
+                });
+                // console.log(tabularData);
+                console.log(msa_split.length);
+                let maxLength = msa_split[0].length;
+                let analysis_arr = new Array(maxLength).fill({});
+                
+                msa_split.forEach(seq_arr => {
+                    let seq_i = 0;
+                    seq_arr.forEach(letter => {
+                        let seqObj = {};
+                        Object.assign(seqObj, analysis_arr[seq_i]);
+                        if(letter) {
+                            if(seqObj[letter]) {
+                                seqObj[letter]++;
+                            } else {
+                                seqObj[letter] = 1;
+                            }
+                        }
+                        
+                        analysis_arr[seq_i] = seqObj;
+                        seq_i++;
+                    });
+                });
+                console.log(analysis_arr.length);
+
+                let freq_seq_arr = [];
+                analysis_arr.forEach(e => {
+                    freq_seq_arr.push(this.getMsaByRow(e));
+                });
+                console.log(freq_seq_arr.length);
+
+                tabularData.forEach(f => {
+                    if(f["MSA"] && f["MSA"].value) {
+                        let i = 0;
+                        if(f["MSA"].splitByLetter) {
+                            // f["MSA"].splitByLetter.forEach(l => {
+                            //     let highestFreqLetter = freq_seq_arr[i][0];
+                            //     f["MSA"].splitByHl.push(false);
+                            //     i++;
+                            // });
+                            f["MSA"].splitByLetter.forEach(l => {
+                                let highestFreqLetter = freq_seq_arr[i][0];
+                                if(l.letter == "." || l.letter == "-") l.highlight = false;
+                                else if(highestFreqLetter.percent < 50) l.highlight = false;
+                                else if(l.letter != highestFreqLetter.letter) l.highlight = false;
+                                else {
+                                    l.highlight = true; 
+                                    if(highestFreqLetter.percent > 90) l.highlightType = 'dark';
+                                    else l.highlightType = 'light';
+                                }
+                                i++;
+                            });
+                        }
+                    }
+                });
+            },
+            getMsaByRow(freqOfLetters) {
+                let seqObjArr = [];
+                let letters = Object.keys(freqOfLetters);
+                let total = 0;
+                letters.forEach(l => {
+                    let freq = freqOfLetters[l];
+                    seqObjArr.push({letter: l, freq: freq});
+                    total += freq;
+                });
+
+                seqObjArr.map(e => {
+                    e.percent = e.freq/total*100;
+                });
+                seqObjArr = seqObjArr.sort((a,b) => {
+                    return b.percent - a.percent;
+                });
+                return seqObjArr;
             },
             // ~~~~~~~~~~~~~~~~ Pruning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             pruneTreeFromMenu() {
