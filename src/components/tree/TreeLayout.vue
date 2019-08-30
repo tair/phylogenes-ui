@@ -55,7 +55,7 @@
         computed: {
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
-                stateTableScroll: types.TABLE_GET_SCROLL,
+                store_getTableScrollRow: types.TABLE_GET_SCROLL,
                 store_tableData: types.TABLE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
@@ -86,18 +86,9 @@
                     }
                 }
             },
-            stateTableScroll: {
+            store_getTableScrollRow: {
                 handler: function (val, oldVal) {
-                    var nodes = this.rootNode.descendants();
-                    var treeNode = null;
-                    if(val.id != undefined) {
-                        treeNode = nodes.find(n => n.geneId == val.id);
-                    } else {
-                        treeNode = nodes.find(n => n.data.accession == val.accession);
-                    }
-                    if(treeNode) {
-                        this.moveTreeToNodePosition(treeNode);
-                    }
+                    this.scrollTreeFromTable(val);
                 }
             },
             store_tableIsLoading: {
@@ -139,6 +130,10 @@
                 linkDatums: [],
                 svgWidth: 700,
                 svgHeight: 700,
+                //scrollingTreeFromTable
+                delayInCall: 500,
+                ticking: false,
+                timerId: null
             }
         },
         mounted() {
@@ -154,6 +149,47 @@
                 stateTreeNodes: types.TREE_ACTION_SET_NODES,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            //Scroll tree to so that tree nodes are aligned with table.
+            //This method is called when: table is scrolled by a mouse
+            scrollTreeFromTable(scroll) {
+                //Since a table scroll is registered multiple time, we need to
+                // scroll tree only when scrolling by user is done. We do this by starting
+                // a timer with a delay of 'delayInCall'. Only after this timer is completed
+                // that we call the method to scroll the tree.
+                if(!this.ticking) {
+                    this.ticking = true;
+                    this.timerId = setTimeout(() => {
+                        this.ticking = false;
+                        let node = this.findNodeFromTree(scroll);
+                        if(node) {
+                            this.moveTreeToNodePosition(node);
+                        }
+                    }, this.delayInCall);
+                }
+                //We clear the timeout if scroll is initiated before the initial timer was completed.
+                // This can happen if let's say the delay was 0.5s, but the user is still scrolling. We
+                // don't scroll the tree until user has completely stopped scrolling.
+                if(this.ticking && this.timerId) {
+                    clearTimeout(this.timerId);
+                    this.timerId = setTimeout(() => {
+                        this.ticking = false;
+                        let node = this.findNodeFromTree(scroll);
+                        if(node) {
+                            this.moveTreeToNodePosition(node);
+                        }
+                    }, this.delayInCall);
+                }
+            },
+            findNodeFromTree(val) {
+                var nodes = this.rootNode.descendants();
+                var treeNode = null;
+                if(val.id != undefined) {
+                    treeNode = nodes.find(n => n.geneId == val.id);
+                } else {
+                    treeNode = nodes.find(n => n.data.accession == val.accession);
+                }
+                return treeNode;
+            },
             onPruneLoading(isLoad) {
                 this.isLoading = isLoad;
             },
@@ -481,7 +517,7 @@
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
                 setTimeout(() => {
                     this.store_setCenterNode(currCenterNode);
-                }, 500);
+                }, 100);
             },
                      
             // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//

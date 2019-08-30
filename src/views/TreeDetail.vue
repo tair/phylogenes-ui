@@ -801,7 +801,6 @@ import { Promise } from 'q';
                     msa_split.push(msa_arr);
                 });
                 // console.log(tabularData);
-                console.log(msa_split.length);
                 let maxLength = msa_split[0].length;
                 let analysis_arr = new Array(maxLength).fill({});
                 
@@ -822,13 +821,11 @@ import { Promise } from 'q';
                         seq_i++;
                     });
                 });
-                console.log(analysis_arr.length);
 
                 let freq_seq_arr = [];
                 analysis_arr.forEach(e => {
                     freq_seq_arr.push(this.getMsaByRow(e));
                 });
-                console.log(freq_seq_arr.length);
 
                 tabularData.forEach(f => {
                     if(f["MSA"] && f["MSA"].value) {

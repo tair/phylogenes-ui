@@ -29,7 +29,7 @@
                 <tr v-for="(row, i) in rowsToRender" :key=i>
                     <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(key, row[key], i)">
-                        <tablecell :content="getContent(key, row[key])"></tablecell>
+                        <tablecell :content="getContent(key, row[key], row)"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -144,7 +144,7 @@
         },
         methods: {
             ...mapActions({
-                stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
+                store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
             initAfterLoad() {
@@ -190,37 +190,31 @@
             //This depends on rowsScrolled var.
             //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
             updateRows(parentMethod) {
-                console.log("called by "+ parentMethod);
+                // console.log("called by "+ parentMethod);
                 if(!this.lazyLoad) return;
                 //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
                 //We add all the rows scolled to the table
-                let maxRows = 20;
+                let maxRows = 30;
                 let noOfRowsToAdd = maxRows + this.rowsScrolled;
-                let noOfTopRowsToRemove = 0;
-                noOfTopRowsToRemove = this.rowsScrolled;
-                // if(this.rowsScrolled > 10) {
-                //     noOfTopRowsToRemove = this.rowsScrolled;
-                // }
-                // if(this.rowsScrolled > 500) {
-                //     //If the rowsScrolled becomes greater than 500, then the table rendering becomes slow.
-                //     // So, we remove some of the top rows from being rendered too.
-                //     noOfTopRowsToRemove = this.rowsScrolled - this.upperLimit;
-                //     noOfRowsToAdd = 30 + this.rowsScrolled;
-                // }
+                let noOfTopRowsToRemove = this.rowsScrolled;
                 let i = 0;
                 this.rowsToRender = [];
-                //this.rowsToRender - add rows ranging from index [noOfTopRowsToRemove] to [noOfRowsToAdd].
+                //this.rowsToRender - add rows ranging from index 0 to [noOfRowsToAdd].
+                // set 'rendering' to false, for all rows less than 'noOfTopRowsToRemove'. Since this
+                // rows will be out of view and scrolled up, we don't render the content, for performance reasons.
                 this.store_tableData.some(n => {
                     //Only add rows after the 'noOfTopRowsToRemove'
-                    if(i >= noOfTopRowsToRemove) {
-                        this.rowsToRender.push(n);
+                    if(i < noOfTopRowsToRemove) {
+                        n.rendering = false;
+                    } else {
+                        n.rendering = true;
                     }
+                    this.rowsToRender.push(n);
                     i++;
                     return i > noOfRowsToAdd;
                 });
-                // console.log("render count " + this.rowsToRender.length);
             },
-            
+            //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
                 //If scrolling is from tree (programattic), handleScroll is still being called.
                 // So we just return without changing anything.
@@ -240,40 +234,47 @@
                         this.ticking = false;
                         let scrollTop_curr = document.getElementById("body").scrollTop;
                         if(scrollTop_curr != this.scrollTop_old) {
+                            this.calculateRowsScrolled(scrollTop_curr);
                             this.scrollTop_old = scrollTop_curr;
-                            this.scrollTreeFromTable(this.scrollTop_old);
+                            this.scrollTreeFromTable(this.rowsScrolled);
                             //Updates rowsToRender based on the scrolled value.
                             this.updateRows("handleScroll");
-                        } 
-                    }, 1000);
+                        }
+                    }, 100);
                 }
                 
                 let scrollLeft_curr = document.getElementById("body").scrollLeft;
                 this.scrollTableHeader(scrollLeft_curr);
             },
+            calculateRowsScrolled(amount) {
+                var rowNumber = amount/this.rowHeight;
+                rowNumber = Math.round(rowNumber);
+                this.rowsScrolled = rowNumber;
+            },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
                 thead.scrollLeft = amount;
             },
-            //Move the tree node to the rows scrolled by table.
-            //We do this by setting store 'stateSetTableScroll' with the 'scroll' row number.
-            //Also assign this.rowsScrolled which is used for lazy loading.
-            scrollTreeFromTable(amount) {
-                var rowNumber = amount/this.rowHeight;
-                rowNumber = Math.round(rowNumber);
+            //Move the tree node to the row number currently at the center of table.
+            //We do this by setting store value 'store_setTableScrolledRow' with the 'scroll'ed row number.
+            scrollTreeFromTable(rowNumber) {
                 var rowId = this.store_tableData[rowNumber]["Gene ID"];
                 var accession = this.store_tableData[rowNumber]["accession"];
                 var scroll = {i: rowNumber, id: rowId, accession: accession};
-                this.rowsScrolled = rowNumber;
-                this.updateRows("scrollTreeFromTable");
-                this.stateSetTableScroll(scroll);
+                this.store_setTableScrolledRow(scroll);
             },
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
                 console.log(this.rowsScrolled);
                 this.updateRows("setScrollToRow");
-                var centerRowNumber = rowNumber-8;
+
+                setTimeout(() => {
+                    const tbody = document.getElementById("body");
+                    if(tbody) {
+                        tbody.scrollTop = 40*this.rowsScrolled;
+                    }
+                }, 100);
                 // if(this.lazyLoad && this.rowsScrolled > 500) {
                 //     //Lazy Load - correct scrolling
                 //     setTimeout(() => {
@@ -285,10 +286,7 @@
                 //     }, 1000);
                 // } else {
                 //     //Normal scrolling
-                //     const tbody = document.getElementById("body");
-                //     if(tbody) {
-                //         tbody.scrollTop = 40*centerRowNumber;
-                //     }
+                
                 // }
                 this.scrollFromTree = true;
             },
@@ -484,7 +482,10 @@
                 }
                 return header;
             },
-            getContent(colName, celltxt) {
+            getContent(colName, celltxt, row) {
+                if(row.rendering == false) {
+                    return {text: ""};
+                }
                 let content = {text: celltxt};
                 if(celltxt == "*") {
                     content['type'] = 'annotation';
@@ -667,6 +668,16 @@
         fill: #ff0;
         stroke: steelblue;
         stroke-width: 2px;
+    }
+
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 7px;
+    }
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background-color: rgba(0,0,0,.5);
+        -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
     }
 </style>
 
