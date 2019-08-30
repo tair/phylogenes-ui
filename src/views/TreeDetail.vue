@@ -89,7 +89,7 @@
                 <div class="row h-100">
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
-                        <button class="btn btn-default btn-organism" @click.prevent="toggleMsa()">Show MSA</button>
+                        <!-- <button class="btn btn-default btn-organism" @click.prevent="toggleMsa()">Show MSA</button> -->
                         <tablelayout :colsFromProp="tableColsToRender" :headerMap="headerMap"></tablelayout>
                     </div>
                 </div>
@@ -708,11 +708,10 @@ import { Promise } from 'q';
                 var tabularData = [];
                 var index = 0;
                 this.tableColsToRender = [
-                        "Gene name", "MSA"
+                    "Gene name", "MSA"
                 ];
 
                 this.headerMap["MSA"] = this.setMsaHeaderTitle();
-                console.log("Start Storing table");
                 nodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
@@ -743,24 +742,23 @@ import { Promise } from 'q';
                         //     }
                         // });
                         
-                        // tableNode["Protein name"] = n.data.definition;
-                        // tableNode["Uniprot ID"] = n.data.uniprotId;
-                        // tableNode["Subfamily Name"] = n.data.sf_name;
-                        // if(n._children) {
-                        //     if(n.data.accession) {
-                        //         tableNode["accession"] = n.data.accession;
-                        //     }
-                        // }
+                        tableNode["Protein name"] = n.data.definition;
+                        tableNode["Uniprot ID"] = n.data.uniprotId;
+                        tableNode["Subfamily Name"] = n.data.sf_name;
+                        if(n._children) {
+                            if(n.data.accession) {
+                                tableNode["accession"] = n.data.accession;
+                            }
+                        }
 
                         tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
                         tabularData.push(tableNode);
                     }
                 });
-                console.log("Finish Storing table");
                 // this.store_setTableIsLoading(false);
-                console.log("analyze began");
+                // console.log("analyze began");
                 this.analyzeMsaData(tabularData);
-                console.log("analyze end");
+                // console.log("analyze end");
                 this.store_setTableData(tabularData);
             },
             setTableContentforMsa(seq) {

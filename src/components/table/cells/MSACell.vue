@@ -1,11 +1,11 @@
 <template>
-    <div class="parent"><!-- <div style="overflow:scroll;"> -->
+    <div class="parent">
         <div class="overlay">
             <div class="element">
                 <span class="msaTextPlain">{{this.content.text}}</span>
             </div>
         </div>
-        <!-- <span class="msaText">{{this.content.text}}</span> -->
+        
         <svg :width=tdWidth :height=tdHeight>
             <g v-for="(c,i) in filteredTextArr" :key=i>
                 <rect v-if='c.highlight' :class='getRectClass(c)' :x=10+c.index*svgLetterGap y=8 width=10 height=80></rect>
@@ -25,6 +25,13 @@
         watch: {
             content: {
                 handler: function (val, oldVal) {
+                    if(val && val.text) {
+                        this.textArr = val.splitByLetter;
+                        let i = 0;
+                        if(this.textArr) {
+                            this.tdWidth = 20 + this.textArr.length*8.5;
+                        }
+                    }
                 }
             }
         },
@@ -35,12 +42,12 @@
             }
         },
         mounted() {
+            
             if(this.content && this.content.text) {
                 this.textArr = this.content.splitByLetter;
                 let i = 0;
                 if(this.textArr) {
                     this.tdWidth = 20 + this.textArr.length*8.5;
-                    // console.log("Mounted ", this.textArr.length);
                 }
             }
         },
@@ -86,6 +93,8 @@
     }
     .parent {
         position: relative;
+        /* required for making this cell to render behind the sticky cells */
+        z-index: 0; 
     }
     .overlay {
         position: absolute;

@@ -108,7 +108,7 @@
                         foundRow = this.store_tableData.find(d => d["accession"] === accession);
                     }
                     if(foundRow) {
-                        // this.setScrollToRow(foundRow.id);
+                        this.setScrollToRow(foundRow.id);
                     }
                 }
             },
@@ -139,7 +139,7 @@
         },
         updated() {
             this.$nextTick(function () {
-                console.log("Updated Table");
+                // console.log("Updated Table");
             });
         },
         methods: {
@@ -194,21 +194,19 @@
                 if(!this.lazyLoad) return;
                 //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
                 //We add all the rows scolled to the table
-                let maxRows = 120;
+                let maxRows = 20;
                 let noOfRowsToAdd = maxRows + this.rowsScrolled;
                 let noOfTopRowsToRemove = 0;
-                if(this.rowsScrolled > 10) {
-                    noOfTopRowsToRemove = this.rowsScrolled;
-                }
+                noOfTopRowsToRemove = this.rowsScrolled;
+                // if(this.rowsScrolled > 10) {
+                //     noOfTopRowsToRemove = this.rowsScrolled;
+                // }
                 // if(this.rowsScrolled > 500) {
                 //     //If the rowsScrolled becomes greater than 500, then the table rendering becomes slow.
                 //     // So, we remove some of the top rows from being rendered too.
                 //     noOfTopRowsToRemove = this.rowsScrolled - this.upperLimit;
                 //     noOfRowsToAdd = 30 + this.rowsScrolled;
                 // }
-                // console.log("analyze began");
-                // this.analyzeMsaData();
-                // console.log("analyze end");
                 let i = 0;
                 this.rowsToRender = [];
                 //this.rowsToRender - add rows ranging from index [noOfTopRowsToRemove] to [noOfRowsToAdd].
@@ -220,7 +218,7 @@
                     i++;
                     return i > noOfRowsToAdd;
                 });
-                console.log("render count " + this.rowsToRender.length);
+                // console.log("render count " + this.rowsToRender.length);
             },
             
             handleScroll() {
@@ -270,29 +268,28 @@
                 this.updateRows("scrollTreeFromTable");
                 this.stateSetTableScroll(scroll);
             },
+            //From tree panning
             setScrollToRow(rowNumber) {
-                this.rowsScrolled = rowNumber;
+                this.rowsScrolled = rowNumber - 8;
+                console.log(this.rowsScrolled);
                 this.updateRows("setScrollToRow");
                 var centerRowNumber = rowNumber-8;
-                if(this.lazyLoad && this.rowsScrolled > 500) {
-                    //Lazy Load - correct scrolling
-
-                    setTimeout(() => {
-                        centerRowNumber -= this.rowsScrolled - 101;
-                        const tbody = document.getElementById("body");
-                        if(tbody) {
-                           tbody.scrollTop = 40*centerRowNumber;
-                        }
- 
-                    }, 1000);
-
-                } else {
-                    //Normal scrolling
-                    const tbody = document.getElementById("body");
-                    if(tbody) {
-                        tbody.scrollTop = 40*centerRowNumber;
-                    }
-                }
+                // if(this.lazyLoad && this.rowsScrolled > 500) {
+                //     //Lazy Load - correct scrolling
+                //     setTimeout(() => {
+                //         centerRowNumber -= this.rowsScrolled - 101;
+                //         const tbody = document.getElementById("body");
+                //         if(tbody) {
+                //            tbody.scrollTop = 40*centerRowNumber;
+                //         }
+                //     }, 1000);
+                // } else {
+                //     //Normal scrolling
+                //     const tbody = document.getElementById("body");
+                //     if(tbody) {
+                //         tbody.scrollTop = 40*centerRowNumber;
+                //     }
+                // }
                 this.scrollFromTree = true;
             },
             rowClicked(d) {
@@ -574,6 +571,7 @@
         height: 40px !important;
     }
     #secTr {
+        height: 53px !important;
         filter: brightness(100%) !important;
         border: 0 !important;
         background-color: transparent;
@@ -611,6 +609,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        z-index: 1;
     }
 
     .mainTable td:first-child,
