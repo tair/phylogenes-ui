@@ -13,6 +13,7 @@ const state = {
         data: null,
         jsonString: null,
         go_annotations: null,
+        freq_msa_arr: [],
         msa_data: new Map(),
         max_msa_length: 0,
         metadata: {
@@ -76,6 +77,9 @@ const getters = {
     [types.TABLE_GET_ISTABLELOADING]: state => {
         return state.treedata.isTableLoading;
     },
+    [types.TABLE_GET_MSA_FREQ]: state => {
+        return state.treedata.freq_msa_arr;
+    }
 };
 
 const actions = {
@@ -192,6 +196,9 @@ const actions = {
             .catch(error => {
                 console.log('Error while reading data (E8273): ' + JSON.stringify(error));
             })
+    },
+    [types.TABLE_ACTION_SET_MSA_FREQ]: (context, payload) => {
+        context.state.treedata.freq_msa_arr = payload;
     },
     [types.TABLE_ACTION_SET_TABLE_ISLOADING]: (context, payload) => {
         context.state.treedata.isTableLoading = payload;

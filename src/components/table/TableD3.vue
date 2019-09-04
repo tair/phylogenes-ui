@@ -13,7 +13,11 @@
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
-                    <th colspan="2" class="thInvis"></th>
+                    <th colspan="2" class="thInvis">
+                        <button v-b-tooltip.hover title="Toggle MSA" class="btn bg-white float-left" @click="toggleCols">
+                                    <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i>
+                        </button>
+                    </th>
                     <th v-if="extraCols.length > 0" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
                     <th colspan="4" class="thInvis"></th>
@@ -114,7 +118,7 @@
             },
             store_annoMapping: {
                 handler: function (val, oldVal) {
-                    // this.extraCols = val.headers;
+                    this.extraCols = val.headers;
                 }
             },
             store_tableIsLoading: {
@@ -126,7 +130,10 @@
             },
             colsFromProp: {
                 handler: function(val, oldval) {
-                    // this.update();
+                    if(val.includes("MSA")) {
+                        this.isLoading = true;
+                    }
+                    this.update();
                 }
             }
         },
@@ -147,6 +154,9 @@
                 store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            toggleCols() {
+                this.$emit('toggle-cols');
+            },
             initAfterLoad() {
                 setTimeout(() => {
                     //handleScroll is called with a throttle of 10 ms, this is to control the number of 
@@ -154,7 +164,7 @@
                     if(this.$refs.tbody) {
                         this.$refs.tbody.addEventListener('scroll', 
                             _.throttle(this.handleScroll, 10));
-                        // this.extraCols = this.store_annoMapping.headers;
+                        this.extraCols = this.store_annoMapping.headers;
                     }
                 },10);
             },
@@ -162,11 +172,17 @@
             update(pm) {
                 if(!this.colsFromProp) return;
 
-                var titles = d3.keys(this.store_tableData[0]);
+                var filteredCols = d3.keys(this.store_tableData[0]);
                 // titles = titles.filter(t => t != "id" && t != "accession");
-                titles = titles.filter(t => this.colsFromProp.includes(t));
+                filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
+                //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
+                if(this.colsFromProp.includes("Annotations")) {
+                    this.store_annoMapping.headers.forEach(h => {
+                        filteredCols.splice(2, 0, h);
+                    });
+                }
 
-                this.colsToRender = titles;
+                this.colsToRender = filteredCols;
                 this.rowsToRender = [];
                 this.lazyLoad = true;
                 this.updateRows("update");
@@ -266,7 +282,6 @@
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
-                console.log(this.rowsScrolled);
                 this.updateRows("setScrollToRow");
 
                 setTimeout(() => {

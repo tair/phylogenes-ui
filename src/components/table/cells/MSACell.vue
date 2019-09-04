@@ -19,6 +19,9 @@
 
 <script>
     import * as d3 from 'd3';
+    import * as types from '../../../store/types_treedata';
+    import { mapGetters, mapActions } from 'vuex';
+
     export default {
         name: "cell-msa",
         props: ["content"],
@@ -26,11 +29,7 @@
             content: {
                 handler: function (val, oldVal) {
                     if(val && val.text) {
-                        this.textArr = val.splitByLetter;
-                        let i = 0;
-                        if(this.textArr) {
-                            this.tdWidth = 20 + this.textArr.length*8.5;
-                        }
+                        this.setTextArray("watch", val.text);
                     }
                 }
             }
@@ -39,16 +38,15 @@
             filteredTextArr() {
                 // return this.textArr;
                 return this.textArr.filter(c => {return c.highlight;});
-            }
+            },
+            ...mapGetters({ 
+                store_getFreqMsa: types.TABLE_GET_MSA_FREQ
+            })
         },
         mounted() {
-            
             if(this.content && this.content.text) {
-                this.textArr = this.content.splitByLetter;
-                let i = 0;
-                if(this.textArr) {
-                    this.tdWidth = 20 + this.textArr.length*8.5;
-                }
+                // this.textArr = this.content.text.split('');
+                this.setTextArray("mounted", this.content.text);
             }
         },
         updated() {
@@ -68,7 +66,30 @@
             getRectClass(letter) {
                 if(letter.highlightType == "dark") return 'darkRect';
                 else return 'lightRect';
-                
+            },
+            setTextArray(pm, text) {
+                console.log("set text " + pm);
+                // console.log(this.store_getFreqMsa);
+                let i = 0;
+                this.textArr = [];
+                text.split('').forEach(l => {
+                    let letterObj = {letter: l, index: i, highlight: false};
+                    // let highestFreqLetter = this.store_getFreqMsa[i][0];
+                    // if(letterObj.letter == "." || letterObj.letter == "-") letterObj.highlight = false;
+                    // else if(highestFreqLetter.percent < 50) letterObj.highlight = false;
+                    // else if(letterObj.letter != highestFreqLetter.letter) letterObj.highlight = false;
+                    // else {
+                    //     letterObj.highlight = true; 
+                    //     if(highestFreqLetter.percent > 90) letterObj.highlightType = 'dark';
+                    //     else letterObj.highlightType = 'light';
+                    // }
+                    i++;
+                    this.textArr.push(letterObj);
+                });
+
+                if(this.textArr) {
+                    this.tdWidth = 20 + this.textArr.length*8.5;
+                }
             }
         }
     }

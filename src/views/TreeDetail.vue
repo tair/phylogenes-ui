@@ -90,7 +90,8 @@
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
                         <!-- <button class="btn btn-default btn-organism" @click.prevent="toggleMsa()">Show MSA</button> -->
-                        <tablelayout :colsFromProp="tableColsToRender" :headerMap="headerMap"></tablelayout>
+                        <tablelayout :colsFromProp="tableColsToRender" :headerMap="headerMap"
+                                    v-on:toggle-cols="toggleMsa"></tablelayout>
                     </div>
                 </div>
             </div>
@@ -202,6 +203,15 @@ import { Promise } from 'q';
             return {
                 showLegendTip: false,
                 treeId: null,
+                defaultCols: ["Gene name", 
+                              "Organism", 
+                              "Annotations", 
+                              "Gene ID", 
+                              "Protein name", 
+                              "Uniprot ID", 
+                              "Subfamily Name"],
+                msaCols: ["Gene name",
+                          "MSA"],
                 //~~~~~~~~~~~~ Render Options ~~~~~~~~~~~~~//
                 tableColsToRender: [],
                 branchLength: "N/A",
@@ -273,7 +283,8 @@ import { Promise } from 'q';
                 store_setTableData: types.TABLE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
-                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
+                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
+                store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ
             }),
             //Load tree data needed from the API.
             loadTreeFromApi() {
@@ -575,6 +586,8 @@ import { Promise } from 'q';
                                 uniqueOrganisms.push(org);
                             }
                         }
+
+                        tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
                         tabularData.push(tableNode);
                     }
                 });
@@ -585,7 +598,7 @@ import { Promise } from 'q';
                     this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
                     this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
                 }
-
+                this.analyzeMsaData(tabularData);
                 this.completeData = tabularData;           
             },
             onTreeUpdate(nodes) {
@@ -695,21 +708,15 @@ import { Promise } from 'q';
             toggleMsa() {
                 this.showMsa = !this.showMsa;
                 if(this.showMsa) {
-                    this.tableColsToRender = [
-                        "Gene name", "MSA"
-                    ];
+                    this.tableColsToRender = this.msaCols;
                 } else {
-                    this.tableColsToRender = [
-                        "Gene name", "Organism"
-                    ];
+                    this.tableColsToRender = this.defaultCols;
                 }
             },
             updateTableData(nodes) {
                 var tabularData = [];
                 var index = 0;
-                this.tableColsToRender = [
-                    "Gene name", "MSA"
-                ];
+                this.tableColsToRender = this.defaultCols;
 
                 this.headerMap["MSA"] = this.setMsaHeaderTitle();
                 nodes.forEach(n => {
@@ -724,23 +731,23 @@ import { Promise } from 'q';
                             geneId = geneId.split(':')[1];
                         }
                         tableNode["Gene ID"] = geneId;
-                        // this.anno_headers.sort(function (a, b) {
-                        //     return a.toLowerCase().localeCompare(b.toLowerCase());
-                        // });
-                        // this.anno_headers.forEach(a => {
-                        //     tableNode[a] = "";
-                        //     if(n.data.uniprotId) {
-                        //         let uniprotId = n.data.uniprotId.toLowerCase();
-                        //         if(this.anno_mapping[uniprotId]) {
-                        //             let currAnno = this.anno_mapping[uniprotId];
-                        //             currAnno.forEach(c => {
-                        //                 if(c.goName === a) {
-                        //                     tableNode[a] = "*";
-                        //                 }
-                        //             });
-                        //         }
-                        //     }
-                        // });
+                        this.anno_headers.sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        });
+                        this.anno_headers.forEach(a => {
+                            tableNode[a] = "";
+                            if(n.data.uniprotId) {
+                                let uniprotId = n.data.uniprotId.toLowerCase();
+                                if(this.anno_mapping[uniprotId]) {
+                                    let currAnno = this.anno_mapping[uniprotId];
+                                    currAnno.forEach(c => {
+                                        if(c.goName === a) {
+                                            tableNode[a] = "*";
+                                        }
+                                    });
+                                }
+                            }
+                        });
                         
                         tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
@@ -756,9 +763,6 @@ import { Promise } from 'q';
                     }
                 });
                 // this.store_setTableIsLoading(false);
-                // console.log("analyze began");
-                this.analyzeMsaData(tabularData);
-                // console.log("analyze end");
                 this.store_setTableData(tabularData);
             },
             setTableContentforMsa(seq) {
@@ -793,10 +797,6 @@ import { Promise } from 'q';
                     if(s["MSA"] && s["MSA"].value) {
                         msa_arr = s["MSA"].value.split('');
                         let i = 0;
-                        s["MSA"].splitByLetter = msa_arr.map(l => {
-                            return {index: i++, letter: l, highlight: false};
-                        });
-                        // s["MSA"].splitByLetter = msa_arr;
                     }
                     msa_split.push(msa_arr);
                 });
@@ -826,31 +826,7 @@ import { Promise } from 'q';
                 analysis_arr.forEach(e => {
                     freq_seq_arr.push(this.getMsaByRow(e));
                 });
-
-                tabularData.forEach(f => {
-                    if(f["MSA"] && f["MSA"].value) {
-                        let i = 0;
-                        if(f["MSA"].splitByLetter) {
-                            // f["MSA"].splitByLetter.forEach(l => {
-                            //     let highestFreqLetter = freq_seq_arr[i][0];
-                            //     f["MSA"].splitByHl.push(false);
-                            //     i++;
-                            // });
-                            f["MSA"].splitByLetter.forEach(l => {
-                                let highestFreqLetter = freq_seq_arr[i][0];
-                                if(l.letter == "." || l.letter == "-") l.highlight = false;
-                                else if(highestFreqLetter.percent < 50) l.highlight = false;
-                                else if(l.letter != highestFreqLetter.letter) l.highlight = false;
-                                else {
-                                    l.highlight = true; 
-                                    if(highestFreqLetter.percent > 90) l.highlightType = 'dark';
-                                    else l.highlightType = 'light';
-                                }
-                                i++;
-                            });
-                        }
-                    }
-                });
+                this.store_setFreqMsa(freq_seq_arr);
             },
             getMsaByRow(freqOfLetters) {
                 let seqObjArr = [];
