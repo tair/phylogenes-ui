@@ -286,8 +286,11 @@ import { setTimeout } from 'timers';
                             this.scrollTop_old = scrollTop_curr;
                             this.scrollTreeFromTable(this.rowsScrolled);
                             //Updates rowsToRender based on the scrolled value.
-                            // this.updateRows("handleScroll");
-                            this.updateRows2();
+                            if(this.colsFromProp.includes("MSA")) {
+                                this.updateRows2();
+                            } else {
+                                this.updateRows("handleScroll");
+                            }
                         }
                     }, 100);
                 }
