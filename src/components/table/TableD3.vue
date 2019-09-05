@@ -52,6 +52,7 @@
     import customModal from '@/components/modal/CustomModal';
     import tablecell from '@/components/table/TableCellD3';
     import baseCell from '@/components/table/cells/BaseTableCell';
+import { setTimeout } from 'timers';
 
     export default {
         name: "tablelayout",
@@ -73,6 +74,7 @@
                 rowHeight: 40,
                 scrollFromTree: false,
                 scrollTop_old: 0,
+                scrollLeft_old: 0,
                 showPopup: false,
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
@@ -230,15 +232,45 @@
                     return i > noOfRowsToAdd;
                 });
             },
+            updateRows2() {
+                if(!this.lazyLoad) return;
+                //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
+                //We add all the rows scolled to the table
+                let maxRows = 30;
+                let noOfRowsToAdd = maxRows + this.rowsScrolled;
+                let noOfTopRowsToRemove = this.rowsScrolled;
+                let i = 0;
+                this.rowsToRender = [];
+                //this.rowsToRender - add rows ranging from index 0 to [noOfRowsToAdd].
+                // set 'rendering' to false, for all rows less than 'noOfTopRowsToRemove'. Since this
+                // rows will be out of view and scrolled up, we don't render the content, for performance reasons.
+                this.store_tableData.some(n => {
+                    //Only add rows after the 'noOfTopRowsToRemove'
+                    n.rendering = false;
+                    this.rowsToRender.push(n);
+                    i++;
+                    return i > noOfRowsToAdd;
+                });
+            },
             //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
                 //If scrolling is from tree (programattic), handleScroll is still being called.
                 // So we just return without changing anything.
                 if(this.scrollFromTree) {
-                    this.scrollFromTree = false;
+                    setTimeout(() => {
+                        this.scrollFromTree = false;
+                    }, 100);
                     return;
                 }
 
+                let scrollLeft_curr = document.getElementById("body").scrollLeft;
+                if(this.scrollLeft_old != scrollLeft_curr) {
+                    this.scrollLeft_old = scrollLeft_curr;
+                    this.scrollTableHeader(scrollLeft_curr);
+                    return;
+                } else {
+                    // this.scrollTableHeader(scrollLeft_curr);
+                }
                 //this.ticking is used to call the more intensive functions like 'scrollTree'
                 // and 'updateRows' only once in 1s. This is needed because handleScroll is
                 // called a lot of times when the mouse is scrolled in a second, but we don't
@@ -254,13 +286,11 @@
                             this.scrollTop_old = scrollTop_curr;
                             this.scrollTreeFromTable(this.rowsScrolled);
                             //Updates rowsToRender based on the scrolled value.
-                            this.updateRows("handleScroll");
+                            // this.updateRows("handleScroll");
+                            this.updateRows2();
                         }
                     }, 100);
                 }
-                
-                let scrollLeft_curr = document.getElementById("body").scrollLeft;
-                this.scrollTableHeader(scrollLeft_curr);
             },
             calculateRowsScrolled(amount) {
                 var rowNumber = amount/this.rowHeight;
@@ -516,7 +546,7 @@
                     }
                     content['type'] = 'msa';
                 }
-                return content; 
+                return content;
             },
             getThClasses(row, i) {
                 let classes = [];

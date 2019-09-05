@@ -9,8 +9,8 @@
         <svg :width=tdWidth :height=tdHeight>
             <g v-for="(c,i) in filteredTextArr" :key=i>
                 <rect v-if='c.highlight' :class='getRectClass(c)' :x=10+c.index*svgLetterGap y=8 width=10 height=80></rect>
-                <text dx=".35em" dy=".35em" :x=5+c.index*svgLetterGap y=17 
-                        class="msaTextSvg">{{c.letter}}</text>
+                <!-- <text dx=".35em" dy=".35em" :x=5+c.index*svgLetterGap y=17 
+                        class="msaTextSvg">{{c.letter}}</text> -->
             </g>
         </svg>
     </div>
@@ -21,6 +21,7 @@
     import * as d3 from 'd3';
     import * as types from '../../../store/types_treedata';
     import { mapGetters, mapActions } from 'vuex';
+import { setTimeout } from 'timers';
 
     export default {
         name: "cell-msa",
@@ -29,7 +30,9 @@
             content: {
                 handler: function (val, oldVal) {
                     if(val && val.text) {
-                        this.setTextArray("watch", val.text);
+                        if(!this.isLoading) {
+                            this.setTextArray("watch", val.text);
+                        }
                     }
                 }
             }
@@ -46,20 +49,28 @@
         mounted() {
             if(this.content && this.content.text) {
                 // this.textArr = this.content.text.split('');
+                this.localFreq = this.store_getFreqMsa;
                 this.setTextArray("mounted", this.content.text);
+                this.randInd = Math.floor(Math.random() * 100);
+                // console.log("mounted ", this.randInd);
             }
         },
         updated() {
             this.$nextTick(function () {
-                // console.log("Updated");
+                // console.log("Updated ", this.randInd);
             });
+        },
+        destroyed() {
+            // console.log("destroyed", this.randInd);
         },
         data() {
             return {
                 tdWidth: '1000px',
                 tdHeight: '30px',
                 textArr: [],
-                svgLetterGap: 8.501
+                svgLetterGap: 8.501,
+                isLoading: false,
+                localFreq: []
             }
         },
         methods: {
@@ -68,14 +79,36 @@
                 else return 'lightRect';
             },
             setTextArray(pm, text) {
+                this.isLoading = true;
                 console.log("set text " + pm);
+                if(pm == "watch") {
+                    this.isLoading = false;
+                    return;
+                }
                 // console.log(this.store_getFreqMsa);
-                let i = 0;
+                // let i = 0;
                 this.textArr = [];
-                text.split('').forEach(l => {
+                // console.log(this.store_getFreqMsa);
+                let accessC = 0;
+                let splits = text.split('');
+                for(var i = 0; i < splits.length; i++) {
+                    let l = splits[i];
                     let letterObj = {letter: l, index: i, highlight: false};
-                    // let highestFreqLetter = this.store_getFreqMsa[i][0];
-                    // if(letterObj.letter == "." || letterObj.letter == "-") letterObj.highlight = false;
+                    if(l== "." || l == "-") {
+                        this.textArr.push(letterObj);
+                    } else {
+                        let hfl = this.store_getFreqMsa[i];
+                        if(l != hfl.l) letterObj.highlight = false;
+                        else if(hfl.p > 50) {
+                            letterObj.highlight = true;
+                            if(hfl.p > 90) letterObj.highlightType = 'dark';
+                            else letterObj.highlightType = 'light';
+                        }
+                        this.textArr.push(letterObj);
+                    }
+                }
+                // console.log(accessC);
+                // text.split('').forEach(l => {
                     // else if(highestFreqLetter.percent < 50) letterObj.highlight = false;
                     // else if(letterObj.letter != highestFreqLetter.letter) letterObj.highlight = false;
                     // else {
@@ -83,13 +116,13 @@
                     //     if(highestFreqLetter.percent > 90) letterObj.highlightType = 'dark';
                     //     else letterObj.highlightType = 'light';
                     // }
-                    i++;
-                    this.textArr.push(letterObj);
-                });
+                    
+                // });
 
                 if(this.textArr) {
                     this.tdWidth = 20 + this.textArr.length*8.5;
                 }
+                this.isLoading = false;
             }
         }
     }

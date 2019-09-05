@@ -824,8 +824,14 @@ import { Promise } from 'q';
 
                 let freq_seq_arr = [];
                 analysis_arr.forEach(e => {
-                    freq_seq_arr.push(this.getMsaByRow(e));
+                    let arr = this.getMsaByRow(e).slice(0,1);
+                    let num = 10;
+                    let f = parseFloat(arr[0].percent);
+                    f = Math.floor(f);
+                    let obj = {l: arr[0].letter, p: f};
+                    freq_seq_arr.push(obj);
                 });
+                console.log(freq_seq_arr.length);
                 this.store_setFreqMsa(freq_seq_arr);
             },
             getMsaByRow(freqOfLetters) {
