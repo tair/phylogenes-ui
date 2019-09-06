@@ -67,8 +67,9 @@
                 deep: true,
                 handler: function (val, oldVal) {
                     this.isLoading = true;
-                    if(val != null) {
+                    if(val && val != null) {
                         this.store_setTableIsLoading(true);
+                        console.log("watch ", val);
                         this.initTree();
                     }
                 }
@@ -231,6 +232,7 @@
                 this.$emit('get-table-csv-data', nodes);
                 // this.makeDisplayCompact();
                 this.initTreeLayout(this.rootNode);
+                console.log("init-tree");
                 this.$emit('init-tree', nodes);
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 

@@ -553,6 +553,7 @@ import { Promise } from 'q';
                 this.branchLength = "N/A";
             },
             onTreeInit(nodes) {
+                console.log("Init");
                 var tabularData = [];
                 this.sortArrayByX(nodes);
                 var index = 0;
@@ -707,6 +708,9 @@ import { Promise } from 'q';
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             toggleMsa() {
                 this.showMsa = !this.showMsa;
+                this.setTableCols();
+            },
+            setTableCols() {
                 if(this.showMsa) {
                     this.tableColsToRender = this.msaCols;
                 } else {
@@ -716,7 +720,7 @@ import { Promise } from 'q';
             updateTableData(nodes) {
                 var tabularData = [];
                 var index = 0;
-                this.tableColsToRender = this.defaultCols;
+                this.setTableCols();
 
                 this.headerMap["MSA"] = this.setMsaHeaderTitle();
                 nodes.forEach(n => {
@@ -800,7 +804,6 @@ import { Promise } from 'q';
                     }
                     msa_split.push(msa_arr);
                 });
-                // console.log(tabularData);
                 let maxLength = msa_split[0].length;
                 let analysis_arr = new Array(maxLength).fill({});
                 
@@ -831,7 +834,6 @@ import { Promise } from 'q';
                     let obj = {l: arr[0].letter, p: f};
                     freq_seq_arr.push(obj);
                 });
-                console.log(freq_seq_arr.length);
                 this.store_setFreqMsa(freq_seq_arr);
             },
             getMsaByRow(freqOfLetters) {

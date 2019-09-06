@@ -13,12 +13,12 @@
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
-                    <th colspan="2" class="thInvis">
+                    <th :colspan="msaTab?1:2" class="thInvis">
                         <button v-b-tooltip.hover title="Toggle MSA" class="btn bg-white float-left" @click="toggleCols">
                                     <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i>
                         </button>
                     </th>
-                    <th v-if="extraCols.length > 0" 
+                    <th v-if="!msaTab && extraCols.length > 0" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
                     <th colspan="4" class="thInvis"></th>
                 </tr>
@@ -52,7 +52,7 @@
     import customModal from '@/components/modal/CustomModal';
     import tablecell from '@/components/table/TableCellD3';
     import baseCell from '@/components/table/cells/BaseTableCell';
-import { setTimeout } from 'timers';
+    import { setTimeout } from 'timers';
 
     export default {
         name: "tablelayout",
@@ -83,7 +83,8 @@ import { setTimeout } from 'timers';
                 firstLoad: false,
                 ticking: false,
                 rowsScrolled: 0,
-                upperLimit: 100
+                upperLimit: 100,
+                msaTab: false
             }
         },
         computed: {
@@ -133,9 +134,11 @@ import { setTimeout } from 'timers';
             colsFromProp: {
                 handler: function(val, oldval) {
                     if(val.includes("MSA")) {
-                        this.isLoading = true;
+                        this.msaTab = true;
+                    } else {
+                        this.msaTab = false;
                     }
-                    this.update();
+                    this.update2();
                 }
             }
         },
@@ -170,12 +173,25 @@ import { setTimeout } from 'timers';
                     }
                 },10);
             },
-            //Is called on every change to the store data
-            update(pm) {
+            update2() {
                 if(!this.colsFromProp) return;
-
                 var filteredCols = d3.keys(this.store_tableData[0]);
-                // titles = titles.filter(t => t != "id" && t != "accession");
+                filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
+                //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
+                if(this.colsFromProp.includes("Annotations")) {
+                    this.store_annoMapping.headers.forEach(h => {
+                        filteredCols.splice(2, 0, h);
+                    });
+                }
+                this.colsToRender = filteredCols;
+                this.rowsToRender = [];
+                this.lazyLoad = true;
+                this.updateRows();
+            },
+            //Is called on every change to the store data
+            update() {
+                if(!this.colsFromProp) return;
+                var filteredCols = d3.keys(this.store_tableData[0]);
                 filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
                 //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
                 if(this.colsFromProp.includes("Annotations")) {
@@ -187,14 +203,7 @@ import { setTimeout } from 'timers';
                 this.colsToRender = filteredCols;
                 this.rowsToRender = [];
                 this.lazyLoad = true;
-                this.updateRows("update");
-                
-                //If the total number of rows is > 
-                // if(this.store_tableData.length > 10) {
-                    
-                // } else {
-                //     this.rowsToRender = this.store_tableData;
-                // }
+                this.updateRows();
                 
                 if(this.isLoading) {
                     setTimeout(() => {
@@ -207,7 +216,7 @@ import { setTimeout } from 'timers';
             //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
             //This depends on rowsScrolled var.
             //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
-            updateRows(parentMethod) {
+            updateRows(calledWhileScrolling=false, pm="") {
                 // console.log("called by "+ parentMethod);
                 if(!this.lazyLoad) return;
                 //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
@@ -222,31 +231,15 @@ import { setTimeout } from 'timers';
                 // rows will be out of view and scrolled up, we don't render the content, for performance reasons.
                 this.store_tableData.some(n => {
                     //Only add rows after the 'noOfTopRowsToRemove'
-                    if(i < noOfTopRowsToRemove) {
+                    if(calledWhileScrolling) {
                         n.rendering = false;
                     } else {
-                        n.rendering = true;
+                        if(i < noOfTopRowsToRemove) {
+                            n.rendering = false;
+                        } else {
+                            n.rendering = true;
+                        }
                     }
-                    this.rowsToRender.push(n);
-                    i++;
-                    return i > noOfRowsToAdd;
-                });
-            },
-            updateRows2() {
-                if(!this.lazyLoad) return;
-                //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
-                //We add all the rows scolled to the table
-                let maxRows = 30;
-                let noOfRowsToAdd = maxRows + this.rowsScrolled;
-                let noOfTopRowsToRemove = this.rowsScrolled;
-                let i = 0;
-                this.rowsToRender = [];
-                //this.rowsToRender - add rows ranging from index 0 to [noOfRowsToAdd].
-                // set 'rendering' to false, for all rows less than 'noOfTopRowsToRemove'. Since this
-                // rows will be out of view and scrolled up, we don't render the content, for performance reasons.
-                this.store_tableData.some(n => {
-                    //Only add rows after the 'noOfTopRowsToRemove'
-                    n.rendering = false;
                     this.rowsToRender.push(n);
                     i++;
                     return i > noOfRowsToAdd;
@@ -286,11 +279,12 @@ import { setTimeout } from 'timers';
                             this.scrollTop_old = scrollTop_curr;
                             this.scrollTreeFromTable(this.rowsScrolled);
                             //Updates rowsToRender based on the scrolled value.
-                            if(this.colsFromProp.includes("MSA")) {
-                                this.updateRows2();
+                            if(this.msaTab) {
+                                this.updateRows(true);
                             } else {
-                                this.updateRows("handleScroll");
+                                this.updateRows();
                             }
+                            
                         }
                     }, 100);
                 }
@@ -315,7 +309,7 @@ import { setTimeout } from 'timers';
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
-                this.updateRows("setScrollToRow");
+                this.updateRows();
 
                 setTimeout(() => {
                     const tbody = document.getElementById("body");
@@ -323,19 +317,6 @@ import { setTimeout } from 'timers';
                         tbody.scrollTop = 40*this.rowsScrolled;
                     }
                 }, 100);
-                // if(this.lazyLoad && this.rowsScrolled > 500) {
-                //     //Lazy Load - correct scrolling
-                //     setTimeout(() => {
-                //         centerRowNumber -= this.rowsScrolled - 101;
-                //         const tbody = document.getElementById("body");
-                //         if(tbody) {
-                //            tbody.scrollTop = 40*centerRowNumber;
-                //         }
-                //     }, 1000);
-                // } else {
-                //     //Normal scrolling
-                
-                // }
                 this.scrollFromTree = true;
             },
             rowClicked(d) {

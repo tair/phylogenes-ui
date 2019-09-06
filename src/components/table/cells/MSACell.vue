@@ -48,11 +48,8 @@ import { setTimeout } from 'timers';
         },
         mounted() {
             if(this.content && this.content.text) {
-                // this.textArr = this.content.text.split('');
-                this.localFreq = this.store_getFreqMsa;
+                this.tdWidth = 20 + this.store_getFreqMsa.length*8.5;
                 this.setTextArray("mounted", this.content.text);
-                this.randInd = Math.floor(Math.random() * 100);
-                // console.log("mounted ", this.randInd);
             }
         },
         updated() {
@@ -80,16 +77,21 @@ import { setTimeout } from 'timers';
             },
             setTextArray(pm, text) {
                 this.isLoading = true;
-                console.log("set text " + pm);
                 if(pm == "watch") {
                     this.isLoading = false;
                     return;
                 }
-                // console.log(this.store_getFreqMsa);
-                // let i = 0;
-                this.textArr = [];
-                // console.log(this.store_getFreqMsa);
-                let accessC = 0;
+
+                setTimeout(() => {
+                    this.processHighlight(text).then(textArr => {
+                       this.textArr = textArr;
+                    });
+                }, 1000);
+                
+                this.isLoading = false;
+            },
+            async processHighlight(text) {
+                let textArr = [];
                 let splits = text.split('');
                 for(var i = 0; i < splits.length; i++) {
                     let l = splits[i];
@@ -104,25 +106,10 @@ import { setTimeout } from 'timers';
                             if(hfl.p > 90) letterObj.highlightType = 'dark';
                             else letterObj.highlightType = 'light';
                         }
-                        this.textArr.push(letterObj);
                     }
+                    textArr.push(letterObj);
                 }
-                // console.log(accessC);
-                // text.split('').forEach(l => {
-                    // else if(highestFreqLetter.percent < 50) letterObj.highlight = false;
-                    // else if(letterObj.letter != highestFreqLetter.letter) letterObj.highlight = false;
-                    // else {
-                    //     letterObj.highlight = true; 
-                    //     if(highestFreqLetter.percent > 90) letterObj.highlightType = 'dark';
-                    //     else letterObj.highlightType = 'light';
-                    // }
-                    
-                // });
-
-                if(this.textArr) {
-                    this.tdWidth = 20 + this.textArr.length*8.5;
-                }
-                this.isLoading = false;
+                return textArr;
             }
         }
     }
