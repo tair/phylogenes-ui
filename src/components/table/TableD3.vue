@@ -14,8 +14,8 @@
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
                     <th :colspan="msaTab?1:2" class="thInvis">
-                        <button v-b-tooltip.hover title="Toggle MSA" class="btn bg-white float-left" @click="toggleCols">
-                                    <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i>
+                        <button class="btn bg-white float-left" @click="toggleCols">
+                                    <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                         </button>
                     </th>
                     <th v-if="!msaTab && extraCols.length > 0" 
@@ -100,6 +100,7 @@
                 handler: function (val, oldVal) {
                     if(val.length == 0) {
                         this.isLoading = true;
+                        this.msaTab = false;
                     }
                     if(val != null && val.length > 0) {
                         this.update();
@@ -128,6 +129,7 @@
                 handler: function(val, oldval) {
                     if(val) {
                         this.isLoading = true;
+                        this.rowsScrolled = 0;
                     }
                 }
             },

@@ -152,19 +152,12 @@ import { Promise } from 'q';
         },
         watch: {
             '$route.params.id': function (id) {
-                if(!id) return; 
-                this.treeId = id;
-                this.treeData_Json = null;
-                this.loadTreeFromApi();
-                this.store_setTableData([]);
-                this.metadata.isLoading = true;
-                this.resetPruning();
+                if(!id) return;
+                this.initForNewTreeId(id);
             },
             store_treeJsonString: {
                 handler: function (val, oldVal) {
-                    // this.initTreeData(val);
-                    // this.prunedLoaded = false;
-                    // this.resetPruning();
+                   
                 }
             },
             stateTreeAnnotations: {
@@ -174,7 +167,7 @@ import { Promise } from 'q';
             },
             store_treeMsaData: {
                 handler: function (val, oldVal) {
-                    // this.displayMsa(val);
+
                 }
             },
             store_getTreeMetadata: {
@@ -287,6 +280,15 @@ import { Promise } from 'q';
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ
             }),
+            initForNewTreeId(id) {
+                this.treeId = id;
+                this.treeData_Json = null;
+                this.loadTreeFromApi();
+                this.store_setTableData([]);
+                this.metadata.isLoading = true;
+                this.showMsa = false;
+                this.resetPruning();
+            },
             //Load tree data needed from the API.
             loadTreeFromApi() {
                 //Saves the panther tree in json String onto the vue store.

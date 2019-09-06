@@ -9,8 +9,6 @@
         <svg :width=tdWidth :height=tdHeight>
             <g v-for="(c,i) in filteredTextArr" :key=i>
                 <rect v-if='c.highlight' :class='getRectClass(c)' :x=10+c.index*svgLetterGap y=8 width=10 height=80></rect>
-                <!-- <text dx=".35em" dy=".35em" :x=5+c.index*svgLetterGap y=17 
-                        class="msaTextSvg">{{c.letter}}</text> -->
             </g>
         </svg>
     </div>
@@ -78,6 +76,11 @@ import { setTimeout } from 'timers';
             setTextArray(pm, text) {
                 this.isLoading = true;
                 if(pm == "watch") {
+                    setTimeout(() => {
+                        this.processHighlight(text).then(textArr => {
+                            this.textArr = textArr;
+                        });
+                    }, 1000);
                     this.isLoading = false;
                     return;
                 }
@@ -87,7 +90,6 @@ import { setTimeout } from 'timers';
                        this.textArr = textArr;
                     });
                 }, 1000);
-                
                 this.isLoading = false;
             },
             async processHighlight(text) {
