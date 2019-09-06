@@ -152,6 +152,7 @@ import { Promise } from 'q';
         },
         watch: {
             '$route.params.id': function (id) {
+                if(!id) return; 
                 this.treeId = id;
                 this.treeData_Json = null;
                 this.loadTreeFromApi();
@@ -553,7 +554,6 @@ import { Promise } from 'q';
                 this.branchLength = "N/A";
             },
             onTreeInit(nodes) {
-                console.log("Init");
                 var tabularData = [];
                 this.sortArrayByX(nodes);
                 var index = 0;
