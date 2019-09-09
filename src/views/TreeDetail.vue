@@ -89,7 +89,6 @@
                 <div class="row h-100">
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
-                        <!-- <button class="btn btn-default btn-organism" @click.prevent="toggleMsa()">Show MSA</button> -->
                         <tablelayout :colsFromProp="tableColsToRender" :headerMap="headerMap"
                                     v-on:toggle-cols="toggleMsa"></tablelayout>
                     </div>
@@ -115,7 +114,7 @@
     import customModal from '@/components/modal/CustomModal';
     import popupTableOrganism from '@/components/table/PopupTableOrganism';
     import { setTimeout } from 'timers';
-import { Promise } from 'q';
+    import { Promise } from 'q';
 
     export default {
         name: "TreeDetail",
@@ -155,19 +154,9 @@ import { Promise } from 'q';
                 if(!id) return;
                 this.initForNewTreeId(id);
             },
-            store_treeJsonString: {
-                handler: function (val, oldVal) {
-                   
-                }
-            },
             stateTreeAnnotations: {
                 handler: function (val, oldVal) {
                     this.loadAnnotations(val);
-                }
-            },
-            store_treeMsaData: {
-                handler: function (val, oldVal) {
-
                 }
             },
             store_getTreeMetadata: {
@@ -257,7 +246,8 @@ import { Promise } from 'q';
                     'Protein function',
                     'Subfamily name'
                 ],
-                showMsa: false
+                showMsa: false,
+                analyzeCompleted: false
             }
         },
         mounted() {
@@ -287,6 +277,7 @@ import { Promise } from 'q';
                 this.store_setTableData([]);
                 this.metadata.isLoading = true;
                 this.showMsa = false;
+                this.analyzeCompleted = false;
                 this.resetPruning();
             },
             //Load tree data needed from the API.
@@ -601,7 +592,7 @@ import { Promise } from 'q';
                     this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
                     this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
                 }
-                this.analyzeMsaData(tabularData);
+                
                 this.completeData = tabularData;           
             },
             onTreeUpdate(nodes) {
@@ -710,7 +701,16 @@ import { Promise } from 'q';
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             toggleMsa() {
                 this.showMsa = !this.showMsa;
-                this.setTableCols();
+                if(!this.analyzeCompleted) {
+                    this.store_setTableIsLoading(true);
+                    this.analyzeMsaData().then(res => {
+                        this.setTableCols();
+                        this.analyzeCompleted = true;
+                        this.store_setTableIsLoading(false);
+                    });
+                } else {
+                    this.setTableCols();
+                }
             },
             setTableCols() {
                 if(this.showMsa) {
@@ -796,9 +796,9 @@ import { Promise } from 'q';
                 }
                 return msa_header;
             },
-            analyzeMsaData(tabularData) {
+            async analyzeMsaData() {
                 let msa_split = [];
-                tabularData.forEach(s => {
+                this.completeData.forEach(s => {
                     let msa_arr = [];
                     if(s["MSA"] && s["MSA"].value) {
                         msa_arr = s["MSA"].value.split('');
@@ -837,6 +837,7 @@ import { Promise } from 'q';
                     freq_seq_arr.push(obj);
                 });
                 this.store_setFreqMsa(freq_seq_arr);
+                return true;
             },
             getMsaByRow(freqOfLetters) {
                 let seqObjArr = [];

@@ -37,7 +37,6 @@ import { setTimeout } from 'timers';
         },
         computed: {
             filteredTextArr() {
-                // return this.textArr;
                 return this.textArr.filter(c => {return c.highlight;});
             },
             ...mapGetters({ 
@@ -52,11 +51,11 @@ import { setTimeout } from 'timers';
         },
         updated() {
             this.$nextTick(function () {
-                // console.log("Updated ", this.randInd);
+                
             });
         },
         destroyed() {
-            // console.log("destroyed", this.randInd);
+            
         },
         data() {
             return {
@@ -156,27 +155,4 @@ import { setTimeout } from 'timers';
         top: 6px;
         left: 0px;
     }
-
-    /* ::-webkit-scrollbar {
-        width: 3px;
-        height: 5px;
-    }
-
-    ::-webkit-scrollbar:vertical {
-        display: none;
-    }
- 
-    ::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 20px rgba(0,0,0,0.3); 
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        border-radius: 10px;
-        -webkit-box-shadow: inset 0 0 50px rgba(45,125,200,1); 
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        -webkit-box-shadow: inset 0 0 50px rgba(45,125,200,1);
-    } */
 </style>

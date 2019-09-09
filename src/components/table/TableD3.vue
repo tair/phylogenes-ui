@@ -50,7 +50,6 @@
 
     import popupTable from './PopupTable';
     import customModal from '@/components/modal/CustomModal';
-    import tablecell from '@/components/table/TableCellD3';
     import baseCell from '@/components/table/cells/BaseTableCell';
     import { setTimeout } from 'timers';
 
@@ -60,7 +59,6 @@
         components: {
             popupTable: popupTable,
             'modal': customModal,
-            // tablecell: tablecell,
             tablecell: baseCell
         },
         data() {
@@ -104,6 +102,14 @@
                     }
                     if(val != null && val.length > 0) {
                         this.update();
+                        if(this.isLoading) {
+                            this.isLoading = false;
+                            setTimeout(() => {
+                                this.initAfterLoad();
+                                this.isLoading = false;
+                                this.store_setTableIsLoading(false);
+                            });
+                        }
                     }
                 }
             },
@@ -130,6 +136,8 @@
                     if(val) {
                         this.isLoading = true;
                         this.rowsScrolled = 0;
+                    } else {
+                        this.isLoading = false;
                     }
                 }
             },
@@ -140,7 +148,7 @@
                     } else {
                         this.msaTab = false;
                     }
-                    this.update2();
+                    this.update();
                 }
             }
         },
@@ -175,21 +183,6 @@
                     }
                 },10);
             },
-            update2() {
-                if(!this.colsFromProp) return;
-                var filteredCols = d3.keys(this.store_tableData[0]);
-                filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
-                //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
-                if(this.colsFromProp.includes("Annotations")) {
-                    this.store_annoMapping.headers.forEach(h => {
-                        filteredCols.splice(2, 0, h);
-                    });
-                }
-                this.colsToRender = filteredCols;
-                this.rowsToRender = [];
-                this.lazyLoad = true;
-                this.updateRows();
-            },
             //Is called on every change to the store data
             update() {
                 if(!this.colsFromProp) return;
@@ -206,14 +199,6 @@
                 this.rowsToRender = [];
                 this.lazyLoad = true;
                 this.updateRows();
-                
-                if(this.isLoading) {
-                    setTimeout(() => {
-                        this.initAfterLoad();
-                        this.isLoading = false;
-                        this.store_setTableIsLoading(false);
-                    },100);
-                }
             },
             //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
             //This depends on rowsScrolled var.
@@ -263,9 +248,8 @@
                     this.scrollLeft_old = scrollLeft_curr;
                     this.scrollTableHeader(scrollLeft_curr);
                     return;
-                } else {
-                    // this.scrollTableHeader(scrollLeft_curr);
                 }
+                
                 //this.ticking is used to call the more intensive functions like 'scrollTree'
                 // and 'updateRows' only once in 1s. This is needed because handleScroll is
                 // called a lot of times when the mouse is scrolled in a second, but we don't
