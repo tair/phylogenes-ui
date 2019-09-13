@@ -2,7 +2,9 @@
     <component
                 :is="cellComponent"
                 ref="myCom"
-                :content="compContent"
+                :content.sync="compContent"
+                v-on:update:content="onUpdateTest"
+                v-on:processFinished="onProcessDestroyed"
                 @clicked="onClick"
         >
 
@@ -29,22 +31,41 @@
                 
             }
         },
+        watch: {
+            content: {
+                handler(newV, oldV) {
+                    
+                }
+            }
+        },
         mounted() {
+          
         },
         computed: {
             cellComponent() {
                 if(!this.content || !this.content.type) return 'cell-default';
                 return 'cell-' + this.content.type.toLowerCase();
             },
-            compContent() {
-                if(!this.content) return {text: ""};
-                return this.content;
+            compContent: {
+                get: function() {
+                    if(!this.content) return {text: ""};
+                    return this.content;
+                },
+                set: function(newV) {
+                    this.content = newV;
+                }
             }
         },
         methods: {
             onClick() {
                  
             },
+            onUpdateTest(val) {
+                this.$emit('update:content', val);
+            },
+            onProcessDestroyed(val) {
+                this.$emit('processFinished', val);
+            }
         }
     }
 </script>

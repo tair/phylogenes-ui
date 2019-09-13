@@ -8,7 +8,7 @@
         
         <svg :width=tdWidth :height=tdHeight>
             <g v-for="(c,i) in filteredTextArr" :key=i>
-                <rect v-if='c.highlight' :class='getRectClass(c)' :x=10+c.index*svgLetterGap y=8 width=10 height=80></rect>
+                <rect v-if='c.highlight' :class='getRectClass(c)' :x=10+c.index*SVG_LETTER_GAP y=8 width=10 height=80></rect>
             </g>
         </svg>
     </div>
@@ -19,11 +19,15 @@
     import * as d3 from 'd3';
     import * as types from '../../../store/types_treedata';
     import { mapGetters, mapActions } from 'vuex';
-import { setTimeout } from 'timers';
+    import { setTimeout } from 'timers';
 
     export default {
         name: "cell-msa",
         props: ["content"],
+        data: {
+            return () {
+            }
+        },
         watch: {
             content: {
                 handler: function (val, oldVal) {
@@ -41,7 +45,10 @@ import { setTimeout } from 'timers';
             },
             ...mapGetters({ 
                 store_getFreqMsa: types.TABLE_GET_MSA_FREQ
-            })
+            }),
+            mutableContent() {
+                return this.content;
+            }
         },
         mounted() {
             if(this.content && this.content.text) {
@@ -51,20 +58,21 @@ import { setTimeout } from 'timers';
         },
         updated() {
             this.$nextTick(function () {
-                
+               
             });
         },
-        destroyed() {
-            
-        },
+        beforeDestroy() {
+            this.$emit('processFinished', this.content.id);
+        }, 
         data() {
             return {
                 tdWidth: '1000px',
                 tdHeight: '30px',
                 textArr: [],
-                svgLetterGap: 8.501,
                 isLoading: false,
-                localFreq: []
+                localFreq: [],
+                TIMEOUT_HIGHLIGHT_PROCESSING: 100,
+                SVG_LETTER_GAP: 8.501,
             }
         },
         methods: {
@@ -74,21 +82,25 @@ import { setTimeout } from 'timers';
             },
             setTextArray(pm, text) {
                 this.isLoading = true;
+                               
+                this.mutableContent.process = true;
+                this.$emit('update:content', this.mutableContent);
+
                 if(pm == "watch") {
                     setTimeout(() => {
                         this.processHighlight(text).then(textArr => {
                             this.textArr = textArr;
                         });
-                    }, 1000);
+                    }, this.TIMEOUT_HIGHLIGHT_PROCESSING);
                     this.isLoading = false;
                     return;
                 }
-
+ 
                 setTimeout(() => {
                     this.processHighlight(text).then(textArr => {
                        this.textArr = textArr;
                     });
-                }, 1000);
+                }, this.TIMEOUT_HIGHLIGHT_PROCESSING);
                 this.isLoading = false;
             },
             async processHighlight(text) {
@@ -110,6 +122,8 @@ import { setTimeout } from 'timers';
                     }
                     textArr.push(letterObj);
                 }
+                this.mutableContent.process = false;
+                this.$emit('update:content', this.mutableContent);
                 return textArr;
             }
         }

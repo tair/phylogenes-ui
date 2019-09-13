@@ -7,6 +7,7 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
+
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         <table v-else class="mainTable"> 
             <thead id="head" ref="thead">
@@ -17,6 +18,7 @@
                         <button class="btn bg-white float-left" @click="toggleCols">
                                     <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                         </button>
+                        <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
                     </th>
                     <th v-if="!msaTab && extraCols.length > 0" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
@@ -30,10 +32,12 @@
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row, i) in rowsToRender" :key=i>
+                <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
                     <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(key, row[key], i)">
-                        <tablecell :content="getContent(key, row[key], row)"></tablecell>
+                        <tablecell :content.sync="rowsToRender[row_i][key]" 
+                                    v-on:update:content="onUpdateTest"
+                                    v-on:processFinished="onProcessFinished"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -63,6 +67,7 @@
         },
         data() {
             return {
+                testVal: 'test',
                 lazyLoad: false, //lazy load flag for rendering rows only within view
                 colsToRender: [],
                 rowsToRender: [],
@@ -78,11 +83,13 @@
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
                 isLoading: false,
+                isMsaLoading: false,
                 firstLoad: false,
                 ticking: false,
                 rowsScrolled: 0,
                 upperLimit: 100,
-                msaTab: false
+                msaTab: false,
+                processedCells: []
             }
         },
         computed: {
@@ -156,6 +163,14 @@
             this.isLoading = true;
             if(this.store_tableData) {
                 this.update();
+                if(this.isLoading) {
+                    this.isLoading = false;
+                    setTimeout(() => {
+                        this.initAfterLoad();
+                        this.isLoading = false;
+                        this.store_setTableIsLoading(false);
+                    });
+                }
             }
             this.store_setTableIsLoading(true);
         },
@@ -165,6 +180,30 @@
             });
         },
         methods: {
+            onProcessFinished(val) {
+                var index = this.processedCells.indexOf(val);
+                if (index > -1) {
+                    this.processedCells.splice(index, 1);
+                }
+            },
+            onUpdateTest(val) {
+                if(val.process == true) {
+                    if(!this.processedCells.includes(val.id)) {
+                        this.processedCells.push(val.id);
+                    }
+                    if(this.processedCells.length == 1) {
+                        this.isMsaLoading = true;
+                    }
+                } else if(val.process == false) {
+                    var index = this.processedCells.indexOf(val.id);
+                    if (index > -1) {
+                        this.processedCells.splice(index, 1);
+                    }
+                    if(this.processedCells.length == 0) {
+                        this.isMsaLoading = false;
+                    }
+                }
+            },
             ...mapActions({
                 store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
@@ -204,7 +243,7 @@
             //This depends on rowsScrolled var.
             //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
             updateRows(calledWhileScrolling=false, pm="") {
-                // console.log("called by "+ parentMethod);
+                // console.log("called by "+ pm);
                 if(!this.lazyLoad) return;
                 //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
                 //We add all the rows scolled to the table
@@ -227,10 +266,54 @@
                             n.rendering = true;
                         }
                     }
-                    this.rowsToRender.push(n);
+                    let processedRowData = this.processRow(n);
+                    this.rowsToRender.push(processedRowData);
                     i++;
                     return i > noOfRowsToAdd;
                 });
+            },
+            processRow(rowData) {
+                let row = {};
+                if(rowData.rendering == false) {
+                    return {text: ""};
+                }
+                this.colsToRender.forEach(c => {
+                    let cellTxt = rowData[c];
+                    let content = {text: cellTxt, id: rowData.id};
+                    if(cellTxt == "*") {
+                        content.type = 'annotation';
+                    }
+                    if(c == "MSA") {
+                        if(cellTxt.type && cellTxt.type == 'custom') {
+                            content['text'] = cellTxt.value;
+                            content['splitByLetter'] = cellTxt.splitByLetter;
+                        }
+                        content['type'] = 'msa';
+                    }
+                    row[c] = content;
+                });
+                return row;
+            },
+            getContent(colName, celltxt, row) {
+                if(row.rendering == false) {
+                    return {text: ""};
+                }
+                let content = {text: celltxt, id: row.id};
+                if(celltxt == "*") {
+                    content['type'] = 'annotation';
+                }
+                if(colName == "Uniprot ID") {
+                    content['type'] = 'link';
+                    content['link'] = 'https://www.uniprot.org/uniprot/'+celltxt;
+                }
+                if(colName == "MSA") {
+                    if(celltxt.type && celltxt.type == 'custom') {
+                        content['text'] = celltxt.value;
+                        content['splitByLetter'] = celltxt.splitByLetter;
+                    }
+                    content['type'] = 'msa';
+                }
+                return content;
             },
             //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
@@ -497,27 +580,7 @@
                 }
                 return header;
             },
-            getContent(colName, celltxt, row) {
-                if(row.rendering == false) {
-                    return {text: ""};
-                }
-                let content = {text: celltxt};
-                if(celltxt == "*") {
-                    content['type'] = 'annotation';
-                }
-                if(colName == "Uniprot ID") {
-                    content['type'] = 'link';
-                    content['link'] = 'https://www.uniprot.org/uniprot/'+celltxt;
-                }
-                if(colName == "MSA") {
-                    if(celltxt.type && celltxt.type == 'custom') {
-                        content['text'] = celltxt.value;
-                        content['splitByLetter'] = celltxt.splitByLetter;
-                    }
-                    content['type'] = 'msa';
-                }
-                return content;
-            },
+            
             getThClasses(row, i) {
                 let classes = [];
                 if(row == "MSA") {
@@ -570,7 +633,7 @@
         overflow: hidden;
         font-size: 14px;
         font-family: sans-serif;
-        border-bottom: 3px solid #f1f1f0;
+        border-bottom: 5px solid #f1f1f0;
     }
     .mainTable thead {
         flex: 0 0 auto;
