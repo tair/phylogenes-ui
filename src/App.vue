@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <top-nav-bar></top-nav-bar>
 
     <main id="main2" role="main" class="main-pane">
@@ -42,7 +41,7 @@
             //         main2.classList.add("main-pane");
             //     }
             // }
-        }
+        },
     }
 </script>
 

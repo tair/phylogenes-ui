@@ -184,6 +184,8 @@
         },
         data() {
             return {
+                phyloXML_URL: process.env.VUE_APP_S3_URL,
+                PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
                 showLegendTip: false,
                 treeId: null,
                 defaultCols: ["Gene name", 
@@ -201,8 +203,6 @@
                 completeData: null,
                 treeData_Json: null,
                 mappingData: null,
-                baseUrl: process.env.BASE_URL,
-                phyloXML_URL: "https://phyloxml.s3-us-west-2.amazonaws.com/",
                 searchText: "",
                 defaultSearchText: "",
                 matchNodes: [],
@@ -233,7 +233,6 @@
                     colsWidth: ['50px', '350px', '100px']
                 },
                 //Pruning
-                PRUNING_PANTHER_API: "http://54.68.67.235:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
                 originalTaxonIdsLength: 0,

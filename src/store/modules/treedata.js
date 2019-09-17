@@ -1,9 +1,7 @@
 import * as types from '../types_treedata';
 import axios from "axios/index";
 
-const API_URL = 'http://localhost:3000/api/panther';
-// const API_URL = 'http://54.68.67.235:3000/api/panther';
-// const API_URL = 'http://52.37.99.223:3000/api/panther';
+const API_URL = process.env.VUE_APP_API_URL + '/api/panther';
 
 const state = {
     treedata: {
