@@ -4,7 +4,7 @@
                 ref="myCom"
                 :content.sync="compContent"
                 v-on:update:content="onUpdateTest"
-                v-on:processFinished="onProcessDestroyed"
+                v-on:destroyed="onDestroyed"
                 @clicked="onClick"
         >
 
@@ -63,8 +63,8 @@
             onUpdateTest(val) {
                 this.$emit('update:content', val);
             },
-            onProcessDestroyed(val) {
-                this.$emit('processFinished', val);
+            onDestroyed(val) {
+                this.$emit('destroyed', val);
             }
         }
     }

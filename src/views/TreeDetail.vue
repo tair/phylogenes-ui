@@ -581,7 +581,7 @@
                             }
                         }
 
-                        tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
+                        tableNode["MSA"] = n.data.sequence;
                         tabularData.push(tableNode);
                     }
                 });
@@ -703,10 +703,12 @@
                 this.showMsa = !this.showMsa;
                 if(!this.analyzeCompleted) {
                     this.store_setTableIsLoading(true);
-                    this.analyzeMsaData().then(res => {
-                        this.setTableCols();
-                        this.analyzeCompleted = true;
-                        this.store_setTableIsLoading(false);
+                    setTimeout(() => {
+                        this.analyzeMsaData().then(res => {
+                            this.setTableCols();
+                            this.analyzeCompleted = true;
+                            this.store_setTableIsLoading(false);
+                        });
                     });
                 } else {
                     this.setTableCols();
@@ -764,20 +766,16 @@
                             }
                         }
 
-                        tableNode["MSA"] = this.setTableContentforMsa(n.data.sequence);
+                        tableNode["MSA"] = n.data.sequence;
+                        //this.setTableContentforMsa(n.data.sequence);
                         tabularData.push(tableNode);
                     }
                 });
                 // this.store_setTableIsLoading(false);
                 this.store_setTableData(tabularData);
             },
-            setTableContentforMsa(seq) {
-                let obj = {};
-                obj.type = 'custom';
-                obj.value = seq;
-                obj.splitByLetter = []; //analysis of each letter goes here.
-                return obj;
-            },
+
+            // ~~~~~~~~~~~~~~~~ MSA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setMsaHeaderTitle() {
                 let msa_header ="MSA: ";
                 let max_ruler_len = this.store_maxMsaLength;
@@ -798,22 +796,41 @@
             },
             async analyzeMsaData() {
                 let msa_split = [];
+                // Each seq of every node of tree (completeData) is split by letters and 
+                // added as an array of letters.
+                // Each array of letters is of the same length.
+                // eg. [0]=['.','.','m','f']
+                //     [1]=['.','.','n','g'] 
                 this.completeData.forEach(s => {
                     let msa_arr = [];
-                    if(s["MSA"] && s["MSA"].value) {
-                        msa_arr = s["MSA"].value.split('');
-                        let i = 0;
+                    if(s["MSA"]) {
+                        msa_arr = s["MSA"].split('');
                     }
                     msa_split.push(msa_arr);
                 });
                 let maxLength = msa_split[0].length;
+
+                /* Each index in the array consists of a 'seqObj' which gives freq of unique letters
+                found in that index inside the 'msa_split' array.
+                If 'msa_split' is following:
+                    [0] = ['a','b','b','a','e']
+                    [1] = ['b','b','a','a','e']
+                    [2] = ['a','b','a','a','c']
+                Then 'analysis_arr' after the initial processing is:
+                    [0] = {'a': 2, 'b': 1}
+                    [1] = {'b': 3}
+                    [2] = {'b': 1, 'a':2}
+                    [3] = ['a': 3]
+                    [4] = ['e': 2, 'c': 1]
+                */
                 let analysis_arr = new Array(maxLength).fill({});
-                
                 msa_split.forEach(seq_arr => {
-                    let seq_i = 0;
+                    let node_index = 0;
                     seq_arr.forEach(letter => {
                         let seqObj = {};
-                        Object.assign(seqObj, analysis_arr[seq_i]);
+                        //Assign is used to clone the current object inside the 'analysis_arr' at the curr index.
+                        //We need the prev node_index 'seqObj' to increment the letters if duplicate or add a new letter.
+                        Object.assign(seqObj, analysis_arr[node_index]);
                         if(letter) {
                             if(seqObj[letter]) {
                                 seqObj[letter]++;
@@ -822,15 +839,20 @@
                             }
                         }
                         
-                        analysis_arr[seq_i] = seqObj;
-                        seq_i++;
+                        analysis_arr[node_index] = seqObj;
+                        node_index++;
                     });
                 });
 
+                //After the analysis is done, create 'freq_seq_arr' which gives
+                // highest frequence letter at each node index along with it's percent.
+                // Eg. [0] = {l: 'a', p:80}
+                //     [1] = {l: 'b', p:30} ...
+                // 'freq_seq_arr' could be a map [l]:{p}, but kept as an array incase in future we 
+                // need to add percent for second-highest letter for instance.
                 let freq_seq_arr = [];
                 analysis_arr.forEach(e => {
-                    let arr = this.getMsaByRow(e).slice(0,1);
-                    let num = 10;
+                    let arr = this.calculateFreqByPercent(e).slice(0,1);
                     let f = parseFloat(arr[0].percent);
                     f = Math.floor(f);
                     let obj = {l: arr[0].letter, p: f};
@@ -839,7 +861,11 @@
                 this.store_setFreqMsa(freq_seq_arr);
                 return true;
             },
-            getMsaByRow(freqOfLetters) {
+            //freqOfLetters: {'a':2, 'b':1, 'c':3 ... etc}
+            //Calculates the percent of each letter from the total freq of all letters.
+            //Creates a new array: ['letter', 'freq', 'percent']
+            //Sorts the new array by percent and returns the arr. 
+            calculateFreqByPercent(freqOfLetters) {
                 let seqObjArr = [];
                 let letters = Object.keys(freqOfLetters);
                 let total = 0;

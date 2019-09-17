@@ -62,7 +62,7 @@
             });
         },
         beforeDestroy() {
-            this.$emit('processFinished', this.content.id);
+            this.$emit('destroyed', this.content.id);
         }, 
         data() {
             return {
@@ -112,6 +112,7 @@
                     if(l== "." || l == "-") {
                         this.textArr.push(letterObj);
                     } else {
+                        //hfl: highest freq letter
                         let hfl = this.store_getFreqMsa[i];
                         if(l != hfl.l) letterObj.highlight = false;
                         else if(hfl.p > 50) {

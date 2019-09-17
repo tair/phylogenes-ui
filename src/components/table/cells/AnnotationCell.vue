@@ -12,6 +12,11 @@
     export default {
         name: "cell-annotation",
         props: ["content"],
+        data() {
+            return {
+                el: null,
+            }
+        },
         watch: {
             content: {
                 handler: function (val, oldVal) {
@@ -19,7 +24,7 @@
             }
         },
         mounted() {
-            
+            this.el = d3.select(this.$el);
         },
         data() {
             return {
