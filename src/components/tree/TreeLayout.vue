@@ -290,10 +290,11 @@
                 this.updateExtraInfo(modifiedNodes);
 
                 this.resetTreeLayout();
+
                 setTimeout(() => {
                     this.$emit('updated-tree', modifiedNodes);
-                });
-               
+                }, 750);
+
                 this.renderNodes(modifiedNodes);
                 this.renderLinks(modifiedNodes);
 
