@@ -115,6 +115,13 @@
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
+                    // console.log(this.store_tableData.length);
+                    // cosole.log(val.geneId);
+                    // this.store_tableData.forEach(d => {
+                    //     if(d["Gene ID"]) {
+                    //         console.log(d["Gene ID"]);
+                    //     }
+                    // });
                     var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
                     if(!foundRow) {
                         let accession = val.data.accession;

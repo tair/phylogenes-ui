@@ -291,14 +291,24 @@
 
                 this.resetTreeLayout();
 
-                setTimeout(() => {
-                    this.$emit('updated-tree', modifiedNodes);
-                }, 750);
-
                 this.renderNodes(modifiedNodes);
                 this.renderLinks(modifiedNodes);
 
                 this.setLeafNodesByDepth(modifiedNodes);
+
+                //Await a certain time before emitting that nodes of tree have been updated.
+                //We return a promise for this timeout, since 'updateTree' is an async func.
+                // So, whenever we use .then() with this func, we return this promise only when
+                // the timeout is complete.
+                // This timeout is needed so that 'renderNodes' is completed properly with all
+                // the d3 animations completed.
+                //TODO: instead of timeout make renderNodes a async function as well.
+                await new Promise(res => {
+                    setTimeout(() => {
+                        this.$emit('updated-tree', modifiedNodes);
+                        res();
+                    }, 1000);
+                });
 
                 return 1;
             },
@@ -516,6 +526,7 @@
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
+                console.log("align ", currCenterNode.id);
                 setTimeout(() => {
                     this.store_setCenterNode(currCenterNode);
                 }, 100);
@@ -594,8 +605,10 @@
                 var allNodes = this.rootNode.descendants();
                 nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
                     this.updateTree().then(() => {
-                        let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
-                        this.centerTreeToGivenNode(firstMatchedNode);
+                        // let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
+                        let allNodes = nodesUtils.findAllMatchedNodes(this.getLeafNodesByDepth());
+                        console.log(allNodes.length);
+                        this.centerTreeToGivenNode(allNodes[0]);
                     });
                 });
             },
