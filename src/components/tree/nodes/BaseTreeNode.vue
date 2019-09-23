@@ -80,7 +80,10 @@ across all treenode types (eg. translate, exit movement).
                         return "translate(" + this.content.y + "," + this.content.x + ")";
                     });
                 if (this.content.data.hasFunc){
-                    let textLength = this.el.select('text').node().textLength.baseVal.value;
+                    let textLength = 0;
+                    if(this.el.select('text').node()) {
+                        textLength = this.el.select('text').node().textLength.baseVal.value;
+                    }
                     this.el.select('image').attr('x', textLength + 20);
                 }
             },
