@@ -8,6 +8,7 @@ import Login from './views/Login.vue'
 import TreeBrowse from './views/TreeBrowse.vue'
 import TreeDetail from './views/TreeDetail.vue'
 import {store} from './store'
+import {TREE_ACTION_SET_SEARCH} from './store/types_tree'
 
 Vue.use(Router)
 
@@ -50,9 +51,9 @@ export default new Router({
         component: TreeDetail
     },
     {
-        path: '/GeneID/:id',
+        path: '/gene-id/:id',
         beforeEnter: (to, from, next) => {
-          store.dispatch('tree/setSearchText',to.params.id);
+          store.dispatch(TREE_ACTION_SET_SEARCH,to.params.id);
           next('/tree');
         }
     }
