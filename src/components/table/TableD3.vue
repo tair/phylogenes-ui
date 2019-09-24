@@ -147,6 +147,7 @@
                     } else {
                         this.msaTab = false;
                     }
+                    this.addCustomScrollEvent();
                     this.update();
                 }
             }
@@ -170,22 +171,31 @@
                 this.msaTab = false;
                 this.store_setTableIsLoading(true);
             },
-            initTable() { 
-                if(this.$refs.tbody) {
-                    //handleScroll is called with a throttle of 10 ms, this is to control the number of 
-                    // calls made to the function, on scrolling of mouse.
-                    this.$refs.tbody.addEventListener('scroll', 
-                        _.throttle(this.handleScroll, 10));
-                } 
+            initTable() {
+                this.addCustomScrollEvent();
                 this.extraCols = this.store_annoMapping.headers;
-                this.store_setTableIsLoading(false);
+                this.store_setTableIsLoading(false);   
+            },
+            addCustomScrollEvent() {
+                //On props change, the $refs reloads, so need to add scroll event at the next frame,
+                // hance the timeout.
+                setTimeout(() => {
+                    if(this.$refs.tbody) {
+                        //handleScroll is called with a throttle of 10 ms, this is to control the number of 
+                        // calls made to the function, on scrolling of mouse.
+                        this.$refs.tbody.addEventListener('scroll', 
+                                                    _.throttle(this.handleScroll, 10));
+                    }
+                });
             },
             renderTable() {
                 if(this.store_tableData != null && this.store_tableData.length > 0) {
                     this.isLoading = false;
                     setTimeout(() => {
                         this.initTable();
-                        this.update();
+                        setTimeout(() => {
+                            this.update();
+                        });
                     });
                 }
             },
@@ -224,7 +234,7 @@
                 this.store_tableData.some(n => {
                     //if 'calledWhileScrolling' is true we set all rows rendering to be false, even the visible ones.
                     if(calledWhileScrolling) {
-                        n.rendering = false;
+                        // n.rendering = false;
                     } else {
                         if(i < noOfTopRowsToRemove) {
                             n.rendering = false;
