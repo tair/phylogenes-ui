@@ -131,7 +131,7 @@
                 svgWidth: 700,
                 svgHeight: 700,
                 //scrollingTreeFromTable
-                delayInCall: 500,
+                delayInCall: 20,
                 ticking: false,
                 timerId: null
             }
@@ -205,10 +205,12 @@
             },
             //Set the d3 svg to it's original position before moving around with mouse
             resetRootPosition() {
-                this.wrapper_d3.transition().duration(500)
-                    .attr("transform", (d) => {
-                        return "translate(" + 80 + "," + 0 + ")";
-                    });
+                if(this.wrapper_d3 != null) {
+                    this.wrapper_d3.transition().duration(500)
+                        .attr("transform", (d) => {
+                            return "translate(" + 80 + "," + 0 + ")";
+                        });
+                }
             },
             //Initialize Tree at the time of Mounted() or jsonData has been updated.
             initTree() {
@@ -216,6 +218,7 @@
                     console.error("jsonData is null!");
                     return;
                 }
+                this.rowsScrolledUp = 0;
                 var svg = d3.select('#treeSvg');
                 this.wrapper_d3 = svg.select("#wrapper");
                 svg.call(this.setZoomListener(this.wrapper_d3));
