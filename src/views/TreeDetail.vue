@@ -784,20 +784,24 @@
 
             // ~~~~~~~~~~~~~~~~ MSA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setMsaHeaderTitle() {
-                let msa_header ="MSA: ";
+                let msa_header = "MSA:";
                 let max_ruler_len = this.store_maxMsaLength;
                 let ruler_gap = 25;
                 let c = msa_header.length;
+                let digits = 2;
+                let markedCount = 0;
                 while(c < max_ruler_len) {
-                    let digits = 2;
                     if((c+digits)%ruler_gap == 0) {
                         msa_header += c+digits;
                         msa_header += "|";
-                        c += digits+1;
+                        c += digits;
+                        //Check if c for next ruler mark is supposed to inc digits count
+                        if(c+ruler_gap > 99) digits=3;
+                        if(c+ruler_gap > 999) digits=4;
                     } else {
                         msa_header += "&nbsp";
-                        c++;
                     }
+                    c++;  
                 }
                 return msa_header;
             },

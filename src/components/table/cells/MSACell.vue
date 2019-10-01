@@ -1,7 +1,6 @@
 <template>
     <div class="tdParent">
-        <span v-for="(c,i) in filteredTextArr" :key=i
-                :class='getHighlightClass(c)'>{{c.letters}}</span>
+        <span class="tdTxt" v-html="getDebugText()"></span>
     </div>
 </template>
 
@@ -30,10 +29,6 @@
             }
         },
         computed: {
-            filteredTextArr() {
-                // return this.textArr.filter(c => {return c.highlight;});
-                return this.textArr;
-            },
             ...mapGetters({ 
                 store_getFreqMsa: types.TABLE_GET_MSA_FREQ
             }),
@@ -60,18 +55,15 @@
             return {
                 tdWidth: '1000px',
                 tdHeight: '30px',
-                textArr: [],
+                processedHtmlTxt: "",
                 isLoading: false,
-                localFreq: [],
                 TIMEOUT_HIGHLIGHT_PROCESSING: 100,
                 SVG_LETTER_GAP: 8.501,
             }
         },
         methods: {
-            getHighlightClass(l) {
-                if(l.highlight==false) 'defaultRect';
-                else if(l.highlightType == "dark") return 'darkRect';
-                else return 'lightRect';
+            getDebugText() {
+                return this.processedHtmlTxt;
             },
             setTextArray(pm, text) {
                 this.isLoading = true;
@@ -89,48 +81,32 @@
                 }
  
                 setTimeout(() => {
-                    this.processHighlight(text).then(textArr => {
-                       this.textArr = textArr;
-                    });
+                    this.processHighlight(text);
                 }, this.TIMEOUT_HIGHLIGHT_PROCESSING);
                 this.isLoading = false;
             },
             async processHighlight(text) {
                 let textArr = [];
                 let splits = text.split('');
-                let splitTxt = '';
-                // console.log("OT: " + text);
                 let c = 0;
                 for(var i = 0; i < splits.length; i++) {
                     let l = splits[i];
-                    let letterObj = {letters: '', highlight: 0};
                     let hfl = this.store_getFreqMsa[i];
-                    
+
                     if(l== "." || l == "-" || l != hfl.l) {
-                        splitTxt += l;
+                        // if(i % 25 == 0) l = '@'; //debug
+                        this.processedHtmlTxt += l;
                     } else {
-                        if(splitTxt.length > 0) {
-                            
-                            letterObj.letters = splitTxt;
-                            letterObj.highlight = 0;
-                            textArr.push(letterObj);
-
-                            textArr.push({letters: l, highlight: 1});
-
-                            c += splitTxt.length + 1;
-                        } else {
-                            splitTxt = l;
-                            letterObj.letters = splitTxt;
-                            letterObj.highlight = 1;
-                            textArr.push(letterObj);
-                            c += splitTxt.length;
+                        // if(i % 25 == 0) l = '@'; //debug
+                        if(hfl.p > 50 && hfl.p <= 90) {
+                            l = '<mark class="lightMark">' + l + '</mark>';
+                        } else if(hfl.p > 90) {
+                            l = '<mark class="darkMark">' + l + '</mark>';
                         }
-                        splitTxt = '';
+                        this.processedHtmlTxt += l;
                     }
                 }
-                if(splitTxt.length > 0) {
-                    textArr.push({letters: splitTxt, highlight: 0});
-                }
+
                 this.mutableContent.process = false;
                 this.$emit('update:content', this.mutableContent);
                 return textArr;
@@ -139,62 +115,20 @@
     }
 </script>
 <style scoped> 
-    .defaultRect {
-        background-color:white;
-        font-family: monospace;
-        letter-spacing: 0.1px;
-    }
-    .darkRect {
-        background-color: #c9641d;
-        font-family: monospace;
-        letter-spacing: 0.1px;
-        /* fill-opacity: 0.7; */
-    }
-    .lightRect {
-        background-color: #eca979;
-        font-family: monospace;
-        letter-spacing: 0.1px;
-        /* fill-opacity: 0.7; */
-    }
-    .msaTextSvg {
-        padding-left: 10px;
-        font-family: monospace;
-    }
-    .msaTextPlain {
-        font-size: 14px;
-        /* padding-left: 10px; */
-        font-family: monospace;
-        letter-spacing: 0.1px;
-    }
     .tdParent {
         padding-left: 10px;
         width: 100%;
     }
-    .tdSpan {
-        font-size: 14px;
+    .tdTxt {
         font-family: monospace;
-        background-color: rgb(255,255,255);
+        letter-spacing: 0.1px;
     }
-    .parent {
-        position: relative;
-        /* required for making this cell to render behind the sticky cells */
-        z-index: 0; 
+    .tdTxt >>> .lightMark {
+        background-color: #eca979;
+        padding: 0px;
     }
-    .overlay {
-        position: absolute;
-        background: rgba(100,100,100,0);
-        width:1000px;
-        height:40px;
-        top:0px;
-        bottom:0px;
-        left:0px;
-        right:0px;
-    }
-    .element {
-        position: absolute;
-        width:100px;
-        height:40px;
-        top: 6px;
-        left: 0px;
+    .tdTxt >>> .darkMark {
+        background-color: #c9641d;
+        padding: 0px;
     }
 </style>

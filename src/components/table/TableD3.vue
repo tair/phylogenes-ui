@@ -751,6 +751,7 @@
         white-space: nowrap;
         max-width: 100%;
         font-family: monospace;
+        letter-spacing: 0.1px;
     }
     .tdSubCol {
         border-right: 1px solid #f1f1f0 !important;
