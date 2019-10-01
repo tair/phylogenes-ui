@@ -131,7 +131,7 @@
                 svgWidth: 700,
                 svgHeight: 700,
                 //scrollingTreeFromTable
-                delayInCall: 500,
+                delayInCall: 20,
                 ticking: false,
                 timerId: null
             }
@@ -216,6 +216,7 @@
                     console.error("jsonData is null!");
                     return;
                 }
+                this.rowsScrolledUp = 0;
                 var svg = d3.select('#treeSvg');
                 this.wrapper_d3 = svg.select("#wrapper");
                 svg.call(this.setZoomListener(this.wrapper_d3));

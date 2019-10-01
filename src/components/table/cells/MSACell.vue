@@ -1,18 +1,8 @@
 <template>
-    <div class="parent">
-        <div class="overlay">
-            <div class="element">
-                <span class="msaTextPlain">{{this.content.text}}</span>
-            </div>
-        </div>
-        
-        <svg :width=tdWidth :height=tdHeight>
-            <g v-for="(c,i) in filteredTextArr" :key=i>
-                <rect v-if='c.highlight' :class='getRectClass(c)' :x=10+c.index*SVG_LETTER_GAP y=8 width=10 height=80></rect>
-            </g>
-        </svg>
+    <div class="tdParent">
+        <span v-for="(c,i) in filteredTextArr" :key=i
+                :class='getHighlightClass(c)'>{{c.letters}}</span>
     </div>
-    
 </template>
 
 <script>
@@ -24,9 +14,9 @@
     export default {
         name: "cell-msa",
         props: ["content"],
-        data: {
-            return () {
-            }
+        data() {
+            return {
+            };
         },
         watch: {
             content: {
@@ -41,7 +31,8 @@
         },
         computed: {
             filteredTextArr() {
-                return this.textArr.filter(c => {return c.highlight;});
+                // return this.textArr.filter(c => {return c.highlight;});
+                return this.textArr;
             },
             ...mapGetters({ 
                 store_getFreqMsa: types.TABLE_GET_MSA_FREQ
@@ -62,7 +53,7 @@
             });
         },
         beforeDestroy() {
-            this.$emit('destroyed', this.content.id);
+            // this.$emit('destroyed', this.content.id);
         }, 
         data() {
             return {
@@ -76,22 +67,22 @@
             }
         },
         methods: {
-            getRectClass(letter) {
-                if(letter.highlightType == "dark") return 'darkRect';
+            getHighlightClass(l) {
+                if(l.highlight==false) 'defaultRect';
+                else if(l.highlightType == "dark") return 'darkRect';
                 else return 'lightRect';
             },
             setTextArray(pm, text) {
                 this.isLoading = true;
-                               
                 this.mutableContent.process = true;
                 this.$emit('update:content', this.mutableContent);
 
                 if(pm == "watch") {
-                    setTimeout(() => {
-                        this.processHighlight(text).then(textArr => {
-                            this.textArr = textArr;
-                        });
-                    }, this.TIMEOUT_HIGHLIGHT_PROCESSING);
+                    // setTimeout(() => {
+                    //     this.processHighlight(text).then(textArr => {
+                    //         this.textArr = textArr;
+                    //     });
+                    // }, this.TIMEOUT_HIGHLIGHT_PROCESSING);
                     this.isLoading = false;
                     return;
                 }
@@ -106,22 +97,38 @@
             async processHighlight(text) {
                 let textArr = [];
                 let splits = text.split('');
+                let splitTxt = '';
+                // console.log("OT: " + text);
+                let c = 0;
                 for(var i = 0; i < splits.length; i++) {
                     let l = splits[i];
-                    let letterObj = {letter: l, index: i, highlight: false};
-                    if(l== "." || l == "-") {
-                        this.textArr.push(letterObj);
+                    let letterObj = {letters: '', highlight: 0};
+                    let hfl = this.store_getFreqMsa[i];
+                    
+                    if(l== "." || l == "-" || l != hfl.l) {
+                        splitTxt += l;
                     } else {
-                        //hfl: highest freq letter
-                        let hfl = this.store_getFreqMsa[i];
-                        if(l != hfl.l) letterObj.highlight = false;
-                        else if(hfl.p > 50) {
-                            letterObj.highlight = true;
-                            if(hfl.p > 90) letterObj.highlightType = 'dark';
-                            else letterObj.highlightType = 'light';
+                        if(splitTxt.length > 0) {
+                            
+                            letterObj.letters = splitTxt;
+                            letterObj.highlight = 0;
+                            textArr.push(letterObj);
+
+                            textArr.push({letters: l, highlight: 1});
+
+                            c += splitTxt.length + 1;
+                        } else {
+                            splitTxt = l;
+                            letterObj.letters = splitTxt;
+                            letterObj.highlight = 1;
+                            textArr.push(letterObj);
+                            c += splitTxt.length;
                         }
+                        splitTxt = '';
                     }
-                    textArr.push(letterObj);
+                }
+                if(splitTxt.length > 0) {
+                    textArr.push({letters: splitTxt, highlight: 0});
                 }
                 this.mutableContent.process = false;
                 this.$emit('update:content', this.mutableContent);
@@ -131,22 +138,41 @@
     }
 </script>
 <style scoped> 
+    .defaultRect {
+        background-color:white;
+        font-family: monospace;
+        letter-spacing: 0.1px;
+    }
     .darkRect {
-        fill: #c9641d;
-        fill-opacity: 0.7;
+        background-color: #c9641d;
+        font-family: monospace;
+        letter-spacing: 0.1px;
+        /* fill-opacity: 0.7; */
     }
     .lightRect {
-        fill: #eca979;
-        fill-opacity: 0.7;
+        background-color: #eca979;
+        font-family: monospace;
+        letter-spacing: 0.1px;
+        /* fill-opacity: 0.7; */
     }
     .msaTextSvg {
         padding-left: 10px;
         font-family: monospace;
     }
     .msaTextPlain {
-        padding-left: 10px;
+        font-size: 14px;
+        /* padding-left: 10px; */
         font-family: monospace;
         letter-spacing: 0.1px;
+    }
+    .tdParent {
+        padding-left: 10px;
+        width: 100%;
+    }
+    .tdSpan {
+        font-size: 14px;
+        font-family: monospace;
+        background-color: rgb(255,255,255);
     }
     .parent {
         position: relative;

@@ -38,7 +38,7 @@
                         <div class="row align-items-center justify-content-between">
                             <div class="col-auto align-items-center">
                                 <search-box ref="searchBox" 
-                                            v-on:search="onSearch" :defaultText="defaultSearchText"></search-box>
+                                            v-on:search="onSearchWithinTree" :defaultText="defaultSearchText"></search-box>
                             </div>
                             <div class="col-auto align-items-center">
                                 <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
@@ -171,7 +171,7 @@
                     if(!val) {
                         if(this.store_getSearchTxtWthn != null) {
                             this.defaultSearchText = this.store_getSearchTxtWthn;
-                            this.onSearch(this.store_getSearchTxtWthn);
+                            this.onSearchWithinTree(this.store_getSearchTxtWthn);
                         } else {
                             this.defaultSearchText = "";
                             this.searchText = "";
@@ -515,7 +515,7 @@
 
             // },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-            onSearch(text) {
+            onSearchWithinTree(text) {
                 if(text != null) {
                     var d = this.completeData.filter(t => {
                         var geneName = "";
@@ -708,7 +708,7 @@
                             this.analyzeCompleted = true;
                             this.store_setTableIsLoading(false);
                         });
-                    });
+                    }, 10);
                 } else {
                     this.setTableCols();
                 }
@@ -823,6 +823,7 @@
                     [4] = ['e': 2, 'c': 1]
                 */
                 let analysis_arr = new Array(maxLength).fill({});
+                let ix = 0;
                 msa_split.forEach(seq_arr => {
                     let node_index = 0;
                     seq_arr.forEach(letter => {
@@ -841,6 +842,7 @@
                         analysis_arr[node_index] = seqObj;
                         node_index++;
                     });
+                    ix++;
                 });
 
                 //After the analysis is done, create 'freq_seq_arr' which gives
@@ -850,15 +852,33 @@
                 // 'freq_seq_arr' could be a map [l]:{p}, but kept as an array incase in future we 
                 // need to add percent for second-highest letter for instance.
                 let freq_seq_arr = [];
+                let i =0;
                 analysis_arr.forEach(e => {
                     let arr = this.calculateFreqByPercent(e).slice(0,1);
                     let f = parseFloat(arr[0].percent);
-                    f = Math.floor(f);
-                    let obj = {l: arr[0].letter, p: f};
+                    f = f.toFixed(2);
+                    let obj = {l: arr[0].letter, p: f, i: i++};
                     freq_seq_arr.push(obj);
                 });
+                let filtered = freq_seq_arr.filter((f, i) => {
+                    return f.l != '.' && f.l != '-' && f.p >= 50
+                });
+                
                 this.store_setFreqMsa(freq_seq_arr);
                 return true;
+            },
+            calculateFreqByPercentT(freqOfLetters) {
+                let seqObjArr = [];
+                let letters = Object.keys(freqOfLetters);
+                let total = 0;
+                letters.forEach(l => {
+                    let freq = freqOfLetters[l];
+                    seqObjArr.push({letter: l, freq: freq});
+                    total += freq;
+                });
+                seqObjArr.map(e => {
+                    e.percent = e.freq/total*100;
+                });
             },
             //freqOfLetters: {'a':2, 'b':1, 'c':3 ... etc}
             //Calculates the percent of each letter from the total freq of all letters.

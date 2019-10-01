@@ -90,7 +90,7 @@
                 rowsScrolled: 0,
                 upperLimit: 100,
                 msaTab: false,
-                processedCells: []
+                processedCells: [],
             }
         },
         computed: {
@@ -134,7 +134,6 @@
                 handler: function(val, oldval) {
                     if(val) {
                         this.isLoading = true;
-                        this.rowsScrolled = 0;
                     } else {
                         this.isLoading = false;
                     }
@@ -149,6 +148,7 @@
                     }
                     this.addCustomScrollEvent();
                     this.update();
+                    this.setTableScroll();
                 }
             }
         },
@@ -213,8 +213,23 @@
 
                 this.colsToRender = filteredCols;
                 this.rowsToRender = [];
+
                 this.lazyLoad = true;
-                this.updateRows();
+                if(this.msaTab) {
+                    if(this.store_tableData.length < 2000) this.lazyLoad = false;
+                }
+ 
+                this.displayRows();
+            },
+            displayRows() {
+                if(!this.lazyLoad) {
+                    this.store_tableData.forEach(n => {
+                        let processedRowData = this.processRow(n);
+                        this.rowsToRender.push(processedRowData);
+                    });
+                } else {
+                    this.updateRows();
+                }
             },
             //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
             //This depends on 'rowsScrolled'
@@ -225,22 +240,21 @@
                 //We add all the rows scolled to the table
                 let maxRows = 30;
                 let noOfRowsToAdd = maxRows + this.rowsScrolled;
-                let noOfTopRowsToRemove = this.rowsScrolled;
+                let noOfTopRowsToRemove = 0;
+                if(this.rowsScrolled > 200) {
+                    noOfTopRowsToRemove = this.rowsScrolled - 100;
+                }
                 let i = 0;
                 this.rowsToRender = [];
                 //this.rowsToRender - add rows ranging from index 0 to [noOfRowsToAdd].
                 // set 'rendering' to false, for all rows less than 'noOfTopRowsToRemove'. Since this
                 // rows will be out of view and scrolled up, we don't render the content, for performance reasons.
+
                 this.store_tableData.some(n => {
-                    //if 'calledWhileScrolling' is true we set all rows rendering to be false, even the visible ones.
-                    if(calledWhileScrolling) {
-                        // n.rendering = false;
+                    if(i < noOfTopRowsToRemove) {
+                        n.rendering = false;
                     } else {
-                        if(i < noOfTopRowsToRemove) {
-                            n.rendering = false;
-                        } else {
-                            n.rendering = true;
-                        }
+                        n.rendering = true;
                     }
                     let processedRowData = this.processRow(n);
                     this.rowsToRender.push(processedRowData);
@@ -266,6 +280,7 @@
                     if(c == "MSA") {
                         content.text = cellTxt;
                         content.type = 'msa';
+                        content.isHighlight = true;
                     } else if(c == "Uniprot ID") {
                         content.type = 'link';
                         content.link = 'https://www.uniprot.org/uniprot/'+cellTxt;
@@ -308,14 +323,6 @@
                             this.calculateRowsScrolled(scrollTop_curr);
                             this.scrollTop_old = scrollTop_curr;
                             this.scrollTreeFromTable(this.rowsScrolled);
-                            //Updates rowsToRender based on the scrolled value.
-                            if(this.msaTab) {
-                                //'calledWhileScrolling' is set to true for msa tab, since rendering
-                                // all the msa rows while scrolling slows down, so we do not render any cells while scrolling msa.
-                                this.updateRows(true);
-                            } else {
-                                this.updateRows();
-                            }
                         }
                     }, 100);
                 }
@@ -337,9 +344,19 @@
                 var scroll = {i: rowNumber, id: rowId, accession: accession};
                 this.store_setTableScrolledRow(scroll);
             },
+            setTableScroll() {
+                setTimeout(() => {
+                    const tbody = document.getElementById("body");
+                    if(tbody) {
+                        tbody.scrollTop = 40*this.rowsScrolled;
+                    }
+                }, 100);
+            },
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
+                console.log("From tree " + this.rowsScrolled);
+
                 this.updateRows();
 
                 setTimeout(() => {
@@ -396,26 +413,27 @@
                 }
             },
             onTableCellUpdated(updatedContent) {
+                // console.log(this.processedCells.length);
                 //processedCells - array of table cells currently being processed.
                 // If the length > 0, we show a loading symbol on the table ie. isMsaLoading=true
-                if(updatedContent.process == true) {
-                    if(!this.processedCells.includes(updatedContent.id)) {
-                        this.processedCells.push(updatedContent.id);
-                    }
-                    if(this.processedCells.length == 1) {
-                        this.isMsaLoading = true;
-                    }
-                } 
-                //If 'process' flag is false, that means the cell is completed processing.
-                else if(updatedContent.process == false) {
-                    var index = this.processedCells.indexOf(updatedContent.id);
-                    if (index > -1) {
-                        this.processedCells.splice(index, 1);
-                    }
-                    if(this.processedCells.length == 0) {
-                        this.isMsaLoading = false;
-                    }
-                }
+                // if(updatedContent.process == true) {
+                //     if(!this.processedCells.includes(updatedContent.id)) {
+                //         this.processedCells.push(updatedContent.id);
+                //     }
+                //     if(this.processedCells.length == 1) {
+                //         this.isMsaLoading = true;
+                //     }
+                // } 
+                // //If 'process' flag is false, that means the cell is completed processing.
+                // else if(updatedContent.process == false) {
+                //     var index = this.processedCells.indexOf(updatedContent.id);
+                //     if (index > -1) {
+                //         this.processedCells.splice(index, 1);
+                //     }
+                //     if(this.processedCells.length == 0) {
+                //         this.isMsaLoading = false;
+                //     }
+                // }
             },
             //Utilities
             getDBLink(r) {
