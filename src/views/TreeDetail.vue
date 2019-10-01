@@ -89,8 +89,9 @@
                 <div class="row h-100">
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
-                        <tablelayout :colsFromProp="tableColsToRender" :headerMap="headerMap"
-                                    v-on:toggle-cols="toggleMsa"></tablelayout>
+                        <tablelayout ref="tableLayout"
+                            :colsFromProp="tableColsToRender" :headerMap="headerMap"
+                            v-on:toggle-cols="toggleMsa"></tablelayout>
                     </div>
                 </div>
             </div>
@@ -148,6 +149,13 @@
                     buttonIcon: 'fas fa-angle-double-down'
                 };
             }
+        },
+        beforeRouteLeave (to, from, next) {
+            // called when the route that renders this component is about to
+            // be navigated away from.
+            // has access to `this` component instance.
+            this.$refs.tableLayout.reset();
+            next();
         },
         watch: {
             '$route.params.id': function (id) {

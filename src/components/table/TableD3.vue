@@ -166,6 +166,12 @@
                 store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            reset() {
+                this.isLoading = true;
+                this.msaTab = false;
+                this.rowsToRender = [];
+                console.log("reset");
+            },
             resetTable() {
                 this.isLoading = true;
                 this.msaTab = false;
@@ -355,8 +361,6 @@
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
-                console.log("From tree " + this.rowsScrolled);
-
                 this.updateRows();
 
                 setTimeout(() => {

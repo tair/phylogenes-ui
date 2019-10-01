@@ -53,6 +53,7 @@
             });
         },
         beforeDestroy() {
+            // console.log("D " + this.content.id);
             // this.$emit('destroyed', this.content.id);
         }, 
         data() {
