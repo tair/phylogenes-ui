@@ -65,42 +65,21 @@ function findMatNodesInChildren(d, matNodes) {
 //Expands only the nodes which have a matched node as one of it's leafs,
 // else keeps the other nodes collapsed
 function expandSelectedFromNode(givenNode, matNodes) {
-    let matNodesIds = matNodes.map(c => c["Uniprot ID"]);
-
-    givenNode._children.forEach(c => {
-        let leafs = treeUtils.getLeafNodes(c);
-        let leafsIds = leafs.map(c => c.data.uniprotId);
-        let matched = matNodesIds.some(id => {
-            return leafsIds.includes(id);
+    if (givenNode._children && givenNode._children != null) {
+        givenNode.children = givenNode._children;
+        givenNode._children = null;
+    }
+    
+    if (givenNode.children) {
+        givenNode.children.forEach(c => {
+            if (this.findMatNodesInChildren(c, matNodes)) {
+                this.expandSelectedFromNode(c, matNodes);
+            } else {
+                c._children = c.children;
+                c.children = null;
+            }
         });
-        if (!matched) {
-            c._children = c.children;
-            c.children = null;
-        } else {
-            this.collapseChildifNotMatched(c, matNodesIds);
-        }
-    });
-    givenNode.children = givenNode._children;
-    givenNode._children = null;
-}
-
-//Recursively check if a child node has a matched node as one of it's leafs, it not
-// then collapses the given child node.
-// matNodesIds: A list of uniprotIds for matched nodes.
-function collapseChildifNotMatched(node, matNodesIds) {
-    node.children.forEach(c => {
-        let leafs = treeUtils.getLeafNodes(c);
-        let leafsIds = leafs.map(c => c.data.uniprotId);
-        let matched = matNodesIds.some(id => {
-            return leafsIds.includes(id);
-        });
-        if (!matched) {
-            c._children = c.children;
-            c.children = null;
-        } else {
-            this.collapseChildifNotMatched(c, matNodesIds);
-        }
-    });
+    }
 }
 
 function findFirstMatchedNodeInTree(allLeafNodes) {
@@ -113,6 +92,5 @@ export default {
     processMatchedNodes,
     findMatNodesInChildren,
     expandSelectedFromNode,
-    collapseChildifNotMatched,
     findFirstMatchedNodeInTree
 }
