@@ -1,6 +1,7 @@
 <template>
     <div class="tdParent">
-        <span class="tdTxt" v-html="getDebugText()"></span>
+        <!-- <span class="tdTxt" v-html="getDebugText()"></span> -->
+        <span class="tdTxt" v-html="this.processedHtmlTxt"></span>
     </div>
 </template>
 
@@ -22,6 +23,7 @@
                 handler: function (val, oldVal) {
                     if(val && val.text) {
                         if(!this.isLoading) {
+                            // console.log(this.content.id);
                             this.setTextArray("watch", val.text);
                         }
                     }
@@ -71,11 +73,9 @@
                 this.$emit('update:content', this.mutableContent);
 
                 if(pm == "watch") {
-                    // setTimeout(() => {
-                    //     this.processHighlight(text).then(textArr => {
-                    //         this.textArr = textArr;
-                    //     });
-                    // }, this.TIMEOUT_HIGHLIGHT_PROCESSING);
+                    setTimeout(() => {
+                        this.processHighlight(text);
+                    }, this.TIMEOUT_HIGHLIGHT_PROCESSING);
                     this.isLoading = false;
                     return;
                 }
@@ -89,6 +89,7 @@
                 let textArr = [];
                 let splits = text.split('');
                 let c = 0;
+                this.processedHtmlTxt = "";
                 for(var i = 0; i < splits.length; i++) {
                     let l = splits[i];
                     let hfl = this.store_getFreqMsa[i];

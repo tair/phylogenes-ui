@@ -224,7 +224,6 @@
                 if(this.msaTab) {
                     if(this.store_tableData.length < 2000) this.lazyLoad = false;
                 }
- 
                 this.displayRows();
             },
             displayRows() {

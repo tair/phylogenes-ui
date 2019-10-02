@@ -787,7 +787,7 @@
                 let msa_header = "MSA:";
                 let max_ruler_len = this.store_maxMsaLength;
                 let ruler_gap = 25;
-                let c = msa_header.length;
+                let c = msa_header.length+1;
                 let digits = 2;
                 let markedCount = 0;
                 while(c < max_ruler_len) {
