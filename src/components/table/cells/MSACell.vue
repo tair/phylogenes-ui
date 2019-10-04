@@ -1,6 +1,7 @@
 <template>
     <div class="tdParent">
         <span class="tdTxt" v-html="this.processedHtmlTxt"></span>
+        <!-- <span class="tdTxt">{{this.content.text}}</span> -->
     </div>
 </template>
 
@@ -87,22 +88,19 @@
             async processHighlight(text) {
                 let textArr = [];
                 let splits = text.split('');
-                let c = 0;
                 this.processedHtmlTxt = "";
+
                 for(var i = 0; i < splits.length; i++) {
                     let l = splits[i];
                     let hfl = this.store_getFreqMsa[i];
-
                     if(l== "." || l == "-" || l != hfl.l) {
-                        // if(i % 25 == 0) l = '@'; //debug
                         this.processedHtmlTxt += l;
                     } else {
-                        // if(i % 25 == 0) l = '@'; //debug
                         if(hfl.p > 50 && hfl.p <= 90) {
                             l = '<mark class="lightMark">' + l + '</mark>';
                         } else if(hfl.p > 90) {
                             l = '<mark class="darkMark">' + l + '</mark>';
-                        }
+                        } 
                         this.processedHtmlTxt += l;
                     }
                 }
@@ -126,9 +124,14 @@
     .tdTxt >>> .lightMark {
         background-color: #eca979;
         padding: 0px;
+        /* is 0.01px less then parent, 
+        as <mark> tag takes some space which misaligns the letters 
+        if added inside a <span> tag */
+        letter-spacing: 0.09px; 
     }
     .tdTxt >>> .darkMark {
         background-color: #c9641d;
         padding: 0px;
+        letter-spacing: 0.09px;
     }
 </style>
