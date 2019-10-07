@@ -600,7 +600,20 @@
                     this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
                 }
                 
-                this.completeData = tabularData;           
+                this.completeData = tabularData;
+
+                //If msa is toggled on, we need to analyze msa logic again on every
+                // tree init. For now init happens when tree pruning changes the original tree.
+                if(this.showMsa) {
+                    this.store_setTableIsLoading(true);
+                    setTimeout(() => {
+                        this.analyzeMsaData().then(res => {
+                            this.setTableCols();
+                            this.analyzeCompleted = true;
+                            this.store_setTableIsLoading(false);
+                        });
+                    }, 10);
+                }     
             },
             onTreeUpdate(nodes) {
                 this.metadata.isLoading = false;
@@ -787,7 +800,7 @@
                 let msa_header = "MSA:";
                 let max_ruler_len = this.store_maxMsaLength;
                 let ruler_gap = 25;
-                let c = msa_header.length;
+                let c = msa_header.length+1;
                 let digits = 2;
                 let markedCount = 0;
                 while(c < max_ruler_len) {
@@ -878,19 +891,6 @@
                 
                 this.store_setFreqMsa(freq_seq_arr);
                 return true;
-            },
-            calculateFreqByPercentT(freqOfLetters) {
-                let seqObjArr = [];
-                let letters = Object.keys(freqOfLetters);
-                let total = 0;
-                letters.forEach(l => {
-                    let freq = freqOfLetters[l];
-                    seqObjArr.push({letter: l, freq: freq});
-                    total += freq;
-                });
-                seqObjArr.map(e => {
-                    e.percent = e.freq/total*100;
-                });
             },
             //freqOfLetters: {'a':2, 'b':1, 'c':3 ... etc}
             //Calculates the percent of each letter from the total freq of all letters.
@@ -1007,7 +1007,7 @@
                             this.$refs.treeLayout.onPruneLoading(false);
                         })
                         .catch(err => {
-                            console.error("error");
+                            console.error("error ", err);
                             this.isLoading = false;
                             this.resetPruning();
                             this.$refs.treeLayout.onPruneLoading(false);
