@@ -93,7 +93,7 @@
             },
             store_tableIsLoading: {
                 handler: function(val, oldval) {
-                    this.isLoading = val;
+                    // this.isLoading = val;
                 }
             }
         },
@@ -229,6 +229,7 @@
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
                 
+                
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
                 this.$emit('get-table-csv-data', nodes);
@@ -239,6 +240,11 @@
 
                 this.adjustTreeLayoutPosition(); 
                 this.updateTree();
+
+                setTimeout(() => {
+                    console.log("start grafting");
+                    this.processGraftedNodes();
+                }, 2000);
             },
             //Convert json into d3 hierarchy which adds depth, height and
             // parent variables to each node.
@@ -303,6 +309,7 @@
 
                 this.setLeafNodesByDepth(modifiedNodes);
 
+                this.isLoading = false;
                 return 1;
             },
             // ~~~~~~~~~ Nodes
@@ -590,6 +597,24 @@
             //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
                 updateDisplayUtils.processCompactTree(this.rootNode, this.store_annoMapping.annoMap);
+            },
+
+            processGraftedNodes() {
+                var allNodes = this.rootNode.descendants();
+                nodesUtils.processGrafted(allNodes).then((res) => {
+                    this.updateTree().then(() => {
+                        var graftedNode = null;
+                        allNodes = this.rootNode.descendants();
+                        allNodes.forEach(a => {
+                            if(a.data.newGrafted) {
+                                graftedNode = a;
+                            }
+                        });
+                        if(graftedNode != null) {
+                            this.centerTreeToGivenNode(graftedNode);
+                        }   
+                    });
+                });
             },
 
             // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//

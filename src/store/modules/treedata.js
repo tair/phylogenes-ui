@@ -117,6 +117,9 @@ const actions = {
     [types.TREE_ACTION_SET_SEARCHTEXTWTN]: (context, payload) => {
         context.state.treedata.searchTextWithin = payload;
     },
+    [types.TREE_ACTION_SET_PANTHER_TREE2]: (context, payload) => {
+        context.state.treedata.jsonString = payload
+    },
     [types.TREE_ACTION_SET_PANTHER_TREE]: (context, payload) => {
         if (!payload) return;
         return new Promise((result, rej) => {

@@ -4,6 +4,96 @@ function isMatchWithNode(d, matNodes) {
     return matNodes.find(v => v["Uniprot ID"] === d.data.uniprotId);
 }
 
+function isGraftedNode(d) {
+    if (d.data.newGrafted || d.newGrafted) {
+        return true;
+    }
+    return false;
+}
+
+async function processGrafted(allNodes) {
+    // console.log(matNode);
+    var foundAnywhere = false;
+    allNodes.some(d => {
+        d.matched = false;
+        //If Leaf Node
+        if (!d.children && !d._children) {
+            if (d.data.accession == "ANGRAFTED") {
+                foundAnywhere = true;
+            }
+        }
+        if (d._children) {
+            if (findGraftedNodesInChildren(d)) {
+                foundAnywhere = true;
+                expandFromSelected(d);
+            }
+        }
+        return foundAnywhere == true;
+        // if (!d.children) {
+        //     if (d.data.accession == "ANGRAFTED") {
+        //         console.log("Grafte", d);
+        //     }
+        // }
+        // console.log(d);
+        // if (d._children) {
+        //     if (findGraftedNodesInChildren(d)) {
+        //         if (d._children) {
+        //             d.children = d._children;
+        //             d._children = null;
+        //         }
+        //     }
+        // }
+    });
+    return 1;
+}
+
+function expandFromSelected(d) {
+    if (d._children) {
+        d.children = d._children;
+        d._children = null;
+    }
+    if (d.children) {
+        d.children.forEach(dc => {
+            if (dc.graftInC) {
+                expandFromSelected(dc);
+            }
+        });
+    }
+}
+
+function findGraftedNodesInChildren(d) {
+    var foundAny = false;
+    if (d.children) {
+        d.children.forEach(dc => {
+            let found = isGraftedNode(dc);
+            if (found) {
+                dc.matched = true;
+                foundAny = true;
+            }
+            var ff = findGraftedNodesInChildren(dc);
+            if (ff) {
+                dc.graftInC = true;
+                foundAny = true;
+            }
+        });
+    }
+    if (d._children) {
+        d._children.forEach(dc => {
+            let found = isGraftedNode(dc);
+            if (found) {
+                dc.matched = true;
+                foundAny = true;
+            }
+            var ff = findGraftedNodesInChildren(dc);
+            if (ff) {
+                dc.graftInC = true;
+                foundAny = true;
+            }
+        });
+    }
+    return foundAny;
+}
+
 async function processMatchedNodes(allNodes, matchedNodes) {
     if (matchedNodes.length == 0) {
         //reset all nodes (clears the red color on matched if any)
@@ -90,6 +180,7 @@ function findFirstMatchedNodeInTree(allLeafNodes) {
 export default {
     isMatchWithNode,
     processMatchedNodes,
+    processGrafted,
     findMatNodesInChildren,
     expandSelectedFromNode,
     findFirstMatchedNodeInTree

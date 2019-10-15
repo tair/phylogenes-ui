@@ -17,6 +17,7 @@ export const TABLE_GET_ISTABLELOADING = 'treedata/store_tableIsLoading';
 
 //actions
 export const TREE_ACTION_SET_PANTHER_TREE = 'treedata/store_setPantherTreeFromApi';
+export const TREE_ACTION_SET_PANTHER_TREE2 = 'treedata/store_setPantherTreeFromString';
 export const TABLE_ACTION_SET_DATA = 'treedata/store_setTableData';
 export const TREE_ACTION_SET_NODES = 'treedata/stateSetTreeNodes';
 export const TREE_ACTION_SET_METADATA = 'treedata/store_setTreeMetadata';
