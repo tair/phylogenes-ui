@@ -152,6 +152,30 @@ const actions = {
                 })
         });
     },
+    [types.TREE_ACTION_SET_ANNODATA]: (context, payload) => {
+        if (!payload) return;
+        return new Promise((result, rej) => {
+            axios({
+                method: 'GET',
+                url: API_URL + '/tree/' + payload
+            })
+            .then(res => {
+                console.log(res);
+                if (res.data.response.docs.length > 0) {
+                    if (res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                    } else if (!res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = null;
+                    }
+                }
+                result("panther tree");
+            })
+            .catch(error => {
+                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                rej();
+            })
+        });
+    },
     [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
         if (!payload) return;
         return new Promise((result, rej) => {

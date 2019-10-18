@@ -55,7 +55,7 @@ export default new Router({
     {
       path: '/treeGrafted/',
       name: 'treeGrafted',
-      component: TreeDetailTemp,
+      component: TreeDetail,
     },
     {
         path: '/gene-id/:id',

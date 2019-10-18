@@ -159,7 +159,10 @@
         },
         watch: {
             '$route.params.id': function (id) {
-                if(!id) return;
+                if(!id) {
+                    console.log(id);
+                    return;
+                }
                 this.initForNewTreeId(id);
             },
             stateTreeAnnotations: {
@@ -259,7 +262,12 @@
         },
         mounted() {
             this.resetPruning();
-            this.loadTreeFromApi();
+            var treeJson = this.store_treeJsonString;
+            if(this.$route.name == "treeGrafted") {
+                this.loadTreeFromJsonString();
+            } else {
+                this.loadTreeFromApi();
+            }
             this.searchText = "";
             this.matchNodes = [];
             this.popupData = [];
@@ -269,6 +277,7 @@
             ...mapActions({
                 store_setPantherTreeFromApi: types.TREE_ACTION_SET_PANTHER_TREE,
                 store_setMsaFromApi: types.TREE_ACTION_SET_MSADATA,
+                store_setAnnoFromApi: types.TREE_ACTION_SET_ANNODATA,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA,
@@ -287,21 +296,45 @@
                 this.analyzeCompleted = false;
                 this.resetPruning();
             },
+            loadTreeFromJsonString() {
+                var treeJson = this.store_treeJsonString;
+                this.treeId = treeJson.search.book;
+                console.log(this.treeId);
+                
+                var p11 = this.store_setPantherTreeFromApi(this.treeId);
+                var p21 = this.store_setMsaFromApi(this.treeId);
+                p11.then(r => {
+                    this.initTreeData(treeJson);
+                });
+                p21.then(r => {
+                    console.log("p2",r);
+                });
+                // Promise.all([p11, p21]).then(vals => {
+                //     console.log("got promise ", val);
+                //     // this.initTreeData(treeJson);
+                // });
+                
+            },
             //Load tree data needed from the API.
             loadTreeFromApi() {
+                if(!this.treeId) {
+                    console.log("no tree ID is found");
+                    return;
+                }
                 //Saves the panther tree in json String onto the vue store.
                 var p1 = this.store_setPantherTreeFromApi(this.treeId);
                 var p2 = this.store_setMsaFromApi(this.treeId);
                 Promise.all([p1, p2]).then(vals => {
+                    console.log("all");
                     if(vals.length > 1) {
                         this.resetPruning();
-                        this.initTreeData(this.store_treeJsonString);
+                        var treeJson = JSON.parse(this.store_treeJsonString);
+                        this.initTreeData(treeJson);
                     }
                 });
             },
             // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
-            initTreeData(jsonString) {
-                var treeJson = JSON.parse(jsonString);
+            initTreeData(treeJson) {
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
                 this.processJson(treeJson)
@@ -309,7 +342,7 @@
                         this.treeData_Json = res;
                     })
                     .catch(e => {
-                        console.error("Process json failed!");
+                        console.error("Process json failed! ", e);
                     });
                 this.completeData = null;
             },
@@ -423,6 +456,10 @@
                 //Set 'sequence' from this.store_treeMsaData
                 let accessionId = node.accession;
                 if(accessionId) {
+                    if(accessionId == "ANGRAFTED") {
+                        node.newGrafted = true;
+                        node.text = "Grafted";
+                    }
                     let sequence = this.store_treeMsaData.get(accessionId);
                     if(sequence) {
                         node.sequence = sequence;
@@ -471,7 +508,9 @@
                         text += " " + d.gene_symbol;
                     } else {
                         var geneId = d.gene_id;
-                        geneId = geneId.split(":")[1];
+                        if(geneId) {
+                            geneId = geneId.split(":")[1];
+                        }
                         text += " " + geneId;
                     }
                     if(d.displayName) {

@@ -530,7 +530,7 @@
                     this.store_setCenterNode(currCenterNode);
                 }, 100);
             },
-                     
+
             // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
@@ -608,11 +608,12 @@
                         allNodes.forEach(a => {
                             if(a.data.newGrafted) {
                                 graftedNode = a;
+                                console.log(a);
                             }
                         });
                         if(graftedNode != null) {
                             this.centerTreeToGivenNode(graftedNode);
-                        }   
+                        }
                     });
                 });
             },

@@ -357,11 +357,6 @@
                 let text = this.getText(node);
                 if (text != null) {
                     node.text = text;
-                    if(node.text == " 11407741 (M. truncatula) ") {
-                        node.newGrafted = true;
-
-                        node.text += " grafted";
-                    }
                 }
                 //Set 'fillColor' for each node
                 let fillColor = this.getNodeColor(node);
@@ -372,8 +367,8 @@
                 let accessionId = node.accession;
                 if(accessionId) {
                     if(accessionId == "ANGRAFTED") {
-                        // node.newGrafted = true;
-                        // node.text = "Grafted";
+                        node.newGrafted = true;
+                        node.text = "Grafted";
                     }
                     let sequence = this.store_treeMsaData.get(accessionId);
                     if(sequence) {

@@ -29,20 +29,11 @@ async function processGrafted(allNodes) {
             }
         }
         return foundAnywhere == true;
-        // if (!d.children) {
-        //     if (d.data.accession == "ANGRAFTED") {
-        //         console.log("Grafte", d);
-        //     }
-        // }
-        // console.log(d);
-        // if (d._children) {
-        //     if (findGraftedNodesInChildren(d)) {
-        //         if (d._children) {
-        //             d.children = d._children;
-        //             d._children = null;
-        //         }
-        //     }
-        // }
+    });
+    allNodes.forEach(a => {
+        if (isGraftedNode(a)) {
+            a.matched = true;
+        }
     });
     return 1;
 }
