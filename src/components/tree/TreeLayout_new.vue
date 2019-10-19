@@ -1,25 +1,26 @@
 <template>
     <span class="_parent">
         <!-- <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i> -->
-        <svg id="treeSvg" ref="treesvg" width="100%" :height="svgHeight">
+        <svg id="treeSvg" ref="treesvg" width="100%" height="100%">
             <g id="wrapper">
-                <g class="links">
-                    <baselink v-for="link in treelinks_view"
-                                :key="link.id" ref="treelink"
-                                :content="link">
-                    </baselink>
-                </g>
                 <g class="nodes">
                     <basenode v-for="node in treenodes_view"
                                 :id="node.id" :key="node.id" ref="treenode"
                                 :content="node"
                                 v-on:clicknode="onClick"></basenode>
                 </g>
+                <!-- <g class="links">
+                    <baselink v-for="link in treelinks_view"
+                                :key="link.id" ref="treelink"
+                                :content="link">
+                    </baselink>
+                </g>
+                -->
             </g>
         </svg>
-        <div v-if="showLegend" class="legend-box">
+        <!-- <div v-if="showLegend" class="legend-box">
             <tree-legend></tree-legend>
-        </div>
+        </div> -->
     </span>
 </template>
 
@@ -44,8 +45,8 @@
     import updateDisplayUtils from './utils/updateDisplayUtils';
 
     export default {
-        name: "treelayout",
-        props: ['jsonData', 'mappingData', 'matchedNodes', 'heightFP'],
+        name: "treelayoutnew",
+        props: ['jsonData', 'mappingData', 'matchedNodes'],
         components: {
             'basenode': baseNode,
             'baselink': baseLink,
@@ -68,48 +69,19 @@
                 handler: function (val, oldVal) {
                     this.isLoading = true;
                     if(val && val != null) {
+                        console.log(val);
                         // this.store_setTableIsLoading(true);
                         this.initTree();
-                    }
-                }
-            },
-            heightFP: {
-                handler: function (val, oldVal) {
-                    if(val && val != null) {
-                        this.svgHeight = val+'px';
                     }
                 },
                 immediate: true
             },
-            store_matchedNodes: {
-                handler: function (val, oldVal) {
-                    this.processMatchedNodes(val);
-                }
-            },
-            store_tableData: {
-                handler: function (val, oldVal) {
-                    if(val.length == 0) {
-                        this.isLoading = true;
-                        this.refreshView();
-                    }
-                }
-            },
-            store_getTableScrollRow: {
-                handler: function (val, oldVal) {
-                    this.scrollTreeFromTable(val);
-                }
-            },
-            store_tableIsLoading: {
-                handler: function(val, oldval) {
-                    this.isLoading = val;
-                }
-            }
         },
         data() {
             return {
                 //options
                 isLoading: false,
-                isLazyLoad: false,
+                isLazyLoad: true,
                 isAnimated: true,
                 enableMenu: false,
                 showLegend: false,
@@ -141,14 +113,13 @@
                 //scrollingTreeFromTable
                 delayInCall: 20,
                 ticking: false,
-                timerId: null,
-                svgHeight: '1000px'
+                timerId: null
             }
         },
         mounted() {
             if(this.jsonData) {
-                this.store_setTableIsLoading(false);
-                this.initTree();
+                // this.store_setTableIsLoading(false);
+                // this.initTree();
             }
         },
         methods: {
@@ -237,11 +208,10 @@
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
-                
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
                 this.$emit('get-table-csv-data', nodes);
-                // this.makeDisplayCompact();
+                this.makeDisplayCompact();
                 this.initTreeLayout(this.rootNode);
                 this.$emit('init-tree', nodes);
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -489,6 +459,7 @@
                 this.treenodes_view.splice(0, this.treenodes_view.length);
                 setTimeout(() => {
                     this.treenodes_view = nodesArr1;
+                    console.log(this.treenodes_view.length);
                     this.alignTree();
                 });
             },
@@ -517,8 +488,8 @@
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 if(!currTopNode) return;
 
-                let topPadding = rowHeight;
-                var topNodePosY = -1*currTopNode.x + 20;
+                let topPadding = rowHeight+25;
+                var topNodePosY = -1*currTopNode.x + topPadding;
                 var topNodePosX = this.currentTopNodePos.x;
 
                 this.wrapper_d3
@@ -1172,6 +1143,12 @@
     }
 </script>
 <style scoped>
+    #nodeCircle {
+        stroke: steelblue;
+        stroke-width: 1px;
+        fill: #fff;
+        cursor: pointer;
+    }
     ._parent {
         width: inherit;
         height: inherit;

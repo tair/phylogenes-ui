@@ -25,7 +25,8 @@
                     <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in colsToRender" :key="i" 
+                    <th class="widthTree">First</th>
+                    <th v-for="(col,i) in colsToRender" :key="i"
                         :class="getThClasses(col, i)"> 
                             <tablecell :content="getHeader(col)"></tablecell>
                     </th>
@@ -56,17 +57,20 @@
     import customModal from '@/components/modal/CustomModal';
     import baseCell from '@/components/table/cells/BaseTableCell';
     import { setTimeout } from 'timers';
+    import treelayoutnew from '@/components/tree/TreeLayout_new';
 
     export default {
         name: "tablelayout",
         props: [
             "headerMap",    //Map: ['Original Col Name': 'Updated Col Name']
-            "colsFromProp"  //Array: Col names to be displayed
+            "colsFromProp",  //Array: Col names to be displayed
+            "treeJsonFromProp"
         ],
         components: {
             popupTable: popupTable,
             'modal': customModal,
-            tablecell: baseCell
+            tablecell: baseCell,
+            treelayoutnew: treelayoutnew,
         },
         data() {
             return {
@@ -91,6 +95,7 @@
                 upperLimit: 100,
                 msaTab: false,
                 processedCells: [],
+                treeData_Json: null
             }
         },
         computed: {
@@ -150,6 +155,13 @@
                     this.update();
                     this.setTableScroll();
                 }
+            },
+            treeJsonFromProp: {
+                handler: function(val, oldval) {
+                    console.log(val);
+                    this.treeData_Json = val;
+                },
+                immediate: true
             }
         },
         mounted: function () {
@@ -166,6 +178,11 @@
                 store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            getRowSpan() {
+                let rowspan = this.store_tableData.length;
+                console.log(this.store_tableData.length);
+                return rowspan;
+            },
             reset() {
                 this.isLoading = true;
                 this.msaTab = false;
@@ -175,12 +192,12 @@
             resetTable() {
                 this.isLoading = true;
                 this.msaTab = false;
-                this.store_setTableIsLoading(true);
+                // this.store_setTableIsLoading(true);
             },
             initTable() {
                 this.addCustomScrollEvent();
                 this.extraCols = this.store_annoMapping.headers;
-                this.store_setTableIsLoading(false);   
+                // this.store_setTableIsLoading(false);   
             },
             addCustomScrollEvent() {
                 //On props change, the $refs reloads, so need to add scroll event at the next frame,
@@ -209,6 +226,7 @@
             update() {
                 if(!this.colsFromProp) return;
                 var filteredCols = d3.keys(this.store_tableData[0]);
+                // filteredCols[0] = "Tree";
                 filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
                 //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
                 if(this.colsFromProp.includes("Annotations")) {
@@ -319,18 +337,18 @@
                 // called a lot of times when the mouse is scrolled in a second, but we don't
                 // need to perform methods like updateRows for every call, or it will slow down
                 // performance.
-                if(!this.ticking) {
-                    this.ticking = true;
-                    setTimeout(() => {
-                        this.ticking = false;
-                        let scrollTop_curr = document.getElementById("body").scrollTop;
-                        if(scrollTop_curr != this.scrollTop_old) {
-                            this.calculateRowsScrolled(scrollTop_curr);
-                            this.scrollTop_old = scrollTop_curr;
-                            this.scrollTreeFromTable(this.rowsScrolled);
-                        }
-                    }, 100);
-                }
+                // if(!this.ticking) {
+                //     this.ticking = true;
+                //     setTimeout(() => {
+                //         this.ticking = false;
+                //         let scrollTop_curr = document.getElementById("body").scrollTop;
+                //         if(scrollTop_curr != this.scrollTop_old) {
+                //             this.calculateRowsScrolled(scrollTop_curr);
+                //             this.scrollTop_old = scrollTop_curr;
+                //             this.scrollTreeFromTable(this.rowsScrolled);
+                //         }
+                //     }, 100);
+                // }
             },
             calculateRowsScrolled(amount) {
                 var rowNumber = amount/this.rowHeight;
@@ -636,6 +654,10 @@
     }
 </script>
 <style scoped>
+#treeSvg {
+    background-color: white;
+    /*cursor: grab;*/
+}
     #parent {
         position: absolute;
         width: 95%;
@@ -740,6 +762,11 @@
     }
     .thSubColSp {
         border-right: 1px solid #f1f1f0 !important;
+    }
+    .widthTree {
+        min-width: 500px;
+        width: 500px;
+        max-width: 500px;
     }
     .widthDefault {
         min-width: 200px;

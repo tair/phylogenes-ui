@@ -31,7 +31,7 @@
                 </span>
             </div>
             <!-- Tree Panel -->
-            <div class="col-sm-6 h-95 pg-panel">
+            <div class="col-sm-3 h-95 pg-panel">
                 <div class="row h-100">
                     <!-- Menu Bar -->
                     <div class="col-sm-12">
@@ -85,12 +85,13 @@
                 </div>    
             </div>
             <!-- Table Panel -->
-            <div class="col-sm-6 h-95 pg-panel">
+            <div class="col-sm-9 h-95 pg-panel">
                 <div class="row h-100">
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
                         <tablelayout ref="tableLayout"
                             :colsFromProp="tableColsToRender" :headerMap="headerMap"
+                            :treeJsonFromProp="treeData_Json"
                             v-on:toggle-cols="toggleMsa"></tablelayout>
                     </div>
                 </div>
@@ -196,7 +197,8 @@
                 PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
                 showLegendTip: false,
                 treeId: null,
-                defaultCols: ["Gene name", 
+                defaultCols: ["Tree",
+                              "Gene name", 
                               "Organism", 
                               "Annotations", 
                               "Gene ID", 
