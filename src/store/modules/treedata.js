@@ -7,6 +7,7 @@ const state = {
     treedata: {
         isLoading: false,
         isTableLoading: false,
+        hasGrafted: false,
         iserror: false,
         data: null,
         jsonString: null,
@@ -69,6 +70,9 @@ const getters = {
     [types.TREE_GET_SEARCHTEXTWTN]: state => {
         return state.treedata.searchTextWithin;
     },
+    [types.TREE_GET_ISGRAFTED]: state => {
+        return state.treedata.hasGrafted;
+    },
     [types.TABLE_GET_SCROLL]: state => {
         return state.treedata.scroll;
     },
@@ -116,6 +120,9 @@ const actions = {
     },
     [types.TREE_ACTION_SET_SEARCHTEXTWTN]: (context, payload) => {
         context.state.treedata.searchTextWithin = payload;
+    },
+    [types.TREE_ACTION_SET_ISGRAFTED]: (context, payload) => {
+        context.state.treedata.hasGrafted = payload;
     },
     [types.TREE_ACTION_SET_PANTHER_TREE2]: (context, payload) => {
         context.state.treedata.jsonString = payload

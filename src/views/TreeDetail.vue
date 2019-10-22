@@ -165,6 +165,15 @@
                 }
                 this.initForNewTreeId(id);
             },
+            '$route.name': {
+                handler: function (val, oldVal) {
+                    if(val && val == "treeGrafted") {
+                        console.log("Loading tree from json");
+                        this.loadTreeFromJsonString();
+                    }
+                },
+                immediate: true
+            },
             stateTreeAnnotations: {
                 handler: function (val, oldVal) {
                     this.loadAnnotations(val);
@@ -262,10 +271,7 @@
         },
         mounted() {
             this.resetPruning();
-            var treeJson = this.store_treeJsonString;
-            if(this.$route.name == "treeGrafted") {
-                this.loadTreeFromJsonString();
-            } else {
+            if(this.$route.name != "treeGrafted") {
                 this.loadTreeFromApi();
             }
             this.searchText = "";
@@ -282,9 +288,10 @@
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
+                store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED,
                 store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
-                store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ
+                store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
             }),
             initForNewTreeId(id) {
                 this.treeId = id;
@@ -299,21 +306,14 @@
             loadTreeFromJsonString() {
                 var treeJson = this.store_treeJsonString;
                 this.treeId = treeJson.search.book;
-                console.log(this.treeId);
                 
-                var p11 = this.store_setPantherTreeFromApi(this.treeId);
-                var p21 = this.store_setMsaFromApi(this.treeId);
-                p11.then(r => {
+                var p1 = this.store_setPantherTreeFromApi(this.treeId);
+                var p2 = this.store_setMsaFromApi(this.treeId);
+                Promise.all([p1, p2]).then(vals => {
+                    console.log("Loaded GO and MSA data from API");
                     this.initTreeData(treeJson);
                 });
-                p21.then(r => {
-                    console.log("p2",r);
-                });
-                // Promise.all([p11, p21]).then(vals => {
-                //     console.log("got promise ", val);
-                //     // this.initTreeData(treeJson);
-                // });
-                
+                this.store_setHasGrafted(true);
             },
             //Load tree data needed from the API.
             loadTreeFromApi() {
@@ -325,13 +325,13 @@
                 var p1 = this.store_setPantherTreeFromApi(this.treeId);
                 var p2 = this.store_setMsaFromApi(this.treeId);
                 Promise.all([p1, p2]).then(vals => {
-                    console.log("all");
                     if(vals.length > 1) {
                         this.resetPruning();
                         var treeJson = JSON.parse(this.store_treeJsonString);
                         this.initTreeData(treeJson);
                     }
                 });
+                this.store_setHasGrafted(false);
             },
             // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
             initTreeData(treeJson) {
@@ -819,6 +819,10 @@
                         tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily Name"] = n.data.sf_name;
+
+                        if(n.data.accession == "ANGRAFTED") {
+                            tableNode["accession"] = n.data.accession;
+                        }
                         if(n._children) {
                             if(n.data.accession) {
                                 tableNode["accession"] = n.data.accession;

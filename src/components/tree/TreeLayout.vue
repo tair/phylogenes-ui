@@ -59,7 +59,8 @@
                 store_tableData: types.TABLE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
-                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+                store_getHasGrafted: types.TREE_GET_ISGRAFTED
             })
         },
         watch: {
@@ -240,11 +241,12 @@
 
                 this.adjustTreeLayoutPosition(); 
                 this.updateTree();
-
-                setTimeout(() => {
-                    console.log("start grafting");
-                    this.processGraftedNodes();
-                }, 2000);
+                
+                if(this.store_getHasGrafted) {
+                    setTimeout(() => {
+                        this.processGraftedNodes();
+                    }, 10);
+                }
             },
             //Convert json into d3 hierarchy which adds depth, height and
             // parent variables to each node.
@@ -608,11 +610,12 @@
                         allNodes.forEach(a => {
                             if(a.data.newGrafted) {
                                 graftedNode = a;
-                                console.log(a);
                             }
                         });
                         if(graftedNode != null) {
-                            this.centerTreeToGivenNode(graftedNode);
+                            setTimeout(() => {
+                                this.centerTreeToGivenNode(graftedNode);
+                            }, 10);
                         }
                     });
                 });

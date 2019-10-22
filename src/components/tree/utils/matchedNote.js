@@ -47,8 +47,17 @@ function expandFromSelected(d) {
         d.children.forEach(dc => {
             if (dc.graftInC) {
                 expandFromSelected(dc);
+            } else {
+                collapseNode(dc);
             }
         });
+    }
+}
+
+function collapseNode(d) {
+    if (d.children) {
+        d._children = d.children;
+        d.children = null;
     }
 }
 
