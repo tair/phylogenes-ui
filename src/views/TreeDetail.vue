@@ -196,14 +196,15 @@
                 PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
                 showLegendTip: false,
                 treeId: null,
-                defaultCols: ["Gene name", 
+                defaultCols: ["Gene",
                               "Organism", 
-                              "Annotations", 
+                              "Annotations",
+                              "Gene name", 
                               "Gene ID", 
                               "Protein name", 
                               "Uniprot ID", 
                               "Subfamily Name"],
-                msaCols: ["Gene name",
+                msaCols: ["Gene",
                           "MSA"],
                 //~~~~~~~~~~~~ Render Options ~~~~~~~~~~~~~//
                 tableColsToRender: [],
@@ -247,6 +248,7 @@
                 tableCsvData: [],
                 tableCsvFields:[
                     'Uniprot ID',
+                    'Gene',
                     'Gene ID',
                     'Gene name',
                     'Organism',
@@ -563,13 +565,14 @@
                         var tableNode = {};
                         tableNode["id"] = index++;
                         tableNode["MSA"] = n.data.sequence;
-                        tableNode["Gene name"] = n.data.gene_symbol;
-                        tableNode["Organism"] = n.data.organism;
                         var geneId = n.data.gene_id;
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
-                        tableNode["Gene ID"] = geneId;
+                        tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol:geneId;
+                        tableNode["Organism"] = n.data.organism;                       
+                        tableNode["Gene name"] = n.data.gene_symbol;                
+                        tableNode["Gene ID"] = geneId;                       
                         tableNode["Protein function"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
 
@@ -644,6 +647,7 @@
                             geneId = geneId.split(':')[1];
                         }
                         tableNode["Gene ID"] = geneId;
+                        tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol: geneId;
                         tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily name"] = n.data.sf_name;
@@ -751,13 +755,13 @@
                     if(!n.children) {
                         var tableNode = {};
                         tableNode["id"] = index++;
-                        tableNode["Gene name"] = n.data.gene_symbol;
-                        tableNode["Organism"] = n.data.organism;
-
                         var geneId = n.data.gene_id;
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
+                        tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol:geneId;
+                        tableNode["Organism"] = n.data.organism;                        
+                        tableNode["Gene name"] = n.data.gene_symbol;                      
                         tableNode["Gene ID"] = geneId;
                         this.anno_headers.sort(function (a, b) {
                             return a.toLowerCase().localeCompare(b.toLowerCase());
