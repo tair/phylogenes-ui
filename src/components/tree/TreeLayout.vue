@@ -94,7 +94,10 @@
             },
             store_tableIsLoading: {
                 handler: function(val, oldval) {
-                    // this.isLoading = val;
+                    this.isLoading = val;
+                    if(!val) {
+                        this.checkForGraftedNode();
+                    }
                 }
             }
         },
@@ -150,6 +153,22 @@
                 stateTreeNodes: types.TREE_ACTION_SET_NODES,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            checkForGraftedNode() {
+                if(this.store_getHasGrafted) {
+                    var graftedNode = null;
+                    let allNodes = this.rootNode.descendants();
+                    allNodes.forEach(a => {
+                        if(a.data.newGrafted) {
+                            graftedNode = a;
+                        }
+                    });
+                    if(graftedNode != null) {
+                        setTimeout(() => {
+                            this.centerTreeToGivenNode(graftedNode);
+                        }, 10);
+                    }
+                }
+            },
             //Scroll tree to so that tree nodes are aligned with table.
             //This method is called when: table is scrolled by a mouse
             scrollTreeFromTable(scroll) {
@@ -240,12 +259,12 @@
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
                 this.adjustTreeLayoutPosition(); 
-                this.updateTree();
                 
                 if(this.store_getHasGrafted) {
-                    setTimeout(() => {
-                        this.processGraftedNodes();
-                    }, 10);
+                    //UpdateTree is called after processing inside
+                    this.processGraftedNodes();
+                } else {
+                    this.updateTree();
                 }
             },
             //Convert json into d3 hierarchy which adds depth, height and
@@ -447,7 +466,6 @@
                     }
                     
                     tempArray.push(node_content);
-
                 });
 
                 //We need to sort the array added by id, because d3 renders based on id of the nodes.
@@ -604,20 +622,7 @@
             processGraftedNodes() {
                 var allNodes = this.rootNode.descendants();
                 nodesUtils.processGrafted(allNodes).then((res) => {
-                    this.updateTree().then(() => {
-                        var graftedNode = null;
-                        allNodes = this.rootNode.descendants();
-                        allNodes.forEach(a => {
-                            if(a.data.newGrafted) {
-                                graftedNode = a;
-                            }
-                        });
-                        if(graftedNode != null) {
-                            setTimeout(() => {
-                                this.centerTreeToGivenNode(graftedNode);
-                            }, 10);
-                        }
-                    });
+                    this.updateTree();
                 });
             },
 
@@ -708,6 +713,8 @@
                 }
                 if(d.matched) {
                     d.textColor = "red";
+                } else if(d.grafted) {
+                    d.textColor = "green";
                 } else {
                     d.textColor = "black";
                 }

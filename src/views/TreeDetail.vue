@@ -136,7 +136,8 @@
                 store_treeMsaData: types.TREE_GET_MSADATA,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
-                store_maxMsaLength: types.TREE_GET_MAXMSAL
+                store_maxMsaLength: types.TREE_GET_MAXMSAL,
+                store_getHasGrafted: types.TREE_GET_ISGRAFTED
             }),
             showLegendButtonIcon(){
                 return this.legend?
@@ -160,9 +161,10 @@
         watch: {
             '$route.params.id': function (id) {
                 if(!id) {
-                    console.log(id);
+                    console.log("Undefined");
                     return;
                 }
+                console.log(id);
                 this.initForNewTreeId(id);
             },
             '$route.name': {
@@ -270,14 +272,16 @@
             }
         },
         mounted() {
-            this.resetPruning();
+            // this.resetPruning();
             if(this.$route.name != "treeGrafted") {
-                this.loadTreeFromApi();
+                if(this.treeId) {
+                    this.initForNewTreeId(this.treeId);
+                }
+                console.log(this.treeId);
             }
-            this.searchText = "";
-            this.matchNodes = [];
-            this.popupData = [];
-            this.metadata.isLoading = true;
+            // this.searchText = "";
+            // this.matchNodes = [];
+            // this.popupData = [];
         },
         methods: {
             ...mapActions({
@@ -298,22 +302,30 @@
                 this.treeData_Json = null;
                 this.loadTreeFromApi();
                 this.store_setTableData([]);
-                this.metadata.isLoading = true;
+                // this.metadata.isLoading = true;
                 this.showMsa = false;
                 this.analyzeCompleted = false;
                 this.resetPruning();
             },
             loadTreeFromJsonString() {
+                //Reset
+                this.resetPruning();
+                this.showMsa = false;
+                this.treeData_Json = null;
+
                 var treeJson = this.store_treeJsonString;
-                this.treeId = treeJson.search.book;
-                
-                var p1 = this.store_setPantherTreeFromApi(this.treeId);
-                var p2 = this.store_setMsaFromApi(this.treeId);
-                Promise.all([p1, p2]).then(vals => {
-                    console.log("Loaded GO and MSA data from API");
-                    this.initTreeData(treeJson);
-                });
-                this.store_setHasGrafted(true);
+                if(treeJson.search) {
+                    this.treeId = treeJson.search.book;
+                    var p1 = this.store_setPantherTreeFromApi(this.treeId);
+                    var p2 = this.store_setMsaFromApi(this.treeId);
+                    Promise.all([p1, p2]).then(vals => {
+                        console.log("Loaded GO and MSA data from API");
+                        this.treeId = treeJson.search.book;
+                        this.metadata.isLoading = false;
+                        this.initTreeData(treeJson);
+                    });
+                    this.store_setHasGrafted(true);
+                }
             },
             //Load tree data needed from the API.
             loadTreeFromApi() {
@@ -326,6 +338,7 @@
                 var p2 = this.store_setMsaFromApi(this.treeId);
                 Promise.all([p1, p2]).then(vals => {
                     if(vals.length > 1) {
+                        console.log("Loaded GO and MSA data from API");
                         this.resetPruning();
                         var treeJson = JSON.parse(this.store_treeJsonString);
                         this.initTreeData(treeJson);
@@ -563,6 +576,7 @@
             // },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             onSearchWithinTree(text) {
+                //console.log(this.completeData);
                 if(text != null) {
                     var d = this.completeData.filter(t => {
                         var geneName = "";
@@ -577,8 +591,15 @@
                         if(t["Uniprot ID"] != null && typeof t["Uniprot ID"] != 'number') {
                             uniprotId = t["Uniprot ID"].toLowerCase();
                         }
+                        var grafted = false;
+                        if(t["accession"] && t["accession"] == 'ANGRAFTED') {
+                            if(text == "grafted") {
+                                grafted = true
+                            }
+                        }
                         text = text.toLowerCase();
-                        return geneName === text || geneId === text || uniprotId === text;
+
+                        return geneName === text || geneId === text || uniprotId === text || grafted;
                     });
                     this.matchNodes = d;
                 } else {
@@ -598,37 +619,39 @@
                 var index = 0;
                 let uniqueOrganisms = [];
                 nodes.forEach(n => {
-                    if(!n.children && n.data.uniprotId) {
-                        var tableNode = {};
-                        tableNode["id"] = index++;
-                        tableNode["MSA"] = n.data.sequence;
-                        tableNode["Gene name"] = n.data.gene_symbol;
-                        tableNode["Organism"] = n.data.organism;
-                        var geneId = n.data.gene_id;
-                        if (geneId) {
-                            geneId = geneId.split(':')[1];
-                        }
-                        tableNode["Gene ID"] = geneId;
-                        tableNode["Protein function"] = n.data.definition;
-                        tableNode["Uniprot ID"] = n.data.uniprotId;
-
-                        if(n.data.organism) {
-                            let org = uniqueOrganisms.find(o => o.name === n.data.organism);
-                            if(org) {
-                                org.count++;
-                            } else {
-                                let org = {
-                                    name: n.data.organism,
-                                    commonName: n.data.displayName,
-                                    taxonId: n.data.taxonId,
-                                    count: 1
-                                }
-                                uniqueOrganisms.push(org);
+                    if(!n.children) {
+                        if(n.data.uniprotId || (!n.data.uniprotId && n.data.accession == "ANGRAFTED")) {
+                            var tableNode = {};
+                            tableNode["id"] = index++;
+                            tableNode["MSA"] = n.data.sequence;
+                            tableNode["Gene name"] = n.data.gene_symbol;
+                            tableNode["Organism"] = n.data.organism;
+                            var geneId = n.data.gene_id;
+                            if (geneId) {
+                                geneId = geneId.split(':')[1];
                             }
-                        }
+                            tableNode["Gene ID"] = geneId;
+                            tableNode["Protein function"] = n.data.definition;
+                            tableNode["Uniprot ID"] = n.data.uniprotId;
+                            tableNode["accession"] = n.data.accession;
+                            if(n.data.organism) {
+                                let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                                if(org) {
+                                    org.count++;
+                                } else {
+                                    let org = {
+                                        name: n.data.organism,
+                                        commonName: n.data.displayName,
+                                        taxonId: n.data.taxonId,
+                                        count: 1
+                                    }
+                                    uniqueOrganisms.push(org);
+                                }
+                            }
 
-                        tableNode["MSA"] = n.data.sequence;
-                        tabularData.push(tableNode);
+                            tableNode["MSA"] = n.data.sequence;
+                            tabularData.push(tableNode);
+                        }
                     }
                 });
                 this.metadata.genesCount = tabularData.length;
@@ -655,7 +678,9 @@
                 }     
             },
             onTreeUpdate(nodes) {
-                this.metadata.isLoading = false;
+                if(!this.treeId) {
+                    this.metadata.isLoading = false;
+                }
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
                 this.sortArrayByX(nodes);
@@ -1034,29 +1059,60 @@
                         this.popupData = [];
                     } else {
                         this.$refs.treeLayout.onPruneLoading(true);
-                        axios({
-                            method: 'POST',
-                            url: this.PRUNING_PANTHER_API + this.treeId,
-                            data: {
-                                taxonIdsToShow: taxonList
-                            }
-                        })
-                        .then(res => {
-                            this.isLoading = false;
-                            this.showPopup = false;
-                            this.prunedLoaded = true;
-                            let prunedJson = res.data;
-                            this.loadPrunedJson(prunedJson);
-                            this.$refs.treeLayout.onPruneLoading(false);
-                        })
-                        .catch(err => {
-                            console.error("error ", err);
-                            this.isLoading = false;
-                            this.resetPruning();
-                            this.$refs.treeLayout.onPruneLoading(false);
-                        });
+                        if(!this.store_getHasGrafted) {
+                            this.regularPruning(taxonList)
+                        } else {
+                            this.graftedPruning(taxonList);
+                        }
                     }
                 }
+            },
+            graftedPruning(taxonList) {
+                console.log("Grafted Pruning");
+                let api =  'http://54.68.67.235:8080' + '/panther/grafting/prune';
+                axios({
+                    method: 'POST',
+                    url: api,
+                    data: {
+                        sequence: "MSKVRDRTEDFRDAVRVAALSHGYTESQLAALMASFIMHKAPWRSAFMKAALKTLESIKELERFIVKHRKDYVDLHRTTEQERDNIEHEVAVFVKVCKDQIDILKNRIHDEETEGSGRTWLQFRDDASHADMVAHKHGVVLILSEKLHSVTAQFDQLRSIRFQDAMNRVMPRRKVHRLPQPKSEASKSDLPKLGEQELSSGTIRVQEQLLDDETRALQVELTNLLDAVQETETKMVEMSALNHLMSTHVLQQAQQIEHLYEQAVEATNNVVLGNKELSQAIKRNSSSRTFLLLFFVVLTFSILFLDWYS",
+                        taxonIdsToShow: taxonList
+                    }
+                })
+                .then(res => {
+                    this.isLoading = false;
+                    this.showPopup = false;
+                    let prunedJson = res.data;
+                    this.analyzeCompleted = false;
+                    this.loadPrunedJson(prunedJson);
+                    this.$refs.treeLayout.onPruneLoading(false);
+                })
+                .catch(err => {
+                    console.error("error ", err);
+                    this.isLoading = false;
+                });
+            },
+            regularPruning(taxonList) {
+                axios({
+                    method: 'POST',
+                    url: this.PRUNING_PANTHER_API + this.treeId,
+                    data: {
+                        taxonIdsToShow: taxonList
+                    }
+                })
+                .then(res => {
+                    this.isLoading = false;
+                    this.showPopup = false;
+                    this.prunedLoaded = true;
+                    let prunedJson = res.data;
+                    this.loadPrunedJson(prunedJson);
+                    this.$refs.treeLayout.onPruneLoading(false);
+                })
+                .catch(err => {
+                    console.error("error ", err);
+                    this.isLoading = false;
+                    this.resetPruning();
+                    this.$refs.treeLayout.onPruneLoading(false);
+                });
             },
             onPrune() {
                 let filteredOrganisms = this.popupData.filter(pd => {
@@ -1071,6 +1127,7 @@
                 this.processJson(treeJson)
                     .then(res => {
                         this.treeData_Json = res;
+                        console.log("Processed pruned json");
                     })
                     .catch(e => {
                         console.error("Process json failed!");

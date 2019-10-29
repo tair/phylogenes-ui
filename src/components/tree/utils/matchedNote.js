@@ -1,7 +1,15 @@
 import treeUtils from './commonTreeUtils';
 
 function isMatchWithNode(d, matNodes) {
-    return matNodes.find(v => v["Uniprot ID"] === d.data.uniprotId);
+    
+    return matNodes.find(v => {
+        let uniprotId = v["Uniprot ID"];
+        if (uniprotId) {
+            return uniprotId === d.data.uniprotId;
+        } else {
+            return v["accession"] === d.data.accession;
+        }
+    });
 }
 
 function isGraftedNode(d) {
@@ -67,7 +75,7 @@ function findGraftedNodesInChildren(d) {
         d.children.forEach(dc => {
             let found = isGraftedNode(dc);
             if (found) {
-                dc.matched = true;
+                dc.grafted = true;
                 foundAny = true;
             }
             var ff = findGraftedNodesInChildren(dc);
@@ -81,7 +89,7 @@ function findGraftedNodesInChildren(d) {
         d._children.forEach(dc => {
             let found = isGraftedNode(dc);
             if (found) {
-                dc.matched = true;
+                dc.grafted = true;
                 foundAny = true;
             }
             var ff = findGraftedNodesInChildren(dc);
