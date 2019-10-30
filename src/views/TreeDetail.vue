@@ -130,6 +130,7 @@
         computed: {
             ...mapGetters({
                 store_treeJsonString: types.TREE_GET_JSON,
+                store_treeJsonObj: types.TREE_GET_JSON_OBJ,
                 store_tableData: types.TABLE_GET_DATA,
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
                 store_getTreeMetadata: types.TREE_GET_METADATA,
@@ -162,17 +163,14 @@
         watch: {
             '$route.params.id': function (id) {
                 if(!id) {
-                    console.log("Undefined");
                     return;
                 }
-                console.log(id);
                 this.initForNewTreeId(id);
             },
             '$route.name': {
                 handler: function (val, oldVal) {
                     if(val && val == "treeGrafted") {
-                        console.log("Loading tree from json");
-                        this.loadTreeFromJsonString();
+                        this.loadTreeFromStore();
                     }
                 },
                 immediate: true
@@ -279,7 +277,6 @@
                 if(this.treeId) {
                     this.initForNewTreeId(this.treeId);
                 }
-                console.log(this.treeId);
             }
             // this.searchText = "";
             // this.matchNodes = [];
@@ -309,14 +306,14 @@
                 this.analyzeCompleted = false;
                 this.resetPruning();
             },
-            loadTreeFromJsonString() {
+            loadTreeFromStore() {
                 //Reset
                 this.resetPruning();
                 this.showMsa = false;
                 this.treeData_Json = null;
                 this.analyzeCompleted = false;
 
-                var treeJson = this.store_treeJsonString;
+                var treeJson = this.store_treeJsonObj;
                 if(treeJson.search) {
                     this.treeId = treeJson.search.book;
                     var p1 = this.store_setPantherTreeFromApi(this.treeId);
@@ -1069,7 +1066,11 @@
                 } else {
                     if(taxonList.length == this.originalTaxonIdsLength) {
                         this.resetPruning();
-                        this.loadTreeFromApi();
+                        if(this.$route.name == "treeGrafted") {
+                            this.loadTreeFromStore();
+                        } else {
+                            this.loadTreeFromApi();
+                        }
                         this.popupData = [];
                     } else {
                         this.$refs.treeLayout.onPruneLoading(true);
@@ -1139,7 +1140,6 @@
                 this.processJson(treeJson)
                     .then(res => {
                         this.treeData_Json = res;
-                        console.log("Processed pruned json");
                     })
                     .catch(e => {
                         console.error("Process json failed!");

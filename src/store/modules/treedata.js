@@ -11,6 +11,7 @@ const state = {
         iserror: false,
         data: null,
         jsonString: null,
+        jsonObj: null,
         go_annotations: null,
         freq_msa_arr: [],
         msa_data: new Map(),
@@ -40,6 +41,9 @@ const getters = {
     },
     [types.TREE_GET_JSON]: state => {
         return state.treedata.jsonString;
+    },
+    [types.TREE_GET_JSON_OBJ]: state => {
+        return state.treedata.jsonObj;
     },
     [types.TREE_GET_ANNOTATIONS]: state => {
       return state.treedata.go_annotations;
@@ -132,7 +136,8 @@ const actions = {
         context.state.treedata.graftSequence = payload;
     },
     [types.TREE_ACTION_SET_PANTHER_TREE2]: (context, payload) => {
-        context.state.treedata.jsonString = payload
+        context.state.treedata.jsonString = payload;
+        context.state.treedata.jsonObj = payload;
     },
     [types.TREE_ACTION_SET_PANTHER_TREE]: (context, payload) => {
         if (!payload) return;

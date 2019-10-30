@@ -1,5 +1,6 @@
 //Getters
 export const TREE_GET_JSON = 'tree/store_treeJsonString';
+export const TREE_GET_JSON_OBJ = 'tree/store_treeJsonObj'
 export const TABLE_GET_DATA = 'treedata/store_tableData';
 export const TREE_GET_ANNOTATIONS = 'treedata/stateTreeAnnotations';
 export const TREE_GET_MSADATA = 'treedata/store_treeMsaData';
