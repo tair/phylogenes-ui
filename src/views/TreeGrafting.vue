@@ -1,9 +1,5 @@
 <template>
     <div>
-        <!-- <textarea name="" id="" cols="30" rows="10">
-
-        </textarea>
-        <button @click="graft()">Graft</button> -->
         <div class="container">
             <div class="row">
                 <div class="col">
