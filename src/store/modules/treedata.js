@@ -29,7 +29,8 @@ const state = {
         zoom: null,
         scroll: null,
         topPaddingY: 0,
-        searchTextWithin: null
+        searchTextWithin: null,
+        graftSequence: null
     }
 };
 
@@ -81,6 +82,9 @@ const getters = {
     },
     [types.TABLE_GET_MSA_FREQ]: state => {
         return state.treedata.freq_msa_arr;
+    },
+    [types.TREE_GET_GRAFTSEQ]: state => {
+        return state.treedata.graftSequence;
     }
 };
 
@@ -123,6 +127,9 @@ const actions = {
     },
     [types.TREE_ACTION_SET_ISGRAFTED]: (context, payload) => {
         context.state.treedata.hasGrafted = payload;
+    },
+    [types.TREE_ACTION_SET_GRAFTSEQ]: (context, payload) => {
+        context.state.treedata.graftSequence = payload;
     },
     [types.TREE_ACTION_SET_PANTHER_TREE2]: (context, payload) => {
         context.state.treedata.jsonString = payload

@@ -19,7 +19,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      component: TreeGrafting
+      component: Home
     },
     {
       path: '/about',
@@ -51,6 +51,10 @@ export default new Router({
     {
         path: '/tree/:id',
         component: TreeDetail
+    },
+    {
+      path: '/grafting',
+      component: TreeGrafting
     },
     {
       path: '/treeGrafted/',

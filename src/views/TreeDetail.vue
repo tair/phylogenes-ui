@@ -137,7 +137,8 @@
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_maxMsaLength: types.TREE_GET_MAXMSAL,
-                store_getHasGrafted: types.TREE_GET_ISGRAFTED
+                store_getHasGrafted: types.TREE_GET_ISGRAFTED,
+                store_getGraftSeq: types.TREE_GET_GRAFTSEQ
             }),
             showLegendButtonIcon(){
                 return this.legend?
@@ -207,7 +208,8 @@
         data() {
             return {
                 phyloXML_URL: process.env.VUE_APP_S3_URL,
-                PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
+                REG_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
+                GRAFT_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/grafting/prune',
                 showLegendTip: false,
                 treeId: null,
                 defaultCols: ["Gene name", 
@@ -312,6 +314,7 @@
                 this.resetPruning();
                 this.showMsa = false;
                 this.treeData_Json = null;
+                this.analyzeCompleted = false;
 
                 var treeJson = this.store_treeJsonString;
                 if(treeJson.search) {
@@ -654,28 +657,14 @@
                         }
                     }
                 });
-                this.metadata.genesCount = tabularData.length;
-                this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
-                if(!this.prunedLoaded) {
-                    uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
-                    this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
-                    this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
-                }
-                
+                this.setMetadata(tabularData, uniqueOrganisms);
                 this.completeData = tabularData;
 
-                //If msa is toggled on, we need to analyze msa logic again on every
-                // tree init. For now init happens when tree pruning changes the original tree.
+                // If msa is toggled on (in UI), we need to analyze msa logic again on every
+                // tree init.
                 if(this.showMsa) {
-                    this.store_setTableIsLoading(true);
-                    setTimeout(() => {
-                        this.analyzeMsaData().then(res => {
-                            this.setTableCols();
-                            this.analyzeCompleted = true;
-                            this.store_setTableIsLoading(false);
-                        });
-                    }, 10);
-                }     
+                    this.analyzeAndShowMsa();
+                }
             },
             onTreeUpdate(nodes) {
                 if(!this.treeId) {
@@ -782,19 +771,13 @@
                 })
                 .catch(() => console.error('error occured'))
             },
-            // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            // ~~~~~~~~~~~~~~~~ Table Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             toggleMsa() {
                 this.showMsa = !this.showMsa;
                 if(!this.analyzeCompleted) {
-                    this.store_setTableIsLoading(true);
-                    setTimeout(() => {
-                        this.analyzeMsaData().then(res => {
-                            this.setTableCols();
-                            this.analyzeCompleted = true;
-                            this.store_setTableIsLoading(false);
-                        });
-                    }, 10);
+                    this.analyzeAndShowMsa();
                 } else {
+                    //If analyze is already done, directly show the msa cols
                     this.setTableCols();
                 }
             },
@@ -862,8 +845,30 @@
                 // this.store_setTableIsLoading(false);
                 this.store_setTableData(tabularData);
             },
+            // ~~~~~~~~~~~~~~~~ Metadata ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Set metadata bar and organisms for pruning popup
+            setMetadata(tabularData, uniqueOrganisms) {
+                this.metadata.genesCount = tabularData.length;
+                this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
+                if(!this.prunedLoaded) {
+                    uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
+                    this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
+                    this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
+                }
+            },
 
             // ~~~~~~~~~~~~~~~~ MSA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Analyze Msa Data and set table cols to msa.
+            analyzeAndShowMsa() {
+                this.store_setTableIsLoading(true);
+                setTimeout(() => {
+                    this.analyzeMsaData().then(res => {
+                        this.setTableCols();
+                        this.analyzeCompleted = true;
+                        this.store_setTableIsLoading(false);
+                    });
+                }, 10);
+            },
             setMsaHeaderTitle() {
                 let msa_header = "MSA:";
                 let max_ruler_len = this.store_maxMsaLength;
@@ -983,6 +988,13 @@
                 return seqObjArr;
             },
             // ~~~~~~~~~~~~~~~~ Pruning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Reset all pruning global vars
+            resetPruning() {
+                this.unprunedTaxonIds = 0;
+                this.prunedLoaded = false;
+                this.showPopup = false;
+                this.popupData = [];
+            },
             pruneTreeFromMenu() {
                 this.showOrganismPopup();
             },
@@ -1044,10 +1056,12 @@
                     }
                 }); 
             },
-            resetPruning() {
-                this.unprunedTaxonIds = 0;
-                this.prunedLoaded = false;
-                this.showPopup = false;
+            onPrune() {
+                let filteredOrganisms = this.popupData.filter(pd => {
+                    return pd[0].checked == true;
+                });
+                this.unprunedTaxonIds = filteredOrganisms.map(o => o[1].id);
+                this.pruneTree(this.unprunedTaxonIds);
             },
             pruneTree(taxonList) {
                 if(!taxonList || taxonList.length == 0) {
@@ -1068,19 +1082,21 @@
                 }
             },
             graftedPruning(taxonList) {
-                console.log("Grafted Pruning");
-                let api =  'http://54.68.67.235:8080' + '/panther/grafting/prune';
+                let api =  this.GRAFT_PRUNING_PANTHER_API;
+                let stored_seq = this.store_getGraftSeq;
                 axios({
                     method: 'POST',
                     url: api,
                     data: {
-                        sequence: "MSKVRDRTEDFRDAVRVAALSHGYTESQLAALMASFIMHKAPWRSAFMKAALKTLESIKELERFIVKHRKDYVDLHRTTEQERDNIEHEVAVFVKVCKDQIDILKNRIHDEETEGSGRTWLQFRDDASHADMVAHKHGVVLILSEKLHSVTAQFDQLRSIRFQDAMNRVMPRRKVHRLPQPKSEASKSDLPKLGEQELSSGTIRVQEQLLDDETRALQVELTNLLDAVQETETKMVEMSALNHLMSTHVLQQAQQIEHLYEQAVEATNNVVLGNKELSQAIKRNSSSRTFLLLFFVVLTFSILFLDWYS",
+                        sequence: stored_seq,
                         taxonIdsToShow: taxonList
-                    }
+                    },
+                    timeout: 200000
                 })
                 .then(res => {
                     this.isLoading = false;
                     this.showPopup = false;
+                    this.prunedLoaded = true;
                     let prunedJson = res.data;
                     this.analyzeCompleted = false;
                     this.loadPrunedJson(prunedJson);
@@ -1089,15 +1105,18 @@
                 .catch(err => {
                     console.error("error ", err);
                     this.isLoading = false;
+                    this.resetPruning();
+                    this.$refs.treeLayout.onPruneLoading(false);
                 });
             },
             regularPruning(taxonList) {
                 axios({
                     method: 'POST',
-                    url: this.PRUNING_PANTHER_API + this.treeId,
+                    url: this.REG_PRUNING_PANTHER_API + this.treeId,
                     data: {
                         taxonIdsToShow: taxonList
-                    }
+                    },
+                    timeout: 200000
                 })
                 .then(res => {
                     this.isLoading = false;
@@ -1113,13 +1132,6 @@
                     this.resetPruning();
                     this.$refs.treeLayout.onPruneLoading(false);
                 });
-            },
-            onPrune() {
-                let filteredOrganisms = this.popupData.filter(pd => {
-                    return pd[0].checked == true;
-                });
-                this.unprunedTaxonIds = filteredOrganisms.map(o => o[1].id);
-                this.pruneTree(this.unprunedTaxonIds);
             },
             loadPrunedJson(treeJson) {
                 treeJson = treeJson.search.annotation_node;

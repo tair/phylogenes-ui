@@ -12,7 +12,12 @@
         </div>
         <div class="alert elevation-0 mb-0 p-2 text-bold" role="alert"
              :class="getAlertClass()">
-                {{getRestatedText()}}
+            <span v-html="getRestatedText()"></span>
+            <span v-if="searchData.numFound==0"><a>
+                <router-link to="/grafting" class="mb-0 p-2 text-bold">Click here</router-link>
+            </a></span>
+        </div>
+        <div>
         </div>
         <div class="elevation-0 mb-0 p-2">
             <div class="row">
@@ -118,7 +123,7 @@
                 }
 
                 if(this.searchData.numFound == 0) {
-                    text += " No Result. Please check spelling.";
+                    text += " No Result. Please check spelling. Not finding your gene?";
                 } else {
                     text += " " + this.searchData.numFound + " gene families found.";
                 }

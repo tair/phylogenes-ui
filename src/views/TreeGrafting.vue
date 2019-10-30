@@ -38,6 +38,7 @@ export default {
     name: "TreeGrafting",
     data() {
         return {
+            GRAFTING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/grafting',
             isLoading: false,
             sequence_txt: "",
             graftError: ""
@@ -46,14 +47,17 @@ export default {
     methods: {
         ...mapActions({
             store_setPantherTreeFromString: types.TREE_ACTION_SET_PANTHER_TREE2,
+            store_setGraftSeq: types.TREE_ACTION_SET_GRAFTSEQ
         }),
         reset() {
-            this.graftError = "";
-            this.sequence = "";
+            if(!this.isLoading) {
+                this.graftError = "";
+                this.sequence_txt = "";
+            }
         },
         graft() {
             this.graftError = "";
-            let api =  'http://54.68.67.235:8080' + '/panther/grafting';
+            let api =  this.GRAFTING_PANTHER_API;
             this.isLoading = true;
             let processedSeq = this.processTxt();
             axios({
@@ -61,7 +65,8 @@ export default {
                 url: api,
                 data: {
                     sequence: processedSeq
-                }
+                },
+                timeout: 200000
             })
             .then(res => {
                 let graftedTreeJson = res.data;
@@ -70,13 +75,14 @@ export default {
                     this.graftError = graftedTreeJson.search.error;
                     this.isLoading = false;
                 } else {
+                    this.store_setGraftSeq(processedSeq);
                     this.loadGraftedJson(graftedTreeJson);
                 }
                 this.isLoading = false;
             })
             .catch(err => {
                 console.error("error ", err);
-                this.graftError = err;
+                this.graftError = err.message;
                 this.isLoading = false;
             });
         },
