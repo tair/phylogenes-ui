@@ -274,15 +274,11 @@
             }
         },
         mounted() {
-            // this.resetPruning();
             if(this.$route.name != "treeGrafted") {
                 if(this.treeId) {
                     this.initForNewTreeId(this.treeId);
                 }
             }
-            // this.searchText = "";
-            // this.matchNodes = [];
-            // this.popupData = [];
         },
         methods: {
             ...mapActions({
@@ -303,7 +299,7 @@
                 this.treeData_Json = null;
                 this.loadTreeFromApi();
                 this.store_setTableData([]);
-                // this.metadata.isLoading = true;
+                this.metadata.isLoading = true;
                 this.showMsa = false;
                 this.analyzeCompleted = false;
                 this.resetPruning();
@@ -673,6 +669,7 @@
                 }
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
+                this.metadata.isLoading = false;
                 this.sortArrayByX(nodes);
                 this.updateTableData(nodes);
             },
