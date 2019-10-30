@@ -13,9 +13,9 @@
         <div class="alert elevation-0 mb-0 p-2 text-bold" role="alert"
              :class="getAlertClass()">
             <span v-html="getRestatedText()"></span>
-            <span v-if="searchData.numFound==0"><a>
-                <router-link to="/grafting" class="mb-0 p-2 text-bold">Click here</router-link>
-            </a></span>
+            <span v-if="searchData.numFound==0">
+                <router-link to="/grafting" class="alert elevation-0 mb-0 p-2 text-bold">Click here</router-link>
+            </span>
         </div>
         <div>
         </div>
@@ -144,5 +144,6 @@
 </script>
 
 <style scoped>
+
 </style>
 

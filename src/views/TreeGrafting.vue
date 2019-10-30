@@ -44,6 +44,16 @@ export default {
             graftError: ""
         }
     },
+    mounted() {
+        this.reset();
+    },
+    beforeRouteLeave (to, from, next) {
+        // called when the route that renders this component is about to
+        // be navigated away from.
+        // has access to `this` component instance.
+        this.reset();
+        next();
+    },
     methods: {
         ...mapActions({
             store_setPantherTreeFromString: types.TREE_ACTION_SET_PANTHER_TREE2,
