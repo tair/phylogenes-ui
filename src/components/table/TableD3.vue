@@ -32,7 +32,7 @@
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
+                <tr v-for="(row, row_i) in rowsToRender" :class="isEvenOdd(row)" :key=row_i>
                     <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(key, row[key], i)">
                         <tablecell :content.sync="rowsToRender[row_i][key]"
@@ -629,6 +629,11 @@
                 }
                 return classes;
             },
+            isEvenOdd(row) {
+                if(row.MSA) {
+                    return "noevenodd";
+                }
+            }
         },
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll);
@@ -692,6 +697,22 @@
     .mainTable tr:nth-child(odd) {
         background-color: #e9e9e9;
     }
+
+    .mainTable tr:nth-child(even) td:first-child {
+        background-color: #cdeaf5;
+    }
+    .mainTable tr:nth-child(odd) td:first-child {
+        background-color: #e9e9e9;
+    }
+
+    /* tr with noevenodd class, have 2nd child (hard-coded!) of MSA which should not be even odd*/
+    .mainTable tr.noevenodd:nth-child(even) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+    .mainTable tr.noevenodd:nth-child(odd) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+
     .mainTable tr {
         height: 40px !important;
     }
@@ -717,13 +738,6 @@
         left:0;
         box-shadow: 5px 0 2px -2px #f1f1f0;
         background-color: #9cd5e3;
-    }
-
-    .mainTable tr:nth-child(even) td:first-child {
-        background-color: #cdeaf5;
-    }
-    .mainTable tr:nth-child(odd) td:first-child {
-        background-color: #e9e9e9;
     }
 
     .thInvis {
