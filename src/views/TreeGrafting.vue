@@ -77,10 +77,13 @@ export default {
             .then(res => {
                 let graftedTreeJson = res.data;
                 if(graftedTreeJson.search.error) {
-                    console.log(graftedTreeJson.search.error);
                     this.graftError = graftedTreeJson.search.error;
                     this.isLoading = false;
-                } else {
+                } else if(!graftedTreeJson.search.book) {
+                    console.log(graftedTreeJson);
+                    this.graftError = "Connection Timed Out";
+                    this.isLoading = false;
+                } else{
                     this.store_setGraftSeq(processedSeq);
                     this.loadGraftedJson(graftedTreeJson);
                 }
@@ -95,6 +98,7 @@ export default {
         processTxt() {
             var cleanString = this.sequence_txt.replace(/[|&;$%@"<>()+,]/g, "");
             cleanString = this.sequence_txt.replace(/\r?\n|\r/g, "");
+            cleanString = this.sequence_txt.replace(/\s/g,'');
             return cleanString;
         },
         loadGraftedJson(treeJson) {
