@@ -311,8 +311,11 @@
                 this.treeData_Json = null;
                 this.analyzeCompleted = false;
 
+                //For a grafted tree, we load the tree json from the store.
                 var treeJson = this.store_treeJsonObj;
                 if(treeJson.search) {
+                    //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
+                    //The MSA will be empty for the extra grafted node.
                     this.treeId = treeJson.search.book;
                     var p1 = this.store_setPantherTreeFromApi(this.treeId);
                     var p2 = this.store_setMsaFromApi(this.treeId);
@@ -589,6 +592,8 @@
                         if(t["Uniprot ID"] != null && typeof t["Uniprot ID"] != 'number') {
                             uniprotId = t["Uniprot ID"].toLowerCase();
                         }
+                        //If search text is "grafted" then we check if any nodes is a grafted node and return it as a matched node.
+                        // For getting grafted node, we check id accession is 'ANGRAFTED'
                         var grafted = false;
                         if(t["accession"] && t["accession"] == 'ANGRAFTED') {
                             if(text == "grafted") {
