@@ -3,6 +3,9 @@
 	<div class="white-background bg-white mb-5 mx-3">
 		<button class="btn btn-default btn-organism" @click.prevent="switchView()" v-if="showText">View species tree</button>
 		<button class="btn btn-default btn-organism" @click.prevent="switchView()" v-if="!showText">Switch to see full list of species in plain text</button>		
+		<a class="btn btn-outline btn-organism a-link">
+			<router-link class="text-magenta" to="/grafting">Not seeing your species?</router-link>
+		</a>
 		<div class="scroll-div bg-white my-2 px-5" v-if="showText">
 			<p class="text-lg mr-5 pr-5">Protein sequences from these plant species are included in the current PhyloGenes release (version 1.1):</p>
 
@@ -96,8 +99,12 @@
 	    bottom: 0; right:0;
 	}
 	.btn-organism {
+		cursor: pointer;
 		position: absolute;
 		right: 0;
 		z-index: 1;
+	}
+	.a-link {
+		top: 40px;
 	}
 </style>
