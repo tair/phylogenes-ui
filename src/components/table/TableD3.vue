@@ -199,7 +199,6 @@
                 this.isLoading = true;
                 this.msaTab = false;
                 this.rowsToRender = [];
-                console.log("reset");
             },
             resetTable() {
                 this.isLoading = true;
