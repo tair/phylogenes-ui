@@ -59,7 +59,8 @@
                 store_tableData: types.TABLE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
-                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+                store_getHasGrafted: types.TREE_GET_ISGRAFTED
             })
         },
         watch: {
@@ -94,6 +95,9 @@
             store_tableIsLoading: {
                 handler: function(val, oldval) {
                     this.isLoading = val;
+                    if(!val) {
+                        this.checkForGraftedNode();
+                    }
                 }
             }
         },
@@ -149,6 +153,22 @@
                 stateTreeNodes: types.TREE_ACTION_SET_NODES,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            checkForGraftedNode() {
+                if(this.store_getHasGrafted) {
+                    var graftedNode = null;
+                    let allNodes = this.rootNode.descendants();
+                    allNodes.forEach(a => {
+                        if(a.data.newGrafted) {
+                            graftedNode = a;
+                        }
+                    });
+                    if(graftedNode != null) {
+                        setTimeout(() => {
+                            this.centerTreeToGivenNode(graftedNode);
+                        }, 10);
+                    }
+                }
+            },
             //Scroll tree to so that tree nodes are aligned with table.
             //This method is called when: table is scrolled by a mouse
             scrollTreeFromTable(scroll) {
@@ -229,6 +249,7 @@
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
                 
+                
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
                 this.$emit('get-table-csv-data', nodes);
@@ -238,7 +259,13 @@
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
                 this.adjustTreeLayoutPosition(); 
-                this.updateTree();
+                
+                if(this.store_getHasGrafted) {
+                    //UpdateTree is called after processing inside
+                    this.processGraftedNodes();
+                } else {
+                    this.updateTree();
+                }
             },
             //Convert json into d3 hierarchy which adds depth, height and
             // parent variables to each node.
@@ -303,6 +330,7 @@
 
                 this.setLeafNodesByDepth(modifiedNodes);
 
+                this.isLoading = false;
                 return 1;
             },
             // ~~~~~~~~~ Nodes
@@ -438,7 +466,6 @@
                     }
                     
                     tempArray.push(node_content);
-
                 });
 
                 //We need to sort the array added by id, because d3 renders based on id of the nodes.
@@ -523,7 +550,7 @@
                     this.store_setCenterNode(currCenterNode);
                 }, 100);
             },
-                     
+
             // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
@@ -590,6 +617,13 @@
             //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
                 updateDisplayUtils.processCompactTree(this.rootNode, this.store_annoMapping.annoMap);
+            },
+
+            processGraftedNodes() {
+                var allNodes = this.rootNode.descendants();
+                nodesUtils.processGrafted(allNodes).then((res) => {
+                    this.updateTree();
+                });
             },
 
             // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
@@ -679,6 +713,8 @@
                 }
                 if(d.matched) {
                     d.textColor = "red";
+                } else if(d.grafted) {
+                    d.textColor = "green";
                 } else {
                     d.textColor = "black";
                 }
