@@ -21,8 +21,11 @@
                     
                     <th :colspan="msaTab?1:2" class="thInvis">
                         <button class="btn bg-white float-left" @click="toggleTabs">
-                                    <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                            <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                         </button>
+                        <b-button id="popover-legend" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover :text=popoverLegendTxt title="MSA Legend" placement='right' target='popover-legend'></popover>
+
                         <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
                     
                     <th v-if="extraCols.length > 0" 
@@ -37,9 +40,9 @@
         
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in cols" :key="col" 
+                    <!-- <th v-for="(col,i) in cols" :key="col" 
                         :class="{thSubColSp: i>1&&i<extraCols.length+1}">
-                            <tablecell :cellText="col" :type="'th'"></tablecell>
+                            <tablecell :cellText="col" :type="'th'"></tablecell> -->
                     <th v-for="(col,i) in colsToRender" :key="i" 
                         :class="getThClasses(col, i)"> 
                             <tablecell :content="getHeader(col)"></tablecell>
@@ -51,7 +54,7 @@
                             <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
                             <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover5Text title="Protein name" placement='left' target='popover5'></popover>
+                            <popover :text=getPopoverLegendTxt() title="Protein name" placement='left' target='popover5'></popover>
                     </th>
                 </tr>
             </thead>
@@ -195,6 +198,9 @@
                 store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            getPopoverLegendTxt() {
+                return "<h2> Test </h2>";
+            },
             reset() {
                 this.isLoading = true;
                 this.msaTab = false;
