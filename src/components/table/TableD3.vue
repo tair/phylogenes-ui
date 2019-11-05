@@ -17,8 +17,6 @@
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
-       
-                    
                     <th :colspan="msaTab?1:2" class="thInvis">
                         <button class="btn bg-white float-left" @click="toggleTabs">
                                     <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
@@ -30,11 +28,7 @@
                             <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
                     </th>
-                        
-                    <th v-if="!msaTab && extraCols.length > 0" 
-                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
                     <th colspan="4" class="thInvis"></th>
-        
                 </tr>
                 <tr id="mainTr">
                     <th v-for="(col,i) in cols" :key="col" 
