@@ -31,9 +31,6 @@
                     <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in cols" :key="col" 
-                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">
-                            <tablecell :cellText="col" :type="'th'"></tablecell>
                     <th v-for="(col,i) in colsToRender" :key="i" 
                         :class="getThClasses(col, i)"> 
                             <tablecell :content="getHeader(col)"></tablecell>
