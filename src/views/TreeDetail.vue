@@ -32,7 +32,7 @@
             </div>
             <!-- Tree Panel -->
             <div class="col-sm-6 h-95 pg-panel">
-                <div class="row h-100">
+                <div class="row h-100 pg-toolbar">
                     <!-- Menu Bar -->
                     <div class="col-sm-12">
                         <div class="row align-items-center justify-content-between">
@@ -1181,5 +1181,8 @@
     }
     @media (max-height: 948px) {
         .pg-panel { padding-top: 1px; }
+    }
+    .pg-toolbar {
+        min-width: 680px;
     }
 </style>
