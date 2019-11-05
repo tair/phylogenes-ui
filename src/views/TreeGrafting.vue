@@ -77,10 +77,9 @@ export default {
             .then(res => {
                 let graftedTreeJson = res.data;
                 if(graftedTreeJson.search.error) {
-                    this.graftError = graftedTreeJson.search.error;
+                    this.graftError = "Sorry, your sequence could not be grafted to a Phylogenes gene tree";
                     this.isLoading = false;
                 } else if(!graftedTreeJson.search.book) {
-                    console.log(graftedTreeJson);
                     this.graftError = "Connection Timed Out";
                     this.isLoading = false;
                 } else{
