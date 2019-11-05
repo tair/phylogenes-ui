@@ -119,19 +119,24 @@
     }
     .tdTxt {
         font-family: monospace;
+        font-weight: 700;
         letter-spacing: 0.1px;
     }
     .tdTxt >>> .lightMark {
-        background-color: #eca979;
+        background-color: #ffd966;
         padding: 0px;
+        padding-top: 13px;
+        padding-bottom: 13px;
         /* is 0.01px less then parent, 
         as <mark> tag takes some space which misaligns the letters 
         if added inside a <span> tag */
         letter-spacing: 0.09px; 
     }
     .tdTxt >>> .darkMark {
-        background-color: #c9641d;
+        background-color: #bf8f00;
         padding: 0px;
         letter-spacing: 0.09px;
+        padding-top: 13px;
+        padding-bottom: 13px;
     }
 </style>
