@@ -10,36 +10,34 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-
+        <div v-if="showMsaLegend" class="legend-box">
+            <msa-legend></msa-legend>
+        </div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
+        
         <table v-else class="mainTable"> 
             <thead id="head" ref="thead">
                 <col>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
-       
-                    
                     <th :colspan="msaTab?1:2" class="thInvis">
                         <button class="btn bg-white float-left" @click="toggleTabs">
-                                    <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                            <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                        </button>
+                        <button v-if="msaTab" class="btn bg-white float-right" @click="toggleLegend">
+                            <span class="text-danger">{{showMsaLegend?"H":"S"}}</span>
                         </button>
                         <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
-                    
                     <th v-if="extraCols.length > 0" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
                             <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
                     </th>
-                        
                     <th v-if="!msaTab && extraCols.length > 0" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
                     <th colspan="4" class="thInvis"></th>
-        
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in cols" :key="col" 
-                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">
-                            <tablecell :cellText="col" :type="'th'"></tablecell>
                     <th v-for="(col,i) in colsToRender" :key="i" 
                         :class="getThClasses(col, i)"> 
                             <tablecell :content="getHeader(col)"></tablecell>
@@ -80,6 +78,7 @@
     import customModal from '@/components/modal/CustomModal';
     import baseCell from '@/components/table/cells/BaseTableCell';
     import { setTimeout } from 'timers';
+    import msaLegend from '../table/MsaLegend';
 
     export default {
         name: "tablelayout",
@@ -90,7 +89,8 @@
         components: {
             popupTable: popupTable,
             'modal': customModal,
-            tablecell: baseCell
+            tablecell: baseCell,
+            msaLegend: msaLegend
         },
         data() {
             return {
@@ -110,6 +110,7 @@
                 popupData: [],
                 isLoading: false,
                 isMsaLoading: false,
+                showMsaLegend: false,
                 ticking: false,
                 rowsScrolled: 0,
                 upperLimit: 100,
@@ -434,6 +435,9 @@
             toggleTabs() {
                 this.$emit('toggle-cols');
             },
+            toggleLegend() {
+                this.showMsaLegend = !this.showMsaLegend;
+            },
             onTableCellDestroyed(val) {
                 //If the table cell is destroyed before the processing of cell is finished,
                 // (eg. when we scroll the table, some cells which are scrolled up/down and not visible anymore)
@@ -669,6 +673,13 @@
         width: 95%;
         height: 100%;
         overflow: hidden;
+    }
+    .legend-box {
+        background-color: #9E9E9E;
+        position: absolute;
+        top: 50px;
+        left: 0px;
+        width: 465px;
     }
     .mainTable {
         display: flex;
