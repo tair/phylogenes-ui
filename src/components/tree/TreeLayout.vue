@@ -714,7 +714,7 @@
                 if(d.matched) {
                     d.textColor = "red";
                 } else if(d.grafted) {
-                    d.textColor = "green";
+                    d.textColor = "#c13291";
                 } else {
                     d.textColor = "black";
                 }
