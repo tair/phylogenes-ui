@@ -30,12 +30,6 @@
                     <rect x="20" y="115" width="20" height="15" fill="#ffd966"> </rect>
                     <text x="135" y="125" fill="black">Shared by 50-90% sequences</text>
                 </g>
-                <!-- <g>
-                    <path class="straight" :d="straightLine(215, 2)" fill="black"></path>
-                    <path class="straight" :d="straightLine(215, 202)" fill="black"></path>
-                    <text x="8" y="223" fill="black" font-weight="bold">Click node to collapse or expand. </text>
-                    <text x="8" y="243" fill="black" font-weight="bold">Drag tree to move around.</text>
-                </g> -->
             </svg>
         </div>
     </div>
@@ -48,37 +42,13 @@
         name: "msaLegend",
         data() {
             return {
-                x: 900,
-                y: 200
+                
             }
         },
         computed: {
-            style() {
-                return {
-                    top: this.y - document.body.scrollTop + 'px',
-                    left: this.x + 'px'
-                };
-            }
+            
         },
         methods: {
-            diamondSymbol() {
-                var symbolGenerator = d3.symbol()
-                    .size([200]);
-
-                symbolGenerator
-                    .type(d3.symbolDiamond);
-
-                return symbolGenerator();
-            },
-            triangleSymbol() {
-                var symbolGenerator = d3.symbol()
-                    .size([300]);
-
-                symbolGenerator
-                    .type(d3.symbolTriangle);
-
-                return symbolGenerator();
-            },
             straightLine(x,y) {
                 var lineGenerator = d3.line();
                 var points = [
@@ -87,9 +57,6 @@
                 ]
                 return lineGenerator(points);
             },
-            rotate() {
-                return "rotate(-90)";
-            }
         }
     }
 </script>

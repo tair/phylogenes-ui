@@ -48,7 +48,7 @@
                             <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
                             <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover5Text title="Protein name" placement='left' target='popover5'></popover>
+                            <popover :text=popover5Text title="Subfamily Name" placement='left' target='popover5'></popover>
                     </th>
                 </tr>
             </thead>
