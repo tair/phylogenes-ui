@@ -10,36 +10,33 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-
+        <div v-if="showMsaLegend" class="legend-box">
+            <msa-legend></msa-legend>
+        </div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-else class="mainTable"> 
+        
+        <table v-else class="mainTable">
             <thead id="head" ref="thead">
-                <col>
+                <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                    <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
+                </button>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
-       
-                    
                     <th :colspan="msaTab?1:2" class="thInvis">
                         <button class="btn bg-white float-left" @click="toggleTabs">
-                                    <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                            <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                         </button>
+                        
                         <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
-                    
-                    <th v-if="extraCols.length > 0" 
+                    </th>
+                    <th v-if="extraCols.length > 0 && !msaTab" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
                             <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
                     </th>
-                        
-                    <th v-if="!msaTab && extraCols.length > 0" 
-                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
                     <th colspan="4" class="thInvis"></th>
-        
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in cols" :key="col" 
-                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">
-                            <tablecell :cellText="col" :type="'th'"></tablecell>
                     <th v-for="(col,i) in colsToRender" :key="i" 
                         :class="getThClasses(col, i)"> 
                             <tablecell :content="getHeader(col)"></tablecell>
@@ -51,12 +48,12 @@
                             <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
                             <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover5Text title="Protein name" placement='left' target='popover5'></popover>
+                            <popover :text=popover5Text title="Subfamily Name" placement='left' target='popover5'></popover>
                     </th>
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
+                <tr v-for="(row, row_i) in rowsToRender" :class="isEvenOdd(row)" :key=row_i>
                     <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(key, row[key], i)">
                         <tablecell :content.sync="rowsToRender[row_i][key]"
@@ -80,6 +77,7 @@
     import customModal from '@/components/modal/CustomModal';
     import baseCell from '@/components/table/cells/BaseTableCell';
     import { setTimeout } from 'timers';
+    import msaLegend from '../table/MsaLegend';
 
     export default {
         name: "tablelayout",
@@ -90,7 +88,8 @@
         components: {
             popupTable: popupTable,
             'modal': customModal,
-            tablecell: baseCell
+            tablecell: baseCell,
+            msaLegend: msaLegend
         },
         data() {
             return {
@@ -110,6 +109,7 @@
                 popupData: [],
                 isLoading: false,
                 isMsaLoading: false,
+                showMsaLegend: false,
                 ticking: false,
                 rowsScrolled: 0,
                 upperLimit: 100,
@@ -117,7 +117,7 @@
                 processedCells: [],
                 popover1Text: 'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
                 popover2Text: 'A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
-                popover3Text: 'A gene ID is acanonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
+                popover3Text: 'A gene ID is a canonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
                 popover4Text: 'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
                 popover5Text: 'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
             }
@@ -434,6 +434,9 @@
             toggleTabs() {
                 this.$emit('toggle-cols');
             },
+            toggleLegend() {
+                this.showMsaLegend = !this.showMsaLegend;
+            },
             onTableCellDestroyed(val) {
                 //If the table cell is destroyed before the processing of cell is finished,
                 // (eg. when we scroll the table, some cells which are scrolled up/down and not visible anymore)
@@ -657,6 +660,11 @@
                 }
                 return classes;
             },
+            isEvenOdd(row) {
+                if(row.MSA) {
+                    return "noevenodd";
+                }
+            }
         },
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll);
@@ -669,6 +677,19 @@
         width: 95%;
         height: 100%;
         overflow: hidden;
+    }
+    .legend-box {
+        background-color: #9E9E9E;
+        position: absolute;
+        top: 50px;
+        right: 0px;
+        width: 465px;
+    }
+    .msalegend {
+        position: absolute;
+        right: 10px;
+        top: 12px;
+        z-index: 100;
     }
     .mainTable {
         display: flex;
@@ -720,6 +741,22 @@
     .mainTable tr:nth-child(odd) {
         background-color: #e9e9e9;
     }
+
+    .mainTable tr:nth-child(even) td:first-child {
+        background-color: #cdeaf5;
+    }
+    .mainTable tr:nth-child(odd) td:first-child {
+        background-color: #e9e9e9;
+    }
+
+    /* tr with noevenodd class, have 2nd child (hard-coded!) of MSA which should not be even odd*/
+    .mainTable tr.noevenodd:nth-child(even) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+    .mainTable tr.noevenodd:nth-child(odd) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+
     .mainTable tr {
         height: 40px !important;
     }
@@ -745,13 +782,6 @@
         left:0;
         box-shadow: 5px 0 2px -2px #f1f1f0;
         background-color: #9cd5e3;
-    }
-
-    .mainTable tr:nth-child(even) td:first-child {
-        background-color: #cdeaf5;
-    }
-    .mainTable tr:nth-child(odd) td:first-child {
-        background-color: #e9e9e9;
     }
 
     .thInvis {
