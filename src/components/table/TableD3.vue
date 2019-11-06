@@ -683,7 +683,6 @@
         position: absolute;
         top: 50px;
         right: 0px;
-        width: 465px;
     }
     .msalegend {
         position: absolute;
@@ -828,12 +827,13 @@
 
     ::-webkit-scrollbar {
         -webkit-appearance: none;
-        width: 7px;
+        width: 15px;
     }
     ::-webkit-scrollbar-thumb {
         border-radius: 4px;
-        background-color: rgba(0,0,0,.5);
-        -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+        background-color: rgb(158, 222, 238);
+        -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.897);
+        width: 70px;
     }
    
 </style>
