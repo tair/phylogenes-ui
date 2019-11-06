@@ -15,20 +15,21 @@
         </div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         
-        <table v-else class="mainTable"> 
+        <table v-else class="mainTable">
             <thead id="head" ref="thead">
-                <col>
+                <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                    <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
+                </button>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
                     <th :colspan="msaTab?1:2" class="thInvis">
                         <button class="btn bg-white float-left" @click="toggleTabs">
                             <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                         </button>
-                        <button v-if="msaTab" class="btn bg-white float-right" @click="toggleLegend">
-                            <span class="text-danger">{{showMsaLegend?"H":"S"}}</span>
-                        </button>
+                        
                         <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
-                    <th v-if="extraCols.length > 0" 
+                    </th>
+                    <th v-if="extraCols.length > 0 && !msaTab" 
                         :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
                             <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
@@ -116,7 +117,7 @@
                 processedCells: [],
                 popover1Text: 'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
                 popover2Text: 'A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
-                popover3Text: 'A gene ID is acanonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
+                popover3Text: 'A gene ID is a canonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
                 popover4Text: 'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
                 popover5Text: 'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
             }
@@ -681,8 +682,14 @@
         background-color: #9E9E9E;
         position: absolute;
         top: 50px;
-        left: 0px;
+        right: 0px;
         width: 465px;
+    }
+    .msalegend {
+        position: absolute;
+        right: 10px;
+        top: 12px;
+        z-index: 100;
     }
     .mainTable {
         display: flex;
