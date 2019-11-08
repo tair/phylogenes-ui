@@ -55,11 +55,12 @@
         computed: {
             ...mapGetters({
                 store_matchedNodes: types.TREE_GET_MATCHED_NODES,
-                stateTableScroll: types.TABLE_GET_SCROLL,
-                stateTreeData: types.TREE_GET_DATA,
+                store_getTableScrollRow: types.TABLE_GET_SCROLL,
+                store_tableData: types.TABLE_GET_DATA,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
-                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+                store_getHasGrafted: types.TREE_GET_ISGRAFTED
             })
         },
         watch: {
@@ -67,7 +68,7 @@
                 deep: true,
                 handler: function (val, oldVal) {
                     this.isLoading = true;
-                    if(val != null) {
+                    if(val && val != null) {
                         this.store_setTableIsLoading(true);
                         this.initTree();
                     }
@@ -78,7 +79,7 @@
                     this.processMatchedNodes(val);
                 }
             },
-            stateTreeData: {
+            store_tableData: {
                 handler: function (val, oldVal) {
                     if(val.length == 0) {
                         this.isLoading = true;
@@ -86,23 +87,17 @@
                     }
                 }
             },
-            stateTableScroll: {
+            store_getTableScrollRow: {
                 handler: function (val, oldVal) {
-                    var nodes = this.rootNode.descendants();
-                    var treeNode = null;
-                    if(val.id != undefined) {
-                        treeNode = nodes.find(n => n.geneId == val.id);
-                    } else {
-                        treeNode = nodes.find(n => n.data.accession == val.accession);
-                    }
-                    if(treeNode) {
-                        this.moveTreeToNodePosition(treeNode);
-                    }
+                    this.scrollTreeFromTable(val);
                 }
             },
             store_tableIsLoading: {
                 handler: function(val, oldval) {
                     this.isLoading = val;
+                    if(!val) {
+                        this.checkForGraftedNode();
+                    }
                 }
             }
         },
@@ -139,6 +134,10 @@
                 linkDatums: [],
                 svgWidth: 700,
                 svgHeight: 700,
+                //scrollingTreeFromTable
+                delayInCall: 20,
+                ticking: false,
+                timerId: null
             }
         },
         mounted() {
@@ -154,6 +153,63 @@
                 stateTreeNodes: types.TREE_ACTION_SET_NODES,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
+            checkForGraftedNode() {
+                if(this.store_getHasGrafted) {
+                    var graftedNode = null;
+                    let allNodes = this.rootNode.descendants();
+                    allNodes.forEach(a => {
+                        if(a.data.newGrafted) {
+                            graftedNode = a;
+                        }
+                    });
+                    if(graftedNode != null) {
+                        setTimeout(() => {
+                            this.centerTreeToGivenNode(graftedNode);
+                        }, 10);
+                    }
+                }
+            },
+            //Scroll tree to so that tree nodes are aligned with table.
+            //This method is called when: table is scrolled by a mouse
+            scrollTreeFromTable(scroll) {
+                //Since a table scroll is registered multiple time, we need to
+                // scroll tree only when scrolling by user is done. We do this by starting
+                // a timer with a delay of 'delayInCall'. Only after this timer is completed
+                // that we call the method to scroll the tree.
+                if(!this.ticking) {
+                    this.ticking = true;
+                    this.timerId = setTimeout(() => {
+                        this.ticking = false;
+                        let node = this.findNodeFromTree(scroll);
+                        if(node) {
+                            this.moveTreeToNodePosition(node);
+                        }
+                    }, this.delayInCall);
+                }
+                //We clear the timeout if scroll is initiated before the initial timer was completed.
+                // This can happen if let's say the delay was 0.5s, but the user is still scrolling. We
+                // don't scroll the tree until user has completely stopped scrolling.
+                if(this.ticking && this.timerId) {
+                    clearTimeout(this.timerId);
+                    this.timerId = setTimeout(() => {
+                        this.ticking = false;
+                        let node = this.findNodeFromTree(scroll);
+                        if(node) {
+                            this.moveTreeToNodePosition(node);
+                        }
+                    }, this.delayInCall);
+                }
+            },
+            findNodeFromTree(val) {
+                var nodes = this.rootNode.descendants();
+                var treeNode = null;
+                if(val.id != undefined) {
+                    treeNode = nodes.find(n => n.geneId == val.id);
+                } else {
+                    treeNode = nodes.find(n => n.data.accession == val.accession);
+                }
+                return treeNode;
+            },
             onPruneLoading(isLoad) {
                 this.isLoading = isLoad;
             },
@@ -169,10 +225,12 @@
             },
             //Set the d3 svg to it's original position before moving around with mouse
             resetRootPosition() {
-                this.wrapper_d3.transition().duration(500)
-                    .attr("transform", (d) => {
-                        return "translate(" + 80 + "," + 0 + ")";
-                    });
+                if(this.wrapper_d3 != null) {
+                    this.wrapper_d3.transition().duration(500)
+                        .attr("transform", (d) => {
+                            return "translate(" + 80 + "," + 0 + ")";
+                        });
+                }
             },
             //Initialize Tree at the time of Mounted() or jsonData has been updated.
             initTree() {
@@ -180,6 +238,7 @@
                     console.error("jsonData is null!");
                     return;
                 }
+                this.rowsScrolledUp = 0;
                 var svg = d3.select('#treeSvg');
                 this.wrapper_d3 = svg.select("#wrapper");
                 svg.call(this.setZoomListener(this.wrapper_d3));
@@ -190,6 +249,7 @@
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
                 
+                
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
                 this.$emit('get-table-csv-data', nodes);
@@ -199,7 +259,13 @@
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
                 this.adjustTreeLayoutPosition(); 
-                this.updateTree();
+                
+                if(this.store_getHasGrafted) {
+                    //UpdateTree is called after processing inside
+                    this.processGraftedNodes();
+                } else {
+                    this.updateTree();
+                }
             },
             //Convert json into d3 hierarchy which adds depth, height and
             // parent variables to each node.
@@ -254,15 +320,17 @@
                 this.updateExtraInfo(modifiedNodes);
 
                 this.resetTreeLayout();
+
                 setTimeout(() => {
                     this.$emit('updated-tree', modifiedNodes);
-                });
-               
+                }, 750);
+
                 this.renderNodes(modifiedNodes);
                 this.renderLinks(modifiedNodes);
 
                 this.setLeafNodesByDepth(modifiedNodes);
 
+                this.isLoading = false;
                 return 1;
             },
             // ~~~~~~~~~ Nodes
@@ -398,7 +466,6 @@
                     }
                     
                     tempArray.push(node_content);
-
                 });
 
                 //We need to sort the array added by id, because d3 renders based on id of the nodes.
@@ -481,9 +548,9 @@
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
                 setTimeout(() => {
                     this.store_setCenterNode(currCenterNode);
-                }, 500);
+                }, 100);
             },
-                     
+
             // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
@@ -550,6 +617,13 @@
             //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
                 updateDisplayUtils.processCompactTree(this.rootNode, this.store_annoMapping.annoMap);
+            },
+
+            processGraftedNodes() {
+                var allNodes = this.rootNode.descendants();
+                nodesUtils.processGrafted(allNodes).then((res) => {
+                    this.updateTree();
+                });
             },
 
             // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
@@ -639,6 +713,8 @@
                 }
                 if(d.matched) {
                     d.textColor = "red";
+                } else if(d.grafted) {
+                    d.textColor = "#c13291";
                 } else {
                     d.textColor = "black";
                 }

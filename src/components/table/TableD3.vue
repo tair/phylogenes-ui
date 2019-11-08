@@ -1,3 +1,6 @@
+// <b-button triggers="focus" variant="light" 
+//   title="Known Function"><i class="fas fa-info-circle fa-lg"></i></b-button>        
+
 <template>
     <div id="parent">
         <modal v-if="showPopup" @close="showPopup = false">
@@ -7,29 +10,55 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
+        <div v-if="showMsaLegend" class="legend-box">
+            <msa-legend></msa-legend>
+        </div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-else class="mainTable"> 
+        
+        <table v-else class="mainTable">
             <thead id="head" ref="thead">
-                <col>
+                <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                    <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
+                </button>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
-                    <th colspan="2" class="thInvis"></th>
-                    <th v-if="extraCols.length > 0" 
-                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
+                    <th :colspan="msaTab?1:2" class="thInvis">
+                        <button class="btn bg-white float-left" @click="toggleTabs">
+                            <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                        </button>
+                        
+                        <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
+                    </th>
+                    <th v-if="extraCols.length > 0 && !msaTab" 
+                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
+                            <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
+                    </th>
                     <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in cols" :key="col" 
-                        :class="{thSubColSp: i>1&&i<extraCols.length+1}">
-                            <tablecell :cellText="col" :type="'th'"></tablecell>
+                    <th v-for="(col,i) in colsToRender" :key="i" 
+                        :class="getThClasses(col, i)"> 
+                            <tablecell :content="getHeader(col)"></tablecell>
+                    
+                            <b-button v-if="col === 'Gene name'" id="popover2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover2Text title="Gene Name" placement='right' target='popover2'></popover>
+                            <b-button v-if="col === 'Gene ID'" id="popover3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover3Text title="Gene ID" placement='left' target='popover3'></popover>
+                            <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
+                            <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover5Text title="Subfamily Name" placement='left' target='popover5'></popover>
                     </th>
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row) in rowsToRender" >
-                    <td v-for="(key, i) in cols" @click="tdClicked(key, row)" :key="key"
-                        :class="getTdClasses(row[key], i)">
-                        <tablecell :cellText="row[key]" :type="key"></tablecell>
+                <tr v-for="(row, row_i) in rowsToRender" :class="isEvenOdd(row)" :key=row_i>
+                    <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
+                        :class="getTdClasses(key, row[key], i)">
+                        <tablecell :content.sync="rowsToRender[row_i][key]"
+                                    v-on:update:content="onTableCellUpdated"
+                                    v-on:destroyed="onTableCellDestroyed"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -46,19 +75,26 @@
 
     import popupTable from './PopupTable';
     import customModal from '@/components/modal/CustomModal';
-    import tablecell from '@/components/table/TableCellD3';
+    import baseCell from '@/components/table/cells/BaseTableCell';
+    import { setTimeout } from 'timers';
+    import msaLegend from '../table/MsaLegend';
 
     export default {
         name: "tablelayout",
+        props: [
+            "headerMap",    //Map: ['Original Col Name': 'Updated Col Name']
+            "colsFromProp"  //Array: Col names to be displayed
+        ],
         components: {
             popupTable: popupTable,
             'modal': customModal,
-            tablecell: tablecell
+            tablecell: baseCell,
+            msaLegend: msaLegend
         },
         data() {
             return {
                 lazyLoad: false, //lazy load flag for rendering rows only within view
-                cols: [],
+                colsToRender: [],
                 rowsToRender: [],
                 extraCols: [],
                 tdWidth: '190px',
@@ -66,43 +102,52 @@
                 rowHeight: 40,
                 scrollFromTree: false,
                 scrollTop_old: 0,
+                scrollLeft_old: 0,
                 showPopup: false,
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
                 isLoading: false,
-                firstLoad: false,
+                isMsaLoading: false,
+                showMsaLegend: false,
                 ticking: false,
                 rowsScrolled: 0,
-                upperLimit: 100
+                upperLimit: 100,
+                msaTab: false,
+                processedCells: [],
+                popover1Text: 'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
+                popover2Text: 'A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
+                popover3Text: 'A gene ID is a canonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
+                popover4Text: 'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
+                popover5Text: 'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
             }
         },
         computed: {
             ...mapGetters({
-                stateTreeData: types.TREE_GET_DATA,
+                store_tableData: types.TABLE_GET_DATA,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
             })
         },
         watch: {
-            stateTreeData: {
+            store_tableData: {
                 handler: function (val, oldVal) {
+                    //This is zero, when a new tree is reloaded.
                     if(val.length == 0) {
-                        this.isLoading = true;
-                    }
-                    if(val != null && val.length > 0) {
-                        this.update();
+                       this.resetTable();
+                    } else {
+                       this.renderTable();
                     }
                 }
             },
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
-                    var foundRow = this.stateTreeData.find(d => d["Gene ID"] === val.geneId);
+                    var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
                     if(!foundRow) {
                         let accession = val.data.accession;
-                        foundRow = this.stateTreeData.find(d => d["accession"] === accession);
+                        foundRow = this.store_tableData.find(d => d["accession"] === accession);
                     }
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
@@ -118,95 +163,185 @@
                 handler: function(val, oldval) {
                     if(val) {
                         this.isLoading = true;
+                    } else {
+                        this.isLoading = false;
                     }
+                }
+            },
+            colsFromProp: {
+                handler: function(val, oldval) {
+                    if(val.includes("MSA")) {
+                        this.msaTab = true;
+                    } else {
+                        this.msaTab = false;
+                    }
+                    this.addCustomScrollEvent();
+                    this.update();
+                    this.setTableScroll();
                 }
             }
         },
         mounted: function () {
-            this.isLoading = true;
-            if(this.stateTreeData) {
-                this.update();
-            }
-            this.store_setTableIsLoading(true);
+            this.resetTable();
+            this.renderTable();
+        },
+        updated() {
+            this.$nextTick(function () {
+                
+            });
         },
         methods: {
             ...mapActions({
-                stateSetTableScroll: types.TABLE_ACTION_SET_SCROLL,
+                store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
-            initAfterLoad() {
+            reset() {
+                this.isLoading = true;
+                this.msaTab = false;
+                this.rowsToRender = [];
+            },
+            resetTable() {
+                this.isLoading = true;
+                this.msaTab = false;
+                this.store_setTableIsLoading(true);
+            },
+            initTable() {
+                this.addCustomScrollEvent();
+                this.extraCols = this.store_annoMapping.headers;
+                this.store_setTableIsLoading(false);   
+            },
+            addCustomScrollEvent() {
+                //On props change, the $refs reloads, so need to add scroll event at the next frame,
+                // hance the timeout.
                 setTimeout(() => {
-                    //handleScroll is called with a throttle of 10 ms, this is to control the number of 
-                    // calls made to the function, on scorlling of mouse.
                     if(this.$refs.tbody) {
+                        //handleScroll is called with a throttle of 10 ms, this is to control the number of 
+                        // calls made to the function, on scrolling of mouse.
                         this.$refs.tbody.addEventListener('scroll', 
-                            _.throttle(this.handleScroll, 10));
-                        this.extraCols = this.store_annoMapping.headers;
+                                                    _.throttle(this.handleScroll, 10));
                     }
-                },10);
+                });
+            },
+            renderTable() {
+                if(this.store_tableData != null && this.store_tableData.length > 0) {
+                    this.isLoading = false;
+                    setTimeout(() => {
+                        this.initTable();
+                        setTimeout(() => {
+                            this.update();
+                        });
+                    });
+                }
             },
             //Is called on every change to the store data
             update() {
-                var titles = d3.keys(this.stateTreeData[0]);
-                titles = titles.splice(1);
-                if(titles.includes("accession")) {
-                    titles = titles.splice(0, titles.length-1);
+                if(!this.colsFromProp) return;
+                var filteredCols = d3.keys(this.store_tableData[0]);
+                filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
+                //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
+                if(this.colsFromProp.includes("Annotations")) {
+                    this.store_annoMapping.headers.forEach(h => {
+                        filteredCols.splice(2, 0, h);
+                    });
                 }
-                this.cols = titles;
+
+                this.colsToRender = filteredCols;
                 this.rowsToRender = [];
-                //If the total number of rows is > 
-                if(this.stateTreeData.length > 1000) {
-                    this.lazyLoad = true;
-                    this.updateRows();
-                } else {
-                    this.rowsToRender = this.stateTreeData;
+
+                this.lazyLoad = true;
+                if(this.msaTab) {
+                    if(this.store_tableData.length < 2000) this.lazyLoad = false;
                 }
-                
-                if(this.isLoading) {
-                    setTimeout(() => {
-                        this.initAfterLoad();
-                        this.isLoading = false;
-                        this.store_setTableIsLoading(false);
-                    },100);
+                this.displayRows();
+            },
+            displayRows() {
+                if(!this.lazyLoad) {
+                    this.store_tableData.forEach(n => {
+                        let processedRowData = this.processRow(n);
+                        this.rowsToRender.push(processedRowData);
+                    });
+                } else {
+                    this.updateRows();
                 }
             },
             //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
-            //This depends on rowsScrolled var.
-            //If rowsScrolled>500, we also cut off rows from the top using 'noOfTopRowsToRemove'
-            updateRows() {
+            //This depends on 'rowsScrolled'
+            updateRows(calledWhileScrolling=false, pm="") {
+                // console.log("called by "+ pm);
                 if(!this.lazyLoad) return;
-
                 //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
                 //We add all the rows scolled to the table
-                let noOfRowsToAdd = 30 + this.rowsScrolled*2;
+                let maxRows = 30;
+                let noOfRowsToAdd = maxRows + this.rowsScrolled;
                 let noOfTopRowsToRemove = 0;
-                if(this.rowsScrolled > 500) {
-                    //If the rowsScrolled becomes greater than 500, then the table rendering becomes slow.
-                    // So, we remove some of the top rows from being rendered too.
-                    noOfTopRowsToRemove = this.rowsScrolled - this.upperLimit;
-                    noOfRowsToAdd = 30 + this.rowsScrolled;
+                if(this.rowsScrolled > 200) {
+                    noOfTopRowsToRemove = this.rowsScrolled - 100;
                 }
-
                 let i = 0;
                 this.rowsToRender = [];
-                //this.rowsToRender - add rows ranging from index [noOfTopRowsToRemove] to [noOfRowsToAdd].
-                this.stateTreeData.some(n => {
-                    //Only add rows after the 'noOfTopRowsToRemove'
-                    if(i >= noOfTopRowsToRemove) {
-                        this.rowsToRender.push(n);
+                //this.rowsToRender - add rows ranging from index 0 to [noOfRowsToAdd].
+                // set 'rendering' to false, for all rows less than 'noOfTopRowsToRemove'. Since this
+                // rows will be out of view and scrolled up, we don't render the content, for performance reasons.
+
+                this.store_tableData.some(n => {
+                    if(i < noOfTopRowsToRemove) {
+                        n.rendering = false;
+                    } else {
+                        n.rendering = true;
                     }
+                    let processedRowData = this.processRow(n);
+                    this.rowsToRender.push(processedRowData);
                     i++;
                     return i > noOfRowsToAdd;
                 });
             },
+            //rowData: [colName]:[colValue]
+            //returns cellContent: [text: "?", type: <cell-type>, 
+                                    // optional additional features for each cell type]
+            processRow(rowData) {
+                let row = {};
+                //If 'rendering' is false, row is rendered as default with blank text for performance reasons
+                if(rowData.rendering == false) {
+                    return {text: ""};
+                }
+                this.colsToRender.forEach(c => {
+                    let cellTxt = rowData[c];
+                    let content = {text: cellTxt, id: rowData.id};
+                    if(cellTxt == "*") {
+                        content.type = 'annotation';
+                    }
+                    if(c == "MSA") {
+                        content.text = cellTxt;
+                        content.type = 'msa';
+                        content.isHighlight = true;
+                    } else if(c == "Uniprot ID") {
+                        content.type = 'link';
+                        content.link = 'https://www.uniprot.org/uniprot/'+cellTxt;
+                    }
+                    row[c] = content;
+                });
+                return row;
+            },
+            //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
                 //If scrolling is from tree (programattic), handleScroll is still being called.
                 // So we just return without changing anything.
                 if(this.scrollFromTree) {
-                    this.scrollFromTree = false;
+                    setTimeout(() => {
+                        this.scrollFromTree = false;
+                    }, 100);
                     return;
                 }
 
+                let scrollLeft_curr = document.getElementById("body").scrollLeft;
+                //'scrollLeft_old' is the prev horizontal scroll value
+                // If the curr value is diff than older, only then we scroll the table horizontally.
+                if(this.scrollLeft_old != scrollLeft_curr) {
+                    this.scrollLeft_old = scrollLeft_curr;
+                    this.scrollTableHeader(scrollLeft_curr);
+                    return;
+                }
+                
                 //this.ticking is used to call the more intensive functions like 'scrollTree'
                 // and 'updateRows' only once in 1s. This is needed because handleScroll is
                 // called a lot of times when the mouse is scrolled in a second, but we don't
@@ -218,54 +353,52 @@
                         this.ticking = false;
                         let scrollTop_curr = document.getElementById("body").scrollTop;
                         if(scrollTop_curr != this.scrollTop_old) {
+                            this.calculateRowsScrolled(scrollTop_curr);
                             this.scrollTop_old = scrollTop_curr;
-                            this.scrollTreeFromTable(this.scrollTop_old);
-                            //Updates rowsToRender based on the scrolled value.
-                            this.updateRows();
-                        } 
-                    }, 1000);
+                            this.scrollTreeFromTable(this.rowsScrolled);
+                        }
+                    }, 100);
                 }
-                
-                let scrollLeft_curr = document.getElementById("body").scrollLeft;
-                this.scrollTableHeader(scrollLeft_curr);
+            },
+            calculateRowsScrolled(amount) {
+                var rowNumber = amount/this.rowHeight;
+                rowNumber = Math.round(rowNumber);
+                this.rowsScrolled = rowNumber;
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
                 thead.scrollLeft = amount;
             },
-            //Move the tree node to the rows scrolled by table.
-            //We do this by setting store 'stateSetTableScroll' with the 'scroll' row number.
-            //Also assign this.rowsScrolled which is used for lazy loading.
-            scrollTreeFromTable(amount) {
-                var rowNumber = amount/this.rowHeight;
-                rowNumber = Math.round(rowNumber);
-                var rowId = this.stateTreeData[rowNumber]["Gene ID"];
-                var accession = this.stateTreeData[rowNumber]["accession"];
+            //Move the tree node to the row number currently at the center of table.
+            //We do this by setting store value 'store_setTableScrolledRow' with the 'scroll'ed row number.
+            scrollTreeFromTable(rowNumber) {
+                var rowId = this.store_tableData[rowNumber]["Gene ID"];
+                var accession = this.store_tableData[rowNumber]["accession"];
                 var scroll = {i: rowNumber, id: rowId, accession: accession};
-                this.rowsScrolled = rowNumber;
-                this.updateRows();
-                this.stateSetTableScroll(scroll);
+                this.store_setTableScrolledRow(scroll);
             },
-            setScrollToRow(rowNumber) {
-                this.rowsScrolled = rowNumber;
-                this.updateRows();
-                var centerRowNumber = rowNumber-8;
-                if(this.lazyLoad && this.rowsScrolled > 500) {
-                    //Lazy Load - correct scrolling
-                    setTimeout(() => {
-                        centerRowNumber -= this.rowsScrolled - 101;
-                        const tbody = document.getElementById("body");
-                        tbody.scrollTop = 40*centerRowNumber;
-                    }, 1000);
-
-                } else {
-                    //Normal scrolling
+            setTableScroll() {
+                setTimeout(() => {
                     const tbody = document.getElementById("body");
-                    tbody.scrollTop = 40*centerRowNumber;
-                }
-                
+                    if(tbody) {
+                        tbody.scrollTop = 40*this.rowsScrolled;
+                    }
+                }, 100);
+            },
+            //From tree panning
+            setScrollToRow(rowNumber) {
+                this.rowsScrolled = rowNumber - 8;
+                this.updateRows();
+
+                setTimeout(() => {
+                    const tbody = document.getElementById("body");
+                    if(tbody) {
+                        tbody.scrollTop = 40*this.rowsScrolled;
+                    }
+                }, 100);
                 this.scrollFromTree = true;
             },
+            //Table Events
             rowClicked(d) {
                 this.showPopup = true;
                 let uniprotId = d["Uniprot ID"];
@@ -279,8 +412,8 @@
                 this.popupData = this.getPopupData(annoList);
             },
             tdClicked(c, row) {
-                if(row[c] != '*') return;
-                let uniprotId = row["Uniprot ID"];
+                if(row[c] && row[c].text != '*') return;
+                let uniprotId = row["Uniprot ID"].text;
                 if(uniprotId) {
                     uniprotId = uniprotId.toLowerCase();
                 } else {
@@ -298,6 +431,45 @@
                 this.popupData = this.getPopupData(data);
                 this.showPopup = true;
             },
+            toggleTabs() {
+                this.$emit('toggle-cols');
+            },
+            toggleLegend() {
+                this.showMsaLegend = !this.showMsaLegend;
+            },
+            onTableCellDestroyed(val) {
+                //If the table cell is destroyed before the processing of cell is finished,
+                // (eg. when we scroll the table, some cells which are scrolled up/down and not visible anymore)
+                // we find the cell and remove it from the array.
+                var index = this.processedCells.indexOf(val);
+                if (index > -1) {
+                    this.processedCells.splice(index, 1);
+                }
+            },
+            onTableCellUpdated(updatedContent) {
+                // console.log(this.processedCells.length);
+                //processedCells - array of table cells currently being processed.
+                // If the length > 0, we show a loading symbol on the table ie. isMsaLoading=true
+                // if(updatedContent.process == true) {
+                //     if(!this.processedCells.includes(updatedContent.id)) {
+                //         this.processedCells.push(updatedContent.id);
+                //     }
+                //     if(this.processedCells.length == 1) {
+                //         this.isMsaLoading = true;
+                //     }
+                // } 
+                // //If 'process' flag is false, that means the cell is completed processing.
+                // else if(updatedContent.process == false) {
+                //     var index = this.processedCells.indexOf(updatedContent.id);
+                //     if (index > -1) {
+                //         this.processedCells.splice(index, 1);
+                //     }
+                //     if(this.processedCells.length == 0) {
+                //         this.isMsaLoading = false;
+                //     }
+                // }
+            },
+            //Utilities
             getDBLink(r) {
                 let link = "";
                 switch(r.db){
@@ -451,9 +623,35 @@
                 });
                 return popUpTableData;
             },
-            getTdClasses(cellValue, col_idx) {
+            getHeader(title) {
+                let header = {text: title};
+                if(this.headerMap[title]) {
+                    header['text'] = this.headerMap[title];
+                }
+                return header;
+            },         
+            getThClasses(row, i) {
                 let classes = [];
-                if(cellValue == '*') {
+                if(row == "MSA") {
+                    classes.push('widthMax');
+                } else {
+                    classes.push('widthDefault');
+                }
+                
+                if(i > 1&&i<this.extraCols.length+1) {
+                    classes.push('thSubColSp');
+                }
+                return classes;
+            },
+            getTdClasses(row, cellValue, col_idx) {
+                let classes = [];
+                if(row == "MSA") {
+                    classes.push('widthMax');
+                } else {
+                    classes.push('widthDefault');
+                }
+ 
+                if(cellValue && cellValue.text == '*') {
                     classes.push('tdHover');
                 }
                 //For all cells belonging to sub columns for annotations
@@ -462,6 +660,11 @@
                 }
                 return classes;
             },
+            isEvenOdd(row) {
+                if(row.MSA) {
+                    return "noevenodd";
+                }
+            }
         },
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll);
@@ -475,6 +678,18 @@
         height: 100%;
         overflow: hidden;
     }
+    .legend-box {
+        background-color: #9E9E9E;
+        position: absolute;
+        top: 50px;
+        right: 0px;
+    }
+    .msalegend {
+        position: absolute;
+        right: 10px;
+        top: 12px;
+        z-index: 100;
+    }
     .mainTable {
         display: flex;
         flex-direction: column;
@@ -485,7 +700,7 @@
         overflow: hidden;
         font-size: 14px;
         font-family: sans-serif;
-        border-bottom: 3px solid #f1f1f0;
+        border-bottom: 5px solid #f1f1f0;
     }
     .mainTable thead {
         flex: 0 0 auto;
@@ -502,6 +717,7 @@
         height: 40px !important;
     }
     #secTr {
+        height: 53px !important;
         filter: brightness(100%) !important;
         border: 0 !important;
         background-color: transparent;
@@ -524,6 +740,22 @@
     .mainTable tr:nth-child(odd) {
         background-color: #e9e9e9;
     }
+
+    .mainTable tr:nth-child(even) td:first-child {
+        background-color: #cdeaf5;
+    }
+    .mainTable tr:nth-child(odd) td:first-child {
+        background-color: #e9e9e9;
+    }
+
+    /* tr with noevenodd class, have 2nd child (hard-coded!) of MSA which should not be even odd*/
+    .mainTable tr.noevenodd:nth-child(even) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+    .mainTable tr.noevenodd:nth-child(odd) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+
     .mainTable tr {
         height: 40px !important;
     }
@@ -535,13 +767,11 @@
         visibility: hidden;
     }
     .mainTable th, .mainTable td {
-        min-width: 200px;
-        width: 200px;
-        max-width: 200px;
         border-right: 3px solid #f1f1f0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        z-index: 1;
     }
 
     .mainTable td:first-child,
@@ -551,13 +781,6 @@
         left:0;
         box-shadow: 5px 0 2px -2px #f1f1f0;
         background-color: #9cd5e3;
-    }
-
-    .mainTable tr:nth-child(even) td:first-child {
-        background-color: #cdeaf5;
-    }
-    .mainTable tr:nth-child(odd) td:first-child {
-        background-color: #e9e9e9;
     }
 
     .thInvis {
@@ -575,6 +798,17 @@
     .thSubColSp {
         border-right: 1px solid #f1f1f0 !important;
     }
+    .widthDefault {
+        min-width: 200px;
+        width: 200px;
+        max-width: 200px;
+    }
+    .widthMax {
+        white-space: nowrap;
+        max-width: 100%;
+        font-family: monospace;
+        letter-spacing: 0.1px;
+    }
     .tdSubCol {
         border-right: 1px solid #f1f1f0 !important;
     }
@@ -590,5 +824,17 @@
         stroke: steelblue;
         stroke-width: 2px;
     }
+
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 15px;
+    }
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background-color: rgb(0,0,0,0.5);
+        -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.897);
+        width: 70px;
+    }
+   
 </style>
 

@@ -32,13 +32,13 @@
             </div>
             <!-- Tree Panel -->
             <div class="col-sm-6 h-95 pg-panel">
-                <div class="row h-100">
+                <div class="row h-100 pg-toolbar">
                     <!-- Menu Bar -->
                     <div class="col-sm-12">
                         <div class="row align-items-center justify-content-between">
                             <div class="col-auto align-items-center">
                                 <search-box ref="searchBox" 
-                                            v-on:search="onSearch" :defaultText="defaultSearchText"></search-box>
+                                            v-on:search="onSearchWithinTree" :defaultText="defaultSearchText"></search-box>
                             </div>
                             <div class="col-auto align-items-center">
                                 <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
@@ -76,7 +76,7 @@
                     </div>
                     <!-- Tree SVG Component -->
                     <div class="col-sm-12 h-95">
-                        <treelayout  :jsonData="jsonData" :mappingData="mappingData"
+                        <treelayout  :jsonData="treeData_Json" :mappingData="mappingData"
                                         ref="treeLayout"
                                         v-on:get-table-csv-data="getTableCsvData"
                                         v-on:init-tree="onTreeInit"
@@ -89,7 +89,9 @@
                 <div class="row h-100">
                     <!-- table component -->
                     <div class="col-sm-12 h-100">
-                        <tablelayout></tablelayout>
+                        <tablelayout ref="tableLayout"
+                            :colsFromProp="tableColsToRender" :headerMap="headerMap"
+                            v-on:toggle-cols="toggleMsa"></tablelayout>
                     </div>
                 </div>
             </div>
@@ -113,6 +115,7 @@
     import customModal from '@/components/modal/CustomModal';
     import popupTableOrganism from '@/components/table/PopupTableOrganism';
     import { setTimeout } from 'timers';
+    import { Promise } from 'q';
 
     export default {
         name: "TreeDetail",
@@ -126,12 +129,17 @@
         },
         computed: {
             ...mapGetters({
-                stateTreeJson: types.TREE_GET_JSON,
-                stateTreeData: types.TREE_GET_DATA,
+                store_treeJsonString: types.TREE_GET_JSON,
+                store_treeJsonObj: types.TREE_GET_JSON_OBJ,
+                store_tableData: types.TABLE_GET_DATA,
                 stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
                 store_getTreeMetadata: types.TREE_GET_METADATA,
+                store_treeMsaData: types.TREE_GET_MSADATA,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
                 store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
+                store_maxMsaLength: types.TREE_GET_MAXMSAL,
+                store_getHasGrafted: types.TREE_GET_ISGRAFTED,
+                store_getGraftSeq: types.TREE_GET_GRAFTSEQ
             }),
             showLegendButtonIcon(){
                 return this.legend?
@@ -145,21 +153,27 @@
                 };
             }
         },
+        beforeRouteLeave (to, from, next) {
+            // called when the route that renders this component is about to
+            // be navigated away from.
+            // has access to `this` component instance.
+            this.$refs.tableLayout.reset();
+            next();
+        },
         watch: {
             '$route.params.id': function (id) {
-                this.treeId = id;
-                this.jsonData = null;
-                this.loadJsonFromDB(this.treeId);
-                this.stateSetTreeData([]);
-                this.metadata.isLoading = true;
-                this.resetPruning();
-            },
-            stateTreeJson: {
-                handler: function (val, oldVal) {
-                    this.loadJson(val);
-                    this.prunedLoaded = false;
-                    this.resetPruning();
+                if(!id) {
+                    return;
                 }
+                this.initForNewTreeId(id);
+            },
+            '$route.name': {
+                handler: function (val, oldVal) {
+                    if(val && val == "treeGrafted") {
+                        this.loadTreeFromStore();
+                    }
+                },
+                immediate: true
             },
             stateTreeAnnotations: {
                 handler: function (val, oldVal) {
@@ -178,7 +192,7 @@
                     if(!val) {
                         if(this.store_getSearchTxtWthn != null) {
                             this.defaultSearchText = this.store_getSearchTxtWthn;
-                            this.onSearch(this.store_getSearchTxtWthn);
+                            this.onSearchWithinTree(this.store_getSearchTxtWthn);
                         } else {
                             this.defaultSearchText = "";
                             this.searchText = "";
@@ -191,17 +205,31 @@
         },
         data() {
             return {
+                phyloXML_URL: process.env.VUE_APP_S3_URL,
+                REG_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
+                GRAFT_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/grafting/prune',
                 showLegendTip: false,
                 treeId: null,
+                defaultCols: ["Gene",
+                              "Organism", 
+                              "Annotations",
+                              "Gene name", 
+                              "Gene ID", 
+                              "Protein name", 
+                              "Uniprot ID", 
+                              "Subfamily Name"],
+                msaCols: ["Gene",
+                          "MSA"],
+                //~~~~~~~~~~~~ Render Options ~~~~~~~~~~~~~//
+                tableColsToRender: [],
                 branchLength: "N/A",
                 completeData: null,
-                jsonData: null,
+                treeData_Json: null,
                 mappingData: null,
-                baseUrl: process.env.BASE_URL,
-                phyloXML_URL: "https://phyloxml.s3-us-west-2.amazonaws.com/",
                 searchText: "",
                 defaultSearchText: "",
                 matchNodes: [],
+                headerMap: {},
                 anno_mapping: {},
                 anno_headers: [],
                 go_mapping: {},
@@ -228,67 +256,108 @@
                     colsWidth: ['50px', '350px', '100px']
                 },
                 //Pruning
-                PRUNING_PANTHER_API: "http://52.37.99.223:8080/panther/pruning/",
                 prunedLoaded: false,
                 unprunedTaxonIds: [],
                 originalTaxonIdsLength: 0,
                 tableCsvData: [],
                 tableCsvFields:[
                     'Uniprot ID',
+                    'Gene',
                     'Gene ID',
                     'Gene name',
                     'Organism',
                     'Protein function',
                     'Subfamily name'
                 ],
+                showMsa: false,
+                analyzeCompleted: false
             }
         },
         mounted() {
-            this.resetPruning();
-            this.loadJsonFromDB(this.treeId);
-            this.searchText = "";
-            this.matchNodes = [];
-            this.popupData = [];
-            this.metadata.isLoading = true;
+            if(this.$route.name != "treeGrafted") {
+                if(this.treeId) {
+                    this.initForNewTreeId(this.treeId);
+                }
+            }
         },
         methods: {
             ...mapActions({
-                loadJsonFromDB: types.TREE_ACTION_GET_JSON,
+                store_setPantherTreeFromApi: types.TREE_ACTION_SET_PANTHER_TREE,
+                store_setMsaFromApi: types.TREE_ACTION_SET_MSADATA,
+                store_setAnnoFromApi: types.TREE_ACTION_SET_ANNODATA,
                 store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
                 store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
-                stateSetTreeData: types.TREE_ACTION_SET_DATA,
+                store_setTableData: types.TABLE_ACTION_SET_DATA,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
-                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN
+                store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED,
+                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
+                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
+                store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
             }),
-            onSearch(text) {
-                if(text != null) {
-                    var d = this.completeData.filter(t => {
-                        var geneName = "";
-                        if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
-                            geneName = t["Gene name"].toLowerCase();
-                        }
-                        var geneId = "";
-                        if(t["Gene ID"] != null && typeof t["Gene ID"] != 'number') {
-                            geneId = t["Gene ID"].toLowerCase();
-                        }
-                        var uniprotId = "";
-                        if(t["Uniprot ID"] != null && typeof t["Uniprot ID"] != 'number') {
-                            uniprotId = t["Uniprot ID"].toLowerCase();
-                        }
-                        text = text.toLowerCase();
-                        return geneName === text || geneId === text || uniprotId === text;
-                    });
-                    this.matchNodes = d;
-                } else {
-                    this.matchNodes = [];
-                }
-                this.store_setMatchedNodes(this.matchNodes);
+            initForNewTreeId(id) {
+                this.treeId = id;
+                this.treeData_Json = null;
+                this.loadTreeFromApi();
+                this.store_setTableData([]);
+                this.metadata.isLoading = true;
+                this.showMsa = false;
+                this.analyzeCompleted = false;
+                this.resetPruning();
             },
-            loadJson(jsonString) {
-                var treeJson = JSON.parse(jsonString);
+            loadTreeFromStore() {
+                //Reset
+                this.resetPruning();
+                this.showMsa = false;
+                this.treeData_Json = null;
+                this.analyzeCompleted = false;
+
+                //For a grafted tree, we load the tree json from the store.
+                var treeJson = this.store_treeJsonObj;
+                if(treeJson.search) {
+                    //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
+                    //The MSA will be empty for the extra grafted node.
+                    this.treeId = treeJson.search.book;
+                    var p1 = this.store_setPantherTreeFromApi(this.treeId);
+                    var p2 = this.store_setMsaFromApi(this.treeId);
+                    Promise.all([p1, p2]).then(vals => {
+                        console.log("Loaded GO and MSA data from API");
+                        this.treeId = treeJson.search.book;
+                        this.metadata.isLoading = false;
+                        this.initTreeData(treeJson);
+                    });
+                    this.store_setHasGrafted(true);
+                }
+            },
+            //Load tree data needed from the API.
+            loadTreeFromApi() {
+                if(!this.treeId) {
+                    console.log("no tree ID is found");
+                    return;
+                }
+                //Saves the panther tree in json String onto the vue store.
+                var p1 = this.store_setPantherTreeFromApi(this.treeId);
+                var p2 = this.store_setMsaFromApi(this.treeId);
+                Promise.all([p1, p2]).then(vals => {
+                    if(vals.length > 1) {
+                        console.log("Loaded GO and MSA data from API");
+                        this.resetPruning();
+                        var treeJson = JSON.parse(this.store_treeJsonString);
+                        this.initTreeData(treeJson);
+                    }
+                });
+                this.store_setHasGrafted(false);
+            },
+            // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
+            initTreeData(treeJson) {
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
-                this.processJson(treeJson);
+                this.processJson(treeJson)
+                    .then(res => {
+                        this.treeData_Json = res;
+                    })
+                    .catch(e => {
+                        console.error("Process json failed! ", e);
+                    });
                 this.completeData = null;
             },
             loadJsonFromFile(fileName) {
@@ -335,17 +404,28 @@
                 }
                 this.store_setAnnoMapping(annoObj);
             },
-            processJson(treeJson) {
-                d3.csv("/organism_to_display.csv", (err, data) => {
-                    if (err) {
-                        console.error(err);
-                    } else {
-                        this.mappingData = data;
-                        this.mapOrganismToDisplayName(treeJson);
-                        this.jsonData = treeJson;
-                    }
+            getMappingFromCsv(fileName) {
+                return new Promise((resolve, reject) => {
+                    d3.csv(fileName, function(error, data) {
+                        if(error) {
+                            reject(error);
+                        } else {
+                            resolve(data);
+                        }
+                    });
                 });
             },
+            // Process json with external mappings (if any) by adding more fields
+            // Current external mapping: organism_to_display.csv, to map common name to organism
+            async processJson(treeJson) {
+                //Since 'getMappingFromCsv' is an asynchronous call, we use await, which stops execution until the function
+                // returns data
+                const mappingCsvData = await this.getMappingFromCsv("/organism_to_display.csv");
+                this.mappingData = mappingCsvData;
+                this.addFieldsToAllNodes(treeJson);
+                return treeJson;
+            },
+            //Recursive - Format each node inside the tree structure
             formatJson(data) {
                 if(data.node_name) {
                     var uniprotId = data.node_name;
@@ -366,8 +446,10 @@
                     }
                 }
             },
-            mapOrganismToDisplayName(node) {
-                //Set organism name from mapping data
+            //Recursive
+            // Fields currently being added: 'sequence', 'displayName', 'taxonId', 'text', 'fillColor', 
+            addFieldsToAllNodes(node) {
+                //Set 'displayName' and 'taxonId' from this.mappingData
                 if(node.organism) {
                     var found_mapping = this.mappingData.find(o => o.Organism.toLowerCase() === node.organism.toLowerCase());
                     if(found_mapping) {
@@ -375,23 +457,34 @@
                         node.taxonId = found_mapping.taxonID;
                     }
                 }
-                //Set Text for each node if present
+                //Set 'text' for each node if present
                 let text = this.getText(node);
                 if (text != null) {
                     node.text = text;
                 }
-                //Set fill color for each node
+                //Set 'fillColor' for each node
                 let fillColor = this.getNodeColor(node);
                 if(fillColor) {
                     node.fillColor = fillColor;
                 }
+                //Set 'sequence' from this.store_treeMsaData
+                let accessionId = node.accession;
+                if(accessionId) {
+                    if(accessionId == "ANGRAFTED") {
+                        node.newGrafted = true;
+                        node.text = "Grafted";
+                    }
+                    let sequence = this.store_treeMsaData.get(accessionId);
+                    if(sequence) {
+                        node.sequence = sequence;
+                    }
+                }
                 if(node.children) {
                     node.children.forEach(d => {
-                        this.mapOrganismToDisplayName(d);
+                        this.addFieldsToAllNodes(d);
                     });
                 }
             },
-
             //Set Text for nodes based on event type
             getText(d) {
                 var text = d.id;
@@ -429,7 +522,9 @@
                         text += " " + d.gene_symbol;
                     } else {
                         var geneId = d.gene_id;
-                        geneId = geneId.split(":")[1];
+                        if(geneId) {
+                            geneId = geneId.split(":")[1];
+                        }
                         text += " " + geneId;
                     }
                     if(d.displayName) {
@@ -461,7 +556,7 @@
                 return "#00FF00";
             },
             //For testing
-            // loadJson() {
+            // initTreeData() {
             //     d3.json("/panther.json", (err, data) => {
             //         if(err) {
             //             console.error(err);
@@ -481,6 +576,40 @@
 
             // },
             // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            onSearchWithinTree(text) {
+                //console.log(this.completeData);
+                if(text != null) {
+                    var d = this.completeData.filter(t => {
+                        var geneName = "";
+                        if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
+                            geneName = t["Gene name"].toLowerCase();
+                        }
+                        var geneId = "";
+                        if(t["Gene ID"] != null && typeof t["Gene ID"] != 'number') {
+                            geneId = t["Gene ID"].toLowerCase();
+                        }
+                        var uniprotId = "";
+                        if(t["Uniprot ID"] != null && typeof t["Uniprot ID"] != 'number') {
+                            uniprotId = t["Uniprot ID"].toLowerCase();
+                        }
+                        //If search text is "grafted" then we check if any nodes is a grafted node and return it as a matched node.
+                        // For getting grafted node, we check id accession is 'ANGRAFTED'
+                        var grafted = false;
+                        if(t["accession"] && t["accession"] == 'ANGRAFTED') {
+                            if(text == "grafted") {
+                                grafted = true
+                            }
+                        }
+                        text = text.toLowerCase();
+
+                        return geneName === text || geneId === text || uniprotId === text || grafted;
+                    });
+                    this.matchNodes = d;
+                } else {
+                    this.matchNodes = [];
+                }
+                this.store_setMatchedNodes(this.matchNodes);
+            },
             onMouseOverLink(link) {
                 this.branchLength = link.data.branch_length;
             },
@@ -493,50 +622,59 @@
                 var index = 0;
                 let uniqueOrganisms = [];
                 nodes.forEach(n => {
-                    if(!n.children && n.data.uniprotId) {
-                        var tableNode = {};
-                        tableNode["id"] = index++;
-                        tableNode["Gene name"] = n.data.gene_symbol;
-                        tableNode["Organism"] = n.data.organism;
-                        var geneId = n.data.gene_id;
-                        if (geneId) {
-                            geneId = geneId.split(':')[1];
-                        }
-                        tableNode["Gene ID"] = geneId;
-                        tableNode["Protein function"] = n.data.definition;
-                        tableNode["Uniprot ID"] = n.data.uniprotId;
-
-                        if(n.data.organism) {
-                            let org = uniqueOrganisms.find(o => o.name === n.data.organism);
-                            if(org) {
-                                org.count++;
-                            } else {
-                                let org = {
-                                    name: n.data.organism,
-                                    commonName: n.data.displayName,
-                                    taxonId: n.data.taxonId,
-                                    count: 1
-                                }
-                                uniqueOrganisms.push(org);
+                    if(!n.children) {
+                        if(n.data.uniprotId || (!n.data.uniprotId && n.data.accession == "ANGRAFTED")) {
+                            var tableNode = {};
+                            tableNode["id"] = index++;
+                            tableNode["MSA"] = n.data.sequence;
+                            var geneId = n.data.gene_id;
+                            if (geneId) {
+                                geneId = geneId.split(':')[1];
                             }
+                            tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol:geneId;
+                            tableNode["Organism"] = n.data.organism;
+                            tableNode["Gene name"] = n.data.gene_symbol;
+                            
+                            tableNode["Gene ID"] = geneId;
+                            tableNode["Protein function"] = n.data.definition;
+                            tableNode["Uniprot ID"] = n.data.uniprotId;
+                            tableNode["accession"] = n.data.accession;
+                            if(n.data.organism) {
+                                let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                                if(org) {
+                                    org.count++;
+                                } else {
+                                    let org = {
+                                        name: n.data.organism,
+                                        commonName: n.data.displayName,
+                                        taxonId: n.data.taxonId,
+                                        count: 1
+                                    }
+                                    uniqueOrganisms.push(org);
+                                }
+                            }
+
+                            tableNode["MSA"] = n.data.sequence;
+                            tabularData.push(tableNode);
                         }
-                        tabularData.push(tableNode);
                     }
                 });
-                this.metadata.genesCount = tabularData.length;
-                this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
-                if(!this.prunedLoaded) {
-                    uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
-                    this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
-                    this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
-                } 
+                this.setMetadata(tabularData, uniqueOrganisms);
+                this.completeData = tabularData;
 
-                this.completeData = tabularData;           
+                // If msa is toggled on (in UI), we need to analyze msa logic again on every
+                // tree init.
+                if(this.showMsa) {
+                    this.analyzeAndShowMsa();
+                }
             },
             onTreeUpdate(nodes) {
-                this.metadata.isLoading = false;
+                if(!this.treeId) {
+                    this.metadata.isLoading = false;
+                }
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
+                this.metadata.isLoading = false;
                 this.sortArrayByX(nodes);
                 this.updateTableData(nodes);
             },
@@ -562,6 +700,7 @@
                             geneId = geneId.split(':')[1];
                         }
                         tableNode["Gene ID"] = geneId;
+                        tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol: geneId;
                         tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily name"] = n.data.sf_name;
@@ -636,20 +775,41 @@
                 })
                 .catch(() => console.error('error occured'))
             },
-            // ~~~~~~~~~~~~~~~~ Tree Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            // ~~~~~~~~~~~~~~~~ Table Layout Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            toggleMsa() {
+                this.showMsa = !this.showMsa;
+                if(!this.analyzeCompleted) {
+                    this.analyzeAndShowMsa();
+                } else {
+                    //If analyze is already done, directly show the msa cols
+                    this.setTableCols();
+                }
+            },
+            setTableCols() {
+                if(this.showMsa) {
+                    this.tableColsToRender = this.msaCols;
+                } else {
+                    this.tableColsToRender = this.defaultCols;
+                }
+            },
             updateTableData(nodes) {
                 var tabularData = [];
                 var index = 0;
+                this.setTableCols();
+
+                this.headerMap["MSA"] = this.setMsaHeaderTitle();
                 nodes.forEach(n => {
                     if(!n.children) {
                         var tableNode = {};
                         tableNode["id"] = index++;
-                        tableNode["Gene name"] = n.data.gene_symbol;
                         var geneId = n.data.gene_id;
                         if (geneId) {
                             geneId = geneId.split(':')[1];
                         }
-                        tableNode["Organism"] = n.data.organism;
+                        tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol:geneId;
+                        tableNode["Organism"] = n.data.organism;                        
+                        tableNode["Gene name"] = n.data.gene_symbol;                      
+                        tableNode["Gene ID"] = geneId;
                         this.anno_headers.sort(function (a, b) {
                             return a.toLowerCase().localeCompare(b.toLowerCase());
                         });
@@ -667,21 +827,178 @@
                                 }
                             }
                         });
-                        tableNode["Gene ID"] = geneId;
+                        
                         tableNode["Protein name"] = n.data.definition;
                         tableNode["Uniprot ID"] = n.data.uniprotId;
                         tableNode["Subfamily Name"] = n.data.sf_name;
+
+                        if(n.data.accession == "ANGRAFTED") {
+                            tableNode["accession"] = n.data.accession;
+                        }
                         if(n._children) {
                             if(n.data.accession) {
                                 tableNode["accession"] = n.data.accession;
                             }
                         }
+
+                        tableNode["MSA"] = n.data.sequence;
+                        //this.setTableContentforMsa(n.data.sequence);
                         tabularData.push(tableNode);
                     }
                 });
-                this.stateSetTreeData(tabularData);
+                // this.store_setTableIsLoading(false);
+                this.store_setTableData(tabularData);
+            },
+            // ~~~~~~~~~~~~~~~~ Metadata ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Set metadata bar and organisms for pruning popup
+            setMetadata(tabularData, uniqueOrganisms) {
+                this.metadata.genesCount = tabularData.length;
+                this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
+                if(!this.prunedLoaded) {
+                    uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
+                    this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
+                    this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
+                }
+            },
+
+            // ~~~~~~~~~~~~~~~~ MSA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Analyze Msa Data and set table cols to msa.
+            analyzeAndShowMsa() {
+                this.store_setTableIsLoading(true);
+                setTimeout(() => {
+                    this.analyzeMsaData().then(res => {
+                        this.setTableCols();
+                        this.analyzeCompleted = true;
+                        this.store_setTableIsLoading(false);
+                    });
+                }, 10);
+            },
+            setMsaHeaderTitle() {
+                let msa_header = "MSA:";
+                let max_ruler_len = this.store_maxMsaLength;
+                let ruler_gap = 25;
+                let c = msa_header.length+1;
+                let digits = 2;
+                let markedCount = 0;
+                while(c < max_ruler_len) {
+                    if((c+digits)%ruler_gap == 0) {
+                        msa_header += c+digits;
+                        msa_header += "|";
+                        c += digits;
+                        //Check if c for next ruler mark is supposed to inc digits count
+                        if(c+ruler_gap > 99) digits=3;
+                        if(c+ruler_gap > 999) digits=4;
+                    } else {
+                        msa_header += "&nbsp";
+                    }
+                    c++;  
+                }
+                return msa_header;
+            },
+            async analyzeMsaData() {
+                let msa_split = [];
+                // Each seq of every node of tree (completeData) is split by letters and 
+                // added as an array of letters.
+                // Each array of letters is of the same length.
+                // eg. [0]=['.','.','m','f']
+                //     [1]=['.','.','n','g'] 
+                this.completeData.forEach(s => {
+                    let msa_arr = [];
+                    if(s["MSA"]) {
+                        msa_arr = s["MSA"].split('');
+                    }
+                    msa_split.push(msa_arr);
+                });
+                let maxLength = msa_split[0].length;
+
+                /* Each index in the array consists of a 'seqObj' which gives freq of unique letters
+                found in that index inside the 'msa_split' array.
+                If 'msa_split' is following:
+                    [0] = ['a','b','b','a','e']
+                    [1] = ['b','b','a','a','e']
+                    [2] = ['a','b','a','a','c']
+                Then 'analysis_arr' after the initial processing is:
+                    [0] = {'a': 2, 'b': 1}
+                    [1] = {'b': 3}
+                    [2] = {'b': 1, 'a':2}
+                    [3] = ['a': 3]
+                    [4] = ['e': 2, 'c': 1]
+                */
+                let analysis_arr = new Array(maxLength).fill({});
+                let ix = 0;
+                msa_split.forEach(seq_arr => {
+                    let node_index = 0;
+                    seq_arr.forEach(letter => {
+                        let seqObj = {};
+                        //Assign is used to clone the current object inside the 'analysis_arr' at the curr index.
+                        //We need the prev node_index 'seqObj' to increment the letters if duplicate or add a new letter.
+                        Object.assign(seqObj, analysis_arr[node_index]);
+                        if(letter) {
+                            if(seqObj[letter]) {
+                                seqObj[letter]++;
+                            } else {
+                                seqObj[letter] = 1;
+                            }
+                        }
+                        
+                        analysis_arr[node_index] = seqObj;
+                        node_index++;
+                    });
+                    ix++;
+                });
+
+                //After the analysis is done, create 'freq_seq_arr' which gives
+                // highest frequence letter at each node index along with it's percent.
+                // Eg. [0] = {l: 'a', p:80}
+                //     [1] = {l: 'b', p:30} ...
+                // 'freq_seq_arr' could be a map [l]:{p}, but kept as an array incase in future we 
+                // need to add percent for second-highest letter for instance.
+                let freq_seq_arr = [];
+                let i =0;
+                analysis_arr.forEach(e => {
+                    let arr = this.calculateFreqByPercent(e).slice(0,1);
+                    let f = parseFloat(arr[0].percent);
+                    f = f.toFixed(2);
+                    let obj = {l: arr[0].letter, p: f, i: i++};
+                    freq_seq_arr.push(obj);
+                });
+                let filtered = freq_seq_arr.filter((f, i) => {
+                    return f.l != '.' && f.l != '-' && f.p >= 50
+                });
+                
+                this.store_setFreqMsa(freq_seq_arr);
+                return true;
+            },
+            //freqOfLetters: {'a':2, 'b':1, 'c':3 ... etc}
+            //Calculates the percent of each letter from the total freq of all letters.
+            //Creates a new array: ['letter', 'freq', 'percent']
+            //Sorts the new array by percent and returns the arr. 
+            calculateFreqByPercent(freqOfLetters) {
+                let seqObjArr = [];
+                let letters = Object.keys(freqOfLetters);
+                let total = 0;
+                letters.forEach(l => {
+                    let freq = freqOfLetters[l];
+                    seqObjArr.push({letter: l, freq: freq});
+                    total += freq;
+                });
+
+                seqObjArr.map(e => {
+                    e.percent = e.freq/total*100;
+                });
+                seqObjArr = seqObjArr.sort((a,b) => {
+                    return b.percent - a.percent;
+                });
+                return seqObjArr;
             },
             // ~~~~~~~~~~~~~~~~ Pruning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            //Reset all pruning global vars
+            resetPruning() {
+                this.unprunedTaxonIds = 0;
+                this.prunedLoaded = false;
+                this.showPopup = false;
+                this.popupData = [];
+            },
             pruneTreeFromMenu() {
                 this.showOrganismPopup();
             },
@@ -743,45 +1060,6 @@
                     }
                 }); 
             },
-            resetPruning() {
-                this.unprunedTaxonIds = 0;
-                this.prunedLoaded = false;
-                this.showPopup = false;
-            },
-            pruneTree(taxonList) {
-                if(!taxonList || taxonList.length == 0) {
-
-                } else {
-                    if(taxonList.length == this.originalTaxonIdsLength) {
-                        this.resetPruning();
-                        this.loadJsonFromDB(this.treeId);
-                        this.popupData = [];
-                    } else {
-                        this.$refs.treeLayout.onPruneLoading(true);
-                        axios({
-                            method: 'POST',
-                            url: this.PRUNING_PANTHER_API + this.treeId,
-                            data: {
-                                taxonIdsToShow: taxonList
-                            }
-                        })
-                        .then(res => {
-                            this.isLoading = false;
-                            this.showPopup = false;
-                            this.prunedLoaded = true;
-                            let prunedJson = res.data;
-                            this.loadPrunedJson(prunedJson);
-                            this.$refs.treeLayout.onPruneLoading(false);
-                        })
-                        .catch(err => {
-                            console.error("error");
-                            this.isLoading = false;
-                            this.resetPruning();
-                            this.$refs.treeLayout.onPruneLoading(false);
-                        });
-                    }
-                }
-            },
             onPrune() {
                 let filteredOrganisms = this.popupData.filter(pd => {
                     return pd[0].checked == true;
@@ -789,10 +1067,90 @@
                 this.unprunedTaxonIds = filteredOrganisms.map(o => o[1].id);
                 this.pruneTree(this.unprunedTaxonIds);
             },
+            pruneTree(taxonList) {
+                if(!taxonList || taxonList.length == 0) {
+
+                } else {
+                    if(taxonList.length == this.originalTaxonIdsLength) {
+                        this.resetPruning();
+                        if(this.$route.name == "treeGrafted") {
+                            this.loadTreeFromStore();
+                        } else {
+                            this.loadTreeFromApi();
+                        }
+                        this.popupData = [];
+                    } else {
+                        this.$refs.treeLayout.onPruneLoading(true);
+                        if(!this.store_getHasGrafted) {
+                            this.regularPruning(taxonList)
+                        } else {
+                            this.graftedPruning(taxonList);
+                        }
+                    }
+                }
+            },
+            graftedPruning(taxonList) {
+                let api =  this.GRAFT_PRUNING_PANTHER_API;
+                let stored_seq = this.store_getGraftSeq;
+                axios({
+                    method: 'POST',
+                    url: api,
+                    data: {
+                        sequence: stored_seq,
+                        taxonIdsToShow: taxonList
+                    },
+                    timeout: 200000
+                })
+                .then(res => {
+                    this.isLoading = false;
+                    this.showPopup = false;
+                    this.prunedLoaded = true;
+                    let prunedJson = res.data;
+                    this.analyzeCompleted = false;
+                    this.loadPrunedJson(prunedJson);
+                    this.$refs.treeLayout.onPruneLoading(false);
+                })
+                .catch(err => {
+                    console.error("error ", err);
+                    this.isLoading = false;
+                    this.resetPruning();
+                    this.$refs.treeLayout.onPruneLoading(false);
+                });
+            },
+            regularPruning(taxonList) {
+                axios({
+                    method: 'POST',
+                    url: this.REG_PRUNING_PANTHER_API + this.treeId,
+                    data: {
+                        taxonIdsToShow: taxonList
+                    },
+                    timeout: 200000
+                })
+                .then(res => {
+                    this.isLoading = false;
+                    this.showPopup = false;
+                    this.prunedLoaded = true;
+                    let prunedJson = res.data;
+                    this.loadPrunedJson(prunedJson);
+                    this.$refs.treeLayout.onPruneLoading(false);
+                })
+                .catch(err => {
+                    console.error("error ", err);
+                    this.isLoading = false;
+                    this.resetPruning();
+                    this.$refs.treeLayout.onPruneLoading(false);
+                });
+            },
             loadPrunedJson(treeJson) {
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
-                this.processJson(treeJson);
+                this.processJson(treeJson)
+                    .then(res => {
+                        this.treeData_Json = res;
+                    })
+                    .catch(e => {
+                        console.error("Process json failed!");
+                    });
             },
         },
         created() {
@@ -823,5 +1181,8 @@
     }
     @media (max-height: 948px) {
         .pg-panel { padding-top: 1px; }
+    }
+    .pg-toolbar {
+        min-width: 680px;
     }
 </style>
