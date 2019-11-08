@@ -831,7 +831,7 @@
     }
     ::-webkit-scrollbar-thumb {
         border-radius: 4px;
-        background-color: rgb(158, 222, 238);
+        background-color: rgb(0,0,0,0.5);
         -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.897);
         width: 70px;
     }
