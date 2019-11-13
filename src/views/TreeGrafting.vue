@@ -5,7 +5,7 @@
                 <div class="col">
                     <br>
                     <div class="h4 text-primary mt-4">If the species you are studying is not represented in the Phylogenes 
-                        pre-computed gene families, you can submit a protein sequence here. The TreeGrafter tool will search for a matching tree and insert your gene to the tree. The process may take a few minutes.
+                        pre-computed gene families, you can submit a protein sequence here. The TreeGrafter tool (beta version) will search for a matching tree and insert your gene to the tree. The process may take a few minutes.
                     </div>
                     <br> <br>
                     <div class="h5 mt-4"> Enter a protein sequence (raw sequence only)</div>

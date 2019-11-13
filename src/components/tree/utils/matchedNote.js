@@ -20,7 +20,6 @@ function isGraftedNode(d) {
 }
 
 async function processGrafted(allNodes) {
-    // console.log(matNode);
     var foundAnywhere = false;
     allNodes.some(d => {
         d.matched = false;
@@ -40,7 +39,7 @@ async function processGrafted(allNodes) {
     });
     allNodes.forEach(a => {
         if (isGraftedNode(a)) {
-            a.matched = true;
+            a.grafted = true;
         }
     });
     return 1;
