@@ -169,6 +169,7 @@
             },
             '$route.name': {
                 handler: function (val, oldVal) {
+                    //Load tree from grafting call
                     if(val && val == "treeGrafted") {
                         this.loadTreeFromStore();
                     }
@@ -351,6 +352,7 @@
             initTreeData(treeJson) {
                 treeJson = treeJson.search.annotation_node;
                 this.formatJson(treeJson);
+
                 this.processJson(treeJson)
                     .then(res => {
                         this.treeData_Json = res;
