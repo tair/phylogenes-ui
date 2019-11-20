@@ -93,16 +93,24 @@
                 for(var i = 0; i < splits.length; i++) {
                     let l = splits[i];
                     let hfl = this.store_getFreqMsa[i];
-                    if(l== "." || l == "-" || l != hfl.l) {
-                        this.processedHtmlTxt += l;
-                    } else {
-                        if(hfl.p > 50 && hfl.p <= 90) {
-                            l = '<mark class="lightMark">' + l + '</mark>';
-                        } else if(hfl.p > 90) {
-                            l = '<mark class="darkMark">' + l + '</mark>';
-                        } 
-                        this.processedHtmlTxt += l;
+                    if(hfl.l != "." && hfl.l != "-") {
+                        if(hfl.p > 50) {
+                            if(l == hfl.l) {
+                                if(hfl.p > 50 && hfl.p <= 90) {
+                                    l = '<mark class="lightMark">' + l + '</mark>';
+                                } else if(hfl.p > 90) {
+                                    l = '<mark class="darkMark">' + l + '</mark>';
+                                } 
+                            } else {
+                                //If the letter is in the column with a light or dark mark but is not marked,
+                                // we still need to add the <mark> tag otherwise the sequence gets misaligned in the UI.
+                                // We add a mark with transparent backgtound.
+                                l = '<mark class="absentMark">' + l + '</mark>';
+                            }
+                        }
                     }
+                    
+                    this.processedHtmlTxt += l;
                 }
 
                 this.mutableContent.process = false;
@@ -118,20 +126,27 @@
         width: 100%;
     }
     .tdTxt {
-        font-family: monospace;
+        font-family: "Courier New", Courier, monospace;
+        font-weight: 700;
         letter-spacing: 0.1px;
     }
     .tdTxt >>> .lightMark {
-        background-color: #eca979;
+        background-color: #ffd966;
         padding: 0px;
-        /* is 0.01px less then parent, 
-        as <mark> tag takes some space which misaligns the letters 
-        if added inside a <span> tag */
-        letter-spacing: 0.09px; 
+        padding-top: 13px;
+        padding-bottom: 13px;
     }
     .tdTxt >>> .darkMark {
-        background-color: #c9641d;
+        background-color: #bf8f00;
         padding: 0px;
-        letter-spacing: 0.09px;
+        padding-top: 13px;
+        padding-bottom: 13px;
     }
+    .tdTxt >>> .absentMark {
+        background-color: transparent;
+        padding: 0px;
+        padding-top: 13px;
+        padding-bottom: 13px;
+    }
+    
 </style>

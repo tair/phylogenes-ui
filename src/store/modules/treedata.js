@@ -7,9 +7,11 @@ const state = {
     treedata: {
         isLoading: false,
         isTableLoading: false,
+        hasGrafted: false,
         iserror: false,
         data: null,
         jsonString: null,
+        jsonObj: null,
         go_annotations: null,
         freq_msa_arr: [],
         msa_data: new Map(),
@@ -28,7 +30,8 @@ const state = {
         zoom: null,
         scroll: null,
         topPaddingY: 0,
-        searchTextWithin: null
+        searchTextWithin: null,
+        graftSequence: null
     }
 };
 
@@ -38,6 +41,9 @@ const getters = {
     },
     [types.TREE_GET_JSON]: state => {
         return state.treedata.jsonString;
+    },
+    [types.TREE_GET_JSON_OBJ]: state => {
+        return state.treedata.jsonObj;
     },
     [types.TREE_GET_ANNOTATIONS]: state => {
       return state.treedata.go_annotations;
@@ -69,6 +75,9 @@ const getters = {
     [types.TREE_GET_SEARCHTEXTWTN]: state => {
         return state.treedata.searchTextWithin;
     },
+    [types.TREE_GET_ISGRAFTED]: state => {
+        return state.treedata.hasGrafted;
+    },
     [types.TABLE_GET_SCROLL]: state => {
         return state.treedata.scroll;
     },
@@ -77,6 +86,9 @@ const getters = {
     },
     [types.TABLE_GET_MSA_FREQ]: state => {
         return state.treedata.freq_msa_arr;
+    },
+    [types.TREE_GET_GRAFTSEQ]: state => {
+        return state.treedata.graftSequence;
     }
 };
 
@@ -117,6 +129,16 @@ const actions = {
     [types.TREE_ACTION_SET_SEARCHTEXTWTN]: (context, payload) => {
         context.state.treedata.searchTextWithin = payload;
     },
+    [types.TREE_ACTION_SET_ISGRAFTED]: (context, payload) => {
+        context.state.treedata.hasGrafted = payload;
+    },
+    [types.TREE_ACTION_SET_GRAFTSEQ]: (context, payload) => {
+        context.state.treedata.graftSequence = payload;
+    },
+    [types.TREE_ACTION_SET_PANTHER_TREE2]: (context, payload) => {
+        context.state.treedata.jsonString = payload;
+        context.state.treedata.jsonObj = payload;
+    },
     [types.TREE_ACTION_SET_PANTHER_TREE]: (context, payload) => {
         if (!payload) return;
         return new Promise((result, rej) => {
@@ -147,6 +169,30 @@ const actions = {
                     console.log('Error while reading data (E8273): ' + JSON.stringify(error));
                     rej();
                 })
+        });
+    },
+    [types.TREE_ACTION_SET_ANNODATA]: (context, payload) => {
+        if (!payload) return;
+        return new Promise((result, rej) => {
+            axios({
+                method: 'GET',
+                url: API_URL + '/tree/' + payload
+            })
+            .then(res => {
+                console.log(res);
+                if (res.data.response.docs.length > 0) {
+                    if (res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                    } else if (!res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = null;
+                    }
+                }
+                result("panther tree");
+            })
+            .catch(error => {
+                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                rej();
+            })
         });
     },
     [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {

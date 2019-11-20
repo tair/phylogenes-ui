@@ -1,3 +1,6 @@
+// <b-button triggers="focus" variant="light" 
+//   title="Known Function"><i class="fas fa-info-circle fa-lg"></i></b-button>        
+
 <template>
     <div id="parent">
         <modal v-if="showPopup" @close="showPopup = false">
@@ -7,33 +10,50 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
-
+        <div v-if="showMsaLegend" class="legend-box">
+            <msa-legend></msa-legend>
+        </div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-else class="mainTable"> 
+        
+        <table v-else class="mainTable">
             <thead id="head" ref="thead">
-                <col>
+                <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                    <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
+                </button>
                 <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
                     <th :colspan="msaTab?1:2" class="thInvis">
                         <button class="btn bg-white float-left" @click="toggleTabs">
-                                    <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                            <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                         </button>
+                        
                         <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
                     </th>
-                    <th v-if="!msaTab && extraCols.length > 0" 
-                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function</th>
+                    <th v-if="extraCols.length > 0 && !msaTab" 
+                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
+                            <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
+                    </th>
                     <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th class="widthTree">First</th>
-                    <th v-for="(col,i) in colsToRender" :key="i"
+                    <th v-for="(col,i) in colsToRender" :key="i" 
                         :class="getThClasses(col, i)"> 
                             <tablecell :content="getHeader(col)"></tablecell>
+                    
+                            <b-button v-if="col === 'Gene name'" id="popover2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover2Text title="Gene Name" placement='right' target='popover2'></popover>
+                            <b-button v-if="col === 'Gene ID'" id="popover3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover3Text title="Gene ID" placement='left' target='popover3'></popover>
+                            <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
+                            <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                            <popover :text=popover5Text title="Subfamily Name" placement='left' target='popover5'></popover>
                     </th>
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
+                <tr v-for="(row, row_i) in rowsToRender" :class="isEvenOdd(row)" :key=row_i>
                     <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
                         :class="getTdClasses(key, row[key], i)">
                         <tablecell :content.sync="rowsToRender[row_i][key]"
@@ -57,20 +77,19 @@
     import customModal from '@/components/modal/CustomModal';
     import baseCell from '@/components/table/cells/BaseTableCell';
     import { setTimeout } from 'timers';
-    import treelayoutnew from '@/components/tree/TreeLayout_new';
+    import msaLegend from '../table/MsaLegend';
 
     export default {
         name: "tablelayout",
         props: [
             "headerMap",    //Map: ['Original Col Name': 'Updated Col Name']
-            "colsFromProp",  //Array: Col names to be displayed
-            "treeJsonFromProp"
+            "colsFromProp"  //Array: Col names to be displayed
         ],
         components: {
             popupTable: popupTable,
             'modal': customModal,
             tablecell: baseCell,
-            treelayoutnew: treelayoutnew,
+            msaLegend: msaLegend
         },
         data() {
             return {
@@ -90,12 +109,17 @@
                 popupData: [],
                 isLoading: false,
                 isMsaLoading: false,
+                showMsaLegend: false,
                 ticking: false,
                 rowsScrolled: 0,
                 upperLimit: 100,
                 msaTab: false,
                 processedCells: [],
-                treeData_Json: null
+                popover1Text: 'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
+                popover2Text: 'A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
+                popover3Text: 'A gene ID is a canonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
+                popover4Text: 'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
+                popover5Text: 'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
             }
         },
         computed: {
@@ -155,13 +179,6 @@
                     this.update();
                     this.setTableScroll();
                 }
-            },
-            treeJsonFromProp: {
-                handler: function(val, oldval) {
-                    console.log(val);
-                    this.treeData_Json = val;
-                },
-                immediate: true
             }
         },
         mounted: function () {
@@ -178,26 +195,20 @@
                 store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
-            getRowSpan() {
-                let rowspan = this.store_tableData.length;
-                console.log(this.store_tableData.length);
-                return rowspan;
-            },
             reset() {
                 this.isLoading = true;
                 this.msaTab = false;
                 this.rowsToRender = [];
-                console.log("reset");
             },
             resetTable() {
                 this.isLoading = true;
                 this.msaTab = false;
-                // this.store_setTableIsLoading(true);
+                this.store_setTableIsLoading(true);
             },
             initTable() {
                 this.addCustomScrollEvent();
                 this.extraCols = this.store_annoMapping.headers;
-                // this.store_setTableIsLoading(false);   
+                this.store_setTableIsLoading(false);   
             },
             addCustomScrollEvent() {
                 //On props change, the $refs reloads, so need to add scroll event at the next frame,
@@ -226,7 +237,6 @@
             update() {
                 if(!this.colsFromProp) return;
                 var filteredCols = d3.keys(this.store_tableData[0]);
-                // filteredCols[0] = "Tree";
                 filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
                 //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
                 if(this.colsFromProp.includes("Annotations")) {
@@ -337,18 +347,18 @@
                 // called a lot of times when the mouse is scrolled in a second, but we don't
                 // need to perform methods like updateRows for every call, or it will slow down
                 // performance.
-                // if(!this.ticking) {
-                //     this.ticking = true;
-                //     setTimeout(() => {
-                //         this.ticking = false;
-                //         let scrollTop_curr = document.getElementById("body").scrollTop;
-                //         if(scrollTop_curr != this.scrollTop_old) {
-                //             this.calculateRowsScrolled(scrollTop_curr);
-                //             this.scrollTop_old = scrollTop_curr;
-                //             this.scrollTreeFromTable(this.rowsScrolled);
-                //         }
-                //     }, 100);
-                // }
+                if(!this.ticking) {
+                    this.ticking = true;
+                    setTimeout(() => {
+                        this.ticking = false;
+                        let scrollTop_curr = document.getElementById("body").scrollTop;
+                        if(scrollTop_curr != this.scrollTop_old) {
+                            this.calculateRowsScrolled(scrollTop_curr);
+                            this.scrollTop_old = scrollTop_curr;
+                            this.scrollTreeFromTable(this.rowsScrolled);
+                        }
+                    }, 100);
+                }
             },
             calculateRowsScrolled(amount) {
                 var rowNumber = amount/this.rowHeight;
@@ -423,6 +433,9 @@
             },
             toggleTabs() {
                 this.$emit('toggle-cols');
+            },
+            toggleLegend() {
+                this.showMsaLegend = !this.showMsaLegend;
             },
             onTableCellDestroyed(val) {
                 //If the table cell is destroyed before the processing of cell is finished,
@@ -647,6 +660,11 @@
                 }
                 return classes;
             },
+            isEvenOdd(row) {
+                if(row.MSA) {
+                    return "noevenodd";
+                }
+            }
         },
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll);
@@ -654,15 +672,23 @@
     }
 </script>
 <style scoped>
-#treeSvg {
-    background-color: white;
-    /*cursor: grab;*/
-}
     #parent {
         position: absolute;
         width: 95%;
         height: 100%;
         overflow: hidden;
+    }
+    .legend-box {
+        background-color: #9E9E9E;
+        position: absolute;
+        top: 50px;
+        right: 0px;
+    }
+    .msalegend {
+        position: absolute;
+        right: 10px;
+        top: 12px;
+        z-index: 100;
     }
     .mainTable {
         display: flex;
@@ -714,6 +740,22 @@
     .mainTable tr:nth-child(odd) {
         background-color: #e9e9e9;
     }
+
+    .mainTable tr:nth-child(even) td:first-child {
+        background-color: #cdeaf5;
+    }
+    .mainTable tr:nth-child(odd) td:first-child {
+        background-color: #e9e9e9;
+    }
+
+    /* tr with noevenodd class, have 2nd child (hard-coded!) of MSA which should not be even odd*/
+    .mainTable tr.noevenodd:nth-child(even) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+    .mainTable tr.noevenodd:nth-child(odd) td:nth-child(2) {
+        background-color: #e9e9e9;
+    }
+
     .mainTable tr {
         height: 40px !important;
     }
@@ -741,13 +783,6 @@
         background-color: #9cd5e3;
     }
 
-    .mainTable tr:nth-child(even) td:first-child {
-        background-color: #cdeaf5;
-    }
-    .mainTable tr:nth-child(odd) td:first-child {
-        background-color: #e9e9e9;
-    }
-
     .thInvis {
         background-color: transparent !important;
         box-shadow: none !important;
@@ -762,11 +797,6 @@
     }
     .thSubColSp {
         border-right: 1px solid #f1f1f0 !important;
-    }
-    .widthTree {
-        min-width: 500px;
-        width: 500px;
-        max-width: 500px;
     }
     .widthDefault {
         min-width: 200px;
@@ -797,12 +827,14 @@
 
     ::-webkit-scrollbar {
         -webkit-appearance: none;
-        width: 7px;
+        width: 15px;
     }
     ::-webkit-scrollbar-thumb {
         border-radius: 4px;
-        background-color: rgba(0,0,0,.5);
-        -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+        background-color: rgb(0,0,0,0.5);
+        -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.897);
+        width: 70px;
     }
+   
 </style>
 

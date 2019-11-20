@@ -4,8 +4,18 @@
             <div class="col-sm-12 h-95 pg-panel">
                 <div class="row h-50">
                     <div class="col-sm-12 h-50">
-                        <table class="mainTable"> 
+                        <tablelayout ref="tableLayout"
+                            :colsFromProp="tableColsToRender" :treeDataFromProp ="treeData_Json"
+                            v-on:toggle-cols="toggleMsa">
+                        </tablelayout>
+                        <!-- <table class="mainTable"> 
                             <thead id="head" ref="thead">
+                                <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                                    <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
+                                </button>
+                                <tr id="secTr">
+                                    <th class="widthTree"></th>
+                                </tr>
                                 <tr id="mainTr">
                                     <th class="widthTree">First</th>
                                     <th v-for="(col,i) in colsToRender" :key="i"
@@ -30,7 +40,7 @@
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table> -->
                     </div>
                 </div>
             </div>
@@ -41,7 +51,7 @@
 <script>
 import treelayoutnew from '../components/tree/TreeLayout_new';
 import treelayout from '../components/tree/TreeLayout';
-import tablelayout from '../components/table/TableD3';
+import tablelayout from '../components/table/TableD3New';
 import intersect from '../components/tree/Intersection';
 import searchBox from '../components/search/SearchBox';
 
@@ -60,17 +70,23 @@ import baseCell from '@/components/table/cells/BaseTableCell';
 export default {
     name: "TreeDetailNew",
     components: {
+        tablelayout: tablelayout,
         treelayout: treelayout,
         tablecell: baseCell,
     },
     data() {
         return {
-            defaultCols: ["Gene name", 
-                        "Organism",
-                        "Gene ID", 
-                        "Protein name", 
-                        "Uniprot ID", 
-                        "Subfamily Name"],
+            defaultCols: ["Gene",
+                              "Organism", 
+                              "Annotations",
+                              "Gene name", 
+                              "Gene ID", 
+                              "Protein function", 
+                              "Uniprot ID", 
+                              "Subfamily Name"],
+            msaCols: ["Gene",
+                        "MSA"],
+            tableColsToRender: [],
             colsToRender: [],
             rowsToRender: [],
             treeData_Json: null,
@@ -84,6 +100,7 @@ export default {
             store_treeJsonString: types.TREE_GET_JSON,
             store_tableData: types.TABLE_GET_DATA,
             stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
+            store_annoMapping: types.TREE_GET_ANNO_MAPPING,
             store_getTreeMetadata: types.TREE_GET_METADATA,
             store_treeMsaData: types.TREE_GET_MSADATA,
             store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
@@ -94,13 +111,13 @@ export default {
     mounted() {
         // this.loadTreeFromApi();
         let i = 0;
-        for(i = 0; i < 100; i++) {
-            let processedRowData = {};
-            this.colsToRender.forEach(c => {
-                processedRowData[c] = "Test";
-            });
-            this.rowsToRender.push(processedRowData);
-        }
+        // for(i = 0; i < 100; i++) {
+        //     let processedRowData = {};
+        //     this.colsToRender.forEach(c => {
+        //         processedRowData[c] = "Test";
+        //     });
+        //     this.rowsToRender.push(processedRowData);
+        // }
     },
     watch: {
         '$route.params.id': {
@@ -120,6 +137,22 @@ export default {
                     this.renderTable();
                 }
             },
+            immediate: true
+        },
+        stateTreeAnnotations: {
+            handler: function (val, oldVal) {
+                // console.log("tree ", val);
+                this.loadAnnotations(val);
+            },
+            deep: true,
+            immediate: true
+        },
+        store_annoMapping: {
+            handler: function (val, oldVal) {
+                // this.extraCols = val.headers;
+                // console.log("Watch anno ", val.headers);
+            },
+            deep: true,
             immediate: true
         },
     },
@@ -169,7 +202,44 @@ export default {
                 .catch(e => {
                     console.error("Process json failed! ", e);
                 });
+            this.setTableCols();
             // this.completeData = null;
+        },
+        loadAnnotations(annotations) {
+            this.anno_mapping = {};
+            this.anno_headers = [];
+            this.go_mapping = {};
+            // console.log("annotations ", annotations);
+            if(!annotations) {
+                var annoObj = {
+                    headers: this.anno_headers,
+                    annoMap: this.anno_mapping
+                }
+
+                this.store_setAnnoMapping(annoObj);
+                return;
+            }
+
+            annotations.forEach(a => {
+                var uni_mapping = JSON.parse(a);
+                var uniprotId = uni_mapping.uniprot_id;
+                var annotationsList = JSON.parse(uni_mapping.go_annotations);
+                this.anno_mapping[uniprotId] = annotationsList;
+                annotationsList.forEach(singleAnno => {
+                    if(!this.anno_headers.includes(singleAnno.goName)) {
+                        this.anno_headers.push(singleAnno.goName);
+                    }
+                    if(!(singleAnno.goName in this.go_mapping)) {
+                        this.go_mapping[singleAnno.goName] = singleAnno.goId;
+                    }
+                });
+            });
+
+            var annoObj = {
+                headers: this.anno_headers,
+                annoMap: this.anno_mapping
+            }
+            this.store_setAnnoMapping(annoObj);
         },
         getMappingFromCsv(fileName) {
             return new Promise((resolve, reject) => {
@@ -319,43 +389,28 @@ export default {
 
         ///////After Tree loaded
         onTreeInit(nodes) {
-
             var tabularData = [];
             this.sortArrayByX(nodes);
             var index = 0;
             let uniqueOrganisms = [];
             nodes.forEach(n => {
                 if(!n.children && n.data.uniprotId) {
-                    var tableNode = {};
-                    tableNode["id"] = index++;
-                    tableNode["MSA"] = n.data.sequence;
-                    tableNode["Gene name"] = n.data.gene_symbol;
-                    tableNode["Organism"] = n.data.organism;
-                    var geneId = n.data.gene_id;
-                    if (geneId) {
-                        geneId = geneId.split(':')[1];
-                    }
-                    tableNode["Gene ID"] = geneId;
-                    tableNode["Protein function"] = n.data.definition;
-                    tableNode["Uniprot ID"] = n.data.uniprotId;
-
-                    if(n.data.organism) {
-                        let org = uniqueOrganisms.find(o => o.name === n.data.organism);
-                        if(org) {
-                            org.count++;
-                        } else {
-                            let org = {
-                                name: n.data.organism,
-                                commonName: n.data.displayName,
-                                taxonId: n.data.taxonId,
-                                count: 1
-                            }
-                            uniqueOrganisms.push(org);
-                        }
-                    }
-
-                    tableNode["MSA"] = n.data.sequence;
-                    tabularData.push(tableNode);
+                    let row = this.setTableRow(n, index++);
+                    tabularData.push(row);
+                    // if(n.data.organism) {
+                    //     let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                    //     if(org) {
+                    //         org.count++;
+                    //     } else {
+                    //         let org = {
+                    //             name: n.data.organism,
+                    //             commonName: n.data.displayName,
+                    //             taxonId: n.data.taxonId,
+                    //             count: 1
+                    //         }
+                    //         uniqueOrganisms.push(org);
+                    //     }
+                    // }
                 }
             });
             this.store_setTableData(tabularData);
@@ -369,40 +424,32 @@ export default {
             let uniqueOrganisms = [];
             nodes.forEach(n => {
                 if(!n.children) {
-                    var tableNode = {};
-                    tableNode["id"] = index++;
-                    tableNode["MSA"] = n.data.sequence;
-                    tableNode["Gene name"] = n.data.gene_symbol;
-                    tableNode["Organism"] = n.data.organism;
-                    var geneId = n.data.gene_id;
-                    if (geneId) {
-                        geneId = geneId.split(':')[1];
-                    }
-                    tableNode["Gene ID"] = geneId;
-                    tableNode["Protein function"] = n.data.definition;
-                    tableNode["Uniprot ID"] = n.data.uniprotId;
-
-                    if(n.data.organism) {
-                        let org = uniqueOrganisms.find(o => o.name === n.data.organism);
-                        if(org) {
-                            org.count++;
-                        } else {
-                            let org = {
-                                name: n.data.organism,
-                                commonName: n.data.displayName,
-                                taxonId: n.data.taxonId,
-                                count: 1
-                            }
-                            uniqueOrganisms.push(org);
-                        }
-                    }
-
-                    tableNode["MSA"] = n.data.sequence;
-                    tabularData.push(tableNode);
+                    let row = this.setTableRow(n, index++);
+                    tabularData.push(row);
                 }
             });
             console.log("Table length ", tabularData.length);
             this.store_setTableData(tabularData);
+        },
+        setTableRow(n, index) {
+            var tableNode = {};
+            tableNode["id"] = index;
+            tableNode["MSA"] = n.data.sequence;
+            tableNode["Gene name"] = n.data.gene_symbol;
+            tableNode["Organism"] = n.data.organism;
+            var geneId = n.data.gene_id;
+            if (geneId) {
+                geneId = geneId.split(':')[1];
+            }
+            tableNode["Gene ID"] = geneId;
+            tableNode["Protein function"] = n.data.definition;
+            tableNode["Uniprot ID"] = n.data.uniprotId;
+            tableNode["MSA"] = n.data.sequence;
+            return tableNode;
+        },
+        toggleMsa() {
+            this.showMsa = !this.showMsa;
+            this.setTableCols();
         },
         sortArrayByX(arr) {
             arr.sort((a, b) => {
@@ -416,6 +463,14 @@ export default {
             });
         },
         ////////////////////// TABLE ///////////////////////////////
+        setTableCols() {
+            // this.tableColsToRender = this.defaultCols;
+            if(this.showMsa) {
+                this.tableColsToRender = this.msaCols;
+            } else {
+                this.tableColsToRender = this.defaultCols;
+            }
+        },
         renderTable() {
             if(this.store_tableData != null && this.store_tableData.length > 0) {
                 // this.isLoading = false;
@@ -423,13 +478,21 @@ export default {
             }
         },
         update() {
-            var filteredCols = d3.keys(this.store_tableData[0]);
-            filteredCols = filteredCols.filter(t => this.defaultCols.includes(t));
-            this.colsToRender = filteredCols;
-            this.rowsToRender = [];
-            this.displayRows();
-            this.rowSpan = this.rowsToRender.length+1;
-            this.rowsHeight = this.rowsToRender.length*40;
+            // var filteredCols = d3.keys(this.store_tableData[0]);
+            // filteredCols = filteredCols.filter(t => this.defaultCols.includes(t));
+            // if(this.defaultCols.includes("Annotations")) {
+            //     console.log("Anno mapping");
+            //     this.store_annoMapping.headers.forEach(h => {
+            //         console.log(h);
+            //         filteredCols.splice(2, 0, h);
+            //     });
+            // }
+            // this.colsToRender = filteredCols;
+            // console.log(this.colsToRender);
+            // this.rowsToRender = [];
+            // this.displayRows();
+            // this.rowSpan = this.rowsToRender.length+1;
+            // this.rowsHeight = this.rowsToRender.length*40;
         },
         displayRows() {
             this.store_tableData.forEach(n => {
@@ -470,8 +533,8 @@ export default {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-    width: 100%;
-    height: 100%;
+    width: 1600px;
+    height: 1100px;
     border-collapse: collapse;
     overflow: hidden;
     font-size: 14px;
@@ -515,6 +578,15 @@ export default {
     background-color: #9cd5e3;
     height: 40px !important;
 }
+ #secTr {
+    height: 53px !important;
+    filter: brightness(100%) !important;
+    border: 0 !important;
+    background-color: transparent;
+}
+#secTr th {
+    height: 35px !important;
+}
 .widthTree {
     min-width: 700px;
     width: 700px;
@@ -531,6 +603,16 @@ export default {
     box-sizing: border-box;
     box-shadow: 0 0 4px 0 rgba(0,0,0,.1);
     padding: 15px;
+}
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 15px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgb(0,0,0,0.5);
+    -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.897);
+    width: 70px;
 }
 </style>
 

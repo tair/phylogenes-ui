@@ -58,7 +58,10 @@ function collapseIfNoAnnoFound(node, annoKeys) {
     let leafs = commonTreeUtils.getLeafNodes(node);
 
     let ifAnnoFound = leafs.some(l => {
-        let uniprotId = l.data.uniprotId.toLowerCase();
+        let uniprotId = "";
+        if (l.data.uniprotId) {
+            uniprotId = l.data.uniprotId.toLowerCase();
+        }
         return annoKeys.includes(uniprotId);
     });
     if (!ifAnnoFound) {
