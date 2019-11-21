@@ -53,6 +53,7 @@ export default {
     methods: {
         ...mapActions({
             store_setPantherTreeFromString: types.TREE_ACTION_SET_PANTHER_TREE2,
+            store_setPantherTreeFromApi: types.TREE_ACTION_SET_PANTHER_TREE,
             store_setGraftSeq: types.TREE_ACTION_SET_GRAFTSEQ
         }),
         reset() {
@@ -101,8 +102,17 @@ export default {
             return cleanString;
         },
         loadGraftedJson(treeJson) {
-            this.store_setPantherTreeFromString(treeJson);
-            this.$router.push({name: 'treeGrafted'});
+            var treeId = treeJson.search.book;
+            //Check if the treeId exists in solr database
+            this.store_setPantherTreeFromApi(treeId).then(p => {
+                if(p == 0) {
+                    this.graftError = "Sorry, your sequence could not be grafted to a Phylogenes gene tree";
+                    this.isLoading = false;
+                } else {
+                    this.store_setPantherTreeFromString(treeJson);
+                    this.$router.push({name: 'treeGrafted'});
+                }
+            });
         },
     }
 

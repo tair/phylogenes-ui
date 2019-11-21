@@ -162,8 +162,10 @@ const actions = {
                         } else if (!res.data.response.docs[0].go_annotations) {
                             context.state.treedata.go_annotations = null;
                         }
+                        result("panther tree");
+                    } else {
+                        result(0);
                     }
-                    result("panther tree");
                 })
                 .catch(error => {
                     console.log('Error while reading data (E8273): ' + JSON.stringify(error));
@@ -218,6 +220,8 @@ const actions = {
                         context.state.treedata.msa_data = msa_data;
                         context.state.treedata.max_msa_length = maxSeqLength;
                         result("msa data");
+                    } else {
+                        result(0);
                     }
                 })
                 .catch(error => {
