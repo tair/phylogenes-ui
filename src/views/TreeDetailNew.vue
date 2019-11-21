@@ -5,8 +5,10 @@
                 <div class="row h-50">
                     <div class="col-sm-12 h-50">
                         <tablelayout ref="tableLayout"
-                            :colsFromProp="tableColsToRender" :treeDataFromProp ="treeData_Json"
-                            v-on:toggle-cols="toggleMsa">
+                            :colsFromProp="tableColsToRender" :headerMap="headerMap" :treeDataFromProp ="treeData_Json"
+                            v-on:toggle-cols="toggleMsa" 
+                            v-on:complete-data="onCompleteData"
+                            v-on:anno-click="onAnnoClick">
                         </tablelayout>
                         <!-- <table class="mainTable"> 
                             <thead id="head" ref="thead">
@@ -84,8 +86,12 @@ export default {
                               "Protein function", 
                               "Uniprot ID", 
                               "Subfamily Name"],
-            msaCols: ["Gene",
+            msaCols: ["Gene name",
                         "MSA"],
+            showMsa: false,
+            analyzeCompleted: false,
+            headerMap: {},
+            completeData: null,
             tableColsToRender: [],
             colsToRender: [],
             rowsToRender: [],
@@ -386,71 +392,226 @@ export default {
             }
             return "#00FF00";
         },
-
-        ///////After Tree loaded
-        onTreeInit(nodes) {
-            var tabularData = [];
-            this.sortArrayByX(nodes);
-            var index = 0;
-            let uniqueOrganisms = [];
-            nodes.forEach(n => {
-                if(!n.children && n.data.uniprotId) {
-                    let row = this.setTableRow(n, index++);
-                    tabularData.push(row);
-                    // if(n.data.organism) {
-                    //     let org = uniqueOrganisms.find(o => o.name === n.data.organism);
-                    //     if(org) {
-                    //         org.count++;
-                    //     } else {
-                    //         let org = {
-                    //             name: n.data.organism,
-                    //             commonName: n.data.displayName,
-                    //             taxonId: n.data.taxonId,
-                    //             count: 1
-                    //         }
-                    //         uniqueOrganisms.push(org);
-                    //     }
-                    // }
-                }
-            });
-            this.store_setTableData(tabularData);
-            this.store_setTableIsLoading(false);
-        },
-        onTreeUpdate(nodes) {
-            console.log("update ", nodes.length);
-            var tabularData = [];
-            this.sortArrayByX(nodes);
-            var index = 0;
-            let uniqueOrganisms = [];
-            nodes.forEach(n => {
-                if(!n.children) {
-                    let row = this.setTableRow(n, index++);
-                    tabularData.push(row);
-                }
-            });
-            console.log("Table length ", tabularData.length);
-            this.store_setTableData(tabularData);
-        },
-        setTableRow(n, index) {
-            var tableNode = {};
-            tableNode["id"] = index;
-            tableNode["MSA"] = n.data.sequence;
-            tableNode["Gene name"] = n.data.gene_symbol;
-            tableNode["Organism"] = n.data.organism;
-            var geneId = n.data.gene_id;
-            if (geneId) {
-                geneId = geneId.split(':')[1];
+        /////////////////////// Anno ///////////////////////////////
+        onAnnoClick(data) {
+            let uniprotId = data.row["Uniprot ID"].text;
+            if(uniprotId) {
+                uniprotId = uniprotId.toLowerCase();
+            } else {
+                uniprotId = "N/A";
             }
-            tableNode["Gene ID"] = geneId;
-            tableNode["Protein function"] = n.data.definition;
-            tableNode["Uniprot ID"] = n.data.uniprotId;
-            tableNode["MSA"] = n.data.sequence;
-            return tableNode;
+            let uniHeader = "Uniprot ID: " + uniprotId.toUpperCase();
+            let annoList = this.getFormattedAnnotationsList(uniprotId);
+            annoList = annoList.filter(a => a.goTerm === data.val);
+            if(annoList.length != 0) {
+                this.$refs.tableLayout.displayPopup(uniHeader, annoList);
+            }
         },
+        getFormattedAnnotationsList(uniprotId) {
+            var annosForGene = this.store_annoMapping.annoMap[uniprotId];
+            var annoList = [];
+            if(!annosForGene) return annoList;
+            annosForGene.forEach(a => {
+                let id = a.goId;
+                let goTermLink = "https://www.ebi.ac.uk/QuickGO/term/"+id;
+                var code = "";
+                if(a.evidenceCode) {
+                    code = a.evidenceCode.split(",")[2];
+                }
+                var refCode = a.reference.split(":")[0];
+                var refId = a.reference.split(":")[1];
+                var refLink = "https://www.ncbi.nlm.nih.gov/pubmed/" + refId;
+                if(refCode == "GO_REF") {
+                    refLink = "https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-"
+                        +refId+".md";
+                }
+                let withFromList = [];
+                if(a.withFrom) {
+                    a.withFrom.forEach(r => {
+                        withFromList.push(
+                            {name: r.db+":"+r.id,
+                                link: this.getDBLink(r)
+                            });
+                    });
+                }
+
+                var findGoId = annoList.find(a => {
+                    if(refCode != '') {
+                        return a.goId === id && a.code === code;
+                    } else {
+                        return a.goId === id
+                    }
+                });
+                if(!findGoId) {
+                    annoList.push({
+                        goId: a.goId,
+                        goTerm: a.goName,
+                        goTermLink: goTermLink,
+                        code: code,
+                        reference: [{
+                            count: 1,
+                            link: refLink
+                        }],
+                        withFrom: withFromList,
+                        source: "QuickGO",
+                        sourceLink: "https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=" + uniprotId
+                    });
+                } else {
+                    let refLinksList = findGoId.reference.map(r => {
+                        return r.link;
+                    });
+
+                    if(!refLinksList.includes(refLink)) {
+                        findGoId.reference.push({
+                            count: findGoId.reference.length + 1,
+                            link: refLink
+                        });
+                        findGoId.withFrom.concat(withFromList);
+                    }
+                }
+            });
+            return annoList;
+        },
+        /////////////////////// MSA ///////////////////////////////
         toggleMsa() {
             this.showMsa = !this.showMsa;
-            this.setTableCols();
+            if(!this.analyzeCompleted) {
+                this.analyzeAndShowMsa();
+            } else {
+                this.setTableCols();
+            }
         },
+        onCompleteData(data) {
+            this.completeData = data;
+        },
+        //Analyze Msa Data and set table cols to msa.
+        analyzeAndShowMsa() {
+            this.analyzeMsaData().then(res => {
+                this.headerMap["MSA"] = this.setMsaHeaderTitle();
+                this.setTableCols();
+                this.analyzeCompleted = true;
+            });
+        },
+        async analyzeMsaData() {
+            let msa_split = [];
+            // Each seq of every node of tree (completeData) is split by letters and 
+            // added as an array of letters.
+            // Each array of letters is of the same length.
+            // eg. [0]=['.','.','m','f']
+            //     [1]=['.','.','n','g'] 
+            this.completeData.forEach(s => {
+                let msa_arr = [];
+                if(s["MSA"]) {
+                    msa_arr = s["MSA"].split('');
+                }
+                msa_split.push(msa_arr);
+            });
+            let maxLength = msa_split[0].length;
+
+            /* Each index in the array consists of a 'seqObj' which gives freq of unique letters
+            found in that index inside the 'msa_split' array.
+            If 'msa_split' is following:
+                [0] = ['a','b','b','a','e']
+                [1] = ['b','b','a','a','e']
+                [2] = ['a','b','a','a','c']
+            Then 'analysis_arr' after the initial processing is:
+                [0] = {'a': 2, 'b': 1}
+                [1] = {'b': 3}
+                [2] = {'b': 1, 'a':2}
+                [3] = ['a': 3]
+                [4] = ['e': 2, 'c': 1]
+            */
+            let analysis_arr = new Array(maxLength).fill({});
+            let ix = 0;
+            msa_split.forEach(seq_arr => {
+                let node_index = 0;
+                seq_arr.forEach(letter => {
+                    let seqObj = {};
+                    //Assign is used to clone the current object inside the 'analysis_arr' at the curr index.
+                    //We need the prev node_index 'seqObj' to increment the letters if duplicate or add a new letter.
+                    Object.assign(seqObj, analysis_arr[node_index]);
+                    if(letter) {
+                        if(seqObj[letter]) {
+                            seqObj[letter]++;
+                        } else {
+                            seqObj[letter] = 1;
+                        }
+                    }
+                    
+                    analysis_arr[node_index] = seqObj;
+                    node_index++;
+                });
+                ix++;
+            });
+
+            //After the analysis is done, create 'freq_seq_arr' which gives
+            // highest frequence letter at each node index along with it's percent.
+            // Eg. [0] = {l: 'a', p:80}
+            //     [1] = {l: 'b', p:30} ...
+            // 'freq_seq_arr' could be a map [l]:{p}, but kept as an array incase in future we 
+            // need to add percent for second-highest letter for instance.
+            let freq_seq_arr = [];
+            let i =0;
+            analysis_arr.forEach(e => {
+                let arr = this.calculateFreqByPercent(e).slice(0,1);
+                let f = parseFloat(arr[0].percent);
+                f = f.toFixed(2);
+                let obj = {l: arr[0].letter, p: f, i: i++};
+                freq_seq_arr.push(obj);
+            });
+            let filtered = freq_seq_arr.filter((f, i) => {
+                return f.l != '.' && f.l != '-' && f.p >= 50
+            });
+            
+            this.store_setFreqMsa(freq_seq_arr);
+            return true;
+        },
+        //freqOfLetters: {'a':2, 'b':1, 'c':3 ... etc}
+        //Calculates the percent of each letter from the total freq of all letters.
+        //Creates a new array: ['letter', 'freq', 'percent']
+        //Sorts the new array by percent and returns the arr. 
+        calculateFreqByPercent(freqOfLetters) {
+            let seqObjArr = [];
+            let letters = Object.keys(freqOfLetters);
+            let total = 0;
+            letters.forEach(l => {
+                let freq = freqOfLetters[l];
+                seqObjArr.push({letter: l, freq: freq});
+                total += freq;
+            });
+
+            seqObjArr.map(e => {
+                e.percent = e.freq/total*100;
+            });
+            seqObjArr = seqObjArr.sort((a,b) => {
+                return b.percent - a.percent;
+            });
+            return seqObjArr;
+        },
+        setMsaHeaderTitle() {
+            let msa_header = "MSA:";
+            let max_ruler_len = this.store_maxMsaLength;
+            let ruler_gap = 25;
+            let c = msa_header.length+1;
+            let digits = 2;
+            let markedCount = 0;
+            while(c < max_ruler_len) {
+                if((c+digits)%ruler_gap == 0) {
+                    msa_header += c+digits;
+                    msa_header += "|";
+                    c += digits;
+                    //Check if c for next ruler mark is supposed to inc digits count
+                    if(c+ruler_gap > 99) digits=3;
+                    if(c+ruler_gap > 999) digits=4;
+                } else {
+                    msa_header += "&nbsp";
+                }
+                c++;  
+            }
+            return msa_header;
+        },
+        ///////////////////////
+
         sortArrayByX(arr) {
             arr.sort((a, b) => {
                 if(a.x < b.x) {
@@ -470,6 +631,9 @@ export default {
             } else {
                 this.tableColsToRender = this.defaultCols;
             }
+            setTimeout(() => {
+                this.$refs.tableLayout.updateRenderRows();
+            });
         },
         renderTable() {
             if(this.store_tableData != null && this.store_tableData.length > 0) {

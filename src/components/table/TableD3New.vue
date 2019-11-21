@@ -1,23 +1,73 @@
 <template>
     <div id="parent">
         <div>Test</div>
+        <modal v-if="showPopup" @close="showPopup = false">
+            <div slot="header">{{popupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
+                <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
+            </template>
+        </modal>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
 
         <table v-else class="mainTable">
             <thead id="head" ref="thead">
                 <tr id="secTr">
-                    <th :colspan='3' class="thInvis">
-                        <button class="btn bg-white float-left" @click="toggleTabs">
-                            <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
-                        </button>
+                    <th :colspan='msaTab?2:3' class="thInvis stickyCol">
+                        <div class="my-msa">
+                            <button class="btn bg-white float-left" @click="toggleTabs">
+                                <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                            </button>
+                        </div>
                     </th>
-                    <th :colspan="n_annotations.length" class="thSubCol">Known Function</th>
+                    <th v-if="n_annotations > 0 && !msaTab"
+                        :colspan="n_annotations" class="thSubCol">Known Function</th>
                 </tr>
                 <tr id="mainTr">
-                    <th class="widthTree stickyCol">Tree</th>
+                    <th class="widthTree stickyCol">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto align-items-center">
+                                <search-box ref="searchBox" 
+                                        v-on:search="onSearchWithinTree" 
+                                        :defaultText="defaultSearchText"></search-box>
+                            </div>
+                            <div class="col-auto align-items-center">
+                                <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
+                                    <template slot="button-content">
+                                        <i class="fas fa-tools fa-2x fa-fw"></i>
+                                    </template>
+                                    <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
+                                    <!-- using vue-json-csv. reference: https://www.npmjs.com/package/vue-json-csv -->
+                                    <json-csv 
+                                        :data="tableCsvData" 
+                                        :name="treeId+'.csv'" 
+                                        :fields="tableCsvFields"
+                                    >
+                                        <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
+                                    </json-csv>
+                                    <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
+                                    <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
+                                    <b-dropdown-item @click="pruneTreeFromMenu">Prune tree by organism</b-dropdown-item>
+                                </b-dropdown>
+                                <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
+                                    <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
+                                <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
+                                            @click="expandAll"><i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i></button>
+                                <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
+                                        @click="showLegend" id="legendButton"><i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>     
+                                </button>
+                                <b-tooltip :show.sync="showLegendTip" target="legendButton" placement="top">
+                                    {{showLegendButtonIcon.title}}
+                                </b-tooltip>
+                                <!-- For Testing -->
+                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
+                                        <!--@click="moveUp">Move UP</button>-->
+                            </div>
+                        </div>
+                    </th>
                     <th v-for="(col,i) in colsToRender" :key="i"
                             :class="getThClasses(col, i)"> 
-                        {{col}}
+                        <tablecell :content="getHeader(col)"></tablecell>
                     </th>
                 </tr>
             </thead>
@@ -32,6 +82,7 @@
                 </tr>
                 <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
                     <td v-for="(key, i) in colsToRender" :key="key"
+                        @click="tdClicked(key, row)"
                         :class="getTdClasses(key, row[key], i)">
                         <tablecell :content.sync="rowsToRender[row_i][key]"></tablecell>
                     </td>
@@ -53,18 +104,31 @@
     import baseCell from '@/components/table/cells/BaseTableCell';
     import msaLegend from '../table/MsaLegend';
     import treelayout from '@/components/tree/TreeLayout';
+    import searchBox from '@/components/search/SearchBox';
 
     export default {
         name: "tablelayout",
         props: [
             "treeDataFromProp",
-            "colsFromProp"
+            "colsFromProp",
+            "headerMap" //Map: ['Original Col Name': 'Updated Col Name']
         ],
         computed: {
             ...mapGetters({
                 store_tableData: types.TABLE_GET_DATA,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
-            })
+            }),
+            showLegendButtonIcon(){
+                return this.legend?
+                {
+                    title: 'Hide Legend',
+                    buttonIcon: 'fas fa-angle-double-up'
+                }:
+                {
+                    title: 'Show Legend',
+                    buttonIcon: 'fas fa-angle-double-down'
+                };
+            }
         },
         watch: {
             colsFromProp: {
@@ -82,6 +146,7 @@
         components: {
             treelayout: treelayout,
             popupTable: popupTable,
+            searchBox: searchBox,
             'modal': customModal,
             tablecell: baseCell,
             msaLegend: msaLegend
@@ -95,9 +160,29 @@
                 rowsScrolled: 0,
                 n_annotations: 0,
                 msaTab: false,
+                defaultSearchText: "",
                 //Tree
                 treeRowSpan: 100,
-                rowsHeight: 1000
+                rowsHeight: 1000,
+                //Popup
+                showPopup: false,
+                popupHeader: "",
+                popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
+                popupData: [],
+                //Legend
+                showLegend: false,
+                showLegendTip: false,
+                tableCsvData: [],
+                tableCsvFields:[
+                    'Uniprot ID',
+                    'Gene',
+                    'Gene ID',
+                    'Gene name',
+                    'Organism',
+                    'Protein function',
+                    'Subfamily name'
+                ],
+                treeId: ""
             }
         },
         mounted() {
@@ -121,18 +206,20 @@
                         filteredCols.splice(2, 0, h);
                     });
                 }
-                // console.log(filteredCols);
+                // console.log("filteredCols ", filteredCols);
                 this.colsToRender = filteredCols;
                 this.rowsToRender = [];
             },
             toggleTabs() {
+                this.msaTab = !this.msaTab;
                 this.$emit('toggle-cols');
+
+                this.updateRenderRows();
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~ TREE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setTableRow(n, index) {
                 var tableNode = {};
                 tableNode["id"] = index;
-                tableNode["MSA"] = n.data.sequence;
                 tableNode["Gene name"] = n.data.gene_symbol;
                 tableNode["Organism"] = n.data.organism;
                 var geneId = n.data.gene_id;
@@ -181,7 +268,8 @@
             },
             onTreeInit(nodes) {
                 console.log("onTreeInit ", nodes.length);
-                this.setStoreTableData(nodes);
+                let tabularData = this.setStoreTableData(nodes);
+                this.$emit('complete-data', tabularData);
                 this.updateTableCols();
                 this.lazyLoad = true;
                 // setTimeout(() => {
@@ -204,6 +292,14 @@
                 this.treeRowSpan = this.rowsToRender.length+1;
                 this.rowsHeight = this.rowsToRender.length*40;
             },
+            //Called from external parent component
+            updateRenderRows() {
+                this.rowsToRender = [];
+                this.store_tableData.forEach(n => {
+                    let processedRowData = this.processRow(n);
+                    this.rowsToRender.push(processedRowData);
+                });
+            },
             setStoreTableData(nodes) {
                 var tabularData = [];
                 let i = 0;
@@ -214,6 +310,7 @@
                     }
                 });
                 this.store_setTableData(tabularData);
+                return tabularData;
             },
             //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
             //This depends on 'rowsScrolled'
@@ -274,7 +371,25 @@
                 });
                 return row;
             },
+            //TREE MENU
+            onDefaultView() {
+
+            },
+            expandAll() {
+
+            },
+            exportXML() {
+            },
+            exportSVG() {
+            },
+            exportPNG() {
+            },
+            pruneTreeFromMenu() {
+            },
+            onSearchWithinTree(text) {
+            },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
+            //SCROLL
             addCustomScrollEvent() {
                 //On props change, the $refs reloads, so need to add scroll event at the next frame,
                 // hance the timeout.
@@ -287,7 +402,6 @@
                     }
                 });
             },
-            //SCROLL
             //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
                 let scrollLeft_curr = document.getElementById("body").scrollLeft;
@@ -297,6 +411,55 @@
                 let thead = document.getElementById("head");
                 thead.scrollLeft = amount;
             },
+            //CLICK Cell
+            tdClicked(c, row) {
+                if(row[c] && row[c].text != '*') return;
+                this.$emit('anno-click', {row: row, val: c});
+            },
+            //Display Popup
+            displayPopup(header, data) {
+                this.popupHeader = header;
+                this.popupData = this.getPopupData(data);
+                this.showPopup = true;
+            },
+            getPopupData(annoList) {
+                let popUpTableData = [];
+                annoList.forEach(ann => {
+                    let singleRow = [];
+                    let goTerm = {type: "link", text: ann.goTerm, link: ann.goTermLink};
+                    singleRow.push(goTerm);
+
+                    let code = ann.code;
+                    singleRow.push(code);
+
+                    let references = {type: "links"};
+                    references["links"] = [];
+                    ann.reference.forEach(ref => {
+                        references["links"].push({text: ref.count, link: ref.link});
+                    });
+                    singleRow.push(references);
+
+                    let withFrom = {type: "links"};
+                    withFrom["links"] = [];
+                    ann.withFrom.forEach(wf => {
+                        withFrom["links"].push({text: wf.name, link: wf.link});
+                    });
+                    singleRow.push(withFrom);
+
+                    let source = {type: "link", text: ann.source, link: ann.sourceLink};
+                    singleRow.push(source);
+
+                    popUpTableData.push(singleRow);
+                });
+                return popUpTableData;
+            },
+            getHeader(title) {
+                let header = {text: title};
+                if(this.headerMap[title]) {
+                    header['text'] = this.headerMap[title];
+                }
+                return header;
+            }, 
             getThClasses(row, i) {
                 let classes = [];
                 if(row == "MSA") {
@@ -356,10 +519,17 @@
         position: -webkit-sticky;
         left:0;
     }
-    .mainTable .stickyCol2 {
-        /* position: sticky;
+    /* .mainTable td:first-child, th:first-child {
+        position: sticky;
         position: -webkit-sticky;
-        left:10; */
+        left:0px;
+        z-index: 1;
+    } */
+    .mainTable td:nth-child(2),th:nth-child(2)  {
+        position: sticky;
+        position: -webkit-sticky;
+        left:600px;
+        z-index: 1;
     }
     /* Table Header Classes */
     .mainTable thead {
@@ -400,13 +570,18 @@
         text-indent: 50px;
         border-left: 3px solid #f1f1f0 !important;
     }
+    .tdHover:hover {
+        background-color: #e1e7f3 !important;
+        filter: brightness(85%);
+        cursor: pointer;
+    }
     .thSubColSp {
         border-right: 1px solid #f1f1f0 !important;
     }
     .widthTree {
-        min-width: 700px;
-        width: 700px;
-        max-width: 700px;
+        min-width: 800px;
+        width: 800px;
+        max-width: 800px;
     }
     .widthDefault {
         min-width: 200px;
@@ -435,6 +610,11 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .my-msa {
+        position: absolute;
+        padding-left: 10px;
+        top: 10px;
     }
     ::-webkit-scrollbar {
         -webkit-appearance: none;
