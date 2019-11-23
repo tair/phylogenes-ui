@@ -378,7 +378,6 @@
                         headers: this.anno_headers,
                         annoMap: this.anno_mapping
                     }
-
                     this.store_setAnnoMapping(annoObj);
                     return;
                 }

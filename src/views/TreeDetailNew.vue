@@ -1,13 +1,72 @@
 <template>
     <div id="main" class="container-fluid main_container d-flex">
+        <!-- Organisms/Pruning Popup -->
+        <modal v-if="showPopup" @close="showPopup = false">
+            <div slot="header">{{popupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"
+                            v-on:check-change="onAnyCheckboxChange"
+                            v-on:uncheck-all="onUncheckAll"
+                            v-on:check-all="onCheckAll"></popupTable>
+                <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
+            </template>
+            <template slot="footer"> 
+                <button class="modal-default-button" @click="onPrune">
+                    Update tree
+                </button>
+                <button class="modal-default-button" @click="showPopup = false">
+                    Close
+                </button>
+            </template>
+        </modal>
         <div class="row flex-fill">
+            <!-- Metadata Band -->
+            <div class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand">
+                <i v-if="this.metadata.isLoading" 
+                    class="fa fa-spinner fa-spin fa-2x p-5 text-primary"></i>
+                <span v-if="!this.metadata.isLoading" v-on:click="showOrganismPopup()">
+                    {{metadata.familyName}} ({{treeId}}), {{metadata.genesCount}} genes, 
+                    <span style="cursor: pointer"><b><u>
+                        {{metadata.uniqueOrganisms.totalCount}} Organisms<span v-if="this.prunedLoaded"> (pruned view)</span>
+                        </u></b></span>, spanning {{this.metadata.spannedTaxon}}
+                </span>
+            </div>
+            <!-- <div class="table-responsive" style="min-height: 100vh">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>1</th>
+                            <th>2</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Южный</td>
+					        <td>Администратор</td>
+                            <td align="center">
+                                <div class="dropdown">
+                                    <a class="btn btn-secondary" href="#" role="button" id="link1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="far fa-cog"></i>
+                                    </a>	
+                                    <div class="dropdown-menu" aria-labelledby="link1">
+                                        <a class="dropdown-item" href="#">Action</a>
+                                        <a class="dropdown-item" href="#">Another action</a>
+                                        <a class="dropdown-item" href="#">Something else here</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> -->
             <div class="col-sm-12 h-95 pg-panel">
                 <div class="row h-50">
                     <div class="col-sm-12 h-50">
                         <tablelayout ref="tableLayout"
                             :colsFromProp="tableColsToRender" :headerMap="headerMap" :treeDataFromProp ="treeData_Json"
                             v-on:toggle-cols="toggleMsa" 
-                            v-on:complete-data="onCompleteData"
+                            v-on:tree-init="onTreeInit"
                             v-on:anno-click="onAnnoClick">
                         </tablelayout>
                         <!-- <table class="mainTable"> 
@@ -75,6 +134,8 @@ export default {
         tablelayout: tablelayout,
         treelayout: treelayout,
         tablecell: baseCell,
+        'modal': customModal,
+        popupTable: popupTableOrganism,
     },
     data() {
         return {
@@ -88,6 +149,33 @@ export default {
                               "Subfamily Name"],
             msaCols: ["Gene name",
                         "MSA"],
+            metadata: {
+                isLoading: false,
+                familyName: "",
+                genesCount: 0,
+                uniqueOrganisms: {
+                    totalCount: 0,
+                    organisms: []
+                }, 
+                spannedTaxon: ""
+            },
+            //Popup
+            showPopup: false,
+            popupHeader: "Organisms (uncheck an organism to remove from tree)",
+            popupCols: [{type:'checkbox', val:true}, 
+                        "Organism",
+                        "Number of genes"],
+            popupData: [],
+            popupTableConfig: {
+                tableHeight: 'auto',
+                tableWidth: 'auto',
+                colsWidth: ['50px', '350px', '100px']
+            },
+            //Pruning
+            prunedLoaded: false,
+            unprunedTaxonIds: [],
+            originalTaxonIdsLength: 0,
+
             showMsa: false,
             analyzeCompleted: false,
             headerMap: {},
@@ -134,6 +222,13 @@ export default {
             deep: true,
             immediate: true
         },
+        store_getTreeMetadata: {
+            handler: function (val, oldVal) {
+                this.metadata.familyName = val.familyName[0];
+                this.metadata.spannedTaxon = val.taxonRange;
+                this.metadata.isLoading = false;
+            }
+        },
         store_tableData: {
             handler: function (val, oldVal) {
                 //This is zero, when a new tree is reloaded.
@@ -179,7 +274,7 @@ export default {
             this.treeData_Json = null;
             this.loadTreeFromApi();
             this.store_setTableData([]);
-            // this.metadata.isLoading = true;
+            this.metadata.isLoading = true;
             // this.showMsa = false;
             // this.analyzeCompleted = false;
             // this.resetPruning();
@@ -392,6 +487,22 @@ export default {
             }
             return "#00FF00";
         },
+        ////////////////////// Metadata ////////////////////////////
+        //Set metadata bar and organisms for pruning popup
+        setMetadata(tabularData, uniqueOrganisms) {
+            if(this.store_getTreeMetadata) {
+                this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
+                this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
+            }
+            this.metadata.genesCount = tabularData.length;
+            this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
+            if(!this.prunedLoaded) {
+                uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
+                this.metadata.uniqueOrganisms.organisms = uniqueOrganisms;
+                this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
+            }
+            this.metadata.isLoading = false;
+        },
         /////////////////////// Anno ///////////////////////////////
         onAnnoClick(data) {
             let uniprotId = data.row["Uniprot ID"].text;
@@ -472,6 +583,63 @@ export default {
             });
             return annoList;
         },
+        getDBLink(r) {
+            let link = "";
+            switch(r.db){
+                case 'UniProtKB':
+                    link =  'https://www.uniprot.org/uniprot/'+r.id;
+                    break;
+                case 'AGI_LocusCode':
+                    link =  'https://www.arabidopsis.org/servlets/TairObject?type=locus&name='+r.id;
+                    break;
+                case 'ComplexPortal':
+                    link = 'https://www.ebi.ac.uk/complexportal/complex/'+r.id;
+                    break;
+                case 'EMBL':
+                    link = 'https://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&Submit=Go&id='+r.id;
+                    break;
+                case 'EcoGene':
+                    link = 'http://www.ecogene.org/geneInfo.php?eg_id='+r.id;
+                    break;
+                case 'FB':
+                    link = 'http://flybase.org/reports/'+r.id;
+                    break;
+                case 'GeneDB':
+                    link = 'http://www.genedb.org/gene/'+r.id;
+                    break;
+                case 'NCBI_gi':
+                    link = 'https://www.ncbi.nlm.nih.gov/protein/'+r.id;
+                    break;
+                case 'PomBase':
+                    link = 'https://www.pombase.org/gene/'+r.id;
+                    break;
+                case 'RGD':
+                    link = 'https://rgd.mcw.edu/rgdweb/report/gene/main.html?id='+r.id;
+                    break;
+                case 'RefSeq':
+                    link = 'https://www.ncbi.nlm.nih.gov/nuccore/'+r.id;
+                    break;
+                case 'SGD':
+                    link = 'https://www.yeastgenome.org/locus/'+r.id;
+                    break;
+                case 'TAIR':
+                    link = 'https://www.arabidopsis.org/servlets/TairObject?accession='+r.id;
+                    break;
+                case 'WB':
+                    link = 'https://wormbase.org/db/gene/gene?name='+r.id;
+                    break;
+                case 'ZFIN':
+                    link = 'http://zfin.org/'+r.id;
+                    break;
+                case 'dictyBase':
+                    link = ' http://dictybase.org/gene/'+r.id;
+                    break;
+                default:
+                    console.log("DB Id not recognized:", r)
+                    break;
+            }
+            return link;
+        },
         /////////////////////// MSA ///////////////////////////////
         toggleMsa() {
             this.showMsa = !this.showMsa;
@@ -481,8 +649,9 @@ export default {
                 this.setTableCols();
             }
         },
-        onCompleteData(data) {
-            this.completeData = data;
+        onTreeInit(msg) {
+            this.completeData = msg.tabularData;
+            this.setMetadata(msg.tabularData, msg.uniqueOrganisms);
         },
         //Analyze Msa Data and set table cols to msa.
         analyzeAndShowMsa() {
@@ -688,11 +857,181 @@ export default {
 
             return classes;
         },
+        // ~~~~~~~~~~~~~~~~ Pruning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+        //Reset all pruning global vars
+        resetPruning() {
+            this.unprunedTaxonIds = 0;
+            this.prunedLoaded = false;
+            this.showPopup = false;
+            this.popupData = [];
+        },
+        pruneTreeFromMenu() {
+            this.showOrganismPopup();
+        },
+        showOrganismPopup() {
+            this.showPopup = true;
+            this.popupData = [];
+            this.popupCols[0].val = true;
+            
+            setTimeout(() => {
+                let anyUnchecked = this.popupData
+                                        .map(pd => {return pd[0].checked;})
+                                        .some(res => {return !res});
+                if(anyUnchecked) this.popupCols[0].val = false;
+            });
+
+            this.metadata.uniqueOrganisms.organisms.forEach(o => {
+                let singleRow = [];
+                let checkedV = true;
+                if(this.unprunedTaxonIds.length > 0 && 
+                    !this.unprunedTaxonIds.includes(o.taxonId)) {
+                    checkedV = false;
+                }
+                singleRow.push({type: "checkbox", label: "txt", checked: checkedV});
+                let organismDisplayName = o.name + " (" + o.commonName + ")";
+                singleRow.push({type: "text", val: organismDisplayName, id: o.taxonId});
+                singleRow.push(o.count);
+                this.popupData.push(singleRow);
+            });
+        },
+        onUncheckAll() {
+            this.popupData = this.popupData.map(pd => {
+                pd[0].checked = false;
+                return pd
+            });
+            let filteredOrganisms = this.popupData.filter(pd => {
+                return pd[0].checked == true;
+            });
+        },
+        onCheckAll() {
+            this.popupData = this.popupData.map(pd => {
+                pd[0].checked = true;
+                return pd
+            });
+            let filteredOrganisms = this.popupData.filter(pd => {
+                return pd[0].checked == true;
+            });
+        },
+        onAnyCheckboxChange() {
+            //Timeout required becauses the "change" event is emitted before the value of the checkbox is updated.
+            //So we need to perform any logic after a frame
+            setTimeout(() => {
+                let anyUnchecked = this.popupData
+                                    .map(pd => {return pd[0].checked;})
+                                    .some(res => {return !res});
+                if(anyUnchecked) {
+                    this.popupCols[0].val = false;
+                } else {
+                    this.popupCols[0].val = true;
+                }
+            }); 
+        },
+        onPrune() {
+            let filteredOrganisms = this.popupData.filter(pd => {
+                return pd[0].checked == true;
+            });
+            this.unprunedTaxonIds = filteredOrganisms.map(o => o[1].id);
+            this.pruneTree(this.unprunedTaxonIds);
+        },
+        pruneTree(taxonList) {
+            if(!taxonList || taxonList.length == 0) {
+
+            } else {
+                if(taxonList.length == this.originalTaxonIdsLength) {
+                    this.resetPruning();
+                    if(this.$route.name == "treeGrafted") {
+                        this.loadTreeFromStore();
+                    } else {
+                        this.loadTreeFromApi();
+                    }
+                    this.popupData = [];
+                } else {
+                    this.$refs.treeLayout.onPruneLoading(true);
+                    if(!this.store_getHasGrafted) {
+                        this.regularPruning(taxonList)
+                    } else {
+                        this.graftedPruning(taxonList);
+                    }
+                }
+            }
+        },
+        graftedPruning(taxonList) {
+            let api =  this.GRAFT_PRUNING_PANTHER_API;
+            let stored_seq = this.store_getGraftSeq;
+            axios({
+                method: 'POST',
+                url: api,
+                data: {
+                    sequence: stored_seq,
+                    taxonIdsToShow: taxonList
+                },
+                timeout: 200000
+            })
+            .then(res => {
+                this.isLoading = false;
+                this.showPopup = false;
+                this.prunedLoaded = true;
+                let prunedJson = res.data;
+                this.analyzeCompleted = false;
+                this.loadPrunedJson(prunedJson);
+                this.$refs.treeLayout.onPruneLoading(false);
+            })
+            .catch(err => {
+                console.error("error ", err);
+                this.isLoading = false;
+                this.resetPruning();
+                this.$refs.treeLayout.onPruneLoading(false);
+            });
+        },
+        regularPruning(taxonList) {
+            axios({
+                method: 'POST',
+                url: this.REG_PRUNING_PANTHER_API + this.treeId,
+                data: {
+                    taxonIdsToShow: taxonList
+                },
+                timeout: 200000
+            })
+            .then(res => {
+                this.isLoading = false;
+                this.showPopup = false;
+                this.prunedLoaded = true;
+                let prunedJson = res.data;
+                this.loadPrunedJson(prunedJson);
+                this.$refs.treeLayout.onPruneLoading(false);
+            })
+            .catch(err => {
+                console.error("error ", err);
+                this.isLoading = false;
+                this.resetPruning();
+                this.$refs.treeLayout.onPruneLoading(false);
+            });
+        },
+        loadPrunedJson(treeJson) {
+            treeJson = treeJson.search.annotation_node;
+            this.formatJson(treeJson);
+            this.processJson(treeJson)
+                .then(res => {
+                    this.treeData_Json = res;
+                })
+                .catch(e => {
+                    console.error("Process json failed!");
+                });
+        },
     }
 }
 </script>
 
 <style scoped>
+.pg-databand {
+    font-size: medium;
+}
+@media (min-height: 300px) {
+    .pg-databand { font-size: small; }
+}
+@media (min-height: 768px) {
+    .pg-databand { font-size: medium; }
+}
 .mainTable {
     display: flex;
     flex-direction: column;

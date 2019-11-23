@@ -1,6 +1,5 @@
 <template>
     <div id="parent">
-        <div>Test</div>
         <modal v-if="showPopup" @close="showPopup = false">
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
@@ -9,7 +8,6 @@
             </template>
         </modal>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-
         <table v-else class="mainTable">
             <thead id="head" ref="thead">
                 <tr id="secTr">
@@ -34,10 +32,9 @@
                             <div class="col-auto align-items-center">
                                 <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
                                     <template slot="button-content">
-                                        <i class="fas fa-tools fa-2x fa-fw"></i>
+                                        <i @click="dropdownClicked" class="fas fa-tools fa-2x fa-fw"></i>
                                     </template>
                                     <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
-                                    <!-- using vue-json-csv. reference: https://www.npmjs.com/package/vue-json-csv -->
                                     <json-csv 
                                         :data="tableCsvData" 
                                         :name="treeId+'.csv'" 
@@ -59,9 +56,6 @@
                                 <b-tooltip :show.sync="showLegendTip" target="legendButton" placement="top">
                                     {{showLegendButtonIcon.title}}
                                 </b-tooltip>
-                                <!-- For Testing -->
-                                <!--<button class="btn btn-outline-warning btn-sm btn-flat text-dark mb-1 float-right"-->
-                                        <!--@click="moveUp">Move UP</button>-->
                             </div>
                         </div>
                     </th>
@@ -119,7 +113,7 @@
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
             }),
             showLegendButtonIcon(){
-                return this.legend?
+                return this.legendIcon?
                 {
                     title: 'Hide Legend',
                     buttonIcon: 'fas fa-angle-double-up'
@@ -170,7 +164,7 @@
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
                 //Legend
-                showLegend: false,
+                legendIcon: false,
                 showLegendTip: false,
                 tableCsvData: [],
                 tableCsvFields:[
@@ -189,6 +183,13 @@
             this.initTable();
         },
         methods: {
+            dropdownClicked() {
+                if(document.getElementById("head").style.overflowX == "hidden") {
+                    document.getElementById("head").style.overflowX = "visible";
+                } else {
+                    document.getElementById("head").style.overflowX = "hidden";
+                }
+            },
             ...mapActions({
                 store_setTableData: types.TABLE_ACTION_SET_DATA
             }),
@@ -269,12 +270,32 @@
             onTreeInit(nodes) {
                 console.log("onTreeInit ", nodes.length);
                 let tabularData = this.setStoreTableData(nodes);
-                this.$emit('complete-data', tabularData);
+                //For metadata
+                let uniqueOrganisms = [];
+                nodes.forEach(n => {
+                    if(!n.children) {
+                        if(n.data.organism) {
+                            let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                            if(org) {
+                                org.count++;
+                            } else {
+                                let org = {
+                                    name: n.data.organism,
+                                    commonName: n.data.displayName,
+                                    taxonId: n.data.taxonId,
+                                    count: 1
+                                }
+                                uniqueOrganisms.push(org);
+                            }
+                        }
+                    }
+                });
+                // this.setMetadata(tabularData, uniqueOrganisms);
+
+                let msg = {tabularData: tabularData, uniqueOrganisms: uniqueOrganisms};
+                this.$emit('tree-init', msg);
                 this.updateTableCols();
                 this.lazyLoad = true;
-                // setTimeout(() => {
-                    
-                // });
             },
             onTreeUpdate(nodes) {
                 console.log("onTreeUpdate ", nodes.length);
@@ -372,11 +393,16 @@
                 return row;
             },
             //TREE MENU
+            showLegend() {
+                this.$refs.treeLayout.onShowLegend();
+                this.legendIcon = !this.legendIcon;
+            },
             onDefaultView() {
-
+                this.$refs.treeLayout.onDefaultView();
+                this.$refs.searchBox.onReset();
             },
             expandAll() {
-
+                this.$refs.treeLayout.onExpandAll();
             },
             exportXML() {
             },
@@ -525,19 +551,24 @@
         left:0px;
         z-index: 1;
     } */
-    .mainTable td:nth-child(2),th:nth-child(2)  {
+    /* .mainTable td:nth-child(2),th:nth-child(2)  {
         position: sticky;
         position: -webkit-sticky;
         left:600px;
         z-index: 1;
-    }
+    } */
     /* Table Header Classes */
+    .my-float {
+        position: absolute;
+        z-index: 1000;
+    }
     .mainTable thead {
         flex: 0 0 auto;
         display: block;
         /* required for programmatic scrolling of header */
         overflow-x: hidden;
-        overflow-y: scroll;
+        overflow-y: visible;
+        z-index: 100;
     }
     .mainTable th {
         text-align: center;
@@ -582,6 +613,7 @@
         min-width: 800px;
         width: 800px;
         max-width: 800px;
+        z-index: 10;
     }
     .widthDefault {
         min-width: 200px;

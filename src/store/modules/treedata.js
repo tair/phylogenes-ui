@@ -146,29 +146,30 @@ const actions = {
                 method: 'GET',
                 url: API_URL + '/tree/' + payload
             })
-                .then(res => {
-                    if (res.data.response.docs.length > 0) {
-                        if (res.data.response.docs[0].jsonString) {
-                            context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
-                        }
-                        if (res.data.response.docs[0].family_name) {
-                            context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
-                        }
-                        if (res.data.response.docs[0].speciation_events) {
-                            context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
-                        }
-                        if (res.data.response.docs[0].go_annotations) {
-                            context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
-                        } else if (!res.data.response.docs[0].go_annotations) {
-                            context.state.treedata.go_annotations = null;
-                        }
+            .then(res => {
+                if (res.data.response.docs.length > 0) {
+                    console.log("get");
+                    if (res.data.response.docs[0].jsonString) {
+                        context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
                     }
-                    result("panther tree");
-                })
-                .catch(error => {
-                    console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-                    rej();
-                })
+                    if (res.data.response.docs[0].family_name) {
+                        context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
+                    }
+                    if (res.data.response.docs[0].speciation_events) {
+                        context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
+                    }
+                    if (res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
+                    } else if (!res.data.response.docs[0].go_annotations) {
+                        context.state.treedata.go_annotations = null;
+                    }
+                }
+                result("panther tree");
+            })
+            .catch(error => {
+                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                rej();
+            })
         });
     },
     [types.TREE_ACTION_SET_ANNODATA]: (context, payload) => {
