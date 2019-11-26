@@ -64,10 +64,14 @@
                 <div class="row h-50">
                     <div class="col-sm-12 h-50">
                         <tablelayout ref="tableLayout"
-                            :colsFromProp="tableColsToRender" :headerMap="headerMap" :treeDataFromProp ="treeData_Json"
+                            :treeId="treeId" :colsFromProp="tableColsToRender" :headerMap="headerMap" :treeDataFromProp ="treeData_Json"
                             v-on:toggle-cols="toggleMsa" 
                             v-on:tree-init="onTreeInit"
-                            v-on:anno-click="onAnnoClick">
+                            v-on:anno-click="onAnnoClick"
+                            v-on:search-tree="onSearchWithinTree"
+                            v-on:export-xml="exportXML"
+                            v-on:prune-from-menu="pruneTreeFromMenu"
+                            >
                         </tablelayout>
                         <!-- <table class="mainTable"> 
                             <thead id="head" ref="thead">
@@ -139,6 +143,8 @@ export default {
     },
     data() {
         return {
+            REG_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
+            GRAFT_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/grafting/prune',
             defaultCols: ["Gene",
                               "Organism", 
                               "Annotations",
@@ -159,6 +165,7 @@ export default {
                 }, 
                 spannedTaxon: ""
             },
+            matchNodes: [],
             //Popup
             showPopup: false,
             popupHeader: "Organisms (uncheck an organism to remove from tree)",
@@ -256,6 +263,17 @@ export default {
             deep: true,
             immediate: true
         },
+        store_getSearchTxtWthn: {
+            handler: function (val, oldVal) {
+                console.log("text ", val);
+                if(val != null) {
+                    // this.defaultSearchText = val;
+                    // this.onSearchWithinTree(val);
+                }
+            },
+            deep: true,
+            immediate: true
+        }
     },
     methods: {
         ...mapActions({
@@ -487,6 +505,31 @@ export default {
             }
             return "#00FF00";
         },
+        //////////////////// Tree Menu Events /////////////////////////
+        exportXML() {
+            this.downloadXmlWithAxios();
+        },
+        downloadXmlWithAxios(){
+            axios({
+                method: 'get',
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
+                },
+                url: this.phyloXML_URL+this.treeId+".xml",
+                responseType: 'arraybuffer'
+            })
+            .then(response => {
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', this.treeId+'.xml'); //or any other extension
+                document.body.appendChild(link);
+                link.click();
+            })
+            .catch(() => console.error('error occured'))
+        },
+
         ////////////////////// Metadata ////////////////////////////
         //Set metadata bar and organisms for pruning popup
         setMetadata(tabularData, uniqueOrganisms) {
@@ -502,6 +545,40 @@ export default {
                 this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount;
             }
             this.metadata.isLoading = false;
+        },
+        /////////////////////// Tree search from within ////////////
+        onSearchWithinTree(text) {
+            if(text != null) {
+                var d = this.completeData.filter(t => {
+                    var geneName = "";
+                    if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
+                        geneName = t["Gene name"].toLowerCase();
+                    }
+                    var geneId = "";
+                    if(t["Gene ID"] != null && typeof t["Gene ID"] != 'number') {
+                        geneId = t["Gene ID"].toLowerCase();
+                    }
+                    var uniprotId = "";
+                    if(t["Uniprot ID"] != null && typeof t["Uniprot ID"] != 'number') {
+                        uniprotId = t["Uniprot ID"].toLowerCase();
+                    }
+                    //If search text is "grafted" then we check if any nodes is a grafted node and return it as a matched node.
+                    // For getting grafted node, we check id accession is 'ANGRAFTED'
+                    var grafted = false;
+                    if(t["accession"] && t["accession"] == 'ANGRAFTED') {
+                        if(text == "grafted") {
+                            grafted = true
+                        }
+                    }
+                    text = text.toLowerCase();
+
+                    return geneName === text || geneId === text || uniprotId === text || grafted;
+                });
+                this.matchNodes = d;
+            } else {
+                this.matchNodes = [];
+            }
+            this.store_setMatchedNodes(this.matchNodes);
         },
         /////////////////////// Anno ///////////////////////////////
         onAnnoClick(data) {
@@ -946,7 +1023,7 @@ export default {
                     }
                     this.popupData = [];
                 } else {
-                    this.$refs.treeLayout.onPruneLoading(true);
+                    this.$refs.tableLayout.onPruneLoading(true);
                     if(!this.store_getHasGrafted) {
                         this.regularPruning(taxonList)
                     } else {
@@ -974,13 +1051,13 @@ export default {
                 let prunedJson = res.data;
                 this.analyzeCompleted = false;
                 this.loadPrunedJson(prunedJson);
-                this.$refs.treeLayout.onPruneLoading(false);
+                this.$refs.tableLayout.onPruneLoading(false);
             })
             .catch(err => {
                 console.error("error ", err);
                 this.isLoading = false;
                 this.resetPruning();
-                this.$refs.treeLayout.onPruneLoading(false);
+                this.$refs.tableLayout.onPruneLoading(false);
             });
         },
         regularPruning(taxonList) {
@@ -998,13 +1075,13 @@ export default {
                 this.prunedLoaded = true;
                 let prunedJson = res.data;
                 this.loadPrunedJson(prunedJson);
-                this.$refs.treeLayout.onPruneLoading(false);
+                this.$refs.tableLayout.onPruneLoading(false);
             })
             .catch(err => {
                 console.error("error ", err);
                 this.isLoading = false;
                 this.resetPruning();
-                this.$refs.treeLayout.onPruneLoading(false);
+                this.$refs.tableLayout.onPruneLoading(false);
             });
         },
         loadPrunedJson(treeJson) {
@@ -1106,6 +1183,7 @@ export default {
     box-sizing: border-box;
     box-shadow: 0 0 4px 0 rgba(0,0,0,.1);
     padding: 15px;
+    padding-top: 0px;
 }
 ::-webkit-scrollbar {
     -webkit-appearance: none;

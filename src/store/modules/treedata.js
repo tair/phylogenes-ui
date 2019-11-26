@@ -148,7 +148,6 @@ const actions = {
             })
             .then(res => {
                 if (res.data.response.docs.length > 0) {
-                    console.log("get");
                     if (res.data.response.docs[0].jsonString) {
                         context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
                     }

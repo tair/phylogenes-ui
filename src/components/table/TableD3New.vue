@@ -105,12 +105,15 @@
         props: [
             "treeDataFromProp",
             "colsFromProp",
-            "headerMap" //Map: ['Original Col Name': 'Updated Col Name']
+            "headerMap", //Map: ['Original Col Name': 'Updated Col Name']
+            "treeId"
         ],
         computed: {
             ...mapGetters({
                 store_tableData: types.TABLE_GET_DATA,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+                store_getCenterNode: types.TREE_GET_CENTER_NODE,
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
             }),
             showLegendButtonIcon(){
                 return this.legendIcon?
@@ -125,9 +128,21 @@
             }
         },
         watch: {
+            store_tableData: {
+                handler: function (val, oldVal) {
+                    //This is zero, when a new tree is reloaded.
+                    if(val.length == 0) {
+                        if(this.$refs.searchBox) {
+                            this.$refs.searchBox.onReset();
+                        }
+                    } 
+                },
+                deep: true,
+                immediate: true
+            },
             colsFromProp: {
                 handler: function(val, oldval) {
-                    console.log("colsFromProp ",val);
+                    // console.log("colsFromProp ",val);
                     this.updateTableCols();
                 }
             },
@@ -136,6 +151,30 @@
                     this.n_annotations = val.headers.length;
                 }
             },
+            //Auto scroll the table to the center node set by the tree (Auto scrolling)
+            store_getCenterNode: {
+                handler: function (val, oldVal) {
+                    if(val == null || this.isLoading) return;
+                    var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
+                    if(!foundRow) {
+                        let accession = val.data.accession;
+                        foundRow = this.store_tableData.find(d => d["accession"] === accession);
+                    }
+                    // console.log(foundRow);
+                    if(foundRow) {
+                        this.setScrollToRow(foundRow.id);
+                    }
+                },
+                deep: true,
+                immediate: true
+            },
+            store_getSearchTxtWthn: {
+                handler: function (val, oldVal) {
+                    console.log("text ", val);
+                },
+                deep: true,
+                immediate: true
+            }
         },
         components: {
             treelayout: treelayout,
@@ -176,19 +215,22 @@
                     'Protein function',
                     'Subfamily name'
                 ],
-                treeId: ""
             }
         },
         mounted() {
             this.initTable();
+            this.$refs.searchBox.onReset();
         },
         methods: {
             dropdownClicked() {
-                if(document.getElementById("head").style.overflowX == "hidden") {
-                    document.getElementById("head").style.overflowX = "visible";
-                } else {
-                    document.getElementById("head").style.overflowX = "hidden";
-                }
+                document.getElementById("head").style.overflowX = "visible";
+                // if(document.getElementById("head").style.overflowX == "hidden") {
+                //     document.getElementById("head").style.overflowX = "visible";
+                // } else if(document.getElementById("head").style.overflowX == "visible"){
+                //     document.getElementById("head").style.overflowX = "hidden";
+                // } else {
+                //     document.getElementById("head").style.overflowX = "visible";
+                // }
             },
             ...mapActions({
                 store_setTableData: types.TABLE_ACTION_SET_DATA
@@ -268,7 +310,7 @@
                 });
             },
             onTreeInit(nodes) {
-                console.log("onTreeInit ", nodes.length);
+                // console.log("onTreeInit ", nodes.length);
                 let tabularData = this.setStoreTableData(nodes);
                 //For metadata
                 let uniqueOrganisms = [];
@@ -296,9 +338,16 @@
                 this.$emit('tree-init', msg);
                 this.updateTableCols();
                 this.lazyLoad = true;
+
+                if(this.store_getSearchTxtWthn != null) {
+                    this.defaultSearchText = this.store_getSearchTxtWthn;
+                    setTimeout(() => {
+                        this.$emit('search-tree', this.store_getSearchTxtWthn);
+                    }, 2000);
+                }
             },
             onTreeUpdate(nodes) {
-                console.log("onTreeUpdate ", nodes.length);
+                // console.log("onTreeUpdate ", nodes.length);
                 // this.updateRows();
                 //Table data must changed on every tree update.
                 //Note: This even changes after the first tree init call.
@@ -312,6 +361,8 @@
                 //Adjust tree column span and height, to fill the whole table and match the original table height
                 this.treeRowSpan = this.rowsToRender.length+1;
                 this.rowsHeight = this.rowsToRender.length*40;
+
+               
             },
             //Called from external parent component
             updateRenderRows() {
@@ -405,14 +456,22 @@
                 this.$refs.treeLayout.onExpandAll();
             },
             exportXML() {
+                this.$emit('export-xml');
             },
             exportSVG() {
+                this.$refs.treeLayout.onExportSvg(this.treeId);
             },
             exportPNG() {
+                this.$refs.treeLayout.onExportPng(this.treeId);
             },
             pruneTreeFromMenu() {
+                this.$emit('prune-from-menu');
             },
             onSearchWithinTree(text) {
+                this.$emit('search-tree', text);
+            },
+            onPruneLoading(isLoad) {
+                this.$refs.treeLayout.onPruneLoading(isLoad);
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
             //SCROLL
@@ -430,12 +489,32 @@
             },
             //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
+                document.getElementById("head").style.overflowX = "hidden";
                 let scrollLeft_curr = document.getElementById("body").scrollLeft;
                 this.scrollTableHeader(scrollLeft_curr);
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
                 thead.scrollLeft = amount;
+            },
+            //From tree panning
+            setScrollToRow(rowNumber) {
+                this.rowsScrolled = rowNumber - 8;
+                // this.updateRows();
+                if(this.rowsScrolled > 0) {
+                    const tbody = document.getElementById("body");
+                    if(tbody) {
+                        body.scrollTop = 40*this.rowsScrolled;
+                    }
+                }
+                
+                // setTimeout(() => {
+                //     const tbody = document.getElementById("body");
+                //     if(tbody) {
+                //         tbody.scrollTop = 40*this.rowsScrolled;
+                //     }
+                // }, 100);
+                // this.scrollFromTree = true;
             },
             //CLICK Cell
             tdClicked(c, row) {
