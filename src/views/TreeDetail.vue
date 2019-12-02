@@ -866,6 +866,7 @@
                 this.store_setTableIsLoading(true);
                 setTimeout(() => {
                     this.analyzeMsaData().then(res => {
+                        console.log(res);
                         this.setTableCols();
                         this.analyzeCompleted = true;
                         this.store_setTableIsLoading(false);

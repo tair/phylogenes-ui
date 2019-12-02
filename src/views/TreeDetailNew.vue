@@ -145,6 +145,7 @@ export default {
         return {
             REG_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
             GRAFT_PRUNING_PANTHER_API: process.env.VUE_APP_TOMCAT_URL + '/panther/grafting/prune',
+            phyloXML_URL: process.env.VUE_APP_S3_URL,
             defaultCols: ["Gene",
                               "Organism", 
                               "Annotations",
@@ -210,15 +211,7 @@ export default {
         }),
     },
     mounted() {
-        // this.loadTreeFromApi();
-        let i = 0;
-        // for(i = 0; i < 100; i++) {
-        //     let processedRowData = {};
-        //     this.colsToRender.forEach(c => {
-        //         processedRowData[c] = "Test";
-        //     });
-        //     this.rowsToRender.push(processedRowData);
-        // }
+        this.prunedLoaded= false;
     },
     watch: {
         '$route.params.id': {
@@ -293,9 +286,10 @@ export default {
             this.loadTreeFromApi();
             this.store_setTableData([]);
             this.metadata.isLoading = true;
-            // this.showMsa = false;
-            // this.analyzeCompleted = false;
-            // this.resetPruning();
+            this.prunedLoaded= false;
+            this.showMsa = false;
+            this.analyzeCompleted = false;
+            this.resetPruning();
         },
         //Load tree data needed from the API.
         loadTreeFromApi() {
@@ -527,7 +521,7 @@ export default {
                 document.body.appendChild(link);
                 link.click();
             })
-            .catch(() => console.error('error occured'))
+            .catch((e) => console.error('error occured ', e))
         },
 
         ////////////////////// Metadata ////////////////////////////
@@ -732,11 +726,15 @@ export default {
         },
         //Analyze Msa Data and set table cols to msa.
         analyzeAndShowMsa() {
-            this.analyzeMsaData().then(res => {
-                this.headerMap["MSA"] = this.setMsaHeaderTitle();
-                this.setTableCols();
-                this.analyzeCompleted = true;
-            });
+            this.store_setTableIsLoading(true);
+            setTimeout(() => {
+                this.analyzeMsaData().then(res => {
+                    this.headerMap["MSA"] = this.setMsaHeaderTitle();
+                    this.setTableCols();
+                    this.analyzeCompleted = true;
+                    this.store_setTableIsLoading(false);
+                });
+            }, 100);
         },
         async analyzeMsaData() {
             let msa_split = [];

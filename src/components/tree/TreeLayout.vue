@@ -531,14 +531,15 @@
             },
             alignTable(node) {
                 if(node != null) {
-                    let leafNodes = this.getLeafNodesByDepth();
-                    let currCenterNode = leafNodes[node.id];
-                    this.store_setCenterNode(currCenterNode);
+                    let currCenterNode = this.leafNodesByDepth.filter(n => n.id == node.id);
+                    if(currCenterNode.length > 0) {
+                        this.store_setCenterNode(currCenterNode[0]);
+                    }
                 }
             },
             alignTree2() {
                 if(this.wrapper_d3 == null) return;
-
+                
                 let leafNodes = this.getLeafNodesByDepth();
                 if(this.rowsScrolledUp == null) {
                     let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
@@ -554,6 +555,7 @@
                 this.wrapper_d3
                     .transition().duration(500)
                     .attr("transform", (d) => {
+                        this.isLoading = false;
                         this.setCurrentTopNode({x: topNodePosX, y: topNodePosY});
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
@@ -662,6 +664,7 @@
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
+                this.isLoading = true;
                 updateDisplayUtils.processCompactTree(this.rootNode, this.store_annoMapping.annoMap);
             },
 
@@ -674,6 +677,7 @@
 
             // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
             processMatchedNodes(matchedNodes) {
+                if(!this.rootNode) return;
                 // console.log("matchedNodes ", matchedNodes);
                 var allNodes = this.rootNode.descendants();
                 nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
@@ -1158,6 +1162,7 @@
                     }
                     this.addFlask(d);
                 });
+                this.isLoading = true;
                 this.updateTree();
             },
             onShowLegend() {

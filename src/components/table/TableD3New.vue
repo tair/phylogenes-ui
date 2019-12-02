@@ -23,7 +23,7 @@
                 </tr>
                 <tr id="mainTr">
                     <th class="widthTree stickyCol">
-                        <div class="row align-items-center justify-content-between">
+                        <div class="row align-items-center justify-content-between rowbg">
                             <div class="col-auto align-items-center">
                                 <search-box ref="searchBox" 
                                         v-on:search="onSearchWithinTree" 
@@ -160,7 +160,6 @@
                         let accession = val.data.accession;
                         foundRow = this.store_tableData.find(d => d["accession"] === accession);
                     }
-                    // console.log(foundRow);
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
                     }
@@ -454,6 +453,7 @@
             },
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
+
             },
             exportXML() {
                 this.$emit('export-xml');
@@ -624,18 +624,9 @@
         position: -webkit-sticky;
         left:0;
     }
-    /* .mainTable td:first-child, th:first-child {
-        position: sticky;
-        position: -webkit-sticky;
-        left:0px;
-        z-index: 1;
-    } */
-    /* .mainTable td:nth-child(2),th:nth-child(2)  {
-        position: sticky;
-        position: -webkit-sticky;
-        left:600px;
-        z-index: 1;
-    } */
+    .rowbg{
+        background-color: #9cd5e3;
+    }
     /* Table Header Classes */
     .my-float {
         position: absolute;
@@ -647,7 +638,7 @@
         /* required for programmatic scrolling of header */
         overflow-x: hidden;
         overflow-y: visible;
-        z-index: 100;
+        z-index: 1;
     }
     .mainTable th {
         text-align: center;
@@ -667,6 +658,9 @@
     }
     #secTr th {
         height: 35px !important;
+    }
+    .firstCol {
+        z-index: 10;
     }
     .thInvis {
         background-color: transparent !important;
@@ -692,7 +686,6 @@
         min-width: 800px;
         width: 800px;
         max-width: 800px;
-        z-index: 10;
     }
     .widthDefault {
         min-width: 200px;
