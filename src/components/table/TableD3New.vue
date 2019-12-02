@@ -7,9 +7,15 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
+        <div v-if="showMsaLegend" class="legend-box">
+            <msa-legend></msa-legend>
+        </div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         <table v-else class="mainTable">
             <thead id="head" ref="thead">
+                <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                    <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
+                </button>
                 <tr id="secTr">
                     <th :colspan='msaTab?2:3' class="thInvis stickyCol">
                         <div class="my-msa">
@@ -110,6 +116,48 @@
             "treeId",
             "csvTable"
         ],
+        components: {
+            treelayout: treelayout,
+            popupTable: popupTable,
+            searchBox: searchBox,
+            'modal': customModal,
+            tablecell: baseCell,
+            msaLegend: msaLegend
+        },
+        data() {
+            return {
+                isLoading: false,
+                colsToRender: [],
+                rowsToRender: [],
+                lazyLoad: true,
+                rowsScrolled: 0,
+                n_annotations: 0,
+                msaTab: false,
+                defaultSearchText: "",
+                //Tree
+                treeRowSpan: 100,
+                rowsHeight: 1000,
+                //Popup
+                showPopup: false,
+                popupHeader: "",
+                popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
+                popupData: [],
+                //Legend
+                legendIcon: false,
+                showLegendTip: false,
+                showMsaLegend: false,
+                tableCsvData: [],
+                tableCsvFields:[
+                    'Uniprot ID',
+                    'Gene',
+                    'Gene ID',
+                    'Gene name',
+                    'Organism',
+                    'Protein function',
+                    'Subfamily name'
+                ],
+            }
+        },
         computed: {
             ...mapGetters({
                 store_tableData: types.TABLE_GET_DATA,
@@ -134,7 +182,6 @@
                 handler: function (val, oldVal) {
                     //This is zero, when a new tree is reloaded.
                     if(val.length == 0) {
-                        console.log("zero");
                         this.rowsToRender = [];
                         this.colsToRender = [];
                         if(this.$refs.searchBox) {
@@ -183,47 +230,6 @@
                 immediate: true
             }
         },
-        components: {
-            treelayout: treelayout,
-            popupTable: popupTable,
-            searchBox: searchBox,
-            'modal': customModal,
-            tablecell: baseCell,
-            msaLegend: msaLegend
-        },
-        data() {
-            return {
-                isLoading: false,
-                colsToRender: [],
-                rowsToRender: [],
-                lazyLoad: true,
-                rowsScrolled: 0,
-                n_annotations: 0,
-                msaTab: false,
-                defaultSearchText: "",
-                //Tree
-                treeRowSpan: 100,
-                rowsHeight: 1000,
-                //Popup
-                showPopup: false,
-                popupHeader: "",
-                popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
-                popupData: [],
-                //Legend
-                legendIcon: false,
-                showLegendTip: false,
-                tableCsvData: [],
-                tableCsvFields:[
-                    'Uniprot ID',
-                    'Gene',
-                    'Gene ID',
-                    'Gene name',
-                    'Organism',
-                    'Protein function',
-                    'Subfamily name'
-                ],
-            }
-        },
         mounted() {
             this.initTable();
             this.$refs.searchBox.onReset();
@@ -261,6 +267,9 @@
                 this.$emit('toggle-cols');
 
                 this.updateRenderRows();
+            },
+            toggleLegend() {
+                this.showMsaLegend = !this.showMsaLegend;
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~ TREE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setTableRow(n, index) {
@@ -605,6 +614,18 @@
         width: 1600px;
         height: 1100px;
         overflow: hidden;
+    }
+    .legend-box {
+        background-color: #9E9E9E;
+        position: absolute;
+        top: 50px;
+        right: 0px;
+    }
+    .msalegend {
+        position: absolute;
+        right: 10px;
+        top: 12px;
+        z-index: 100;
     }
     .mainTable {
         display: flex;

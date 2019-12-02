@@ -1,6 +1,3 @@
-// <b-button triggers="focus" variant="light" 
-//   title="Known Function"><i class="fas fa-info-circle fa-lg"></i></b-button>        
-
 <template>
     <div id="parent">
         <modal v-if="showPopup" @close="showPopup = false">
