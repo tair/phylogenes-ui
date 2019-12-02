@@ -230,6 +230,7 @@
             refreshView() {
                 this.resetRootPosition();
                 this.treenodes_view.splice(0, this.treenodes_view.length);
+                this.treelinks_view.splice(0, this.treelinks_view.length);
                 setTimeout(() => {
                     this.treenodes_view = [];
                     this.treelinks_view = [];

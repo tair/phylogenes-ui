@@ -36,9 +36,9 @@
                                     </template>
                                     <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
                                     <json-csv 
-                                        :data="tableCsvData" 
+                                        :data="csvTable.tableCsvData" 
                                         :name="treeId+'.csv'" 
-                                        :fields="tableCsvFields"
+                                        :fields="csvTable.tableCsvFields"
                                     >
                                         <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
                                     </json-csv>
@@ -71,6 +71,7 @@
                         <treelayout  :jsonData="treeDataFromProp" :heightFP="rowsHeight"
                                         ref="treeLayout"
                                         v-on:init-tree="onTreeInit"
+                                        v-on:get-table-csv-data="getTableCsvData"
                                         v-on:updated-tree="onTreeUpdate"></treelayout>
                     </td>
                 </tr>
@@ -106,7 +107,8 @@
             "treeDataFromProp",
             "colsFromProp",
             "headerMap", //Map: ['Original Col Name': 'Updated Col Name']
-            "treeId"
+            "treeId",
+            "csvTable"
         ],
         computed: {
             ...mapGetters({
@@ -132,8 +134,14 @@
                 handler: function (val, oldVal) {
                     //This is zero, when a new tree is reloaded.
                     if(val.length == 0) {
+                        console.log("zero");
+                        this.rowsToRender = [];
+                        this.colsToRender = [];
                         if(this.$refs.searchBox) {
                             this.$refs.searchBox.onReset();
+                        }
+                        if(this.$refs.treeLayout) {
+                            this.$refs.treeLayout.refreshView();
                         }
                     } 
                 },
@@ -223,17 +231,13 @@
         methods: {
             dropdownClicked() {
                 document.getElementById("head").style.overflowX = "visible";
-                // if(document.getElementById("head").style.overflowX == "hidden") {
-                //     document.getElementById("head").style.overflowX = "visible";
-                // } else if(document.getElementById("head").style.overflowX == "visible"){
-                //     document.getElementById("head").style.overflowX = "hidden";
-                // } else {
-                //     document.getElementById("head").style.overflowX = "visible";
-                // }
             },
             ...mapActions({
                 store_setTableData: types.TABLE_ACTION_SET_DATA
             }),
+            getTableCsvData(nodes) {
+                this.$emit('set-csv-data', nodes);
+            },
             initTable() {
                 this.addCustomScrollEvent();
             },
@@ -346,8 +350,6 @@
                 }
             },
             onTreeUpdate(nodes) {
-                // console.log("onTreeUpdate ", nodes.length);
-                // this.updateRows();
                 //Table data must changed on every tree update.
                 //Note: This even changes after the first tree init call.
                 this.setStoreTableData(nodes);
@@ -356,12 +358,9 @@
                     let processedRowData = this.processRow(n);
                     this.rowsToRender.push(processedRowData);
                 });
-                // console.log(this.rowsToRender.length);
                 //Adjust tree column span and height, to fill the whole table and match the original table height
                 this.treeRowSpan = this.rowsToRender.length+1;
                 this.rowsHeight = this.rowsToRender.length*40;
-
-               
             },
             //Called from external parent component
             updateRenderRows() {

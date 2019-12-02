@@ -65,12 +65,14 @@
                     <div class="col-sm-12 h-50">
                         <tablelayout ref="tableLayout"
                             :treeId="treeId" :colsFromProp="tableColsToRender" :headerMap="headerMap" :treeDataFromProp ="treeData_Json"
+                            :csvTable="csvTable"
                             v-on:toggle-cols="toggleMsa" 
                             v-on:tree-init="onTreeInit"
                             v-on:anno-click="onAnnoClick"
                             v-on:search-tree="onSearchWithinTree"
                             v-on:export-xml="exportXML"
                             v-on:prune-from-menu="pruneTreeFromMenu"
+                            v-on:set-csv-data="setCsvTableData"
                             >
                         </tablelayout>
                         <!-- <table class="mainTable"> 
@@ -183,7 +185,19 @@ export default {
             prunedLoaded: false,
             unprunedTaxonIds: [],
             originalTaxonIdsLength: 0,
-
+            //Table CSV
+            csvTable: {
+                tableCsvData: [],
+                tableCsvFields:[
+                    'Uniprot ID',
+                    'Gene',
+                    'Gene ID',
+                    'Gene name',
+                    'Organism',
+                    'Protein function',
+                    'Subfamily name'
+                ]
+            },
             showMsa: false,
             analyzeCompleted: false,
             headerMap: {},
@@ -280,6 +294,49 @@ export default {
             store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
             store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ
         }),
+        setCsvTableData(nodes) {
+            this.sortArrayByX(nodes);
+            nodes.forEach(n => {
+                if(!n.children) {
+                    var tableNode = {};
+                    tableNode["Gene name"] = n.data.gene_symbol;
+                    tableNode["Organism"] = n.data.organism;
+                    var geneId = n.data.gene_id;
+                    if (geneId) {
+                        geneId = geneId.split(':')[1];
+                    }
+                    tableNode["Gene ID"] = geneId;
+                    tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol: geneId;
+                    tableNode["Protein name"] = n.data.definition;
+                    tableNode["Uniprot ID"] = n.data.uniprotId;
+                    tableNode["Subfamily name"] = n.data.sf_name;
+                    this.anno_headers.sort(function (a, b) {
+                        return a.toLowerCase().localeCompare(b.toLowerCase());
+                    });
+                    this.anno_headers.forEach(a => {
+                        const goNameHeader = `${a} (${this.go_mapping[a]})`;
+                        this.csvTable.tableCsvFields.push(goNameHeader);
+                        tableNode[goNameHeader] = 0;
+                        if(n.data.uniprotId) {
+                            let uniprotId = n.data.uniprotId.toLowerCase();
+                            if(this.anno_mapping[uniprotId]) {
+                                let currAnno = this.anno_mapping[uniprotId];
+                                currAnno.forEach(c => {
+                                    if(c.goName === a) {
+                                        tableNode[goNameHeader] = 1;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    this.csvTable.tableCsvData.push(tableNode);
+                }
+            });
+            this.csvTable.tableCsvData.forEach( node => {
+                node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
+            });
+            this.csvTable.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');
+        },
         initForNewTreeId(id) {
             this.treeId = id;
             this.treeData_Json = null;
