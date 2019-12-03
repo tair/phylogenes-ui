@@ -11,51 +11,92 @@
             <msa-legend></msa-legend>
         </div>
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        
         <table v-else class="mainTable">
             <thead id="head" ref="thead">
                 <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
                 </button>
-                <colgroup :span="extraCols.length-5"></colgroup>
                 <tr id="secTr">
-                    <th :colspan="msaTab?1:2" class="thInvis">
-                        <button class="btn bg-white float-left" @click="toggleTabs">
-                            <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
-                        </button>
-                        
-                        <i v-if="isMsaLoading" class="fa fa-spinner fa-spin fa-2x text-danger px-3 float-left"></i>
+                    <th :colspan='msaTab?2:3' class="thInvis stickyCol">
+                        <div class="my-msa">
+                            <button class="btn bg-white float-left" @click="toggleTabs">
+                                <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                            </button>
+                        </div>
                     </th>
-                    <th v-if="extraCols.length > 0 && !msaTab" 
-                        :colspan="extraCols.length" scope="colgroup" class="thSubCol">Known Function
-                            <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
+                    <th v-if="n_annotations > 0 && !msaTab"
+                        :colspan="n_annotations" class="thSubCol">Known Function
+                        <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
                     </th>
-                    <th colspan="4" class="thInvis"></th>
                 </tr>
                 <tr id="mainTr">
-                    <th v-for="(col,i) in colsToRender" :key="i" 
-                        :class="getThClasses(col, i)"> 
-                            <tablecell :content="getHeader(col)"></tablecell>
-                    
-                            <b-button v-if="col === 'Gene name'" id="popover2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover2Text title="Gene Name" placement='right' target='popover2'></popover>
-                            <b-button v-if="col === 'Gene ID'" id="popover3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover3Text title="Gene ID" placement='left' target='popover3'></popover>
-                            <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
-                            <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text=popover5Text title="Subfamily Name" placement='left' target='popover5'></popover>
+                    <th class="widthTree stickyCol">
+                        <div class="row align-items-center justify-content-between rowbg">
+                            <div class="col-auto align-items-center">
+                                <search-box ref="searchBox" 
+                                        v-on:search="onSearchWithinTree" 
+                                        :defaultText="defaultSearchText"></search-box>
+                            </div>
+                            <div class="col-auto align-items-center">
+                                <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
+                                    <template slot="button-content">
+                                        <i @click="dropdownClicked" class="fas fa-tools fa-2x fa-fw"></i>
+                                    </template>
+                                    <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
+                                    <json-csv 
+                                        :data="csvTable.tableCsvData" 
+                                        :name="treeId+'.csv'" 
+                                        :fields="csvTable.tableCsvFields"
+                                    >
+                                        <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
+                                    </json-csv>
+                                    <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
+                                    <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
+                                    <b-dropdown-item @click="pruneTreeFromMenu">Prune tree by organism</b-dropdown-item>
+                                </b-dropdown>
+                                <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
+                                    <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
+                                <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
+                                            @click="expandAll"><i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i></button>
+                                <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
+                                        @click="showLegend" id="legendButton"><i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>     
+                                </button>
+                                <b-tooltip :show.sync="showLegendTip" target="legendButton" placement="top">
+                                    {{showLegendButtonIcon.title}}
+                                </b-tooltip>
+                            </div>
+                        </div>
+                    </th>
+                    <th v-for="(col,i) in colsToRender" :key="i"
+                            :class="getThClasses(col, i)"> 
+                        <tablecell :content="getHeader(col)"></tablecell>
+                        <b-button v-if="col === 'Gene name'" id="popover2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover v-if="col === 'Gene name'" :text=popover2Text title="Gene Name" placement='right' target='popover2'></popover>
+                        <b-button v-if="col === 'Gene ID'" id="popover3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover v-if="col === 'Gene ID'" :text=popover3Text title="Gene ID" placement='left' target='popover3'></popover>
+                        <b-button v-if="col === 'Protein name'" id="popover4" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover v-if="col === 'Protein name'" :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
+                        <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover v-if="col === 'Subfamily Name'" :text=popover5Text title="Subfamily Name" placement='left' target='popover5'></popover>
                     </th>
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr v-for="(row, row_i) in rowsToRender" :class="isEvenOdd(row)" :key=row_i>
-                    <td v-for="(key, i) in colsToRender" @click="tdClicked(key, row)" :key="key"
+                <tr>
+                    <td :rowspan="treeRowSpan" class="widthTree stickyCol">
+                        <treelayout  :jsonData="treeDataFromProp" :heightFP="rowsHeight"
+                                        ref="treeLayout"
+                                        v-on:init-tree="onTreeInit"
+                                        v-on:get-table-csv-data="getTableCsvData"
+                                        v-on:updated-tree="onTreeUpdate"></treelayout>
+                    </td>
+                </tr>
+                <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
+                    <td v-for="(key, i) in colsToRender" :key="key"
+                        @click="tdClicked(key, row)"
                         :class="getTdClasses(key, row[key], i)">
-                        <tablecell :content.sync="rowsToRender[row_i][key]"
-                                    v-on:update:content="onTableCellUpdated"
-                                    v-on:destroyed="onTableCellDestroyed"></tablecell>
+                        <tablecell :content.sync="rowsToRender[row_i][key]"></tablecell>
                     </td>
                 </tr>
             </tbody>
@@ -66,52 +107,66 @@
 <script>
     import * as d3 from 'd3';
     import _ from 'lodash';
+    import { mapGetters, mapActions } from 'vuex';
+    import { setTimeout } from 'timers';
 
     import * as types from '../../store/types_treedata';
-    import { mapGetters, mapActions } from 'vuex';
-
     import popupTable from './PopupTable';
     import customModal from '@/components/modal/CustomModal';
     import baseCell from '@/components/table/cells/BaseTableCell';
-    import { setTimeout } from 'timers';
     import msaLegend from '../table/MsaLegend';
+    import treelayout from '@/components/tree/TreeLayout';
+    import searchBox from '@/components/search/SearchBox';
 
     export default {
         name: "tablelayout",
         props: [
-            "headerMap",    //Map: ['Original Col Name': 'Updated Col Name']
-            "colsFromProp"  //Array: Col names to be displayed
+            "treeDataFromProp",
+            "colsFromProp",
+            "headerMap", //Map: ['Original Col Name': 'Updated Col Name']
+            "treeId",
+            "csvTable"
         ],
         components: {
+            treelayout: treelayout,
             popupTable: popupTable,
+            searchBox: searchBox,
             'modal': customModal,
             tablecell: baseCell,
             msaLegend: msaLegend
         },
         data() {
             return {
-                lazyLoad: false, //lazy load flag for rendering rows only within view
+                isLoading: false,
                 colsToRender: [],
                 rowsToRender: [],
-                extraCols: [],
-                tdWidth: '190px',
-                tdHeight: '30px',
-                rowHeight: 40,
-                scrollFromTree: false,
-                scrollTop_old: 0,
-                scrollLeft_old: 0,
+                lazyLoad: true,
+                rowsScrolled: 0,
+                n_annotations: 0,
+                msaTab: false,
+                defaultSearchText: "",
+                //Tree
+                treeRowSpan: 100,
+                rowsHeight: 1000,
+                //Popup
                 showPopup: false,
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
-                isLoading: false,
-                isMsaLoading: false,
+                //Legend
+                legendIcon: false,
+                showLegendTip: false,
                 showMsaLegend: false,
-                ticking: false,
-                rowsScrolled: 0,
-                upperLimit: 100,
-                msaTab: false,
-                processedCells: [],
+                tableCsvData: [],
+                tableCsvFields:[
+                    'Uniprot ID',
+                    'Gene',
+                    'Gene ID',
+                    'Gene name',
+                    'Organism',
+                    'Protein name',
+                    'Subfamily name'
+                ],
                 popover1Text: 'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
                 popover2Text: 'A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
                 popover3Text: 'A gene ID is a canonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
@@ -124,20 +179,50 @@
                 store_tableData: types.TABLE_GET_DATA,
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
-                store_tableIsLoading: types.TABLE_GET_ISTABLELOADING
-            })
+                store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+            }),
+            showLegendButtonIcon(){
+                return this.legendIcon?
+                {
+                    title: 'Hide Legend',
+                    buttonIcon: 'fas fa-angle-double-up'
+                }:
+                {
+                    title: 'Show Legend',
+                    buttonIcon: 'fas fa-angle-double-down'
+                };
+            }
         },
         watch: {
             store_tableData: {
                 handler: function (val, oldVal) {
                     //This is zero, when a new tree is reloaded.
                     if(val.length == 0) {
-                       this.resetTable();
-                    } else {
-                       this.renderTable();
-                    }
+                        this.rowsToRender = [];
+                        this.colsToRender = [];
+                        if(this.$refs.searchBox) {
+                            this.$refs.searchBox.onReset();
+                        }
+                        if(this.$refs.treeLayout) {
+                            this.$refs.treeLayout.refreshView();
+                        }
+                    } 
+                },
+                deep: true,
+                immediate: true
+            },
+            colsFromProp: {
+                handler: function(val, oldval) {
+                    // console.log("colsFromProp ",val);
+                    this.updateTableCols();
                 }
             },
+            store_annoMapping: {
+                handler: function (val, oldVal) {
+                    this.n_annotations = val.headers.length;
+                }
+            },
+            //Auto scroll the table to the center node set by the tree (Auto scrolling)
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
@@ -149,117 +234,180 @@
                     if(foundRow) {
                         this.setScrollToRow(foundRow.id);
                     }
-                }
+                },
+                deep: true,
+                immediate: true
             },
-            store_annoMapping: {
+            store_getSearchTxtWthn: {
                 handler: function (val, oldVal) {
-                    this.extraCols = val.headers;
-                }
-            },
-            store_tableIsLoading: {
-                handler: function(val, oldval) {
-                    if(val) {
-                        this.isLoading = true;
-                    } else {
-                        this.isLoading = false;
-                    }
-                }
-            },
-            colsFromProp: {
-                handler: function(val, oldval) {
-                    if(val.includes("MSA")) {
-                        this.msaTab = true;
-                    } else {
-                        this.msaTab = false;
-                    }
-                    this.addCustomScrollEvent();
-                    this.update();
-                    this.setTableScroll();
-                }
+                    // console.log("text ", val);
+                },
+                deep: true,
+                immediate: true
             }
         },
-        mounted: function () {
-            this.resetTable();
-            this.renderTable();
-        },
-        updated() {
-            this.$nextTick(function () {
-                
-            });
+        mounted() {
+            this.initTable();
+            this.$refs.searchBox.onReset();
         },
         methods: {
-            ...mapActions({
-                store_setTableScrolledRow: types.TABLE_ACTION_SET_SCROLL,
-                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
-            }),
-            reset() {
-                this.isLoading = true;
-                this.msaTab = false;
-                this.rowsToRender = [];
+            dropdownClicked() {
+                document.getElementById("head").style.overflowX = "visible";
             },
-            resetTable() {
-                this.isLoading = true;
-                this.msaTab = false;
-                this.store_setTableIsLoading(true);
+            ...mapActions({
+                store_setTableData: types.TABLE_ACTION_SET_DATA
+            }),
+            getTableCsvData(nodes) {
+                this.$emit('set-csv-data', nodes);
             },
             initTable() {
                 this.addCustomScrollEvent();
-                this.extraCols = this.store_annoMapping.headers;
-                this.store_setTableIsLoading(false);   
             },
-            addCustomScrollEvent() {
-                //On props change, the $refs reloads, so need to add scroll event at the next frame,
-                // hance the timeout.
-                setTimeout(() => {
-                    if(this.$refs.tbody) {
-                        //handleScroll is called with a throttle of 10 ms, this is to control the number of 
-                        // calls made to the function, on scrolling of mouse.
-                        this.$refs.tbody.addEventListener('scroll', 
-                                                    _.throttle(this.handleScroll, 10));
-                    }
-                });
-            },
-            renderTable() {
-                if(this.store_tableData != null && this.store_tableData.length > 0) {
-                    this.isLoading = false;
-                    setTimeout(() => {
-                        this.initTable();
-                        setTimeout(() => {
-                            this.update();
-                        });
-                    });
-                }
-            },
-            //Is called on every change to the store data
-            update() {
-                if(!this.colsFromProp) return;
+            updateTableCols() {
+                if(!this.colsFromProp && !this.store_tableData) return;
+                //Only display cols which have corresponding rows in store tableData
                 var filteredCols = d3.keys(this.store_tableData[0]);
                 filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
-                //Add Annotations to 'filteredCols' array if it is present in 'colsFromProp'
+                //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
                 if(this.colsFromProp.includes("Annotations")) {
                     this.store_annoMapping.headers.forEach(h => {
                         filteredCols.splice(2, 0, h);
                     });
                 }
-
+                // console.log("filteredCols ", filteredCols);
                 this.colsToRender = filteredCols;
                 this.rowsToRender = [];
-
-                this.lazyLoad = true;
-                if(this.msaTab) {
-                    if(this.store_tableData.length < 2000) this.lazyLoad = false;
-                }
-                this.displayRows();
             },
-            displayRows() {
-                if(!this.lazyLoad) {
-                    this.store_tableData.forEach(n => {
-                        let processedRowData = this.processRow(n);
-                        this.rowsToRender.push(processedRowData);
-                    });
-                } else {
-                    this.updateRows();
+            toggleTabs() {
+                this.msaTab = !this.msaTab;
+                this.$emit('toggle-cols');
+
+                this.updateRenderRows();
+            },
+            toggleLegend() {
+                this.showMsaLegend = !this.showMsaLegend;
+            },
+            //~~~~~~~~~~~~~~~~~~~~~~~~~ TREE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            setTableRow(n, index) {
+                var tableNode = {};
+                tableNode["id"] = index;
+                var geneId = n.data.gene_id;
+                if (geneId) {
+                    geneId = geneId.split(':')[1];
                 }
+                tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol:geneId;
+                tableNode["Organism"] = n.data.organism;
+                tableNode["Gene name"] = n.data.gene_symbol;
+                tableNode["Gene ID"] = geneId;
+                tableNode["Protein name"] = n.data.definition;
+                tableNode["Uniprot ID"] = n.data.uniprotId;
+                tableNode["Subfamily Name"] = n.data.sf_name;
+                tableNode["MSA"] = n.data.sequence;
+                //Annotations
+                if(n.data.uniprotId) {
+                    let uniprotId = n.data.uniprotId.toLowerCase();
+                    if(this.store_annoMapping.annoMap[uniprotId]) {
+                        let currAnno = this.store_annoMapping.annoMap[uniprotId];
+                        let allAnnos = this.store_annoMapping.headers;
+                        allAnnos.forEach(a => {
+                            currAnno.forEach(c => {
+                                if(c.goName === a) {
+                                    tableNode[a] = "*";
+                                }
+                            });
+                        });
+                    }
+                }
+                return tableNode;
+            },
+            setTableAnnotationRow() {
+                this.anno_headers.sort(function (a, b) {
+                    return a.toLowerCase().localeCompare(b.toLowerCase());
+                });
+                this.anno_headers.forEach(a => {
+                    tableNode[a] = "";
+                    if(n.data.uniprotId) {
+                        let uniprotId = n.data.uniprotId.toLowerCase();
+                        if(this.anno_mapping[uniprotId]) {
+                            let currAnno = this.anno_mapping[uniprotId];
+                            currAnno.forEach(c => {
+                                if(c.goName === a) {
+                                    tableNode[a] = "*";
+                                }
+                            });
+                        }
+                    }
+                });
+            },
+            onTreeInit(nodes) {
+                // console.log("onTreeInit ", nodes.length);
+                let tabularData = this.setStoreTableData(nodes);
+                //For metadata
+                let uniqueOrganisms = [];
+                nodes.forEach(n => {
+                    if(!n.children) {
+                        if(n.data.organism) {
+                            let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                            if(org) {
+                                org.count++;
+                            } else {
+                                let org = {
+                                    name: n.data.organism,
+                                    commonName: n.data.displayName,
+                                    taxonId: n.data.taxonId,
+                                    count: 1
+                                }
+                                uniqueOrganisms.push(org);
+                            }
+                        }
+                    }
+                });
+                // this.setMetadata(tabularData, uniqueOrganisms);
+
+                let msg = {tabularData: tabularData, uniqueOrganisms: uniqueOrganisms};
+                this.$emit('tree-init', msg);
+                this.updateTableCols();
+                this.lazyLoad = true;
+
+                if(this.store_getSearchTxtWthn != null) {
+                    this.defaultSearchText = this.store_getSearchTxtWthn;
+                    setTimeout(() => {
+                        this.$emit('search-tree', this.store_getSearchTxtWthn);
+                    }, 2000);
+                }
+            },
+            onTreeUpdate(nodes) {
+                //Table data must changed on every tree update.
+                //Note: This even changes after the first tree init call.
+                this.setStoreTableData(nodes);
+                this.rowsToRender = [];
+                this.store_tableData.forEach(n => {
+                    let processedRowData = this.processRow(n);
+                    this.rowsToRender.push(processedRowData);
+                });
+                //Adjust tree column span and height, to fill the whole table and match the original table height
+                this.treeRowSpan = this.rowsToRender.length+1;
+                this.rowsHeight = this.rowsToRender.length*40;
+            },
+            //Called from external parent component
+            updateRenderRows() {
+                this.rowsToRender = [];
+                this.store_tableData.forEach(n => {
+                    let processedRowData = this.processRow(n);
+                    this.rowsToRender.push(processedRowData);
+                });
+            },
+            setStoreTableData(nodes) {
+                var tabularData = [];
+                let i = 0;
+                nodes.forEach(n => {
+                    if(!n.children) {
+                        let row = this.setTableRow(n, i++);
+                        tabularData.push(row);
+                    }
+                });
+                this.store_setTableData(tabularData);
+                return tabularData;
             },
             //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
             //This depends on 'rowsScrolled'
@@ -296,6 +444,7 @@
             //returns cellContent: [text: "?", type: <cell-type>, 
                                     // optional additional features for each cell type]
             processRow(rowData) {
+                // console.log(rowData);
                 let row = {};
                 //If 'rendering' is false, row is rendered as default with blank text for performance reasons
                 if(rowData.rendering == false) {
@@ -319,275 +468,90 @@
                 });
                 return row;
             },
+            //TREE MENU
+            showLegend() {
+                this.$refs.treeLayout.onShowLegend();
+                this.legendIcon = !this.legendIcon;
+            },
+            onDefaultView() {
+                this.$refs.treeLayout.onDefaultView();
+                this.$refs.searchBox.onReset();
+            },
+            expandAll() {
+                this.$refs.treeLayout.onExpandAll();
+
+            },
+            exportXML() {
+                this.$emit('export-xml');
+            },
+            exportSVG() {
+                this.$refs.treeLayout.onExportSvg(this.treeId);
+            },
+            exportPNG() {
+                this.$refs.treeLayout.onExportPng(this.treeId);
+            },
+            pruneTreeFromMenu() {
+                this.$emit('prune-from-menu');
+            },
+            onSearchWithinTree(text) {
+                this.$emit('search-tree', text);
+            },
+            onPruneLoading(isLoad) {
+                this.$refs.treeLayout.onPruneLoading(isLoad);
+            },
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
+            //SCROLL
+            addCustomScrollEvent() {
+                //On props change, the $refs reloads, so need to add scroll event at the next frame,
+                // hance the timeout.
+                setTimeout(() => {
+                    if(this.$refs.tbody) {
+                        //handleScroll is called with a throttle of 10 ms, this is to control the number of 
+                        // calls made to the function, on scrolling of mouse.
+                        this.$refs.tbody.addEventListener('scroll', 
+                                                    _.throttle(this.handleScroll, 10));
+                    }
+                });
+            },
             //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
-                //If scrolling is from tree (programattic), handleScroll is still being called.
-                // So we just return without changing anything.
-                if(this.scrollFromTree) {
-                    setTimeout(() => {
-                        this.scrollFromTree = false;
-                    }, 100);
-                    return;
-                }
-
+                document.getElementById("head").style.overflowX = "hidden";
                 let scrollLeft_curr = document.getElementById("body").scrollLeft;
-                //'scrollLeft_old' is the prev horizontal scroll value
-                // If the curr value is diff than older, only then we scroll the table horizontally.
-                if(this.scrollLeft_old != scrollLeft_curr) {
-                    this.scrollLeft_old = scrollLeft_curr;
-                    this.scrollTableHeader(scrollLeft_curr);
-                    return;
-                }
-                
-                //this.ticking is used to call the more intensive functions like 'scrollTree'
-                // and 'updateRows' only once in 1s. This is needed because handleScroll is
-                // called a lot of times when the mouse is scrolled in a second, but we don't
-                // need to perform methods like updateRows for every call, or it will slow down
-                // performance.
-                if(!this.ticking) {
-                    this.ticking = true;
-                    setTimeout(() => {
-                        this.ticking = false;
-                        let scrollTop_curr = document.getElementById("body").scrollTop;
-                        if(scrollTop_curr != this.scrollTop_old) {
-                            this.calculateRowsScrolled(scrollTop_curr);
-                            this.scrollTop_old = scrollTop_curr;
-                            this.scrollTreeFromTable(this.rowsScrolled);
-                        }
-                    }, 100);
-                }
-            },
-            calculateRowsScrolled(amount) {
-                var rowNumber = amount/this.rowHeight;
-                rowNumber = Math.round(rowNumber);
-                this.rowsScrolled = rowNumber;
+                this.scrollTableHeader(scrollLeft_curr);
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
                 thead.scrollLeft = amount;
             },
-            //Move the tree node to the row number currently at the center of table.
-            //We do this by setting store value 'store_setTableScrolledRow' with the 'scroll'ed row number.
-            scrollTreeFromTable(rowNumber) {
-                var rowId = this.store_tableData[rowNumber]["Gene ID"];
-                var accession = this.store_tableData[rowNumber]["accession"];
-                var scroll = {i: rowNumber, id: rowId, accession: accession};
-                this.store_setTableScrolledRow(scroll);
-            },
-            setTableScroll() {
-                setTimeout(() => {
-                    const tbody = document.getElementById("body");
-                    if(tbody) {
-                        tbody.scrollTop = 40*this.rowsScrolled;
-                    }
-                }, 100);
-            },
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
-                this.updateRows();
-
-                setTimeout(() => {
+                // this.updateRows();
+                if(this.rowsScrolled > 0) {
                     const tbody = document.getElementById("body");
                     if(tbody) {
-                        tbody.scrollTop = 40*this.rowsScrolled;
+                        body.scrollTop = 40*this.rowsScrolled;
                     }
-                }, 100);
-                this.scrollFromTree = true;
-            },
-            //Table Events
-            rowClicked(d) {
-                this.showPopup = true;
-                let uniprotId = d["Uniprot ID"];
-                if(uniprotId) {
-                    uniprotId = uniprotId.toLowerCase();
-                } else {
-                    uniprotId = "N/A";
                 }
-                this.popupHeader = "Uniprot ID: " + uniprotId.toUpperCase();
-                let annoList = this.getFormattedAnnotationsList(uniprotId);
-                this.popupData = this.getPopupData(annoList);
+                
+                // setTimeout(() => {
+                //     const tbody = document.getElementById("body");
+                //     if(tbody) {
+                //         tbody.scrollTop = 40*this.rowsScrolled;
+                //     }
+                // }, 100);
+                // this.scrollFromTree = true;
             },
+            //CLICK Cell
             tdClicked(c, row) {
                 if(row[c] && row[c].text != '*') return;
-                let uniprotId = row["Uniprot ID"].text;
-                if(uniprotId) {
-                    uniprotId = uniprotId.toLowerCase();
-                } else {
-                    uniprotId = "N/A";
-                }
-                let uniHeader = "Uniprot ID: " + uniprotId.toUpperCase();
-                let annoList = this.getFormattedAnnotationsList(uniprotId);
-                annoList = annoList.filter(a => a.goTerm === c);
-                if(annoList.length != 0) {
-                    this.displayPopup(uniHeader, annoList);
-                }
+                this.$emit('anno-click', {row: row, val: c});
             },
+            //Display Popup
             displayPopup(header, data) {
                 this.popupHeader = header;
                 this.popupData = this.getPopupData(data);
                 this.showPopup = true;
-            },
-            toggleTabs() {
-                this.$emit('toggle-cols');
-            },
-            toggleLegend() {
-                this.showMsaLegend = !this.showMsaLegend;
-            },
-            onTableCellDestroyed(val) {
-                //If the table cell is destroyed before the processing of cell is finished,
-                // (eg. when we scroll the table, some cells which are scrolled up/down and not visible anymore)
-                // we find the cell and remove it from the array.
-                var index = this.processedCells.indexOf(val);
-                if (index > -1) {
-                    this.processedCells.splice(index, 1);
-                }
-            },
-            onTableCellUpdated(updatedContent) {
-                // console.log(this.processedCells.length);
-                //processedCells - array of table cells currently being processed.
-                // If the length > 0, we show a loading symbol on the table ie. isMsaLoading=true
-                // if(updatedContent.process == true) {
-                //     if(!this.processedCells.includes(updatedContent.id)) {
-                //         this.processedCells.push(updatedContent.id);
-                //     }
-                //     if(this.processedCells.length == 1) {
-                //         this.isMsaLoading = true;
-                //     }
-                // } 
-                // //If 'process' flag is false, that means the cell is completed processing.
-                // else if(updatedContent.process == false) {
-                //     var index = this.processedCells.indexOf(updatedContent.id);
-                //     if (index > -1) {
-                //         this.processedCells.splice(index, 1);
-                //     }
-                //     if(this.processedCells.length == 0) {
-                //         this.isMsaLoading = false;
-                //     }
-                // }
-            },
-            //Utilities
-            getDBLink(r) {
-                let link = "";
-                switch(r.db){
-                    case 'UniProtKB':
-                        link =  'https://www.uniprot.org/uniprot/'+r.id;
-                        break;
-                    case 'AGI_LocusCode':
-                        link =  'https://www.arabidopsis.org/servlets/TairObject?type=locus&name='+r.id;
-                        break;
-                    case 'ComplexPortal':
-                        link = 'https://www.ebi.ac.uk/complexportal/complex/'+r.id;
-                        break;
-                    case 'EMBL':
-                        link = 'https://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&Submit=Go&id='+r.id;
-                        break;
-                    case 'EcoGene':
-                        link = 'http://www.ecogene.org/geneInfo.php?eg_id='+r.id;
-                        break;
-                    case 'FB':
-                        link = 'http://flybase.org/reports/'+r.id;
-                        break;
-                    case 'GeneDB':
-                        link = 'http://www.genedb.org/gene/'+r.id;
-                        break;
-                    case 'NCBI_gi':
-                        link = 'https://www.ncbi.nlm.nih.gov/protein/'+r.id;
-                        break;
-                    case 'PomBase':
-                        link = 'https://www.pombase.org/gene/'+r.id;
-                        break;
-                    case 'RGD':
-                        link = 'https://rgd.mcw.edu/rgdweb/report/gene/main.html?id='+r.id;
-                        break;
-                    case 'RefSeq':
-                        link = 'https://www.ncbi.nlm.nih.gov/nuccore/'+r.id;
-                        break;
-                    case 'SGD':
-                        link = 'https://www.yeastgenome.org/locus/'+r.id;
-                        break;
-                    case 'TAIR':
-                        link = 'https://www.arabidopsis.org/servlets/TairObject?accession='+r.id;
-                        break;
-                    case 'WB':
-                        link = 'https://wormbase.org/db/gene/gene?name='+r.id;
-                        break;
-                    case 'ZFIN':
-                        link = 'http://zfin.org/'+r.id;
-                        break;
-                    case 'dictyBase':
-                        link = ' http://dictybase.org/gene/'+r.id;
-                        break;
-                    default:
-                        console.log("DB Id not recognized:", r)
-                        break;
-                }
-                return link;
-            },
-            getFormattedAnnotationsList(uniprotId) {
-                var annosForGene = this.store_annoMapping.annoMap[uniprotId];
-                var annoList = [];
-                if(!annosForGene) return annoList;
-                annosForGene.forEach(a => {
-                    let id = a.goId;
-                    let goTermLink = "https://www.ebi.ac.uk/QuickGO/term/"+id;
-                    var code = "";
-                    if(a.evidenceCode) {
-                        code = a.evidenceCode.split(",")[2];
-                    }
-                    var refCode = a.reference.split(":")[0];
-                    var refId = a.reference.split(":")[1];
-                    var refLink = "https://www.ncbi.nlm.nih.gov/pubmed/" + refId;
-                    if(refCode == "GO_REF") {
-                        refLink = "https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-"
-                            +refId+".md";
-                    }
-                    let withFromList = [];
-                    if(a.withFrom) {
-                        a.withFrom.forEach(r => {
-                            withFromList.push(
-                                {name: r.db+":"+r.id,
-                                 link: this.getDBLink(r)
-                                });
-                        });
-                    }
-
-                    var findGoId = annoList.find(a => {
-                        if(refCode != '') {
-                            return a.goId === id && a.code === code;
-                        } else {
-                            return a.goId === id
-                        }
-                    });
-                    if(!findGoId) {
-                        annoList.push({
-                            goId: a.goId,
-                            goTerm: a.goName,
-                            goTermLink: goTermLink,
-                            code: code,
-                            reference: [{
-                                count: 1,
-                                link: refLink
-                            }],
-                            withFrom: withFromList,
-                            source: "QuickGO",
-                            sourceLink: "https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=" + uniprotId
-                        });
-                    } else {
-                        let refLinksList = findGoId.reference.map(r => {
-                            return r.link;
-                        });
-
-                        if(!refLinksList.includes(refLink)) {
-                            findGoId.reference.push({
-                                count: findGoId.reference.length + 1,
-                                link: refLink
-                            });
-                            findGoId.withFrom.concat(withFromList);
-                        }
-                    }
-                });
-                return annoList;
             },
             getPopupData(annoList) {
                 let popUpTableData = [];
@@ -626,7 +590,7 @@
                     header['text'] = this.headerMap[title];
                 }
                 return header;
-            },         
+            }, 
             getThClasses(row, i) {
                 let classes = [];
                 if(row == "MSA") {
@@ -635,9 +599,9 @@
                     classes.push('widthDefault');
                 }
                 
-                if(i > 1&&i<this.extraCols.length+1) {
-                    classes.push('thSubColSp');
-                }
+                // if(i > 1&&i<this.extraCols.length+1) {
+                //     classes.push('thSubColSp');
+                // }
                 return classes;
             },
             getTdClasses(row, cellValue, col_idx) {
@@ -647,32 +611,26 @@
                 } else {
                     classes.push('widthDefault');
                 }
- 
+                if(col_idx == 0) {
+                    classes.push('stickyCol2');
+                }
                 if(cellValue && cellValue.text == '*') {
                     classes.push('tdHover');
                 }
                 //For all cells belonging to sub columns for annotations
-                if(col_idx > 1 && col_idx < this.extraCols.length+1) {
-                    classes.push('tdSubCol');
-                }
+                // if(col_idx > 1 && col_idx < this.extraCols.length+1) {
+                //     classes.push('tdSubCol');
+                // }
                 return classes;
             },
-            isEvenOdd(row) {
-                if(row.MSA) {
-                    return "noevenodd";
-                }
-            }
-        },
-        destroyed: function () {
-            window.removeEventListener('scroll', this.handleScroll);
         }
     }
 </script>
 <style scoped>
     #parent {
-        position: absolute;
-        width: 95%;
-        height: 100%;
+        /* position: absolute; */
+        width: 1600px;
+        height: 1100px;
         overflow: hidden;
     }
     .legend-box {
@@ -692,19 +650,36 @@
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 100%;
+        height: 98%;
         border-collapse: collapse;
         overflow: hidden;
         font-size: 14px;
         font-family: sans-serif;
         border-bottom: 5px solid #f1f1f0;
     }
+    .mainTable .stickyCol {
+        position: sticky;
+        position: -webkit-sticky;
+        left:0;
+    }
+    .rowbg{
+        background-color: #9cd5e3;
+    }
+    /* Table Header Classes */
+    .my-float {
+        position: absolute;
+        z-index: 1000;
+    }
     .mainTable thead {
         flex: 0 0 auto;
         display: block;
         /* required for programmatic scrolling of header */
         overflow-x: hidden;
-        overflow-y: scroll;
+        overflow-y: visible;
+        z-index: 1;
+    }
+    .mainTable th {
+        text-align: center;
     }
     #mainTr {
         border-bottom: 3px solid #f1f1f0;
@@ -720,66 +695,11 @@
         background-color: transparent;
     }
     #secTr th {
-         height: 35px !important;
+        height: 35px !important;
     }
-    @media (min-height: 432px) {
-         #secTr th { height: 35px !important; }
+    .firstCol {
+        z-index: 10;
     }
-    @media (min-height: 960px) {
-         #secTr th { height: 35px !important; }
-    }
-    .mainTable tbody {
-        overflow: scroll;
-    }
-    .mainTable tr:nth-child(even) {
-        background-color: #cdeaf5;
-    }
-    .mainTable tr:nth-child(odd) {
-        background-color: #e9e9e9;
-    }
-
-    .mainTable tr:nth-child(even) td:first-child {
-        background-color: #cdeaf5;
-    }
-    .mainTable tr:nth-child(odd) td:first-child {
-        background-color: #e9e9e9;
-    }
-
-    /* tr with noevenodd class, have 2nd child (hard-coded!) of MSA which should not be even odd*/
-    .mainTable tr.noevenodd:nth-child(even) td:nth-child(2) {
-        background-color: #e9e9e9;
-    }
-    .mainTable tr.noevenodd:nth-child(odd) td:nth-child(2) {
-        background-color: #e9e9e9;
-    }
-
-    .mainTable tr {
-        height: 40px !important;
-    }
-    .mainTable th {
-        text-align: center;
-        border-top: 3px solid #f1f1f0;
-    }
-    .mainTable .thHide {
-        visibility: hidden;
-    }
-    .mainTable th, .mainTable td {
-        border-right: 3px solid #f1f1f0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        z-index: 1;
-    }
-
-    .mainTable td:first-child,
-    .mainTable th:first-child {
-        position: sticky;
-        position: -webkit-sticky;
-        left:0;
-        box-shadow: 5px 0 2px -2px #f1f1f0;
-        background-color: #9cd5e3;
-    }
-
     .thInvis {
         background-color: transparent !important;
         box-shadow: none !important;
@@ -792,8 +712,18 @@
         text-indent: 50px;
         border-left: 3px solid #f1f1f0 !important;
     }
+    .tdHover:hover {
+        background-color: #e1e7f3 !important;
+        filter: brightness(85%);
+        cursor: pointer;
+    }
     .thSubColSp {
         border-right: 1px solid #f1f1f0 !important;
+    }
+    .widthTree {
+        min-width: 800px;
+        width: 800px;
+        max-width: 800px;
     }
     .widthDefault {
         min-width: 200px;
@@ -806,22 +736,28 @@
         font-family: monospace;
         letter-spacing: 0.1px;
     }
-    .tdSubCol {
-        border-right: 1px solid #f1f1f0 !important;
+    /* Table Body Classes */
+    .mainTable tbody {
+        overflow: scroll;
     }
-    .tdHover:hover {
-        background-color: #e1e7f3 !important;
-        filter: brightness(85%);
-        cursor: pointer;
+    .mainTable tr:nth-child(even){
+        background-color: #cdeaf5;
     }
-
-    .anno_circle {
-        r: 8;
-        fill: #ff0;
-        stroke: steelblue;
-        stroke-width: 2px;
+    .mainTable tr:nth-child(odd){
+        background-color: #e9e9e9;
     }
-
+    .mainTable td {
+        height: 40px !important;
+        border-right: 3px solid #f1f1f0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .my-msa {
+        position: absolute;
+        padding-left: 10px;
+        top: 10px;
+    }
     ::-webkit-scrollbar {
         -webkit-appearance: none;
         width: 15px;
@@ -832,6 +768,4 @@
         -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.897);
         width: 70px;
     }
-   
 </style>
-

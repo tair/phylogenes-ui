@@ -7,7 +7,6 @@ import Contact from './views/Contact.vue'
 import Login from './views/Login.vue'
 import TreeBrowse from './views/TreeBrowse.vue'
 import TreeDetail from './views/TreeDetail.vue'
-import TreeDetailNew from './views/TreeDetailNew.vue'
 import TreeGrafting from './views/TreeGrafting'
 import {store} from './store'
 import {TREE_ACTION_SET_SEARCH} from './store/types_tree'
@@ -49,7 +48,7 @@ export default new Router({
     },
     {
         path: '/tree/:id',
-      component: TreeDetailNew
+      component: TreeDetail
     },
     {
       path: '/grafting',
