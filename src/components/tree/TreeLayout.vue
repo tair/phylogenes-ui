@@ -109,7 +109,8 @@
                     if(!val) {
                         this.checkForGraftedNode();
                     }
-                }
+                },
+                immediate: true
             }
         },
         data() {
@@ -149,7 +150,8 @@
                 delayInCall: 20,
                 ticking: false,
                 timerId: null,
-                svgHeight: '1000px'
+                svgHeight: '1000px',
+                firstLoadForGrafted: true
             }
         },
         mounted() {
@@ -166,7 +168,10 @@
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
             checkForGraftedNode() {
-                if(this.store_getHasGrafted) {
+                if(!this.rootNode) return;
+                if(this.store_getHasGrafted && this.firstLoadForGrafted) {
+                    console.log("check for");
+                    this.firstLoadForGrafted = false;
                     var graftedNode = null;
                     let allNodes = this.rootNode.descendants();
                     allNodes.forEach(a => {
@@ -175,9 +180,7 @@
                         }
                     });
                     if(graftedNode != null) {
-                        setTimeout(() => {
-                            this.centerTreeToGivenNode(graftedNode);
-                        }, 10);
+                        this.alignTable(graftedNode);
                     }
                 }
             },
@@ -279,6 +282,7 @@
                 } else {
                     this.updateTree();
                 }
+                this.firstLoadForGrafted = true;
             },
             //Convert json into d3 hierarchy which adds depth, height and
             // parent variables to each node.
@@ -534,6 +538,7 @@
                 if(node != null) {
                     let currCenterNode = this.leafNodesByDepth.filter(n => n.id == node.id);
                     if(currCenterNode.length > 0) {
+                        console.log("align table");
                         this.store_setCenterNode(currCenterNode[0]);
                     }
                 }
@@ -544,6 +549,7 @@
                 let leafNodes = this.getLeafNodesByDepth();
                 if(this.rowsScrolledUp == null) {
                     let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
+                    console.log("align tree 2");
                     this.store_setCenterNode(currCenterNode);
                     return;
                 }
@@ -1103,18 +1109,6 @@
             moveUp() {
                 this.rowsScrolledUp=this.rowsScrolledUp+5;
                 this.alignTree();
-            },
-            centerTreeToGivenNode(node) {
-                if(node == null) {
-                    this.store_setCenterNode(node);
-                    return;
-                }
-                let leafNodes = this.getLeafNodesByDepth();
-                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
-                // this.rowsScrolledUp = foundNodeIdx-8;
-                // console.log(this.rowsScrolledUp);
-                this.updateViewOnly();
-                // this.alignTree();
             },
             moveTreeToNodePosition(node) {
                 let leafNodes = this.getLeafNodesByDepth();

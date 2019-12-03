@@ -184,11 +184,11 @@
             showLegendButtonIcon(){
                 return this.legendIcon?
                 {
-                    title: 'Hide Legend',
+                    title: 'Show Legend',
                     buttonIcon: 'fas fa-angle-double-up'
                 }:
                 {
-                    title: 'Show Legend',
+                    title: 'Hide Legend',
                     buttonIcon: 'fas fa-angle-double-down'
                 };
             }
@@ -197,7 +197,7 @@
             store_tableData: {
                 handler: function (val, oldVal) {
                     //This is zero, when a new tree is reloaded.
-                    if(val.length == 0) {
+                    if(val && val.length == 0) {
                         this.rowsToRender = [];
                         this.colsToRender = [];
                         if(this.$refs.searchBox) {
@@ -206,14 +206,16 @@
                         if(this.$refs.treeLayout) {
                             this.$refs.treeLayout.refreshView();
                         }
-                    } 
+                        this.store_setTableIsLoading(true);
+                    } else {
+                        this.initTable();
+                    }
                 },
                 deep: true,
                 immediate: true
             },
             colsFromProp: {
                 handler: function(val, oldval) {
-                    // console.log("colsFromProp ",val);
                     this.updateTableCols();
                 }
             },
@@ -226,6 +228,7 @@
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
+                    if(oldVal && oldVal.id == val.id) {console.log("same"); return; }
                     var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
                     if(!foundRow) {
                         let accession = val.data.accession;
@@ -255,16 +258,18 @@
                 document.getElementById("head").style.overflowX = "visible";
             },
             ...mapActions({
+                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA
             }),
             getTableCsvData(nodes) {
                 this.$emit('set-csv-data', nodes);
             },
             initTable() {
+                this.store_setTableIsLoading(true);
                 this.addCustomScrollEvent();
             },
             updateTableCols() {
-                if(!this.colsFromProp && !this.store_tableData) return;
+                if(!this.colsFromProp || !this.store_tableData) return;
                 //Only display cols which have corresponding rows in store tableData
                 var filteredCols = d3.keys(this.store_tableData[0]);
                 filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
@@ -303,6 +308,7 @@
                 tableNode["Uniprot ID"] = n.data.uniprotId;
                 tableNode["Subfamily Name"] = n.data.sf_name;
                 tableNode["MSA"] = n.data.sequence;
+                if(n.data.accession) tableNode["accession"] = n.data.accession;
                 //Annotations
                 if(n.data.uniprotId) {
                     let uniprotId = n.data.uniprotId.toLowerCase();
@@ -388,14 +394,19 @@
                 //Adjust tree column span and height, to fill the whole table and match the original table height
                 this.treeRowSpan = this.rowsToRender.length+1;
                 this.rowsHeight = this.rowsToRender.length*40;
+                setTimeout(() => {
+                    this.store_setTableIsLoading(false);
+                });
             },
             //Called from external parent component
             updateRenderRows() {
                 this.rowsToRender = [];
-                this.store_tableData.forEach(n => {
-                    let processedRowData = this.processRow(n);
-                    this.rowsToRender.push(processedRowData);
-                });
+                if(this.store_tableData) {
+                    this.store_tableData.forEach(n => {
+                        let processedRowData = this.processRow(n);
+                        this.rowsToRender.push(processedRowData);
+                    });
+                }
             },
             setStoreTableData(nodes) {
                 var tabularData = [];

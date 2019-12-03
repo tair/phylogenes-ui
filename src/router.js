@@ -47,7 +47,7 @@ export default new Router({
         pathToRegexpOptions: {strict: true}
     },
     {
-        path: '/tree/:id',
+      path: '/tree/:id',
       component: TreeDetail
     },
     {

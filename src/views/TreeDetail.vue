@@ -83,6 +83,7 @@ export default {
     computed: {
         ...mapGetters({
             store_treeJsonString: types.TREE_GET_JSON,
+            store_treeJsonObj: types.TREE_GET_JSON_OBJ,
             stateTreeAnnotations: types.TREE_GET_ANNOTATIONS,
             store_annoMapping: types.TREE_GET_ANNO_MAPPING,
             store_getTreeMetadata: types.TREE_GET_METADATA,
@@ -99,6 +100,14 @@ export default {
                 this.initForNewTreeId(id);
             },
             deep: true,
+            immediate: true
+        },
+        '$route.name': {
+            handler: function (val, oldVal) {
+                if(val && val == "treeGrafted") {
+                    this.loadTreeFromStore();
+                }
+            },
             immediate: true
         },
         store_getTreeMetadata: {
@@ -216,7 +225,8 @@ export default {
             stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
             store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
             store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
-            store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ
+            store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
+            store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED,
         }),
         setCsvTableData(nodes) {
             this.sortArrayByX(nodes);
@@ -279,14 +289,37 @@ export default {
             var p2 = this.store_setMsaFromApi(this.treeId);
             Promise.all([p1, p2]).then(vals => {
                 if(vals.length > 1) {
-                    // this.resetPruning();
-                    this.initTreeData(this.store_treeJsonString);
+                    var treeJson = JSON.parse(this.store_treeJsonString);
+                    this.initTreeData(treeJson);
                 }
             });
         },
+        loadTreeFromStore() {
+            //Reset
+            this.resetPruning();
+            this.showMsa = false;
+            this.treeData_Json = null;
+            this.analyzeCompleted = false;
+
+            //For a grafted tree, we load the tree json from the store.
+            var treeJson = this.store_treeJsonObj;
+            if(treeJson.search) {
+                //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
+                //The MSA will be empty for the extra grafted node.
+                this.treeId = treeJson.search.book;
+                var p1 = this.store_setPantherTreeFromApi(this.treeId);
+                var p2 = this.store_setMsaFromApi(this.treeId);
+                Promise.all([p1, p2]).then(vals => {
+                    console.log("Loaded GO and MSA data from API");
+                    this.treeId = treeJson.search.book;
+                    this.metadata.isLoading = false;
+                    this.initTreeData(treeJson);
+                });
+                this.store_setHasGrafted(true);
+            }
+        },
         // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
-        initTreeData(jsonString) {
-            var treeJson = JSON.parse(jsonString);
+        initTreeData(treeJson) {
             treeJson = treeJson.search.annotation_node;
             this.formatJson(treeJson);
             this.processJson(treeJson)
@@ -402,6 +435,7 @@ export default {
             let accessionId = node.accession;
             if(accessionId) {
                  if(accessionId == "ANGRAFTED") {
+                        console.log("grafted ");
                         node.newGrafted = true;
                         node.text = "Grafted";
                     }
@@ -723,7 +757,7 @@ export default {
                 });
             }, 100);
         },
-                setMsaHeaderTitle() {
+        setMsaHeaderTitle() {
             let msa_header = "MSA:";
             let max_ruler_len = this.store_maxMsaLength;
             let ruler_gap = 25;
