@@ -31,6 +31,7 @@
                         </u></b></span>, spanning {{this.metadata.spannedTaxon}}
                 </span>
             </div>
+            <!-- Table -->
             <div class="col-sm-12 h-95 pg-panel">
                 <div class="row h-50">
                     <div class="col-sm-12 h-50">
@@ -119,7 +120,6 @@ export default {
         },
         stateTreeAnnotations: {
             handler: function (val, oldVal) {
-                // console.log("tree ", val);
                 this.loadAnnotations(val);
             },
             deep: true,
@@ -127,8 +127,7 @@ export default {
         },
         store_annoMapping: {
             handler: function (val, oldVal) {
-                // this.extraCols = val.headers;
-                // console.log("Watch anno ", val.headers);
+
             },
             deep: true,
             immediate: true
@@ -136,8 +135,6 @@ export default {
         store_getSearchTxtWthn: {
             handler: function (val, oldVal) {
                 if(val != null) {
-                    // this.defaultSearchText = val;
-                    // this.onSearchWithinTree(val);
                 }
             },
             deep: true,
@@ -199,17 +196,14 @@ export default {
                     'Subfamily name'
                 ]
             },
+            //MSA
             showMsa: false,
             analyzeCompleted: false,
             headerMap: {},
             completeData: null,
             tableColsToRender: [],
-            colsToRender: [],
-            rowsToRender: [],
             treeData_Json: null,
-            treeId: null,
-            rowSpan: 100,
-            rowsHeight: 1000
+            treeId: null
         }
     },
     mounted() {
@@ -228,49 +222,6 @@ export default {
             store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
             store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED,
         }),
-        setCsvTableData(nodes) {
-            this.sortArrayByX(nodes);
-            nodes.forEach(n => {
-                if(!n.children) {
-                    var tableNode = {};
-                    tableNode["Gene name"] = n.data.gene_symbol;
-                    tableNode["Organism"] = n.data.organism;
-                    var geneId = n.data.gene_id;
-                    if (geneId) {
-                        geneId = geneId.split(':')[1];
-                    }
-                    tableNode["Gene ID"] = geneId;
-                    tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol: geneId;
-                    tableNode["Protein name"] = n.data.definition;
-                    tableNode["Uniprot ID"] = n.data.uniprotId;
-                    tableNode["Subfamily name"] = n.data.sf_name;
-                    this.anno_headers.sort(function (a, b) {
-                        return a.toLowerCase().localeCompare(b.toLowerCase());
-                    });
-                    this.anno_headers.forEach(a => {
-                        const goNameHeader = `${a} (${this.go_mapping[a]})`;
-                        this.csvTable.tableCsvFields.push(goNameHeader);
-                        tableNode[goNameHeader] = 0;
-                        if(n.data.uniprotId) {
-                            let uniprotId = n.data.uniprotId.toLowerCase();
-                            if(this.anno_mapping[uniprotId]) {
-                                let currAnno = this.anno_mapping[uniprotId];
-                                currAnno.forEach(c => {
-                                    if(c.goName === a) {
-                                        tableNode[goNameHeader] = 1;
-                                    }
-                                });
-                            }
-                        }
-                    });
-                    this.csvTable.tableCsvData.push(tableNode);
-                }
-            });
-            this.csvTable.tableCsvData.forEach( node => {
-                node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
-            });
-            this.csvTable.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');
-        },
         initForNewTreeId(id) {
             this.treeId = id;
             this.treeData_Json = null;
@@ -330,7 +281,6 @@ export default {
                     console.error("Process json failed! ", e);
                 });
             this.setTableCols();
-            // this.completeData = null;
         },
         loadAnnotations(annotations) {
             this.anno_mapping = {};
@@ -544,7 +494,6 @@ export default {
             })
             .catch((e) => console.error('error occured ', e))
         },
-
         ////////////////////// Metadata ////////////////////////////
         //Set metadata bar and organisms for pruning popup
         setMetadata(tabularData, uniqueOrganisms) {
@@ -877,20 +826,8 @@ export default {
         },
         ///////////////////////
 
-        sortArrayByX(arr) {
-            arr.sort((a, b) => {
-                if(a.x < b.x) {
-                    return -1;
-                }
-                if(a.x > b.x) {
-                    return 1;
-                }
-                return 0;
-            });
-        },
         ////////////////////// TABLE ///////////////////////////////
         setTableCols() {
-            // this.tableColsToRender = this.defaultCols;
             if(this.showMsa) {
                 this.tableColsToRender = this.msaCols;
             } else {
@@ -900,7 +837,6 @@ export default {
                 this.$refs.tableLayout.updateRenderRows();
             });
         },
-
 
         // ~~~~~~~~~~~~~~~~ Pruning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
         //Reset all pruning global vars
@@ -1062,6 +998,61 @@ export default {
                 .catch(e => {
                     console.error("Process json failed!");
                 });
+        },
+        // ~~~~~~~~~~~~~ Download csv ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+        setCsvTableData(nodes) {
+            this.sortArrayByX(nodes);
+            nodes.forEach(n => {
+                if(!n.children) {
+                    var tableNode = {};
+                    tableNode["Gene name"] = n.data.gene_symbol;
+                    tableNode["Organism"] = n.data.organism;
+                    var geneId = n.data.gene_id;
+                    if (geneId) {
+                        geneId = geneId.split(':')[1];
+                    }
+                    tableNode["Gene ID"] = geneId;
+                    tableNode["Gene"] = n.data.gene_symbol ? n.data.gene_symbol: geneId;
+                    tableNode["Protein name"] = n.data.definition;
+                    tableNode["Uniprot ID"] = n.data.uniprotId;
+                    tableNode["Subfamily name"] = n.data.sf_name;
+                    this.anno_headers.sort(function (a, b) {
+                        return a.toLowerCase().localeCompare(b.toLowerCase());
+                    });
+                    this.anno_headers.forEach(a => {
+                        const goNameHeader = `${a} (${this.go_mapping[a]})`;
+                        this.csvTable.tableCsvFields.push(goNameHeader);
+                        tableNode[goNameHeader] = 0;
+                        if(n.data.uniprotId) {
+                            let uniprotId = n.data.uniprotId.toLowerCase();
+                            if(this.anno_mapping[uniprotId]) {
+                                let currAnno = this.anno_mapping[uniprotId];
+                                currAnno.forEach(c => {
+                                    if(c.goName === a) {
+                                        tableNode[goNameHeader] = 1;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    this.csvTable.tableCsvData.push(tableNode);
+                }
+            });
+            this.csvTable.tableCsvData.forEach( node => {
+                node['Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.']=null;                        
+            });
+            this.csvTable.tableCsvFields.push('Columns after \'Subfamily name\', if any, are \'Known functions\'. Each \'Known function\' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene.');
+        },
+        sortArrayByX(arr) {
+            arr.sort((a, b) => {
+                if(a.x < b.x) {
+                    return -1;
+                }
+                if(a.x > b.x) {
+                    return 1;
+                }
+                return 0;
+            });
         },
     }
 }

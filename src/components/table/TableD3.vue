@@ -157,6 +157,7 @@
                 legendIcon: false,
                 showLegendTip: false,
                 showMsaLegend: false,
+                //CSV
                 tableCsvData: [],
                 tableCsvFields:[
                     'Uniprot ID',
@@ -167,6 +168,7 @@
                     'Protein name',
                     'Subfamily name'
                 ],
+                //Popover
                 popover1Text: 'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
                 popover2Text: 'A gene symbol that is extracted from the GeneName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
                 popover3Text: 'A gene ID is a canonical accession extracted from the Reference Proteomes gene2acc gene mapping file <a href="https://www.ebi.ac.uk/reference_proteomes" target="_blank">(https://www.ebi.ac.uk/reference_proteomes)</a>.',
@@ -198,15 +200,7 @@
                 handler: function (val, oldVal) {
                     //This is zero, when a new tree is reloaded.
                     if(val && val.length == 0) {
-                        this.rowsToRender = [];
-                        this.colsToRender = [];
-                        if(this.$refs.searchBox) {
-                            this.$refs.searchBox.onReset();
-                        }
-                        if(this.$refs.treeLayout) {
-                            this.$refs.treeLayout.refreshView();
-                        }
-                        this.store_setTableIsLoading(true);
+                        this.resetTable();
                     } else {
                         this.initTable();
                     }
@@ -228,7 +222,7 @@
             store_getCenterNode: {
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
-                    if(oldVal && oldVal.id == val.id) {console.log("same"); return; }
+                    if(oldVal && oldVal.id == val.id) { return; }
                     var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
                     if(!foundRow) {
                         let accession = val.data.accession;
@@ -243,15 +237,14 @@
             },
             store_getSearchTxtWthn: {
                 handler: function (val, oldVal) {
-                    // console.log("text ", val);
                 },
                 deep: true,
                 immediate: true
             }
         },
         mounted() {
+            this.resetTable();
             this.initTable();
-            this.$refs.searchBox.onReset();
         },
         methods: {
             dropdownClicked() {
@@ -263,6 +256,17 @@
             }),
             getTableCsvData(nodes) {
                 this.$emit('set-csv-data', nodes);
+            },
+            resetTable() {
+                this.rowsToRender = [];
+                this.colsToRender = [];
+                if(this.$refs.searchBox) {
+                    this.$refs.searchBox.onReset();
+                }
+                if(this.$refs.treeLayout) {
+                    this.$refs.treeLayout.refreshView();
+                }
+                this.store_setTableIsLoading(true);
             },
             initTable() {
                 this.store_setTableIsLoading(true);
@@ -279,14 +283,12 @@
                         filteredCols.splice(2, 0, h);
                     });
                 }
-                // console.log("filteredCols ", filteredCols);
                 this.colsToRender = filteredCols;
                 this.rowsToRender = [];
             },
             toggleTabs() {
                 this.msaTab = !this.msaTab;
                 this.$emit('toggle-cols');
-
                 this.updateRenderRows();
             },
             toggleLegend() {
@@ -346,7 +348,6 @@
                 });
             },
             onTreeInit(nodes) {
-                // console.log("onTreeInit ", nodes.length);
                 let tabularData = this.setStoreTableData(nodes);
                 //For metadata
                 let uniqueOrganisms = [];
@@ -368,7 +369,6 @@
                         }
                     }
                 });
-                // this.setMetadata(tabularData, uniqueOrganisms);
 
                 let msg = {tabularData: tabularData, uniqueOrganisms: uniqueOrganisms};
                 this.$emit('tree-init', msg);

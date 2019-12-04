@@ -170,7 +170,6 @@
             checkForGraftedNode() {
                 if(!this.rootNode) return;
                 if(this.store_getHasGrafted && this.firstLoadForGrafted) {
-                    console.log("check for");
                     this.firstLoadForGrafted = false;
                     var graftedNode = null;
                     let allNodes = this.rootNode.descendants();
@@ -538,7 +537,6 @@
                 if(node != null) {
                     let currCenterNode = this.leafNodesByDepth.filter(n => n.id == node.id);
                     if(currCenterNode.length > 0) {
-                        console.log("align table");
                         this.store_setCenterNode(currCenterNode[0]);
                     }
                 }
