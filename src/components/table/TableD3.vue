@@ -13,9 +13,9 @@
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         <table v-else class="mainTable">
             <thead id="head" ref="thead">
-                <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                <!-- <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
-                </button>
+                </button> -->
                 <tr id="secTr">
                     <th :colspan='msaTab?2:3' class="thInvis stickyCol">
                         <div class="my-msa">
@@ -638,59 +638,17 @@
     }
 </script>
 <style scoped>
-    #parent {
-        /* position: absolute; */
-        width: 1600px;
-        height: 1100px;
-        overflow: hidden;
-    }
-    .legend-box {
-        background-color: #9E9E9E;
-        position: absolute;
-        top: 50px;
-        right: 0px;
-    }
-    .msalegend {
-        position: absolute;
-        right: 10px;
-        top: 12px;
-        z-index: 100;
-    }
     .mainTable {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 auto;
-        width: 100%;
-        height: 98%;
-        border-collapse: collapse;
-        overflow: hidden;
-        font-size: 14px;
-        font-family: sans-serif;
-        border-bottom: 5px solid #f1f1f0;
-    }
-    .mainTable .stickyCol {
-        position: sticky;
-        position: -webkit-sticky;
-        left:0;
-    }
-    .rowbg{
-        background-color: #9cd5e3;
-    }
-    /* Table Header Classes */
-    .my-float {
-        position: absolute;
-        z-index: 1000;
-    }
-    .mainTable thead {
-        flex: 0 0 auto;
         display: block;
-        /* required for programmatic scrolling of header */
-        overflow-x: hidden;
-        overflow-y: visible;
+        max-width: 1600px;
+        max-height: 1100px;
+        overflow: scroll;
+        position: relative;
         z-index: 1;
     }
     .mainTable th {
         text-align: center;
+        z-index: 10;
     }
     #mainTr {
         border-bottom: 3px solid #f1f1f0;
@@ -699,17 +657,17 @@
         background-color: #9cd5e3;
         height: 40px !important;
     }
-    #secTr {
-        height: 53px !important;
-        filter: brightness(100%) !important;
-        border: 0 !important;
-        background-color: transparent;
+    .mainTable td {
+        height: 40px !important;
+        border-right: 3px solid #f1f1f0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    #secTr th {
-        height: 35px !important;
-    }
-    .firstCol {
-        z-index: 10;
+    .tdHover:hover {
+        background-color: #e1e7f3 !important;
+        filter: brightness(85%);
+        cursor: pointer;
     }
     .thInvis {
         background-color: transparent !important;
@@ -723,14 +681,13 @@
         text-indent: 50px;
         border-left: 3px solid #f1f1f0 !important;
     }
-    .tdHover:hover {
-        background-color: #e1e7f3 !important;
-        filter: brightness(85%);
-        cursor: pointer;
+    .mainTable tr:nth-child(even){
+        background-color: #cdeaf5;
     }
-    .thSubColSp {
-        border-right: 1px solid #f1f1f0 !important;
+    .mainTable tr:nth-child(odd){
+        background-color: #e9e9e9;
     }
+
     .widthTree {
         min-width: 800px;
         width: 800px;
@@ -741,34 +698,28 @@
         width: 200px;
         max-width: 200px;
     }
-    .widthMax {
-        white-space: nowrap;
-        max-width: 100%;
-        font-family: monospace;
-        letter-spacing: 0.1px;
-    }
-    /* Table Body Classes */
-    .mainTable tbody {
-        overflow: scroll;
-    }
-    .mainTable tr:nth-child(even){
-        background-color: #cdeaf5;
-    }
-    .mainTable tr:nth-child(odd){
-        background-color: #e9e9e9;
-    }
     .mainTable td {
-        height: 40px !important;
-        border-right: 3px solid #f1f1f0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        z-index: 10;
+        /* position:inherit; */
     }
-    .my-msa {
-        position: absolute;
-        padding-left: 10px;
-        top: 10px;
+
+    .stickyCol {
+        position: sticky;
+        left: 0;
     }
+    thead th:nth-child(2) {
+        position: sticky;
+        left: 800px;
+        z-index: 1000 !important;
+        /* z-index: 1; */
+    }
+    .stickyCol2 {
+        position: sticky !important;
+        background: #FFF;
+        left: 800px;
+        z-index: 1000 !important;
+    }
+
     ::-webkit-scrollbar {
         -webkit-appearance: none;
         width: 15px;

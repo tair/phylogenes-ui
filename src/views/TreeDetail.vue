@@ -33,9 +33,7 @@
             </div>
             <!-- Table -->
             <div class="col-sm-12 h-95 pg-panel">
-                <div class="row h-50">
-                    <div class="col-sm-12 h-50">
-                        <tablelayout ref="tableLayout"
+                <tablelayout ref="tableLayout"
                             :treeId="treeId" :colsFromProp="tableColsToRender" :headerMap="headerMap" :treeDataFromProp ="treeData_Json"
                             :csvTable="csvTable"
                             v-on:toggle-cols="toggleMsa" 
@@ -47,8 +45,6 @@
                             v-on:set-csv-data="setCsvTableData"
                             >
                         </tablelayout>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
