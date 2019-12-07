@@ -13,11 +13,11 @@
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
         <table v-else class="mainTable">
             <thead id="head" ref="thead">
-                <!-- <button v-if="msaTab" class="btn bg-white float-right msalegend" @click="toggleLegend">
+                <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
-                </button> -->
+                </button>
                 <tr id="secTr">
-                    <th :colspan='msaTab?2:3' class="thInvis stickyCol">
+                    <th :colspan='msaTab?2:3' class="thInvis">
                         <div class="my-msa">
                             <button class="btn bg-white float-left" @click="toggleTabs">
                                 <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
@@ -28,6 +28,8 @@
                         :colspan="n_annotations" class="thSubCol">Known Function
                         <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                         <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
+                    </th>
+                    <th :colspan='5' class="thInvis">
                     </th>
                 </tr>
                 <tr id="mainTr">
@@ -640,7 +642,7 @@
 <style scoped>
     .mainTable {
         display: block;
-        max-width: 1600px;
+        max-width: 1650px;
         max-height: 1100px;
         overflow: scroll;
         position: relative;
@@ -657,6 +659,19 @@
         background-color: #9cd5e3;
         height: 40px !important;
     }
+    #mainTr th:nth-child(1), th:nth-child(2) {
+        background-color: #9cd5e3;
+    }
+    #secTr {
+        height: 53px !important;
+        filter: brightness(100%) !important;
+        border: 0 !important;
+        background-color: transparent;
+    }
+    #secTr th {
+        height: 35px !important;
+    }
+    
     .mainTable td {
         height: 40px !important;
         border-right: 3px solid #f1f1f0;
@@ -684,8 +699,14 @@
     .mainTable tr:nth-child(even){
         background-color: #cdeaf5;
     }
+    .mainTable tr:nth-child(even) .stickyCol2 {
+        background: #cdeaf5;
+    }
     .mainTable tr:nth-child(odd){
         background-color: #e9e9e9;
+    }
+    .mainTable tr:nth-child(odd) .stickyCol2 {
+        background: #e9e9e9;
     }
 
     .widthTree {
@@ -698,11 +719,26 @@
         width: 200px;
         max-width: 200px;
     }
-    .mainTable td {
-        z-index: 10;
-        /* position:inherit; */
+    .widthMax {
+        text-align: left !important;
+        font-size: 14px !important;
+        white-space: nowrap;
+        max-width: 100%;
+        font-family: monospace;
+        letter-spacing: 0.1px;
     }
-
+    .msalegendbtn {
+        position: absolute;
+        right: 10px;
+        top: 12px;
+        z-index: 100;
+    }
+    .legend-box {
+        background-color: #9E9E9E;
+        position: absolute;
+        top: 50px;
+        right: 0px;
+    }
     .stickyCol {
         position: sticky;
         left: 0;
@@ -711,13 +747,16 @@
         position: sticky;
         left: 800px;
         z-index: 1000 !important;
-        /* z-index: 1; */
     }
     .stickyCol2 {
         position: sticky !important;
-        background: #FFF;
         left: 800px;
-        z-index: 1000 !important;
+    }
+
+    .my-msa {
+        position: absolute;
+        padding-left: 10px;
+        top: 10px;
     }
 
     ::-webkit-scrollbar {
