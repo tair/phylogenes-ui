@@ -73,10 +73,19 @@
                     }
                 }
             },
-            store_matchedNodes: {
+            'store_matchedNodes.allMatchedNodes': {
                 handler: function (val, oldVal) {
-                    this.processMatchedNodes(val);
-                }
+                    if(val) {
+                        this.processMatchedNodes(val);
+                    }
+                },
+                deep: true
+            },
+            'store_matchedNodes.currIdx': {
+                handler: function (val, oldVal) {
+                    this.moveToMatchedNode(val);
+                },
+                deep: true
             },
             store_tableData: {
                 handler: function (val, oldVal) {
@@ -133,7 +142,8 @@
                 //scrollingTreeFromTable
                 delayInCall: 500,
                 ticking: false,
-                timerId: null
+                timerId: null,
+                allMatchedNodes: []
             }
         },
         mounted() {
@@ -526,7 +536,7 @@
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
                 let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
-                console.log("align ", currCenterNode.id);
+                // console.log("align ", currCenterNode.id);
                 setTimeout(() => {
                     this.store_setCenterNode(currCenterNode);
                 }, 100);
@@ -606,11 +616,16 @@
                 nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
                     this.updateTree().then(() => {
                         // let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
-                        let allNodes = nodesUtils.findAllMatchedNodes(this.getLeafNodesByDepth());
-                        console.log(allNodes.length);
-                        this.centerTreeToGivenNode(allNodes[0]);
+                        this.allMatchedNodes = nodesUtils.findAllMatchedNodes(this.getLeafNodesByDepth());
+                        this.centerTreeToGivenNode(this.allMatchedNodes[0]);
                     });
                 });
+            },
+            moveToMatchedNode(idx) {
+                let mn = this.allMatchedNodes[idx];
+                if(mn) {
+                    this.centerTreeToGivenNode(mn);
+                }
             },
 
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
