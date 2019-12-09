@@ -225,14 +225,10 @@
                 handler: function (val, oldVal) {
                     if(val == null || this.isLoading) return;
                     if(oldVal && oldVal.id == val.id) { return; }
-                    var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
-                    if(!foundRow) {
-                        let accession = val.data.accession;
-                        foundRow = this.store_tableData.find(d => d["accession"] === accession);
-                    }
-                    if(foundRow) {
-                        this.setScrollToRow(foundRow.id);
-                    }
+                    //Timeout required so that 'storeTableData' is updated after matched nodes are processed
+                    setTimeout(() => {
+                        this.findRowandScroll(val);
+                    }, 1000);
                 },
                 deep: true,
                 immediate: true
@@ -249,9 +245,6 @@
             this.initTable();
         },
         methods: {
-            dropdownClicked() {
-                document.getElementById("head").style.overflowX = "visible";
-            },
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA
@@ -512,6 +505,14 @@
             onPruneLoading(isLoad) {
                 this.$refs.treeLayout.onPruneLoading(isLoad);
             },
+            //If dropdown btn is clicked in the tree menu, set table head css to "overflow: visible"
+            // This is immediately turned hidden when we scroll inside the "handlescroll" function
+            // This displays the dropdown menu correctly on top of the table
+            dropdownClicked() {
+                if(document.getElementById("head")) {
+                    document.getElementById("head").style.overflowX = "visible";
+                }
+            },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
             //SCROLL
             addCustomScrollEvent() {
@@ -528,7 +529,9 @@
             },
             //This is called by the html table's scrolling function (mouse scroll on table)
             handleScroll() {
-                document.getElementById("head").style.overflowX = "hidden";
+                if(document.getElementById("head")) {
+                    document.getElementById("head").style.overflowX = "hidden";
+                }
                 let scrollLeft_curr = document.getElementById("body").scrollLeft;
                 this.scrollTableHeader(scrollLeft_curr);
             },
@@ -546,14 +549,17 @@
                         body.scrollTop = 40*this.rowsScrolled;
                     }
                 }
-                
-                // setTimeout(() => {
-                //     const tbody = document.getElementById("body");
-                //     if(tbody) {
-                //         tbody.scrollTop = 40*this.rowsScrolled;
-                //     }
-                // }, 100);
-                // this.scrollFromTree = true;
+            },
+            //Find Row in the table based on 'val' and scroll the table to that row
+            findRowandScroll(val) {
+                var foundRow = this.store_tableData.find(d => d["Gene ID"] === val.geneId);
+                if(!foundRow) {
+                    let accession = val.data.accession;
+                    foundRow = this.store_tableData.find(d => d["accession"] === accession);
+                }
+                if(foundRow) {
+                    this.setScrollToRow(foundRow.id);
+                }
             },
             //CLICK Cell
             tdClicked(c, row) {
@@ -640,13 +646,31 @@
     }
 </script>
 <style scoped>
+    #parent {
+        width: 1600px;
+        height: 1100px;
+        overflow: hidden;
+    }
     .mainTable {
-        display: block;
-        max-width: 1650px;
-        max-height: 1100px;
-        overflow: scroll;
-        position: relative;
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
         z-index: 1;
+        font-size: 14px;
+        font-family: sans-serif;
+    }
+    .mainTable thead {
+        flex: 0 0 auto;
+        display: block;
+        overflow-x: hidden;
+        overflow-y: visible;
+        z-index: 1;
+    }
+    .mainTable tbody {
+        overflow: scroll;
     }
     .mainTable th {
         text-align: center;
@@ -671,13 +695,12 @@
     #secTr th {
         height: 35px !important;
     }
-    
     .mainTable td {
         height: 40px !important;
         border-right: 3px solid #f1f1f0;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
+        text-overflow: ellipsis !important;
     }
     .tdHover:hover {
         background-color: #e1e7f3 !important;
