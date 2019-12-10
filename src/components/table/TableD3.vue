@@ -617,10 +617,10 @@
                 } else {
                     classes.push('widthDefault');
                 }
-                
-                // if(i > 1&&i<this.extraCols.length+1) {
-                //     classes.push('thSubColSp');
-                // }
+                //For all cells belonging to sub columns for annotations
+                if(i > 1 && i < this.n_annotations+1) {
+                    classes.push('light-border');
+                }
                 return classes;
             },
             getTdClasses(row, cellValue, col_idx) {
@@ -637,9 +637,10 @@
                     classes.push('tdHover');
                 }
                 //For all cells belonging to sub columns for annotations
-                // if(col_idx > 1 && col_idx < this.extraCols.length+1) {
-                //     classes.push('tdSubCol');
-                // }
+                if(col_idx > 1 && col_idx < this.n_annotations+1) {
+                    classes.push('light-border');
+                }
+
                 return classes;
             },
         }
@@ -675,8 +676,10 @@
     .mainTable th {
         text-align: center;
         z-index: 10;
+        border-right: 3px solid #f1f1f0;
     }
     #mainTr {
+        border-top: 3px solid #f1f1f0;
         border-bottom: 3px solid #f1f1f0;
         filter: brightness(100%) !important;
         cursor: default !important;
@@ -694,6 +697,8 @@
     }
     #secTr th {
         height: 35px !important;
+        text-align: left;
+        padding-left: 20px;
     }
     .mainTable td {
         height: 40px !important;
@@ -712,12 +717,9 @@
         box-shadow: none !important;
         border: 0 !important;
     }
-    .thSubCol {
-        background-color: #9cd5e3 !important;
-        color: black;
-        text-align: left !important;
-        text-indent: 50px;
-        border-left: 3px solid #f1f1f0 !important;
+    .light-border{
+        border-right: 1px solid #f1f1f0 !important;
+        border-left: 1px solid #f1f1f0 !important;
     }
     .mainTable tr:nth-child(even){
         background-color: #cdeaf5;
@@ -772,7 +774,7 @@
         position: sticky;
         left: 0;
     }
-    thead th:nth-child(2) {
+    #mainTr th:nth-child(2) {
         position: sticky;
         left: 800px;
         z-index: 1000 !important;
