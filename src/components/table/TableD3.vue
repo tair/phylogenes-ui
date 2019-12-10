@@ -16,12 +16,13 @@
                 <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
                 </button>
+                <button class="btn bg-white float-left showMsaBtn" @click="toggleTabs">
+                    <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
+                </button>
                 <tr id="secTr">
                     <th :colspan='msaTab?2:3' class="thInvis">
                         <div class="my-msa">
-                            <button class="btn bg-white float-left" @click="toggleTabs">
-                                <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
-                            </button>
+                            
                         </div>
                     </th>
                     <th v-if="n_annotations > 0 && !msaTab"
@@ -249,9 +250,6 @@
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA
             }),
-            getTableCsvData(nodes) {
-                this.$emit('set-csv-data', nodes);
-            },
             resetTable() {
                 this.rowsToRender = [];
                 this.colsToRender = [];
@@ -450,7 +448,6 @@
             //returns cellContent: [text: "?", type: <cell-type>, 
                                     // optional additional features for each cell type]
             processRow(rowData) {
-                // console.log(rowData);
                 let row = {};
                 //If 'rendering' is false, row is rendered as default with blank text for performance reasons
                 if(rowData.rendering == false) {
@@ -514,6 +511,9 @@
                 }
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
+            getTableCsvData(nodes) {
+                this.$emit('set-csv-data', nodes);
+            },
             //SCROLL
             addCustomScrollEvent() {
                 //On props change, the $refs reloads, so need to add scroll event at the next frame,
@@ -749,6 +749,12 @@
         max-width: 100%;
         font-family: monospace;
         letter-spacing: 0.1px;
+    }
+    .showMsaBtn {
+        position: absolute;
+        left: 10px;
+        top: 12px;
+        z-index: 100;
     }
     .msalegendbtn {
         position: absolute;

@@ -72,7 +72,6 @@
                 handler: function (val, oldVal) {
                     this.isLoading = true;
                     if(val && val != null) {
-                        // this.store_setTableIsLoading(true);
                         this.initTree();
                     }
                 }
@@ -523,8 +522,7 @@
                 this.treenodes_view.splice(0, this.treenodes_view.length);
                 setTimeout(() => {
                     this.treenodes_view = nodesArr1;
-                    this.alignTree2();
-                    // this.alignTree();
+                    this.alignTree();
                 });
             },
             setTreeLinks(linksArr) {
@@ -541,13 +539,14 @@
                     }
                 }
             },
-            alignTree2() {
+            // Align tree layout according to the rows moved up
+            // Setting top node padding goes here.
+            alignTree() {
                 if(this.wrapper_d3 == null) return;
                 
                 let leafNodes = this.getLeafNodesByDepth();
                 if(this.rowsScrolledUp == null) {
                     let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
-                    console.log("align tree 2");
                     this.store_setCenterNode(currCenterNode);
                     return;
                 }
@@ -565,45 +564,7 @@
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
             },
-            // Align tree layout according to the rows moved up
-            // Setting top node padding goes here.
-            alignTree() {
-                // if(this.wrapper_d3 == null) return;
-
-                // let leafNodes = this.getLeafNodesByDepth();
-                // if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
-
-                // //The number of rows of tree in view
-                // // let svgHeight = this.getTreePanelHeight();
-                // let rowHeight = 40;
-                // // let totalRowsInPanel = Math.floor(svgHeight/rowHeight);
-                // let totalRowsInPanel = 24;
-                // let maxRowsMovedUp = leafNodes.length - (totalRowsInPanel-1);
-                // if(maxRowsMovedUp < 0) maxRowsMovedUp = 0;
-                // if(this.rowsScrolledUp >= maxRowsMovedUp) this.rowsScrolledUp = maxRowsMovedUp;
-
-                // var currTopNode = leafNodes[this.rowsScrolledUp];
-                // if(!currTopNode) return;
-
-                // let topPadding = rowHeight;
-                // var topNodePosY = -1*currTopNode.x + 20;
-                // var topNodePosX = this.currentTopNodePos.x;
-                // if(this.rowsScrolledUp == 0) {
-                //     this.wrapper_d3
-                //     .transition().duration(500)
-                //     .attr("transform", (d) => {
-                //         this.setCurrentTopNode({x: topNodePosX, y: topNodePosY});
-                //         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
-                //     });
-                // }
-                // let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
-                // setTimeout(() => {
-                //     //For auto table scrolling to the current center node on tree
-                //     console.log("set curr center node");
-                //     this.store_setCenterNode(currCenterNode);
-                // }, 100);
-            },
-
+            
             // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
@@ -683,7 +644,6 @@
             // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
             processMatchedNodes(matchedNodes) {
                 if(!this.rootNode) return;
-                // console.log("matchedNodes ", matchedNodes);
                 var allNodes = this.rootNode.descendants();
                 nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
  
@@ -849,19 +809,6 @@
                 this.origTreelinks.forEach(n => {
                     allLinks.push(n);
                 });
-                // console.log("allNodes ", this.origTreenodes.length);
-                // this.setTreeNodes(allNodes);
-                // this.setTreeLinks(allLinks);
-
-                var totalLeafNodes = this.getTotalLeafNodes();
-                //svgHeight is set by totalLeafNodes * rowHeight (40) + padding, which gives total
-                // height for tree when it has all nodes.
-                var svgHeight = totalLeafNodes*40 + 50;
-                let rightNode = this.getRightmostNode();
-                //svgHWidth is set by position of rightmose node + it's text length + some padding
-                var svgWidth = rightNode.y + rightNode.text.length * 10 + 200;
-                // d3.select('#treeSvg').attr("width", svgWidth).attr("height", svgHeight);
-
                 //Set the position to fixed, so that the tree layout does not move based on
                 // the svg size increase. If not set, the tree layout moves iut of the screen,
                 // and the user will see a blank screen for the time it takes to export and before 
@@ -897,7 +844,6 @@
             resetSvgAfterExport() {
                 d3.select('#treeSvg').attr("width", "100%").attr("height", "1200px")
                         .style("position", "relative");
-                // this.updateTree();
                 this.isLoading = false;
             },
 
@@ -1068,6 +1014,7 @@
                         startTransform = d3.event.transform;
                     })
                     .on("zoom", () => {
+                        //don't need panning for now
                         // this.onPan(g, startTransform);
                     })
                     .on("end", () => {
@@ -1092,7 +1039,6 @@
                 var diffEnd = d3.event.transform.y - transform.y;
                 if(diffEnd != 0 && this.isLazyLoad) {
                     this.updateViewOnly();
-                    // this.updateTree();
                 }
                 if(diffEnd < 0) {
                     let rowNum = Math.round(diffEnd/40*-1);
@@ -1102,18 +1048,15 @@
                     this.rowsScrolledUp -= rowNum;
                 }
                 this.currentTopNodePos.x += d3.event.transform.x - transform.x;
-                this.alignTree();
             },
             moveUp() {
                 this.rowsScrolledUp=this.rowsScrolledUp+5;
-                this.alignTree();
             },
             moveTreeToNodePosition(node) {
                 let leafNodes = this.getLeafNodesByDepth();
                 let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
                 this.rowsScrolledUp = foundNodeIdx;
                 this.updateViewOnly();
-                this.alignTree();
             },
             onDrag(circle_datum) {
                 this.link_intersected = this.linkDatums.find(ld => {
