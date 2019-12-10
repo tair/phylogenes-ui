@@ -86,6 +86,9 @@ methods: {
     store_setTreeMatchedNodesIdx: types.TREE_ACTION_SET_MATCHED_NODES_CURRIDX
   }),
   onSearch() {
+      this.matchText = "";
+      this.currIdx = 0;
+      this.store_setTreeMatchedNodesIdx(this.currIdx);
       if(this.searchText !== "") {
           this.isSearched = true;
           this.$emit('search', this.searchText);
