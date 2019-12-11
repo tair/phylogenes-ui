@@ -2,13 +2,16 @@
   <div class="col-sm-12">
     <div class="row bg-mblue">
       <b-input-group class="my-1">
-        <b-input-group-prepend class="mx-2 align-items-center">
+        <b-input-group-prepend v-if="!matchText" class="mx-2 align-items-center">
           Search within tree
+        </b-input-group-prepend>
+        <b-input-group-prepend v-if="matchText" class="mx-2 align-items-center">
+          {{matchText}}
         </b-input-group-prepend>
         <input id="search" type="text" class="my-input" placeholder="Gene name, Gene ID, Uniprot ID"
                          v-model="searchText">
         <div v-if="matchText" class="col-auto my-text">
-          {{compMatchText}}
+          <!-- {{compMatchText}} -->
           <button class="btn btn-inline" @click="skipUp()">
             <i class="fa fa-angle-up"></i>
           </button>
@@ -98,7 +101,7 @@ methods: {
       this.searchText = "";
       this.isSearched = false;
       this.matchText = "";
-      this.$emit('search', null);
+      // this.$emit('search', null);
   },
   skipUp() {
     let val = this.store_matchedNodes.allMatchedNodes;

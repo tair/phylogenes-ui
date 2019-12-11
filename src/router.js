@@ -7,6 +7,9 @@ import Contact from './views/Contact.vue'
 import Login from './views/Login.vue'
 import TreeBrowse from './views/TreeBrowse.vue'
 import TreeDetail from './views/TreeDetail.vue'
+import TreeGrafting from './views/TreeGrafting'
+import {store} from './store'
+import {TREE_ACTION_SET_SEARCH} from './store/types_tree'
 
 Vue.use(Router)
 
@@ -28,8 +31,7 @@ export default new Router({
     {
         path: '/contact',
         component: Contact
-    }
-    ,
+    },
     {
         path: '/login',
         component: Login
@@ -45,8 +47,24 @@ export default new Router({
         pathToRegexpOptions: {strict: true}
     },
     {
-        path: '/tree/:id',
-        component: TreeDetail
+      path: '/tree/:id',
+      component: TreeDetail
+    },
+    {
+      path: '/grafting',
+      component: TreeGrafting
+    },
+    {
+      path: '/treeGrafted/',
+      name: 'treeGrafted',
+      component: TreeDetail,
+    },
+    {
+        path: '/gene-id/:id',
+        beforeEnter: (to, from, next) => {
+          store.dispatch(TREE_ACTION_SET_SEARCH,to.params.id);
+          next('/tree');
+        }
     }
   ]
 })

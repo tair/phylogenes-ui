@@ -46,6 +46,16 @@ function getLeafNodes(n) {
             }
         });
     }
+    if (n._children) {
+        n._children.forEach(c => {
+            if (this.isALeafNode(c)) {
+                leafs.push(c);
+            } else {
+                let ls = this.getLeafNodes(c);
+                leafs = leafs.concat(ls);
+            }
+        });
+    }
     return leafs;
 }
 

@@ -1,7 +1,104 @@
 import treeUtils from './commonTreeUtils';
 
 function isMatchWithNode(d, matNodes) {
-    return matNodes.find(v => v["Uniprot ID"] === d.data.uniprotId);
+    
+    return matNodes.find(v => {
+        let uniprotId = v["Uniprot ID"];
+        if (uniprotId) {
+            return uniprotId === d.data.uniprotId;
+        } else {
+            return v["accession"] === d.data.accession;
+        }
+    });
+}
+
+function isGraftedNode(d) {
+    if (d.data.newGrafted || d.newGrafted) {
+        return true;
+    }
+    return false;
+}
+
+async function processGrafted(allNodes) {
+    var foundAnywhere = false;
+    allNodes.some(d => {
+        d.matched = false;
+        //If Leaf Node
+        if (!d.children && !d._children) {
+            if (d.data.accession == "ANGRAFTED") {
+                foundAnywhere = true;
+            }
+        }
+        if (d._children) {
+            if (findGraftedNodesInChildren(d)) {
+                foundAnywhere = true;
+                expandFromSelected(d);
+            }
+        }
+        return foundAnywhere == true;
+    });
+    allNodes.forEach(a => {
+        if (isGraftedNode(a)) {
+            a.grafted = true;
+        }
+    });
+    return 1;
+}
+
+function expandFromSelected(d) {
+    if (d._children) {
+        d.children = d._children;
+        d._children = null;
+    }
+    if (d.children) {
+        d.children.forEach(dc => {
+            if (dc.graftInC) {
+                expandFromSelected(dc);
+            } else {
+                collapseNode(dc);
+            }
+        });
+    }
+}
+
+function collapseNode(d) {
+    if (d.children) {
+        d._children = d.children;
+        d.children = null;
+    }
+}
+
+function findGraftedNodesInChildren(d) {
+    var foundAny = false;
+    if (d.children) {
+        d.children.forEach(dc => {
+            let found = isGraftedNode(dc);
+            if (found) {
+                dc.grafted = true;
+                foundAny = true;
+            }
+            var ff = findGraftedNodesInChildren(dc);
+            if (ff) {
+                dc.graftInC = true;
+                foundAny = true;
+            }
+        });
+    }
+    if (d._children) {
+        d._children.forEach(dc => {
+            let found = isGraftedNode(dc);
+            if (found) {
+                dc.grafted = true;
+                foundAny = true;
+            }
+            var ff = findGraftedNodesInChildren(dc);
+            if (ff) {
+                dc.graftInC = true;
+                foundAny = true;
+            }
+        });
+    }
+    return foundAny;
 }
 
 async function processMatchedNodes(allNodes, matchedNodes) {
@@ -65,42 +162,21 @@ function findMatNodesInChildren(d, matNodes) {
 //Expands only the nodes which have a matched node as one of it's leafs,
 // else keeps the other nodes collapsed
 function expandSelectedFromNode(givenNode, matNodes) {
-    let matNodesIds = matNodes.map(c => c["Uniprot ID"]);
-
-    givenNode._children.forEach(c => {
-        let leafs = treeUtils.getLeafNodes(c);
-        let leafsIds = leafs.map(c => c.data.uniprotId);
-        let matched = matNodesIds.some(id => {
-            return leafsIds.includes(id);
+    if (givenNode._children && givenNode._children != null) {
+        givenNode.children = givenNode._children;
+        givenNode._children = null;
+    }
+    
+    if (givenNode.children) {
+        givenNode.children.forEach(c => {
+            if (this.findMatNodesInChildren(c, matNodes)) {
+                this.expandSelectedFromNode(c, matNodes);
+            } else {
+                c._children = c.children;
+                c.children = null;
+            }
         });
-        if (!matched) {
-            c._children = c.children;
-            c.children = null;
-        } else {
-            this.collapseChildifNotMatched(c, matNodesIds);
-        }
-    });
-    givenNode.children = givenNode._children;
-    givenNode._children = null;
-}
-
-//Recursively check if a child node has a matched node as one of it's leafs, it not
-// then collapses the given child node.
-// matNodesIds: A list of uniprotIds for matched nodes.
-function collapseChildifNotMatched(node, matNodesIds) {
-    node.children.forEach(c => {
-        let leafs = treeUtils.getLeafNodes(c);
-        let leafsIds = leafs.map(c => c.data.uniprotId);
-        let matched = matNodesIds.some(id => {
-            return leafsIds.includes(id);
-        });
-        if (!matched) {
-            c._children = c.children;
-            c.children = null;
-        } else {
-            this.collapseChildifNotMatched(c, matNodesIds);
-        }
-    });
+    }
 }
 
 function findFirstMatchedNodeInTree(allLeafNodes) {
@@ -115,9 +191,9 @@ function findAllMatchedNodes(allLeafNodes) {
 export default {
     isMatchWithNode,
     processMatchedNodes,
+    processGrafted,
     findMatNodesInChildren,
     expandSelectedFromNode,
-    collapseChildifNotMatched,
     findFirstMatchedNodeInTree,
     findAllMatchedNodes
 }
