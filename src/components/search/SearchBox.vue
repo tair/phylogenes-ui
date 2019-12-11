@@ -75,7 +75,11 @@ watch: {
           }
           if(this.isSearched) {
             this.currIdx = val.currIdx;
-            this.matchText = val.currIdx+1 + "/" + val.allMatchedNodes.length;
+            if(val.allMatchedNodes.length == 0) {
+              this.matchText = "0/0";
+            } else {
+              this.matchText = val.currIdx+1 + "/" + val.allMatchedNodes.length;
+            }
           }
           if(val[0] == -1) {
               this.onReset();
@@ -105,6 +109,7 @@ methods: {
   },
   skipUp() {
     let val = this.store_matchedNodes.allMatchedNodes;
+    if(val.length == 0) return;
     if(this.currIdx != 0) {
       this.currIdx -= 1;
       this.matchText = this.currIdx+1 + "/" + val.length;
@@ -113,6 +118,7 @@ methods: {
   },
   skipDown() {
     let val = this.store_matchedNodes.allMatchedNodes;
+    if(val.length == 0) return;
     if(this.currIdx != val.length-1) {
       this.currIdx += 1;
       this.matchText = this.currIdx+1 + "/" + val.length;
