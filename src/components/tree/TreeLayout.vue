@@ -1205,6 +1205,7 @@
     }
     #treeSvg {
         background-color: white;
+        position: absolute;
         /*cursor: grab;*/
     }
     .legend-box {
