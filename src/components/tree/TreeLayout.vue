@@ -1,7 +1,12 @@
 <template>
     <span class="_parent">
         <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <svg id="treeSvg" ref="treesvg" width="100%" height="100%">
+        <div class="menu">
+            <div v-if="showLegend" class="legend-box">
+                <tree-legend></tree-legend>
+            </div>
+        </div>
+        <svg id="treeSvg" ref="treesvg" width="100%" :height="svgHeight">
             <g id="wrapper">
                 <g class="links">
                     <baselink v-for="link in treelinks_view"
@@ -17,9 +22,7 @@
                 </g>
             </g>
         </svg>
-        <div v-if="showLegend" class="legend-box">
-            <tree-legend></tree-legend>
-        </div>
+ 
     </span>
 </template>
 
@@ -45,7 +48,7 @@
 
     export default {
         name: "treelayout",
-        props: ['jsonData', 'mappingData', 'matchedNodes'],
+        props: ['jsonData', 'mappingData', 'matchedNodes', 'heightFP'],
         components: {
             'basenode': baseNode,
             'baselink': baseLink,
@@ -69,10 +72,17 @@
                 handler: function (val, oldVal) {
                     this.isLoading = true;
                     if(val && val != null) {
-                        this.store_setTableIsLoading(true);
                         this.initTree();
                     }
                 }
+            },
+            heightFP: {
+                handler: function (val, oldVal) {
+                    if(val && val != null) {
+                        this.svgHeight = val+'px';
+                    }
+                },
+                immediate: true
             },
             store_matchedNodes: {
                 handler: function (val, oldVal) {
@@ -98,14 +108,15 @@
                     if(!val) {
                         this.checkForGraftedNode();
                     }
-                }
+                },
+                immediate: true
             }
         },
         data() {
             return {
                 //options
                 isLoading: false,
-                isLazyLoad: true,
+                isLazyLoad: false,
                 isAnimated: true,
                 enableMenu: false,
                 showLegend: true,
@@ -137,7 +148,9 @@
                 //scrollingTreeFromTable
                 delayInCall: 20,
                 ticking: false,
-                timerId: null
+                timerId: null,
+                svgHeight: '1000px',
+                firstLoadForGrafted: true
             }
         },
         mounted() {
@@ -154,7 +167,9 @@
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
             }),
             checkForGraftedNode() {
-                if(this.store_getHasGrafted) {
+                if(!this.rootNode) return;
+                if(this.store_getHasGrafted && this.firstLoadForGrafted) {
+                    this.firstLoadForGrafted = false;
                     var graftedNode = null;
                     let allNodes = this.rootNode.descendants();
                     allNodes.forEach(a => {
@@ -163,9 +178,7 @@
                         }
                     });
                     if(graftedNode != null) {
-                        setTimeout(() => {
-                            this.centerTreeToGivenNode(graftedNode);
-                        }, 10);
+                        this.alignTable(graftedNode);
                     }
                 }
             },
@@ -218,6 +231,7 @@
             refreshView() {
                 this.resetRootPosition();
                 this.treenodes_view.splice(0, this.treenodes_view.length);
+                this.treelinks_view.splice(0, this.treelinks_view.length);
                 setTimeout(() => {
                     this.treenodes_view = [];
                     this.treelinks_view = [];
@@ -266,6 +280,7 @@
                 } else {
                     this.updateTree();
                 }
+                this.firstLoadForGrafted = true;
             },
             //Convert json into d3 hierarchy which adds depth, height and
             // parent variables to each node.
@@ -516,41 +531,40 @@
                     this.treelinks_view = linksArr;
                 });
             },
+            alignTable(node) {
+                if(node != null) {
+                    let currCenterNode = this.leafNodesByDepth.filter(n => n.id == node.id);
+                    if(currCenterNode.length > 0) {
+                        this.store_setCenterNode(currCenterNode[0]);
+                    }
+                }
+            },
             // Align tree layout according to the rows moved up
             // Setting top node padding goes here.
             alignTree() {
                 if(this.wrapper_d3 == null) return;
-
+                
                 let leafNodes = this.getLeafNodesByDepth();
-
+                if(this.rowsScrolledUp == null) {
+                    let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
+                    this.store_setCenterNode(currCenterNode);
+                    return;
+                }
                 if(this.rowsScrolledUp <= 0) this.rowsScrolledUp=0;
-                let svgHeight = this.getTreePanelHeight();
-                let rowHeight = 40;
-                let totalRowsInPanel = Math.floor(svgHeight/rowHeight);
-                let maxRowsMovedUp = leafNodes.length - (totalRowsInPanel-1);
-                if(maxRowsMovedUp < 0) maxRowsMovedUp = 0;
-
-                if(this.rowsScrolledUp >= maxRowsMovedUp) this.rowsScrolledUp = maxRowsMovedUp;
-
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 if(!currTopNode) return;
 
-                let topPadding = rowHeight+25;
-                var topNodePosY = -1*currTopNode.x + topPadding;
+                var topNodePosY = -1*currTopNode.x + 20;
                 var topNodePosX = this.currentTopNodePos.x;
-
                 this.wrapper_d3
                     .transition().duration(500)
                     .attr("transform", (d) => {
+                        this.isLoading = false;
                         this.setCurrentTopNode({x: topNodePosX, y: topNodePosY});
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
-                let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
-                setTimeout(() => {
-                    this.store_setCenterNode(currCenterNode);
-                }, 100);
             },
-
+            
             // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             updateViewOnly() {
                 if(!this.isLazyLoad) return;
@@ -616,6 +630,7 @@
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compact Tree Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             //Make the tree layout compact by following some rules defined.
             makeDisplayCompact() {
+                this.isLoading = true;
                 updateDisplayUtils.processCompactTree(this.rootNode, this.store_annoMapping.annoMap);
             },
 
@@ -628,11 +643,13 @@
 
             // ~~~~~~~~~~~~~~~~ 'Search Within' Matched Node Specific ~~~~~~~~~~~~~~~~~//
             processMatchedNodes(matchedNodes) {
+                if(!this.rootNode) return;
                 var allNodes = this.rootNode.descendants();
                 nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
-                    this.updateTree().then(() => {
+ 
+                    this.updateTree(true).then(() => {
                         let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
-                        this.centerTreeToGivenNode(firstMatchedNode);
+                        this.alignTable(firstMatchedNode);
                     });
                 });
             },
@@ -785,24 +802,13 @@
                 // have all the nodes and links, which are saved in 'origTreenodes' and 'origTreelinks'
                 // which are modified during every update to the tree.
                 let allNodes = []; let allLinks = [];
+                
                 this.origTreenodes.forEach(n => {
                     allNodes.push(n);
                 });
                 this.origTreelinks.forEach(n => {
                     allLinks.push(n);
                 });
-                this.setTreeNodes(allNodes);
-                this.setTreeLinks(allLinks);
-
-                var totalLeafNodes = this.getTotalLeafNodes();
-                //svgHeight is set by totalLeafNodes * rowHeight (40) + padding, which gives total
-                // height for tree when it has all nodes.
-                var svgHeight = totalLeafNodes*40 + 50;
-                let rightNode = this.getRightmostNode();
-                //svgHWidth is set by position of rightmose node + it's text length + some padding
-                var svgWidth = rightNode.y + rightNode.text.length * 10 + 200;
-                d3.select('#treeSvg').attr("width", svgWidth).attr("height", svgHeight);
-
                 //Set the position to fixed, so that the tree layout does not move based on
                 // the svg size increase. If not set, the tree layout moves iut of the screen,
                 // and the user will see a blank screen for the time it takes to export and before 
@@ -836,9 +842,8 @@
                 this.resetSvgAfterExport();
             },
             resetSvgAfterExport() {
-                d3.select('#treeSvg').attr("width", "100%").attr("height", "100%")
+                d3.select('#treeSvg').attr("width", "100%").attr("height", "1200px")
                         .style("position", "relative");
-                    
                 this.isLoading = false;
             },
 
@@ -944,7 +949,6 @@
                     console.log("Id: " + n.id + " DataId: " + n.data.id);
                 }
             },
-            
             getTreePanelHeight() {
                 if(this.$refs.treesvg) {
                     return this.$refs.treesvg.clientHeight;
@@ -1010,10 +1014,11 @@
                         startTransform = d3.event.transform;
                     })
                     .on("zoom", () => {
-                        this.onPan(g, startTransform);
+                        //don't need panning for now
+                        // this.onPan(g, startTransform);
                     })
                     .on("end", () => {
-                        this.onPanEnd(startTransform);
+                        // this.onPanEnd(startTransform);
                     })
             },
             onClick(source) {
@@ -1034,7 +1039,6 @@
                 var diffEnd = d3.event.transform.y - transform.y;
                 if(diffEnd != 0 && this.isLazyLoad) {
                     this.updateViewOnly();
-                    // this.updateTree();
                 }
                 if(diffEnd < 0) {
                     let rowNum = Math.round(diffEnd/40*-1);
@@ -1044,29 +1048,15 @@
                     this.rowsScrolledUp -= rowNum;
                 }
                 this.currentTopNodePos.x += d3.event.transform.x - transform.x;
-                this.alignTree();
             },
             moveUp() {
                 this.rowsScrolledUp=this.rowsScrolledUp+5;
-                this.alignTree();
-            },
-            centerTreeToGivenNode(node) {
-                if(node == null) {
-                    this.store_setCenterNode(node);
-                    return;
-                }
-                let leafNodes = this.getLeafNodesByDepth();
-                let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
-                this.rowsScrolledUp = foundNodeIdx-8;
-                this.updateViewOnly();
-                this.alignTree();
             },
             moveTreeToNodePosition(node) {
                 let leafNodes = this.getLeafNodesByDepth();
                 let foundNodeIdx = leafNodes.findIndex(n => n.id === node.id);
                 this.rowsScrolledUp = foundNodeIdx;
                 this.updateViewOnly();
-                this.alignTree();
             },
             onDrag(circle_datum) {
                 this.link_intersected = this.linkDatums.find(ld => {
@@ -1108,6 +1098,7 @@
                     }
                     this.addFlask(d);
                 });
+                this.isLoading = true;
                 this.updateTree();
             },
             onShowLegend() {
@@ -1207,6 +1198,9 @@
         background-color: white;
         position: absolute;
         /*cursor: grab;*/
+    }
+    .menu {
+        position: relative;
     }
     .legend-box {
         background-color: #9E9E9E;
