@@ -31,7 +31,7 @@
                 </tr>
                 <tr id="mainTr">
                     <th class="widthTree stickyCol">
-                        <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu"
+                        <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu" :treeId="treeId"
                                             v-on:ddItemClicked="ddClicked"
                                             v-on:onSearch="onSearchWithinTree"
                                             v-on:onDefaultView="onDefaultView"
@@ -125,7 +125,7 @@
                 rowsHeight: 1000,
                 treeDropdownMenu: [
                     {id: 0, title: "Download tree as PhyloXML"},
-                    {id: 1, title: "Download gene table as CSV"},
+                    // {id: 1, title: "Download gene table as CSV"},
                     {id: 2, title: "Save tree image as PNG"},
                     {id: 3, title: "Save tree image as SVG"},
                     {id: 4, title: "Prune tree by organism"},
