@@ -1,5 +1,5 @@
 <template>
-    <div id="parent">
+    <div id="parent" :style="{ width: window.width+'px', height: window.height-50 + 'px' }">
         <modal v-if="showPopup" @close="showPopup = false">
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
@@ -116,6 +116,10 @@
                 rowsScrolled: 0,
                 n_annotations: 0,
                 msaTab: false,
+                window: {
+                width: 0,
+                height: 0
+                },
                 //Tree
                 treeRowSpan: 100,
                 rowsHeight: 1000,
@@ -151,6 +155,13 @@
                 popover4Text: 'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
                 popover5Text: 'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
             }
+        },
+        created() {
+            window.addEventListener('resize', this.handleResize)
+            this.handleResize();
+        },
+        destroyed() {
+            window.removeEventListener('resize', this.handleResize)
         },
         computed: {
             ...mapGetters({
@@ -203,6 +214,11 @@
             this.initTable();
         },
         methods: {
+            handleResize() {
+                this.window.width = window.innerWidth;
+                this.window.height = window.innerHeight;
+
+            },
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA
@@ -630,9 +646,10 @@
 </script>
 <style scoped>
     #parent {
-        width: 1600px;
-        height: 1200px;
+        /* width: 1600px;
+        height: 1200px; */
         overflow: hidden;
+        padding-bottom: 20px;
     }
     .mainTable {
         display: flex;
@@ -737,19 +754,19 @@
     .showMsaBtn {
         position: absolute;
         left: 10px;
-        top: 12px;
+        top: 122px;
         z-index: 100;
     }
     .msalegendbtn {
         position: absolute;
         right: 10px;
-        top: 12px;
+        top: 122px;
         z-index: 100;
     }
     .legend-box {
         background-color: #9E9E9E;
         position: absolute;
-        top: 50px;
+        top: 150px;
         right: 0px;
     }
     .stickyCol {
