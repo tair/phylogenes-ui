@@ -540,11 +540,10 @@
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
-                // this.updateRows();
                 if(this.rowsScrolled > 0) {
                     const tbody = document.getElementById("body");
                     if(tbody) {
-                        body.scrollTop = 40*this.rowsScrolled;
+                        tbody.scrollTop = 40*this.rowsScrolled;
                     }
                 }
             },

@@ -26,7 +26,10 @@ const state = {
         },
         nodes: null,
         nodeAtCenter: null, //Node which should be set at the center of tree panel view.
-        matchedNodes: null,
+        matchedNodes: {
+            allMatchedNodes: null,
+            currIdx: 0
+        },
         zoom: null,
         scroll: null,
         topPaddingY: 0,
@@ -102,7 +105,11 @@ const actions = {
     },
     [types.TREE_ACTION_SET_MATCHED_NODES]: (context, payload) => {
         //console.log("Action" + payload);
-        context.state.treedata.matchedNodes = payload;
+        context.state.treedata.matchedNodes.allMatchedNodes = payload;
+    },
+    [types.TREE_ACTION_SET_MATCHED_NODES_CURRIDX]: (context, payload) => {
+        // console.log("Action", payload);
+        context.state.treedata.matchedNodes.currIdx = payload;
     },
     [types.TREE_ACTION_SET_METADATA]: (context, payload) => {
         context.state.treedata.metadata = payload;

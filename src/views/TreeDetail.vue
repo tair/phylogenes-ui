@@ -45,7 +45,7 @@
                             v-on:prune-from-menu="pruneTreeFromMenu"
                             v-on:set-csv-data="setCsvTableData"
                             >
-                        </tablelayout>
+                </tablelayout>
             </div>
         </div>
     </div>

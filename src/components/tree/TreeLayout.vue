@@ -84,9 +84,14 @@
                 },
                 immediate: true
             },
-            store_matchedNodes: {
+            'store_matchedNodes.allMatchedNodes': {
                 handler: function (val, oldVal) {
                     this.processMatchedNodes(val);
+                }
+            },
+            'store_matchedNodes.currIdx': {
+                handler: function (val, oldVal) {
+                    this.moveToMatchedNode(val);
                 }
             },
             store_tableData: {
@@ -137,6 +142,7 @@
                 origTreelinks: [],
                 //utils
                 leafNodesByDepth: [],
+                allMatchedNodes: [],
                 rowsScrolledUp: 0,
                 duration: 750,
                 link_intersected: null,
@@ -646,14 +652,19 @@
                 if(!this.rootNode) return;
                 var allNodes = this.rootNode.descendants();
                 nodesUtils.processMatchedNodes(allNodes, matchedNodes).then((res) => {
- 
                     this.updateTree(true).then(() => {
-                        let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
-                        this.alignTable(firstMatchedNode);
+                        this.allMatchedNodes = nodesUtils.findAllMatchedNodes(this.getLeafNodesByDepth());
+                        // let firstMatchedNode = nodesUtils.findFirstMatchedNodeInTree(this.getLeafNodesByDepth());
+                        this.alignTable(this.allMatchedNodes[0]);
                     });
                 });
             },
-
+            moveToMatchedNode(idx) {
+                let mn = this.allMatchedNodes[idx];
+                if(mn) {
+                    this.alignTable(mn);
+                }
+            },
             // ~~~~~~~~~~~~~~~~ Tree Layout Specific ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             // Add hasFunc to show flask icon
             addFlask(node){
