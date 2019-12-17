@@ -1,5 +1,5 @@
 <template>
-    <div id="parent">
+    <div id="parent" :style="{ width: window.width+'px', height: window.height-50 + 'px' }">
         <modal v-if="showPopup" @close="showPopup = false">
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
@@ -20,11 +20,7 @@
                     <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                 </button>
                 <tr id="secTr">
-                    <th :colspan='msaTab?2:3' class="thInvis">
-                        <div class="my-msa">
-                            
-                        </div>
-                    </th>
+                    <th :colspan='msaTab?2:3' class="thInvis"></th>
                     <th v-if="n_annotations > 0 && !msaTab"
                         :colspan="n_annotations" class="thSubCol">Known Function
                         <b-button id="popover1" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
@@ -35,41 +31,12 @@
                 </tr>
                 <tr id="mainTr">
                     <th class="widthTree stickyCol">
-                        <div class="row align-items-center justify-content-between rowbg">
-                            <div class="col-auto align-items-center">
-                                <search-box ref="searchBox" 
-                                        v-on:search="onSearchWithinTree" 
-                                        :defaultText="defaultSearchText"></search-box>
-                            </div>
-                            <div class="col-auto align-items-center">
-                                <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
-                                    <template slot="button-content">
-                                        <i @click="dropdownClicked" class="fas fa-tools fa-2x fa-fw"></i>
-                                    </template>
-                                    <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item>
-                                    <json-csv 
-                                        :data="csvTable.tableCsvData" 
-                                        :name="treeId+'.csv'" 
-                                        :fields="csvTable.tableCsvFields"
-                                    >
-                                        <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
-                                    </json-csv>
-                                    <b-dropdown-item @click="exportPNG">Save tree image as PNG</b-dropdown-item>
-                                    <b-dropdown-item @click="exportSVG">Save tree image as SVG</b-dropdown-item>
-                                    <b-dropdown-item @click="pruneTreeFromMenu">Prune tree by organism</b-dropdown-item>
-                                </b-dropdown>
-                                <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
-                                    <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i></button>
-                                <button v-b-tooltip.hover title="Expand All" class="btn bg-white"
-                                            @click="expandAll"><i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i></button>
-                                <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
-                                        @click="showLegend" id="legendButton"><i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>     
-                                </button>
-                                <b-tooltip :show.sync="showLegendTip" target="legendButton" placement="top">
-                                    {{showLegendButtonIcon.title}}
-                                </b-tooltip>
-                            </div>
-                        </div>
+                        <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu" :treeId="treeId"
+                                            v-on:ddItemClicked="ddClicked"
+                                            v-on:onSearch="onSearchWithinTree"
+                                            v-on:onDefaultView="onDefaultView"
+                                            v-on:expandAll="expandAll"
+                                            v-on:onShowLegend="showLegend"></tree-layout-menu>
                     </th>
                     <th v-for="(col,i) in colsToRender" :key="i"
                             :class="getThClasses(col, i)"> 
@@ -120,6 +87,7 @@
     import msaLegend from '../table/MsaLegend';
     import treelayout from '@/components/tree/TreeLayout';
     import searchBox from '@/components/search/SearchBox';
+    import treeLayoutMenu from '@/components/menu/TreeLayoutMenu';
 
     export default {
         name: "tablelayout",
@@ -136,7 +104,8 @@
             searchBox: searchBox,
             'modal': customModal,
             tablecell: baseCell,
-            msaLegend: msaLegend
+            msaLegend: msaLegend,
+            treeLayoutMenu: treeLayoutMenu
         },
         data() {
             return {
@@ -147,18 +116,26 @@
                 rowsScrolled: 0,
                 n_annotations: 0,
                 msaTab: false,
-                defaultSearchText: "",
+                window: {
+                width: 0,
+                height: 0
+                },
                 //Tree
                 treeRowSpan: 100,
                 rowsHeight: 1000,
+                treeDropdownMenu: [
+                    {id: 0, title: "Download tree as PhyloXML"},
+                    // {id: 1, title: "Download gene table as CSV"},
+                    {id: 2, title: "Save tree image as PNG"},
+                    {id: 3, title: "Save tree image as SVG"},
+                    {id: 4, title: "Prune tree by organism"},
+                ],
                 //Popup
                 showPopup: false,
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
-                //Legend
-                legendIcon: false,
-                showLegendTip: false,
+
                 showMsaLegend: false,
                 //CSV
                 tableCsvData: [],
@@ -179,6 +156,13 @@
                 popover5Text: 'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
             }
         },
+        created() {
+            window.addEventListener('resize', this.handleResize)
+            this.handleResize();
+        },
+        destroyed() {
+            window.removeEventListener('resize', this.handleResize)
+        },
         computed: {
             ...mapGetters({
                 store_tableData: types.TABLE_GET_DATA,
@@ -186,17 +170,7 @@
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
             }),
-            showLegendButtonIcon(){
-                return this.legendIcon?
-                {
-                    title: 'Show Legend',
-                    buttonIcon: 'fas fa-angle-double-up'
-                }:
-                {
-                    title: 'Hide Legend',
-                    buttonIcon: 'fas fa-angle-double-down'
-                };
-            }
+           
         },
         watch: {
             store_tableData: {
@@ -233,12 +207,6 @@
                 },
                 deep: true,
                 immediate: true
-            },
-            store_getSearchTxtWthn: {
-                handler: function (val, oldVal) {
-                },
-                deep: true,
-                immediate: true
             }
         },
         mounted() {
@@ -246,6 +214,11 @@
             this.initTable();
         },
         methods: {
+            handleResize() {
+                this.window.width = window.innerWidth;
+                this.window.height = window.innerHeight;
+
+            },
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA
@@ -253,11 +226,11 @@
             resetTable() {
                 this.rowsToRender = [];
                 this.colsToRender = [];
-                if(this.$refs.searchBox) {
-                    this.$refs.searchBox.onReset();
-                }
                 if(this.$refs.treeLayout) {
                     this.$refs.treeLayout.refreshView();
+                }
+                if(this.$refs.tlmenu) {
+                    this.$refs.tlmenu.onReset();
                 }
                 this.store_setTableIsLoading(true);
             },
@@ -478,23 +451,11 @@
             },
             onDefaultView() {
                 this.$refs.treeLayout.onDefaultView();
-                this.$refs.searchBox.onReset();
+                this.$refs.tlmenu.onReset();
             },
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
 
-            },
-            exportXML() {
-                this.$emit('export-xml');
-            },
-            exportSVG() {
-                this.$refs.treeLayout.onExportSvg(this.treeId);
-            },
-            exportPNG() {
-                this.$refs.treeLayout.onExportPng(this.treeId);
-            },
-            pruneTreeFromMenu() {
-                this.$emit('prune-from-menu');
             },
             onSearchWithinTree(text) {
                 this.$emit('search-tree', text);
@@ -502,13 +463,50 @@
             onPruneLoading(isLoad) {
                 this.$refs.treeLayout.onPruneLoading(isLoad);
             },
+            ///~~~~~~~~~~~~~~~~~~~~~~~~~~ Dropdown Menu Click Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+            ddClicked(id) {
+                console.log(id);
+                if(id == -1) {
+                    this.dropdownMenuClicked();
+                } else {
+                    switch(id) {
+                        case 0:
+                            this.exportXML();
+                            break;
+                        case 1:
+                            break;
+                        case 2:
+                            this.exportPNG();
+                            break;
+                        case 3:
+                            this.exportSVG();
+                            break;
+                        case 4:
+                            this.pruneTreeFromMenu();
+                        default:
+                            console.log("Error! Unknown Dropdown ID");
+                    }
+                }
+            },
             //If dropdown btn is clicked in the tree menu, set table head css to "overflow: visible"
             // This is immediately turned hidden when we scroll inside the "handlescroll" function
             // This displays the dropdown menu correctly on top of the table
-            dropdownClicked() {
+            dropdownMenuClicked() {
                 if(document.getElementById("head")) {
                     document.getElementById("head").style.overflowX = "visible";
                 }
+            },
+            exportXML() {
+                this.$emit('export-xml');
+            },
+            exportPNG() {
+                this.$refs.treeLayout.onExportPng(this.treeId);
+            },
+            exportSVG() {
+                this.$refs.treeLayout.onExportSvg(this.treeId);
+            },
+            pruneTreeFromMenu() {
+                this.$emit('prune-from-menu');
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
             getTableCsvData(nodes) {
@@ -647,16 +645,17 @@
 </script>
 <style scoped>
     #parent {
-        width: 1600px;
-        height: 1100px;
+        /* width: 1600px;
+        height: 1200px; */
         overflow: hidden;
+        padding-bottom: 20px;
     }
     .mainTable {
         display: flex;
         flex-direction: column;
         flex: 1 1 auto;
         width: 100%;
-        height: 100%;
+        height: 95%;
         overflow: hidden;
         z-index: 1;
         font-size: 14px;
@@ -754,19 +753,19 @@
     .showMsaBtn {
         position: absolute;
         left: 10px;
-        top: 12px;
+        top: 122px;
         z-index: 100;
     }
     .msalegendbtn {
         position: absolute;
         right: 10px;
-        top: 12px;
+        top: 122px;
         z-index: 100;
     }
     .legend-box {
         background-color: #9E9E9E;
         position: absolute;
-        top: 50px;
+        top: 150px;
         right: 0px;
     }
     .stickyCol {
@@ -781,12 +780,6 @@
     .stickyCol2 {
         position: sticky !important;
         left: 800px;
-    }
-
-    .my-msa {
-        position: absolute;
-        padding-left: 10px;
-        top: 10px;
     }
 
     ::-webkit-scrollbar {

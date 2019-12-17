@@ -1207,6 +1207,7 @@
     }
     #treeSvg {
         background-color: white;
+        /* position: absolute; */
         /*cursor: grab;*/
     }
     .menu {

@@ -32,7 +32,8 @@
                 </span>
             </div>
             <!-- Table -->
-            <div class="col-sm-12 h-95 pg-panel">
+            <!-- class="col-sm-12 h-95 pg-panel"> -->
+            <div>
                 <tablelayout ref="tableLayout"
                             :treeId="treeId" :colsFromProp="tableColsToRender" :headerMap="headerMap" :treeDataFromProp ="treeData_Json"
                             :csvTable="csvTable"
