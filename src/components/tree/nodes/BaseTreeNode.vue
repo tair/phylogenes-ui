@@ -12,7 +12,7 @@ across all treenode types (eg. translate, exit movement).
         >
 
         </component>
-        <image v-if="content.data.hasFunc" v-b-tooltip.hover title="Has Known Function" :v-if="content.hasFunc" xlink:href="/flask-yellow.png" height="15" width="15" y="-7"/>
+        <image v-if="content.data.hasFunc" v-b-tooltip.hover title="Has Known Function" xlink:href="/flask-yellow.png" height="15" width="15" y="-7"/>
     </g>
 
 </template>
@@ -82,7 +82,7 @@ across all treenode types (eg. translate, exit movement).
                 if (this.content.data.hasFunc){
                     let textLength = 0;
                     if(this.el.select('text').node()) {
-                        textLength = this.el.select('text').node().textLength.baseVal.value;
+                        textLength = this.el.select('text').node().getComputedTextLength();
                     }
                     this.el.select('image').attr('x', textLength + 20);
                 }
