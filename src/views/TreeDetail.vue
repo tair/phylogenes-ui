@@ -11,8 +11,11 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
             <template slot="footer"> 
-                <button class="modal-default-button" @click="onPrune">
+                <button v-if="!isHighlightPopup" class="modal-default-button" @click="onPrune">
                     Update tree
+                </button>
+                <button v-if="isHighlightPopup" class="modal-default-button" @click="onHighlight">
+                    Highlight tree
                 </button>
                 <button class="modal-default-button" @click="showPopup = false">
                     Close
@@ -43,6 +46,7 @@
                             v-on:search-tree="onSearchWithinTree"
                             v-on:export-xml="exportXML"
                             v-on:prune-from-menu="pruneTreeFromMenu"
+                            v-on:highlight-tree="highlightTreeByOrg"
                             v-on:set-csv-data="setCsvTableData"
                             >
                 </tablelayout>
@@ -166,6 +170,7 @@ export default {
             matchNodes: [],
             //Popup
             showPopup: false,
+            isHighlightPopup: false,
             popupHeader: "Organisms (uncheck an organism to remove from tree)",
             popupCols: [{type:'checkbox', val:true}, 
                         "Organism",
@@ -179,6 +184,7 @@ export default {
             //Pruning
             prunedLoaded: false,
             unprunedTaxonIds: [],
+            unhighlightedTaxonIds: [],
             originalTaxonIdsLength: 0,
             //Table CSV
             csvTable: {
@@ -511,6 +517,7 @@ export default {
         onSearchWithinTree(text) {
             if(text != null) {
                 var d = this.completeData.filter(t => {
+                    
                     var geneName = "";
                     if(t["Gene name"] != null && typeof t["Gene name"] != 'number') {
                         geneName = t["Gene name"].toLowerCase();
@@ -838,15 +845,20 @@ export default {
         // ~~~~~~~~~~~~~~~~ Pruning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
         //Reset all pruning global vars
         resetPruning() {
-            this.unprunedTaxonIds = 0;
+            this.unprunedTaxonIds = [];
+            this.unhighlightedTaxonIds = [];
             this.prunedLoaded = false;
             this.showPopup = false;
             this.popupData = [];
         },
         pruneTreeFromMenu() {
-            this.showOrganismPopup();
+            this.showOrganismPopup(false);
         },
-        showOrganismPopup() {
+        highlightTreeByOrg() {
+            this.showOrganismPopup(true);
+        },
+        showOrganismPopup(highlightPopup) {
+            this.isHighlightPopup = highlightPopup;
             this.showPopup = true;
             this.popupData = [];
             this.popupCols[0].val = true;
@@ -861,13 +873,21 @@ export default {
             this.metadata.uniqueOrganisms.organisms.forEach(o => {
                 let singleRow = [];
                 let checkedV = true;
-                if(this.unprunedTaxonIds.length > 0 && 
-                    !this.unprunedTaxonIds.includes(o.taxonId)) {
-                    checkedV = false;
+                if(!this.isHighlightPopup) {
+                    if(this.unprunedTaxonIds.length > 0 && 
+                        !this.unprunedTaxonIds.includes(o.taxonId)) {
+                        checkedV = false;
+                    }
+                } else {
+                    if(this.unhighlightedTaxonIds.length > 0 && 
+                        !this.unhighlightedTaxonIds.includes(o.taxonId)) {
+                        checkedV = false;
+                    }
                 }
+                
                 singleRow.push({type: "checkbox", label: "txt", checked: checkedV});
                 let organismDisplayName = o.name + " (" + o.commonName + ")";
-                singleRow.push({type: "text", val: organismDisplayName, id: o.taxonId});
+                singleRow.push({type: "text", val: organismDisplayName, id: o.taxonId, name: o.name});
                 singleRow.push(o.count);
                 this.popupData.push(singleRow);
             });
@@ -903,6 +923,29 @@ export default {
                     this.popupCols[0].val = true;
                 }
             }); 
+        },
+        onHighlight() {
+            let filteredOrganisms = this.popupData.filter(pd => {
+                return pd[0].checked == true;
+            });
+            this.unhighlightedTaxonIds = filteredOrganisms.map(o => o[1].id);
+            let searchOrgNames = [];
+            searchOrgNames = filteredOrganisms.map(f => {
+                return f[1].name;
+            });
+            var d = this.completeData.filter(t => {
+                if(t["Organism"] != null && typeof t["Organism"] != 'number') {
+                    for(var i=0; i<searchOrgNames.length; i++) {
+                        if(t["Organism"] == searchOrgNames[i]) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            });
+            this.matchNodes = d;
+            this.store_setMatchedNodes(this.matchNodes);
+            this.showPopup = false;
         },
         onPrune() {
             let filteredOrganisms = this.popupData.filter(pd => {

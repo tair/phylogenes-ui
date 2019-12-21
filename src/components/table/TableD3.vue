@@ -129,6 +129,7 @@
                     {id: 2, title: "Save tree image as PNG"},
                     {id: 3, title: "Save tree image as SVG"},
                     {id: 4, title: "Prune tree by organism"},
+                    {id: 5, title: "Highlight tree by organism"},
                 ],
                 //Popup
                 showPopup: false,
@@ -465,7 +466,6 @@
             },
             ///~~~~~~~~~~~~~~~~~~~~~~~~~~ Dropdown Menu Click Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             ddClicked(id) {
-                console.log(id);
                 if(id == -1) {
                     this.dropdownMenuClicked();
                 } else {
@@ -483,6 +483,10 @@
                             break;
                         case 4:
                             this.pruneTreeFromMenu();
+                            break;
+                        case 5:
+                            this.highlightTree();
+                            break;
                         default:
                             console.log("Error! Unknown Dropdown ID");
                     }
@@ -507,6 +511,9 @@
             },
             pruneTreeFromMenu() {
                 this.$emit('prune-from-menu');
+            },
+            highlightTree() {
+                this.$emit('highlight-tree');
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
             getTableCsvData(nodes) {
