@@ -225,6 +225,8 @@
                 store_setTableData: types.TABLE_ACTION_SET_DATA
             }),
             resetTable() {
+                this.showMsaLegend = false;
+                this.msaTab = false;
                 this.rowsToRender = [];
                 this.colsToRender = [];
                 if(this.$refs.treeLayout) {
@@ -661,7 +663,7 @@
         display: flex;
         flex-direction: column;
         flex: 1 1 auto;
-        width: 100%;
+        width: 98%;
         height: 95%;
         overflow: hidden;
         z-index: 1;
