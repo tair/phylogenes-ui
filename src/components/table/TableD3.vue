@@ -16,10 +16,10 @@
                 <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
                 </button>
-                <button class="btn bg-white float-left showMsaBtn" @click="toggleTabs">
+                <!-- <button class="btn bg-white float-left showMsaBtn" @click="toggleTabs">
                     <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
-                </button>
-                <tr id="secTr">
+                </button> -->
+                <!-- <tr id="secTr">
                     <th :colspan='msaTab?2:3' class="thInvis"></th>
                     <th v-if="n_annotations > 0 && !msaTab"
                         :colspan="n_annotations" class="thSubCol">Known Function
@@ -27,6 +27,19 @@
                         <popover :text=popover1Text title="Known Function" placement='left' target='popover1'></popover>
                     </th>
                     <th :colspan='5' class="thInvis">
+                    </th>
+                </tr> -->
+                <!-- <tr id="mainTr">
+                    <th class="widthTree stickyCol" rowspan="1">Tree Layout</th>
+                    <th rowspan="2">Favorite</th>
+                    <th>Blue</th> 
+                    <th>Purple</th>
+                <tr> -->
+                <tr id="main2Tr">
+                    <th class="widthTree stickyCol"></th>
+                    <th colspan="2" style="background-color=transparent"></th>
+                    <th v-for="(col,i) in colsToRender.slice(2,5)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
+                        <tablecell :content="getHeader(col, i+2)"></tablecell>
                     </th>
                 </tr>
                 <tr id="mainTr">
@@ -38,9 +51,26 @@
                                             v-on:expandAll="expandAll"
                                             v-on:onShowLegend="showLegend"></tree-layout-menu>
                     </th>
+                    <th v-for="(col,i) in colsToRender.slice(0,2)" :key="i" :class="getThClasses(col, i)">
+                        <tablecell :content="getHeader(col, i)"></tablecell>
+                    </th>
+                    <th v-for="(col,i) in colsToRender.slice(5,5+5)" :key="i" :class="getThClasses(col, i+5)">
+                        <tablecell :content="getHeader(col, i+5)"></tablecell>
+                    </th>
+                </tr>
+                <!-- <tr id="mainTr"> -->
+                    <!-- -->
+                    <!-- <th class="widthTree stickyCol" rowspan="1">
+                        <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu" :treeId="treeId"
+                                            v-on:ddItemClicked="ddClicked"
+                                            v-on:onSearch="onSearchWithinTree"
+                                            v-on:onDefaultView="onDefaultView"
+                                            v-on:expandAll="expandAll"
+                                            v-on:onShowLegend="showLegend"></tree-layout-menu>
+                    </th>
                     <th v-for="(col,i) in colsToRender" :key="i"
-                            :class="getThClasses(col, i)"> 
-                        <tablecell :content="getHeader(col)"></tablecell>
+                            :class="getThClasses(col, i)" rowspan="2">
+                        <tablecell :content="getHeader(col, i)"></tablecell>
                         <b-button v-if="col === 'Gene name'" id="popover2" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                         <popover v-if="col === 'Gene name'" :text=popover2Text title="Gene Name" placement='right' target='popover2'></popover>
                         <b-button v-if="col === 'Gene ID'" id="popover3" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
@@ -49,8 +79,8 @@
                         <popover v-if="col === 'Protein name'" :text=popover4Text title="Protein name" placement='left' target='popover4'></popover>
                         <b-button v-if="col === 'Subfamily Name'" id="popover5" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                         <popover v-if="col === 'Subfamily Name'" :text=popover5Text title="Subfamily Name" placement='left' target='popover5'></popover>
-                    </th>
-                </tr>
+                    </th> -->
+                <!-- </tr> -->
             </thead>
             <tbody id="body" ref="tbody">
                 <tr>
@@ -600,10 +630,13 @@
                 });
                 return popUpTableData;
             },
-            getHeader(title) {
+            getHeader(title, i) {
                 let header = {text: title};
                 if(this.headerMap[title]) {
                     header['text'] = this.headerMap[title];
+                }
+                if(i > 1 && i < this.n_annotations+2) {
+                    header['type'] = 'slanted';
                 }
                 return header;
             }, 
@@ -615,8 +648,9 @@
                     classes.push('widthDefault');
                 }
                 //For all cells belonging to sub columns for annotations
-                if(i > 1 && i < this.n_annotations+1) {
+                if(i > 1 && i < this.n_annotations+2) {
                     classes.push('light-border');
+                    classes.push('rotated-header');
                 }
                 return classes;
             },
@@ -634,8 +668,9 @@
                     classes.push('tdHover');
                 }
                 //For all cells belonging to sub columns for annotations
-                if(col_idx > 1 && col_idx < this.n_annotations+1) {
+                if(col_idx > 1 && col_idx < this.n_annotations+2) {
                     classes.push('light-border');
+                    classes.push('rotated-header');
                 }
 
                 return classes;
@@ -676,16 +711,24 @@
         z-index: 10;
         border-right: 3px solid #f1f1f0;
     }
+
     #mainTr {
         border-top: 3px solid #f1f1f0;
         border-bottom: 3px solid #f1f1f0;
         filter: brightness(100%) !important;
         cursor: default !important;
         background-color: #9cd5e3;
-        height: 40px !important;
+        height: 15px !important;
     }
     #mainTr th:nth-child(1), th:nth-child(2) {
         background-color: #9cd5e3;
+    }
+    #main2Tr {
+        height: 60px !important;
+    }
+    #main2Tr th:nth-child(1), th:nth-child(2) {
+        background-color: transparent;
+        border-right: 0;
     }
     #secTr {
         height: 53px !important;
@@ -718,6 +761,11 @@
     .light-border{
         border-right: 1px solid #f1f1f0 !important;
         border-left: 1px solid #f1f1f0 !important;
+    }
+    .rotated-header {
+        min-width: 50px !important;
+        width: 50px !important;
+        max-width: 50px !important;
     }
     .mainTable tr:nth-child(even){
         background-color: #cdeaf5;

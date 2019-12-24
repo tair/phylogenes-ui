@@ -2,7 +2,7 @@
     <svg :width=tdWidth :height=tdHeight>
         <g> 
             <circle class="anno_circle"
-                    cx="100" cy="18" r="8"></circle>
+                    cx="25" cy="18" r="8"></circle>
         </g>
     </svg>
 </template>
