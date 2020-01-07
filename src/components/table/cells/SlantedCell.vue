@@ -42,16 +42,20 @@
         height: 200px;
         width: 50px;
         transform: skew(-30deg) translate(110%);
+        z-index: -10;
     }
     .innerDiv {
         position: absolute;
         text-align: left;
         transform: skew(30deg) rotate(-60deg);
         transform-origin: 0 0;
-        bottom: -34%;
+        bottom: -8%;
         left: 10px;
-        width: 250px;
-        height: 85px;
-        z-index: 100;
+        width: 220px;
+        height: 30px;
+        z-index: -10;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 </style>
