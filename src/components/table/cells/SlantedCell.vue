@@ -20,7 +20,6 @@
             }
         },
         mounted() {
-            console.log('slanted');
         },
         data() {
             return {
@@ -42,7 +41,6 @@
         height: 200px;
         width: 50px;
         transform: skew(-30deg) translate(110%);
-        z-index: -10;
     }
     .innerDiv {
         position: absolute;
@@ -53,7 +51,6 @@
         left: 10px;
         width: 220px;
         height: 30px;
-        z-index: -10;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;

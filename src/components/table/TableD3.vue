@@ -18,7 +18,18 @@
                 </button>
                 <button class="btn bg-white float-left showMsaBtn" @click="toggleTabs">
                     <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
-                </button>
+                </button>     
+                <tr id="main2Tr">
+                    <!-- <th class="widthTree stickyCol"></th> -->
+                    <th colspan="3" style="background-color=transparent; border-right: 0">
+                        <div v-if="n_annotations>0 && !msaTab" style="height: 100px"></div>
+                        <div v-else style="height: 40px"></div>
+                    </th>
+                    <th v-for="(col,i) in colsToRender.slice(2,2+n_annotations)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
+                        <tablecell :content="getHeader(col, i+2)"></tablecell>
+                    </th>
+                </tr>
+
                 <tr id="mainTr">
                     <th :class="getThClasses('tree', -1)">
                         <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu" :treeId="treeId"
@@ -28,9 +39,16 @@
                                             v-on:expandAll="expandAll"
                                             v-on:onShowLegend="showLegend"></tree-layout-menu>
                     </th>
-                    <th v-for="(col,i) in colsToRender" :key="i" :class="getThClasses(col, i)">
+                    <!-- <th v-for="(col,i) in colsToRender" :key="i" :class="getThClasses(col, i)">
+                        <tablecell :content="getHeader(col, i)"></tablecell>
+                    </th> -->
+                    <th v-for="(col,i) in colsToRender.slice(0,2)" :key="i" :class="getThClasses(col, i)">
                         <tablecell :content="getHeader(col, i)"></tablecell>
                     </th>
+                    <th v-for="(col,i) in colsToRender.slice(2+n_annotations,5+2+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
+                        <tablecell :content="getHeader(col, i+2+n_annotations)"></tablecell>
+                    </th>
+
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
@@ -609,7 +627,7 @@
                     }
                 } else {
                     classes.push('widthMin');
-                    classes.push('no-border');
+                    classes.push('cell-no-border');
                 }
                 //col_idx = 0 is 'Gene', which is the 2nd column in table which needs to be sticky
                 if(col_idx == 0) {
@@ -633,7 +651,7 @@
                     }
                 } else {
                     classes.push('widthMin');
-                    classes.push('no-border');
+                    classes.push('cell-no-border');
                 }
                 //col_idx = 0 is 'Gene', which is the 2nd column in table which needs to be sticky
                 if(col_idx == 0) {
@@ -664,7 +682,6 @@
         width: 100%;
         height: 95%;
         overflow: hidden;
-        /* z-index: 1; */
         font-size: 14px;
         font-family: sans-serif;
     }
@@ -685,6 +702,9 @@
         cursor: default !important;
         background-color: #9cd5e3;
     }
+    #main2Tr {
+        background-color: #9cd5e3;
+    }
     /* Default th*/
     .mainTable th {
         text-align: center;
@@ -702,14 +722,17 @@
         min-width: 700px;
     }
     th.widthDefault, td.widthDefault {
+        position: relative;
         min-width: 200px;
         width: 200px;
         max-width: 200px;
     }
     th.widthMin, td.widthMin {
+        position: relative;
         min-width: 50px;
         width: 50px;
         max-width: 50px;
+        z-index: 4;
     }
     th.widthMax, td.widthMax {
         text-align: left !important;
@@ -724,13 +747,13 @@
         background-color: #9cd5e3;
         position: sticky;
         left: 0;
-        z-index: 4;
+        z-index: 11;
     }
     th.stickyCol2, td.stickyCol2 {
         background-color: #9cd5e3;
         position: sticky;
         left: 700px;
-        z-index: 4;
+        z-index: 11;
     }
     /* Even odd row colors */
     .mainTable tr:nth-child(even), tr:nth-child(even) td.stickyCol2{
@@ -739,7 +762,12 @@
     .mainTable tr:nth-child(odd), td.stickyCol2{
         background-color: #e9e9e9;
     }
-    td.no-border{
+    th.cell-no-border {
+        border-bottom: 2px solid #f1f1f0;
+        border-left: 0;
+        border-right: 0;
+    }
+    td.cell-no-border{
         border-right: 1px solid #f1f1f0 !important;
         border-left: 1px solid #f1f1f0 !important;
     }
@@ -756,19 +784,19 @@
     .showMsaBtn {
         position: absolute;
         left: 10px;
-        top: 122px;
+        top: 130px;
         z-index: 100;
     }
     .msalegendbtn {
         position: absolute;
         right: 10px;
-        top: 122px;
+        top: 130px;
         z-index: 100;
     }
     .legend-box {
         background-color: #9E9E9E;
         position: absolute;
-        top: 150px;
+        top: 160px;
         right: 0px;
     }
 
