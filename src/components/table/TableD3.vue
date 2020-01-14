@@ -21,6 +21,10 @@
                 </button>     
 
                 <tr id="mainTr">
+                    <div v-if="!msaTab && n_annotations>0" class="annoPopver">
+                        <b-button id="annoPopover" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover :text="popover1Text" title="GO Annotations" placement='right' target="annoPopover"></popover>
+                    </div>
                     <th :class="getThClasses('tree', -1)">
                         <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu" :treeId="treeId"
                                             v-on:ddItemClicked="ddClicked"
@@ -32,11 +36,14 @@
                     <th v-for="(col,i) in colsToRender.slice(0,2)" :key="i" :class="getThClasses(col, i)">
                         <tablecell :content="getHeader(col, i)"></tablecell>
                     </th>
+                    
                     <th v-for="(col,i) in colsToRender.slice(2,2+n_annotations)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
                         <tablecell :content="getHeader(col, i+2)"></tablecell>
                     </th>
                     <th v-for="(col,i) in colsToRender.slice(2+n_annotations,5+2+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
                         <tablecell :content="getHeader(col, i+2+n_annotations)"></tablecell>
+                        <b-button v-if="showPopover(col)" :id="col+'id'" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover v-if="showPopover(col)" :text="getPopoverText(col)" :title="col" placement='right' :target="col+'id'"></popover>
                     </th>
 
                 </tr>
@@ -655,6 +662,20 @@
                 }
                 return classes;
             },
+            showPopover(colName) {
+                if(colName === 'Gene name') return true;
+                if(colName === 'Gene ID') return true;
+                if(colName === 'Protein name') return true;
+                if(colName === 'Subfamily Name') return true;
+                else return false;
+            },
+            getPopoverText(colName) {
+                if(colName === 'Gene name') return this.popover2Text;
+                if(colName === 'Gene ID') return this.popover3Text;
+                if(colName === 'Protein name') return this.popover4Text;
+                if(colName === 'Subfamily Name') return this.popover5Text;
+                return ""
+            }
         }
     }
 </script>
@@ -793,6 +814,12 @@
         position: absolute;
         top: 160px;
         right: 0px;
+    }
+    .annoPopver {
+        position: absolute;
+        top: 3px;
+        left: 1100px;
+        z-index: 10;
     }
 
     ::-webkit-scrollbar {
