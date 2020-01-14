@@ -19,16 +19,6 @@
                 <button class="btn bg-white float-left showMsaBtn" @click="toggleTabs">
                     <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
                 </button>     
-                <tr id="main2Tr">
-                    <!-- <th class="widthTree stickyCol"></th> -->
-                    <th colspan="3" style="background-color=transparent; border-right: 0">
-                        <div v-if="n_annotations>0 && !msaTab" style="height: 100px"></div>
-                        <div v-else style="height: 40px"></div>
-                    </th>
-                    <th v-for="(col,i) in colsToRender.slice(2,2+n_annotations)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
-                        <tablecell :content="getHeader(col, i+2)"></tablecell>
-                    </th>
-                </tr>
 
                 <tr id="mainTr">
                     <th :class="getThClasses('tree', -1)">
@@ -39,11 +29,11 @@
                                             v-on:expandAll="expandAll"
                                             v-on:onShowLegend="showLegend"></tree-layout-menu>
                     </th>
-                    <!-- <th v-for="(col,i) in colsToRender" :key="i" :class="getThClasses(col, i)">
-                        <tablecell :content="getHeader(col, i)"></tablecell>
-                    </th> -->
                     <th v-for="(col,i) in colsToRender.slice(0,2)" :key="i" :class="getThClasses(col, i)">
                         <tablecell :content="getHeader(col, i)"></tablecell>
+                    </th>
+                    <th v-for="(col,i) in colsToRender.slice(2,2+n_annotations)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
+                        <tablecell :content="getHeader(col, i+2)"></tablecell>
                     </th>
                     <th v-for="(col,i) in colsToRender.slice(2+n_annotations,5+2+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
                         <tablecell :content="getHeader(col, i+2+n_annotations)"></tablecell>
@@ -702,9 +692,6 @@
         cursor: default !important;
         background-color: #9cd5e3;
     }
-    #main2Tr {
-        background-color: #9cd5e3;
-    }
     /* Default th*/
     .mainTable th {
         text-align: center;
@@ -721,11 +708,19 @@
     th.widthTree, td.widthTree {
         min-width: 700px;
     }
+    th.widthTree {
+        vertical-align: bottom;
+        padding-bottom: 20px;
+    }
     th.widthDefault, td.widthDefault {
         position: relative;
         min-width: 200px;
         width: 200px;
         max-width: 200px;
+    }
+    th.widthDefault {
+        vertical-align: bottom;
+        padding-bottom: 20px;
     }
     th.widthMin, td.widthMin {
         position: relative;

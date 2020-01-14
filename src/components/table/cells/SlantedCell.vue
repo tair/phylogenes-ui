@@ -1,11 +1,6 @@
 <template>
-    <!-- <div class="slantedText" -->
-          <!-- data-toggle="tooltip" :title="this.content.text"> -->
-          <!-- <span></span> -->
-          <!-- {{this.content.text}} -->
-    <!-- </div> -->
     <div class="outerDiv">
-        <div class="innerDiv">{{this.content.text}}</div>
+        <div class="innerDiv" data-toggle="tooltip" :title="this.content.text">{{this.content.text}}</div>
     </div>
 </template>
 
