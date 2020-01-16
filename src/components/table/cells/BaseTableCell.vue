@@ -36,7 +36,6 @@
         watch: {
             content: {
                 handler(newV, oldV) {
-                    // console.log(newV);
                 }
             }
         },

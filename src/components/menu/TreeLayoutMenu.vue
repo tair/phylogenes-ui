@@ -118,5 +118,5 @@
 </script>
 
 <style scoped>
-    
+
 </style>

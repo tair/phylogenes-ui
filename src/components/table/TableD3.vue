@@ -703,9 +703,12 @@
         overflow-x: hidden;
         overflow-y: visible;
         background-color: #9cd5e3;
+        /* Set thead z-index > tbody z-index, so the header dropdown menu appears on top */
+        z-index: 12;
     }
     .mainTable tbody {
         overflow: scroll;
+        z-index: 11;
     }
     #mainTr {
         border-top: 3px solid #f1f1f0;
