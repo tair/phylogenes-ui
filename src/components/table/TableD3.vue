@@ -463,7 +463,6 @@
             },
             ///~~~~~~~~~~~~~~~~~~~~~~~~~~ Dropdown Menu Click Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             ddClicked(id) {
-                console.log(id);
                 if(id == -1) {
                     this.dropdownMenuClicked();
                 } else {

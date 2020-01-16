@@ -853,8 +853,8 @@
                 this.resetSvgAfterExport();
             },
             resetSvgAfterExport() {
-                d3.select('#treeSvg').attr("width", "100%").attr("height", "1200px")
-                        .style("position", "relative");
+                console.log("reset svg");
+                d3.select('#treeSvg').attr("width", "100%").style("position", "relative");         
                 this.isLoading = false;
             },
 
