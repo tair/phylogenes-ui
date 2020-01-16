@@ -116,6 +116,7 @@
                 width: 0,
                 height: 0
                 },
+                MAX_ROW_HEIGHT: 35,
                 //Tree
                 treeRowSpan: 100,
                 rowsHeight: 1000,
@@ -213,13 +214,13 @@
             handleResize() {
                 this.window.width = window.innerWidth;
                 this.window.height = window.innerHeight;
-
             },
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA
             }),
             resetTable() {
+                this.msaTab = false;
                 this.rowsToRender = [];
                 this.colsToRender = [];
                 if(this.$refs.treeLayout) {
@@ -356,7 +357,7 @@
                 });
                 //Adjust tree column span and height, to fill the whole table and match the original table height
                 this.treeRowSpan = this.rowsToRender.length+1;
-                this.rowsHeight = this.rowsToRender.length*40;
+                this.rowsHeight = this.rowsToRender.length*this.MAX_ROW_HEIGHT;
                 setTimeout(() => {
                     this.store_setTableIsLoading(false);
                 });
@@ -719,7 +720,7 @@
         border-right: 3px solid #f1f1f0;
     }
     .mainTable td {
-        height: 40px !important;
+        height: 35px !important;
         border-right: 3px solid #f1f1f0;
         white-space: nowrap;
         overflow: hidden;

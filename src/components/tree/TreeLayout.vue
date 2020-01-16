@@ -309,7 +309,7 @@
                     .size([800, 800]);
                 if(this.layoutType == "Cluster") {
                     this.treeLayoutd3Obj = d3.cluster()
-                        .nodeSize([40,30])
+                        .nodeSize([35,30])
                         .separation((a, b) => {
                             return (a.parent == b.parent ? 1 : 1) }
                         );
