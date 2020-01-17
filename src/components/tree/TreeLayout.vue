@@ -853,7 +853,6 @@
                 this.resetSvgAfterExport();
             },
             resetSvgAfterExport() {
-                console.log("reset svg");
                 d3.select('#treeSvg').attr("width", "100%").style("position", "relative");         
                 this.isLoading = false;
             },
@@ -1026,10 +1025,10 @@
                     })
                     .on("zoom", () => {
                         //don't need panning for now
-                        // this.onPan(g, startTransform);
+                        this.onPan(g, startTransform);
                     })
                     .on("end", () => {
-                        // this.onPanEnd(startTransform);
+                        this.onPanEnd(startTransform);
                     })
             },
             onClick(source) {
@@ -1043,7 +1042,7 @@
                 let translateX = this.currentTopNodePos.x + (d3.event.transform.x - transform.x);
                 var translateY = this.currentTopNodePos.y + diff;
                 g.attr("transform", (d) => {
-                    return "translate(" + translateX + "," + translateY + ")";
+                    return "translate(" + translateX + "," + this.currentTopNodePos.y + ")";
                 });
             },
             onPanEnd(transform) {

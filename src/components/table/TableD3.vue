@@ -18,7 +18,7 @@
                 </button>
                 <button class="btn bg-white float-left showMsaBtn" @click="toggleTabs">
                     <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
-                </button>     
+                </button>
 
                 <tr id="mainTr">
                     <div v-if="!msaTab && n_annotations>0" class="annoPopver">
@@ -549,7 +549,7 @@
                 if(this.rowsScrolled > 0) {
                     const tbody = document.getElementById("body");
                     if(tbody) {
-                        tbody.scrollTop = 40*this.rowsScrolled;
+                        tbody.scrollTop = this.MAX_ROW_HEIGHT*this.rowsScrolled;
                     }
                 }
             },
@@ -742,8 +742,9 @@
         min-width: 700px;
     }
     th.widthTree {
+        padding-top: 15px;
         vertical-align: bottom;
-        padding-bottom: 20px;
+        padding-bottom: 15px;
     }
     th.widthDefault, td.widthDefault {
         position: relative;
@@ -812,7 +813,7 @@
     .showMsaBtn {
         position: absolute;
         left: 10px;
-        top: 130px;
+        top: 110px;
         z-index: 100;
     }
     .msalegendbtn {
