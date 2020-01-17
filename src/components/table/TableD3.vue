@@ -126,6 +126,7 @@
                     {id: 2, title: "Save tree image as PNG"},
                     {id: 3, title: "Save tree image as SVG"},
                     {id: 4, title: "Prune tree by organism"},
+                    {id: 5, title: "Highlight tree by organism"},
                 ],
                 //Popup
                 showPopup: false,
@@ -220,6 +221,7 @@
                 store_setTableData: types.TABLE_ACTION_SET_DATA
             }),
             resetTable() {
+                this.showMsaLegend = false;
                 this.msaTab = false;
                 this.rowsToRender = [];
                 this.colsToRender = [];
@@ -480,6 +482,10 @@
                             break;
                         case 4:
                             this.pruneTreeFromMenu();
+                            break;
+                        case 5:
+                            this.highlightTree();
+                            break;
                         default:
                             console.log("Error! Unknown Dropdown ID");
                     }
@@ -504,6 +510,9 @@
             },
             pruneTreeFromMenu() {
                 this.$emit('prune-from-menu');
+            },
+            highlightTree() {
+                this.$emit('highlight-tree');
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
             getTableCsvData(nodes) {
@@ -690,7 +699,7 @@
         display: flex;
         flex-direction: column;
         flex: 1 1 auto;
-        width: 100%;
+        width: 98%;
         height: 95%;
         overflow: hidden;
         font-size: 14px;
