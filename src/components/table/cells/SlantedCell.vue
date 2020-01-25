@@ -27,24 +27,20 @@
     }
 </script>
 <style scoped> 
-    .slantedText {
-        height: 200px;
-        transform: skew(-30deg);
-    }
     .outerDiv {
         background-color: #9cd5e3;
-        height: 200px;
-        width: 50px;
-        transform: skew(-30deg) translate(110%);
+        height: 150px;
+        width: 30px;
+        transform: skew(-10deg) translate(16%);
     }
     .innerDiv {
         position: absolute;
         text-align: left;
-        transform: skew(30deg) rotate(-60deg);
+        transform: skew(-3deg) rotate(-87deg);
         transform-origin: 0 0;
-        bottom: -8%;
-        left: 10px;
-        width: 220px;
+        bottom: -13%;
+        left: 4px;
+        width: 140px;
         height: 30px;
         overflow: hidden;
         white-space: nowrap;

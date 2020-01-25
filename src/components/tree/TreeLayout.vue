@@ -124,7 +124,7 @@
                 isLazyLoad: false,
                 isAnimated: true,
                 enableMenu: false,
-                showLegend: false,
+                showLegend: true,
                 showBranchLength: true,
                 //constants
                 rowLimit_lazyLoad: 25,

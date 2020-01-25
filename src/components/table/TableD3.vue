@@ -16,9 +16,6 @@
                 <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
                 </button>
-                <button class="btn bg-white float-left showMsaBtn" @click="toggleTabs">
-                    <span class="text-danger">{{msaTab?"Show Gene Info":"Show MSA"}}</span>
-                </button>
 
                 <tr id="mainTr">
                     <div v-if="!msaTab && n_annotations>0" class="annoPopver">
@@ -34,9 +31,11 @@
                                             v-on:onShowLegend="showLegend"></tree-layout-menu>
                     </th>
                     <th v-for="(col,i) in colsToRender.slice(0,2)" :key="i" :class="getThClasses(col, i)">
+                        <button v-if="i==0" class="btn btn-link showMsaBtn" @click="toggleTabs">
+                            <span class="text-danger ">{{msaTab?"Show Gene Info >":"Show MSA >"}}</span>
+                        </button>
                         <tablecell :content="getHeader(col, i)"></tablecell>
                     </th>
-                    
                     <th v-for="(col,i) in colsToRender.slice(2,2+n_annotations)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
                         <tablecell :content="getHeader(col, i+2)"></tablecell>
                     </th>
@@ -123,10 +122,10 @@
                 treeDropdownMenu: [
                     {id: 0, title: "Download tree as PhyloXML"},
                     // {id: 1, title: "Download gene table as CSV"},
-                    {id: 2, title: "Save tree image as PNG"},
-                    {id: 3, title: "Save tree image as SVG"},
-                    {id: 4, title: "Prune tree by organism"},
-                    {id: 5, title: "Highlight tree by organism"},
+                    {id: 2, title: "Highlight tree by organism"},
+                    {id: 3, title: "Prune tree by organism"},
+                    {id: 4, title: "Save tree image as PNG"},
+                    {id: 5, title: "Save tree image as SVG"},
                 ],
                 //Popup
                 showPopup: false,
@@ -475,16 +474,16 @@
                         case 1:
                             break;
                         case 2:
-                            this.exportPNG();
+                            this.highlightTree();
                             break;
                         case 3:
-                            this.exportSVG();
-                            break;
-                        case 4:
                             this.pruneTreeFromMenu();
                             break;
+                        case 4:
+                            this.exportPNG();
+                            break;
                         case 5:
-                            this.highlightTree();
+                            this.exportSVG();
                             break;
                         default:
                             console.log("Error! Unknown Dropdown ID");
@@ -771,6 +770,9 @@
         font-family: monospace;
         letter-spacing: 0.1px;
     }
+    td.widthMax {
+        background-color: #e9e9e9 !important;
+    }
     /* bg is required for sticky td and th so that they hide the other elements behind */
     th.stickyCol1, td.stickyCol1 {
         background-color: #9cd5e3;
@@ -812,9 +814,15 @@
     /* Fixed posn buttons */
     .showMsaBtn {
         position: absolute;
-        left: 10px;
-        top: 110px;
+        left: 60px;
+        top: -3px;
         z-index: 100;
+        outline: 0 !important;
+        outline-offset: 0  !important;
+        background-image: none  !important;
+        -webkit-box-shadow: none !important;
+        box-shadow: none  !important;
+        font-size: 0.9rem;
     }
     .msalegendbtn {
         position: absolute;

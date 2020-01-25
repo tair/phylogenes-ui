@@ -890,6 +890,11 @@ export default {
                 singleRow.push({type: "text", val: organismDisplayName, id: o.taxonId, name: o.name});
                 singleRow.push(o.count);
                 this.popupData.push(singleRow);
+                if(highlightPopup) {
+                    this.popupHeader = "Organisms (select an organism to highlight it's genes on tree)"
+                } else {
+                    this.popupHeader = "Organisms (uncheck an organism to remove from tree)";
+                }
             });
         },
         onUncheckAll() {

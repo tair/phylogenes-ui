@@ -10,10 +10,6 @@
                 <template slot="button-content">
                     <i @click="ddClicked" class="fas fa-tools fa-2x fa-fw"></i>
                 </template>
-                <b-dropdown-item v-for="item in dropdownMenu" :key="item.id" @click="ddMenuitemClicked(item.id)">
-                    {{item.title}}
-                </b-dropdown-item>
-                <!-- <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item> -->
                 <json-csv 
                     :data="csvTable.tableCsvData" 
                     :name="treeId+'.csv'" 
@@ -21,6 +17,10 @@
                 >
                     <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
                 </json-csv>
+                <b-dropdown-item v-for="item in dropdownMenu" :key="item.id" @click="ddMenuitemClicked(item.id)">
+                    {{item.title}}
+                </b-dropdown-item>
+                <!-- <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item> -->
             </b-dropdown>
             <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
                 <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i>
