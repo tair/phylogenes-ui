@@ -48,7 +48,7 @@
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr colspan="1">
+                <tr>
                     <td :rowspan="treeRowSpan" :class="getTdClasses('tree', -1, -1)">
                         <treelayout  :jsonData="treeDataFromProp" :heightFP="rowsHeight" :singleRowHeight="MAX_ROW_HEIGHT"
                                         ref="treeLayout"
@@ -724,6 +724,7 @@
         overflow: scroll;
         z-index: 11;
         border-right: 3px solid #f1f1f0;
+        /* border-spacing: 0; */
     }
     #mainTr {
         border-top: 3px solid #f1f1f0;
@@ -777,7 +778,6 @@
         max-width: 100%;
         font-family: monospace;
         letter-spacing: 0.1px;
-        /* border-spacing: 0px 1px; */
     }
     td.widthMax {
         background-color: #e9e9e9 !important;

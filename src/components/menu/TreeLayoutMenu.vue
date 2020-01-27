@@ -6,7 +6,7 @@
                     :defaultText="defaultSearchText"></search-box>
         </div>
         <div class="col-auto align-items-center">
-            <b-dropdown v-b-tooltip.hover title="Operations" variant="white" class="bg-white" no-caret>
+            <b-dropdown v-b-tooltip.hover.bottom.o-300 title="Operations" variant="white" class="bg-white" no-caret>
                 <template slot="button-content">
                     <i @click="ddClicked" class="fas fa-tools fa-2x fa-fw"></i>
                 </template>
@@ -22,16 +22,16 @@
                 </b-dropdown-item>
                 <!-- <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item> -->
             </b-dropdown>
-            <button v-b-tooltip.hover title="Compact View" class="btn bg-white" @click="onDefaultView">
+            <button v-b-tooltip.hover.bottom.o300 title="Compact View" class="btn bg-white" @click="onDefaultView">
                 <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i>
             </button>
-            <button v-b-tooltip.hover title="Expand All" class="btn bg-white" @click="expandAll">
+            <button v-b-tooltip.hover.bottom.o300 title="Expand All" class="btn bg-white" @click="expandAll">
                 <i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i>
             </button>
             <button @mouseover="showLegendTip=true" @mouseout="showLegendTip=false" class="btn bg-white"
                     @click="showLegend" id="legendButton">
                 <i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>
-                <b-tooltip :show.sync="showLegendTip" target="legendButton" placement="top">
+                <b-tooltip :show.sync="showLegendTip" target="legendButton" placement="bottom" offset="o300">
                     {{showLegendButtonIcon.title}}
                 </b-tooltip>  
             </button>
