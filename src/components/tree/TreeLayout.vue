@@ -48,7 +48,7 @@
 
     export default {
         name: "treelayout",
-        props: ['jsonData', 'mappingData', 'matchedNodes', 'heightFP'],
+        props: ['jsonData', 'mappingData', 'matchedNodes', 'heightFP', 'singleRowHeight'],
         components: {
             'basenode': baseNode,
             'baselink': baseLink,
@@ -248,7 +248,7 @@
                 if(this.wrapper_d3 != null) {
                     this.wrapper_d3.transition().duration(500)
                         .attr("transform", (d) => {
-                            return "translate(" + 80 + "," + 0 + ")";
+                            return "translate(" + 50 + "," + 0 + ")";
                         });
                 }
             },
@@ -309,7 +309,7 @@
                     .size([800, 800]);
                 if(this.layoutType == "Cluster") {
                     this.treeLayoutd3Obj = d3.cluster()
-                        .nodeSize([35,30])
+                        .nodeSize([this.singleRowHeight,30])
                         .separation((a, b) => {
                             return (a.parent == b.parent ? 1 : 1) }
                         );
@@ -560,7 +560,7 @@
                 var currTopNode = leafNodes[this.rowsScrolledUp];
                 if(!currTopNode) return;
 
-                var topNodePosY = -1*currTopNode.x + 20;
+                var topNodePosY = -1*currTopNode.x + this.singleRowHeight/2;
                 var topNodePosX = this.currentTopNodePos.x;
                 this.wrapper_d3
                     .transition().duration(500)

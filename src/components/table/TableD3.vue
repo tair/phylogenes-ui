@@ -48,9 +48,9 @@
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
-                <tr>
+                <tr colspan="1">
                     <td :rowspan="treeRowSpan" :class="getTdClasses('tree', -1, -1)">
-                        <treelayout  :jsonData="treeDataFromProp" :heightFP="rowsHeight"
+                        <treelayout  :jsonData="treeDataFromProp" :heightFP="rowsHeight" :singleRowHeight="MAX_ROW_HEIGHT"
                                         ref="treeLayout"
                                         v-on:init-tree="onTreeInit"
                                         v-on:get-table-csv-data="getTableCsvData"
@@ -115,7 +115,7 @@
                 width: 0,
                 height: 0
                 },
-                MAX_ROW_HEIGHT: 35,
+                MAX_ROW_HEIGHT: 30+2,
                 //Tree
                 treeRowSpan: 100,
                 rowsHeight: 1000,
@@ -358,7 +358,7 @@
                 });
                 //Adjust tree column span and height, to fill the whole table and match the original table height
                 this.treeRowSpan = this.rowsToRender.length+1;
-                this.rowsHeight = this.rowsToRender.length*this.MAX_ROW_HEIGHT;
+                this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
                 setTimeout(() => {
                     this.store_setTableIsLoading(false);
                 });
@@ -634,6 +634,9 @@
                     classes.push('widthMin');
                     classes.push('cell-no-border');
                 }
+                if(colName=="Gene name") {
+                    classes.push('left-border');
+                }
                 //col_idx = 0 is 'Gene', which is the 2nd column in table which needs to be sticky
                 if(col_idx == 0) {
                     classes.push('stickyCol2');
@@ -703,6 +706,8 @@
         overflow: hidden;
         font-size: 14px;
         font-family: sans-serif;
+        border-collapse: separate;
+        /* border-spacing: 0px 0px; */
     }
     .mainTable thead {
         flex: 0 0 auto;
@@ -712,10 +717,13 @@
         background-color: #9cd5e3;
         /* Set thead z-index > tbody z-index, so the header dropdown menu appears on top */
         z-index: 12;
+        border-top: 3px solid #f1f1f0;
+        /* border-right: 3px solid #f1f1f0; */
     }
     .mainTable tbody {
         overflow: scroll;
         z-index: 11;
+        border-right: 3px solid #f1f1f0;
     }
     #mainTr {
         border-top: 3px solid #f1f1f0;
@@ -730,7 +738,7 @@
         border-right: 3px solid #f1f1f0;
     }
     .mainTable td {
-        height: 35px !important;
+        height: 30px !important;
         border-right: 3px solid #f1f1f0;
         white-space: nowrap;
         overflow: hidden;
@@ -769,6 +777,7 @@
         max-width: 100%;
         font-family: monospace;
         letter-spacing: 0.1px;
+        /* border-spacing: 0px 1px; */
     }
     td.widthMax {
         background-color: #e9e9e9 !important;
@@ -785,6 +794,9 @@
         position: sticky;
         left: 700px;
         z-index: 11;
+        border-bottom: 0;
+        border-top: 0;
+        border-right: 3px solid #f1f1f0 !important;
     }
     /* Even odd row colors */
     .mainTable tr:nth-child(even), tr:nth-child(even) td.stickyCol2{
@@ -794,15 +806,15 @@
         background-color: #e9e9e9;
     }
     th.cell-no-border {
-        border-bottom: 2px solid #f1f1f0;
+        border-bottom: 0;
         border-left: 0;
         border-right: 0;
     }
     td.cell-no-border{
-        border-right: 1px solid #f1f1f0 !important;
-        border-left: 1px solid #f1f1f0 !important;
+        border-right: 0px solid #f1f1f0 !important;
+        border-left: 0px solid #f1f1f0 !important;
     }
-    td.left-border{
+    th.left-border, td.left-border{
         border-left: 3px solid #f1f1f0 !important;
     }
     td.tdHover:hover {

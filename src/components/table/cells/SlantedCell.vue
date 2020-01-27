@@ -1,6 +1,6 @@
 <template>
     <div class="outerDiv">
-        <div class="innerDiv" data-toggle="tooltip" :title="this.content.text">{{this.content.text}}</div>
+        <div class="innerDiv" v-b-tooltip.hover.top.o100.v-info :title="this.content.text">{{this.content.text}}</div>
     </div>
 </template>
 
@@ -28,7 +28,7 @@
 </script>
 <style scoped> 
     .outerDiv {
-        background-color: #9cd5e3;
+        background-color: transparent;
         height: 150px;
         width: 30px;
         transform: skew(-10deg) translate(16%);
