@@ -4,8 +4,16 @@
             <div class="row">
                 <div class="col">
                     <br>
-                    <div class="h4 text-primary mt-4">If the species you are studying is not represented in the Phylogenes 
-                        pre-computed gene families, you can submit a protein sequence here. The TreeGrafter tool (beta version) will search for a matching tree and insert your gene to the tree. The process may take a few minutes.
+                    <div class="h4 text-dark mt-4">If the species you are studying is not represented in the PhyloGenes 
+                        pre-computed gene families, you can submit a protein sequence here. The TreeGrafter tool (<b>beta version</b>) 
+                        will search for a matching family and insert your gene to an appropriate node of the tree. The process may take a few minutes.
+                    </div>
+                    <div class="h4 text-dark mt-4">The TreeGrafter <a href="https://www.ncbi.nlm.nih.gov/pubmed/30032202" target="_blank">[Tang2019]</a> runs HMM scoring to find the best matching 
+                        gene family, and RAxML to place the query sequence to the best location of the tree without changing 
+                        its existing topology. Sometimes, the node that includes the grafted sequence does not display the 
+                        complete evolutionary history of its children. For example, your sequence from species X may be 
+                        grafted to a duplication node of species Y. The tool was developed primarily for functional inference, 
+                        the propagation of functions from an ancestor node to the grafted leaf node, not for evolutionary inference.
                     </div>
                     <br> <br>
                     <div class="h5 mt-4"> Enter a protein sequence (raw sequence only)</div>
