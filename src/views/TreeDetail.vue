@@ -216,6 +216,7 @@ export default {
         ...mapActions({
             store_setPantherTreeFromApi: types.TREE_ACTION_SET_PANTHER_TREE,
             store_setMsaFromApi: types.TREE_ACTION_SET_MSADATA,
+            store_setAnnoFromApi: types.TREE_ACTION_SET_ANNODATA,
             store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
             store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
             store_setTableData: types.TABLE_ACTION_SET_DATA,
@@ -236,14 +237,15 @@ export default {
             this.analyzeCompleted = false;
             this.resetPruning();
         },
-        //Load tree data needed from the API.
+        //Load all tree and table data from the API.
         loadTreeFromApi() {
-            //Saves the panther tree in json String onto the vue store.
             var p1 = this.store_setPantherTreeFromApi(this.treeId);
             var p2 = this.store_setMsaFromApi(this.treeId);
-            Promise.all([p1, p2]).then(vals => {
+            var p3 = this.store_setAnnoFromApi(this.treeId);
+            Promise.all([p1, p2, p3]).then(vals => {
+                console.log(vals.length);
                 if(vals.length > 1) {
-                    var treeJson = JSON.parse(this.store_treeJsonString);
+                    var treeJson = this.store_treeJsonString;
                     this.initTreeData(treeJson);
                 }
             });
@@ -274,7 +276,7 @@ export default {
         },
         // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
         initTreeData(treeJson) {
-            treeJson = treeJson.search.annotation_node;
+            treeJson = treeJson.annotation_node;
             this.formatJson(treeJson);
             this.processJson(treeJson)
                 .then(res => {

@@ -1,6 +1,6 @@
 <template>
     <div class="outerDiv">
-        <div class="innerDiv" v-b-tooltip.hover.top.o100.v-info :title="this.content.text">{{this.content.text}}</div>
+        <div class="innerDiv" v-b-tooltip.hover.top.o100="{customClass: 'my-tooltip-cls'}" :title="this.content.text">{{this.content.text}}</div>
     </div>
 </template>
 
@@ -27,6 +27,11 @@
     }
 </script>
 <style scoped> 
+    .my-tooltip-cls .tooltip-inner{
+        /* font-weight: bold; */
+        background-color: aqua !important;
+        color: aqua !important;
+    }
     .outerDiv {
         background-color: transparent;
         height: 150px;
