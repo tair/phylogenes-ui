@@ -2,8 +2,8 @@ import * as types from '../types_treedata';
 import axios from "axios/index";
 
 const API_URL = process.env.VUE_APP_API_URL + '/api/panther';
-const TREE_S3_URL = 'https://test-swapp-bucket.s3-us-west-2.amazonaws.com/';
-const MSA_S3_URL = 'https://test-phg-msadata.s3-us-west-2.amazonaws.com/';
+const TREE_S3_URL = process.env.VUE_APP_TREE_S3_URL;
+const MSA_S3_URL = process.env.VUE_APP_MSA_S3_URL;
 
 const state = {
     treedata: {
@@ -164,7 +164,7 @@ const actions = {
                 result("panther tree");
             })
             .catch(error => {
-                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                console.log('TREE_ACTION_SET_PANTHER_TREE: Error while reading data (E8273): ' + JSON.stringify(error));
                 rej();
             })
         });
@@ -177,13 +177,13 @@ const actions = {
                 url: API_URL + '/go_annotations/' + payload
             })
             .then(res => {
-                // console.log(res);
                 if (res.data.response.docs.length > 0) {
+                    console.log(res.data.response.docs[0]);
                     if (res.data.response.docs[0].family_name) {
                         context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
                     }
-                    if (res.data.response.docs[0].speciation_events) {
-                        context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
+                    if (res.data.response.docs[0].taxonomic_ranges) {
+                        context.state.treedata.metadata.taxonRange = res.data.response.docs[0].taxonomic_ranges[0];
                     }
                     if (res.data.response.docs[0].go_annotations) {
                         context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
@@ -194,14 +194,14 @@ const actions = {
                 result("solr anno");
             })
             .catch(error => {
-                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                console.log('TREE_ACTION_SET_ANNODATA: Error while reading data (E8273): ' + JSON.stringify(error));
                 rej();
             })
         });
     },
     [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
         if (!payload) return;
-        let msaUrl = MSA_S3_URL + payload + '.json'
+        let msaUrl = MSA_S3_URL + payload + '.json';
         return new Promise((result, rej) => {
             axios({
                 method: 'GET',
@@ -225,10 +225,10 @@ const actions = {
                     context.state.treedata.msa_data = msa_mapping;
                     context.state.treedata.max_msa_length = maxSeqLength;
                     result("msa data");
-                } 
+                }
             })
             .catch(error => {
-                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                console.log('TREE_ACTION_SET_MSADATA: Error while reading data (E8273): ' + JSON.stringify(error));
                 rej();
             })
         });
