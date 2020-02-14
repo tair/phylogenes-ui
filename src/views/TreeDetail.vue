@@ -243,7 +243,6 @@ export default {
             var p2 = this.store_setMsaFromApi(this.treeId);
             var p3 = this.store_setAnnoFromApi(this.treeId);
             Promise.all([p1, p2, p3]).then(vals => {
-                console.log(vals.length);
                 if(vals.length > 1) {
                     var treeJson = this.store_treeJsonString;
                     this.initTreeData(treeJson);
@@ -263,14 +262,9 @@ export default {
                 //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
                 //The MSA will be empty for the extra grafted node.
                 this.treeId = treeJson.search.book;
-                var p1 = this.store_setPantherTreeFromApi(this.treeId);
-                var p2 = this.store_setMsaFromApi(this.treeId);
-                Promise.all([p1, p2]).then(vals => {
-                    console.log("Loaded GO and MSA data from API");
-                    this.treeId = treeJson.search.book;
-                    this.metadata.isLoading = false;
-                    this.initTreeData(treeJson);
-                });
+                this.initTreeData(treeJson.search);
+                this.store_setMsaFromApi(this.treeId);
+                this.store_setAnnoFromApi(this.treeId);
                 this.store_setHasGrafted(true);
             }
         },
@@ -291,7 +285,6 @@ export default {
             this.anno_mapping = {};
             this.anno_headers = [];
             this.go_mapping = {};
-            // console.log("annotations ", annotations);
             if(!annotations) {
                 var annoObj = {
                     headers: this.anno_headers,

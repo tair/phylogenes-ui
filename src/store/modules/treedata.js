@@ -178,7 +178,6 @@ const actions = {
             })
             .then(res => {
                 if (res.data.response.docs.length > 0) {
-                    console.log(res.data.response.docs[0]);
                     if (res.data.response.docs[0].family_name) {
                         context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
                     }
