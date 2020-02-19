@@ -494,12 +494,12 @@ export default {
         },
         ////////////////////// Metadata ////////////////////////////
         //Set metadata bar and organisms for pruning popup
-        setMetadata(tabularData, uniqueOrganisms) {
+        setMetadata(n_organism, uniqueOrganisms) {
             if(this.store_getTreeMetadata) {
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
             }
-            this.metadata.genesCount = tabularData.length;
+            this.metadata.genesCount = n_organism;
             this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
             if(!this.prunedLoaded) {
                 uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
@@ -691,7 +691,7 @@ export default {
         },
         onTreeInit(msg) {
             this.completeData = msg.tabularData;
-            this.setMetadata(msg.tabularData, msg.uniqueOrganisms);
+            this.setMetadata(msg.n_organisms, msg.uniqueOrganisms);
         },
         //Analyze Msa Data and set table cols to msa.
         analyzeAndShowMsa() {

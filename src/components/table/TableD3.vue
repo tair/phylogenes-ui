@@ -316,10 +316,12 @@
                 let tabularData = this.setStoreTableData(nodes);
                 //For metadata
                 let uniqueOrganisms = [];
+                let n_organisms = 0;
                 nodes.forEach(n => {
                     if(!n.children) {
                         if(n.data.organism) {
                             let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                            n_organisms++;
                             if(org) {
                                 org.count++;
                             } else {
@@ -335,7 +337,7 @@
                     }
                 });
 
-                let msg = {tabularData: tabularData, uniqueOrganisms: uniqueOrganisms};
+                let msg = {tabularData: tabularData, uniqueOrganisms: uniqueOrganisms, n_organisms: n_organisms};
                 this.$emit('tree-init', msg);
                 this.updateTableCols();
                 this.lazyLoad = true;
