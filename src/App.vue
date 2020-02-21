@@ -22,6 +22,7 @@
             FooterBar
         },
         mounted() {
+          console.log("Env name "+ process.env.VUE_APP_NAME);
             // window.onscroll = function() {myFunction()};
             //
             // var navbar = document.getElementById("navbar2");

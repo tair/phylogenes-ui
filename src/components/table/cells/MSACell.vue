@@ -125,6 +125,7 @@
     .tdParent {
         padding-left: 10px;
         width: 100%;
+        height: 33px !important;
         z-index: 2;
     }
     .tdTxt {

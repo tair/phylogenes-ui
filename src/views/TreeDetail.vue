@@ -216,6 +216,7 @@ export default {
         ...mapActions({
             store_setPantherTreeFromApi: types.TREE_ACTION_SET_PANTHER_TREE,
             store_setMsaFromApi: types.TREE_ACTION_SET_MSADATA,
+            store_setAnnoFromApi: types.TREE_ACTION_SET_ANNODATA,
             store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
             store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
             store_setTableData: types.TABLE_ACTION_SET_DATA,
@@ -236,14 +237,14 @@ export default {
             this.analyzeCompleted = false;
             this.resetPruning();
         },
-        //Load tree data needed from the API.
+        //Load all tree and table data from the API.
         loadTreeFromApi() {
-            //Saves the panther tree in json String onto the vue store.
             var p1 = this.store_setPantherTreeFromApi(this.treeId);
             var p2 = this.store_setMsaFromApi(this.treeId);
-            Promise.all([p1, p2]).then(vals => {
+            var p3 = this.store_setAnnoFromApi(this.treeId);
+            Promise.all([p1, p2, p3]).then(vals => {
                 if(vals.length > 1) {
-                    var treeJson = JSON.parse(this.store_treeJsonString);
+                    var treeJson = this.store_treeJsonString;
                     this.initTreeData(treeJson);
                 }
             });
@@ -261,20 +262,15 @@ export default {
                 //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
                 //The MSA will be empty for the extra grafted node.
                 this.treeId = treeJson.search.book;
-                var p1 = this.store_setPantherTreeFromApi(this.treeId);
-                var p2 = this.store_setMsaFromApi(this.treeId);
-                Promise.all([p1, p2]).then(vals => {
-                    console.log("Loaded GO and MSA data from API");
-                    this.treeId = treeJson.search.book;
-                    this.metadata.isLoading = false;
-                    this.initTreeData(treeJson);
-                });
+                this.initTreeData(treeJson.search);
+                this.store_setMsaFromApi(this.treeId);
+                this.store_setAnnoFromApi(this.treeId);
                 this.store_setHasGrafted(true);
             }
         },
         // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
         initTreeData(treeJson) {
-            treeJson = treeJson.search.annotation_node;
+            treeJson = treeJson.annotation_node;
             this.formatJson(treeJson);
             this.processJson(treeJson)
                 .then(res => {
@@ -289,7 +285,6 @@ export default {
             this.anno_mapping = {};
             this.anno_headers = [];
             this.go_mapping = {};
-            // console.log("annotations ", annotations);
             if(!annotations) {
                 var annoObj = {
                     headers: this.anno_headers,
@@ -499,12 +494,12 @@ export default {
         },
         ////////////////////// Metadata ////////////////////////////
         //Set metadata bar and organisms for pruning popup
-        setMetadata(tabularData, uniqueOrganisms) {
+        setMetadata(n_organism, uniqueOrganisms) {
             if(this.store_getTreeMetadata) {
                 this.metadata.familyName = this.store_getTreeMetadata.familyName[0];
                 this.metadata.spannedTaxon = this.store_getTreeMetadata.taxonRange;
             }
-            this.metadata.genesCount = tabularData.length;
+            this.metadata.genesCount = n_organism;
             this.metadata.uniqueOrganisms.totalCount = uniqueOrganisms.length;
             if(!this.prunedLoaded) {
                 uniqueOrganisms = _.sortBy( uniqueOrganisms, 'name' );
@@ -696,7 +691,7 @@ export default {
         },
         onTreeInit(msg) {
             this.completeData = msg.tabularData;
-            this.setMetadata(msg.tabularData, msg.uniqueOrganisms);
+            this.setMetadata(msg.n_organisms, msg.uniqueOrganisms);
         },
         //Analyze Msa Data and set table cols to msa.
         analyzeAndShowMsa() {

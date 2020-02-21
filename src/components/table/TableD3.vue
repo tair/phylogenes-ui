@@ -115,7 +115,7 @@
                 width: 0,
                 height: 0
                 },
-                MAX_ROW_HEIGHT: 30+2,
+                MAX_ROW_HEIGHT: 37,
                 //Tree
                 treeRowSpan: 100,
                 rowsHeight: 1000,
@@ -316,10 +316,12 @@
                 let tabularData = this.setStoreTableData(nodes);
                 //For metadata
                 let uniqueOrganisms = [];
+                let n_organisms = 0;
                 nodes.forEach(n => {
                     if(!n.children) {
                         if(n.data.organism) {
                             let org = uniqueOrganisms.find(o => o.name === n.data.organism);
+                            n_organisms++;
                             if(org) {
                                 org.count++;
                             } else {
@@ -335,7 +337,7 @@
                     }
                 });
 
-                let msg = {tabularData: tabularData, uniqueOrganisms: uniqueOrganisms};
+                let msg = {tabularData: tabularData, uniqueOrganisms: uniqueOrganisms, n_organisms: n_organisms};
                 this.$emit('tree-init', msg);
                 this.updateTableCols();
                 this.lazyLoad = true;
@@ -634,7 +636,7 @@
                     classes.push('widthMin');
                     classes.push('cell-no-border');
                 }
-                if(colName=="Gene name") {
+                if(colName=="Gene name" && this.n_annotations>0) {
                     classes.push('left-border');
                 }
                 //col_idx = 0 is 'Gene', which is the 2nd column in table which needs to be sticky
@@ -665,7 +667,7 @@
                 if(col_idx == 0) {
                     classes.push('stickyCol2');
                 }
-                if(colName=="Gene name") {
+                if(colName=="Gene name" && this.n_annotations>0) {
                     classes.push('left-border');
                 }
                 if(cellValue && cellValue.text == '*') {
@@ -739,7 +741,8 @@
         border-right: 3px solid #f1f1f0;
     }
     .mainTable td {
-        height: 30px !important;
+        /* height: 30px !important; */
+        line-height: 33px;
         border-right: 3px solid #f1f1f0;
         white-space: nowrap;
         overflow: hidden;
@@ -762,7 +765,7 @@
     }
     th.widthDefault {
         vertical-align: bottom;
-        padding-bottom: 20px;
+        padding-bottom: 10px;
     }
     th.widthMin, td.widthMin {
         position: relative;
