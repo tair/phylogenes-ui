@@ -9,7 +9,7 @@
           {{matchText}}
         </b-input-group-prepend>
         <input id="search" type="text" class="my-input" placeholder="Gene name, Gene ID, Uniprot ID"
-                         v-model="searchText">
+                         v-model="searchText" v-on:keyup.enter="onSearch">
         <div v-if="matchText" class="col-auto my-text">
           <!-- {{compMatchText}} -->
           <button class="btn btn-inline" @click="skipUp()">

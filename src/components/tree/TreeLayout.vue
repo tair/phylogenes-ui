@@ -84,6 +84,18 @@
                 },
                 immediate: true
             },
+            singleRowHeight: {
+                handler: function (val, oldVal) {
+                    if(val && val != null) {
+                        if(this.rootNode) {
+                            this.initTreeLayout(this.rootNode);
+                            this.adjustTreeLayoutPosition();
+                            this.updateTree();
+                        }
+                    }
+                },
+                immediate: true
+            },
             'store_matchedNodes.allMatchedNodes': {
                 handler: function (val, oldVal) {
                     this.processMatchedNodes(val);

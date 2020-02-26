@@ -115,7 +115,8 @@
                 width: 0,
                 height: 0
                 },
-                MAX_ROW_HEIGHT: 37,
+                ORIG_ROW_HEIGHT: 35,
+                MAX_ROW_HEIGHT: 35,
                 //Tree
                 treeRowSpan: 100,
                 rowsHeight: 1000,
@@ -211,10 +212,6 @@
             this.initTable();
         },
         methods: {
-            handleResize() {
-                this.window.width = window.innerWidth;
-                this.window.height = window.innerHeight;
-            },
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA
@@ -258,6 +255,24 @@
             },
             toggleLegend() {
                 this.showMsaLegend = !this.showMsaLegend;
+            },
+            //Triggered on browser resize (window resized using mouse) or when page is zoomed in or out
+            handleResize() {
+                this.window.width = window.innerWidth;
+                this.window.height = window.innerHeight;
+                this.MAX_ROW_HEIGHT = this.ORIG_ROW_HEIGHT;
+                //Pixel ratio maps the zoom in. At 100% it is 2.0, at 90% it is 1.8 etc.
+                let pixelRatio = parseFloat(window.devicePixelRatio.toFixed(2));
+                //Hard code adjustment to pixel ratio because the alignment is not perfect
+                if(pixelRatio == 1.8) {
+                    pixelRatio -= 0.2;
+                } else if(pixelRatio == 1.6) {
+                    pixelRatio -= 0.325;
+                }
+                this.MAX_ROW_HEIGHT = this.MAX_ROW_HEIGHT + pixelRatio;
+                this.isLoading = true;
+                //Update the tree layout (svg height and single row height) on browser resize so that alignment betn tree and table is same
+                this.updateTreeLayout();
             },
             //~~~~~~~~~~~~~~~~~~~~~~~~~ TREE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
             setTableRow(n, index) {
@@ -361,12 +376,18 @@
                 //Adjust tree column span and height, to fill the whole table and match the original table height
                 this.treeRowSpan = this.rowsToRender.length+1;
                 this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
+                this.rowsHeight = this.rowsHeight.toFixed(2);
                 setTimeout(() => {
                     this.store_setTableIsLoading(false);
                 });
             },
+            updateTreeLayout() {
+                this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
+                this.updateRenderRows();
+            },
             //Called from external parent component
             updateRenderRows() {
+                this.isLoading = true;
                 this.rowsToRender = [];
                 if(this.store_tableData) {
                     this.store_tableData.forEach(n => {
@@ -374,6 +395,7 @@
                         this.rowsToRender.push(processedRowData);
                     });
                 }
+                this.isLoading = false;
             },
             setStoreTableData(nodes) {
                 var tabularData = [];
@@ -741,8 +763,10 @@
         border-right: 3px solid #f1f1f0;
     }
     .mainTable td {
-        /* height: 30px !important; */
-        line-height: 33px;
+        height: 35px !important;
+        max-height: 35px !important;
+        min-height: 35px !important;
+        line-height: 21px;
         border-right: 3px solid #f1f1f0;
         white-space: nowrap;
         overflow: hidden;
