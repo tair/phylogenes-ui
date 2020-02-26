@@ -256,7 +256,7 @@
             toggleLegend() {
                 this.showMsaLegend = !this.showMsaLegend;
             },
-            //Triggered on browser resize (window resized using mouse) or when page is zoomed in or out
+            //Triggered on browse resize (window resized using mouse) or when page is zoomed in or out
             handleResize() {
                 this.window.width = window.innerWidth;
                 this.window.height = window.innerHeight;
