@@ -695,6 +695,7 @@ export default {
         },
         //Analyze Msa Data and set table cols to msa.
         analyzeAndShowMsa() {
+            console.log("analyzeAndShowMsa");
             this.store_setTableIsLoading(true);
             setTimeout(() => {
                 this.analyzeMsaData().then(res => {

@@ -121,8 +121,10 @@
             },
             store_tableIsLoading: {
                 handler: function(val, oldval) {
-                    this.isLoading = val;
-                    if(!val) {
+                    // this.isLoading = val;
+                    // console.log("store_tableIsLoading ", val);
+                    if(val != null && !val) {
+                        // this.renderTree();
                         this.checkForGraftedNode();
                     }
                 },
@@ -353,18 +355,24 @@
                 this.updateExtraInfo(modifiedNodes);
 
                 this.resetTreeLayout();
-
-                setTimeout(() => {
-                    this.$emit('updated-tree', modifiedNodes);
-                }, 750);
-
+                console.log("updateTree");
+                // setTimeout(() => {
+                //     console.log("updateTree2");
+                // }, 750);
+                //Orders the rows correctly for both table and tree
+                this.setLeafNodesByDepth(modifiedNodes);
+                this.renderTree();
+                return 1;
+            },
+            renderTree() {
+                if(this.rootNode == null) {
+                    console.log("rootnode is null");
+                    return;
+                }
+                var modifiedNodes = this.rootNode.descendants();
                 this.renderNodes(modifiedNodes);
                 this.renderLinks(modifiedNodes);
-
-                this.setLeafNodesByDepth(modifiedNodes);
-
                 this.isLoading = false;
-                return 1;
             },
             // ~~~~~~~~~ Nodes
             renderNodes(nodes){
@@ -541,7 +549,7 @@
                 setTimeout(() => {
                     this.treenodes_view = nodesArr1;
                     this.alignTree();
-                });
+                }, 100);
             },
             setTreeLinks(linksArr) {
                 this.treelinks_view.splice(0, this.treelinks_view.length);
@@ -561,7 +569,7 @@
             // Setting top node padding goes here.
             alignTree() {
                 if(this.wrapper_d3 == null) return;
-                
+                console.log("alignTree");
                 let leafNodes = this.getLeafNodesByDepth();
                 if(this.rowsScrolledUp == null) {
                     let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
@@ -581,6 +589,13 @@
                         this.setCurrentTopNode({x: topNodePosX, y: topNodePosY});
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
+                setTimeout(() => {
+                    console.log("finally update the table");
+                    let modifiedNodes = this.rootNode.descendants();
+                    //Orders the rows correctly for both table and tree
+                    this.setLeafNodesByDepth(modifiedNodes);
+                    this.$emit('updated-tree', modifiedNodes);
+                });
             },
             
             // ~~~~~~~~~~~~~~~~~~~~~~~ Lazy load nodes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//

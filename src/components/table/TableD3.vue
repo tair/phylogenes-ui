@@ -10,8 +10,7 @@
         <div v-if="showMsaLegend" class="legend-box">
             <msa-legend></msa-legend>
         </div>
-        <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-else class="mainTable">
+        <table class="mainTable">
             <thead id="head" ref="thead">
                 <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
@@ -57,7 +56,10 @@
                                         v-on:updated-tree="onTreeUpdate"></treelayout>
                     </td>
                 </tr>
-                <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
+                <tr v-if="this.isLoading" >
+                    <i class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
+                </tr>
+                <tr v-else v-for="(row, row_i) in rowsToRender" :key=row_i>
                     <td v-for="(key, i) in colsToRender" :key="key"
                         @click="tdClicked(key, row)"
                         :class="getTdClasses(key, row[key], i)">
@@ -210,6 +212,25 @@
         mounted() {
             this.resetTable();
             this.initTable();
+            this.$nextTick(function () {
+                console.log("Table mounted");
+            });
+        },
+        updated: function () {
+            // this.isLoading = true;
+            this.$nextTick(function () {
+                // Code that will run only after the
+                // entire view has been re-rendered
+                console.log("Table rendered");
+                if(this.tableRendering) {
+                    console.log("set table loading false");
+                    this.store_setTableIsLoading(false);
+                    this.isLoading = false;
+                }
+                this.tableRendering = false;
+                // this.isLoading = false;
+                // this.isLoading = false;
+            })
         },
         methods: {
             ...mapActions({
@@ -227,9 +248,11 @@
                 if(this.$refs.tlmenu) {
                     this.$refs.tlmenu.onReset();
                 }
+                console.log("resetTable")
                 this.store_setTableIsLoading(true);
             },
             initTable() {
+                console.log("initTable");
                 this.store_setTableIsLoading(true);
                 this.addCustomScrollEvent();
             },
@@ -264,13 +287,15 @@
                 //Pixel ratio maps the zoom in. At 100% it is 2.0, at 90% it is 1.8 etc.
                 let pixelRatio = parseFloat(window.devicePixelRatio.toFixed(2));
                 //Hard code adjustment to pixel ratio because the alignment is not perfect
+                // console.log(pixelRatio);
                 if(pixelRatio == 1.8) {
                     pixelRatio -= 0.2;
                 } else if(pixelRatio == 1.6) {
                     pixelRatio -= 0.325;
+                } else if(pixelRatio < 2) {
+                    pixelRatio = 2;
                 }
                 this.MAX_ROW_HEIGHT = this.MAX_ROW_HEIGHT + pixelRatio;
-                this.isLoading = true;
                 //Update the tree layout (svg height and single row height) on browser resize so that alignment betn tree and table is same
                 this.updateTreeLayout();
             },
@@ -365,9 +390,20 @@
                 }
             },
             onTreeUpdate(nodes) {
+                console.log("onTreeUpdate");
                 //Table data must changed on every tree update.
                 //Note: This even changes after the first tree init call.
                 this.setStoreTableData(nodes);
+                this.isLoading = true;
+                setTimeout(() => {
+                    this.updateTable();
+                    setTimeout(() => {
+                        
+                    });
+                }, 1000);
+                
+            },
+            updateTable() {
                 this.rowsToRender = [];
                 this.store_tableData.forEach(n => {
                     let processedRowData = this.processRow(n);
@@ -377,9 +413,7 @@
                 this.treeRowSpan = this.rowsToRender.length+1;
                 this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
                 this.rowsHeight = this.rowsHeight.toFixed(2);
-                setTimeout(() => {
-                    this.store_setTableIsLoading(false);
-                });
+                this.tableRendering = true;
             },
             updateTreeLayout() {
                 this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
@@ -387,7 +421,8 @@
             },
             //Called from external parent component
             updateRenderRows() {
-                this.isLoading = true;
+                console.log("updateRenderRows")
+                // this.isLoading = true;
                 this.rowsToRender = [];
                 if(this.store_tableData) {
                     this.store_tableData.forEach(n => {
@@ -395,7 +430,6 @@
                         this.rowsToRender.push(processedRowData);
                     });
                 }
-                this.isLoading = false;
             },
             setStoreTableData(nodes) {
                 var tabularData = [];
