@@ -213,7 +213,6 @@
             this.resetTable();
             this.initTable();
             this.$nextTick(function () {
-                console.log("Table mounted");
             });
         },
         updated: function () {
@@ -221,15 +220,11 @@
             this.$nextTick(function () {
                 // Code that will run only after the
                 // entire view has been re-rendered
-                console.log("Table rendered");
                 if(this.tableRendering) {
-                    console.log("set table loading false");
-                    this.store_setTableIsLoading(false);
-                    this.isLoading = false;
+                    // this.store_setTableIsLoading(false);
+                    // this.isLoading = false;
                 }
                 this.tableRendering = false;
-                // this.isLoading = false;
-                // this.isLoading = false;
             })
         },
         methods: {
@@ -248,11 +243,10 @@
                 if(this.$refs.tlmenu) {
                     this.$refs.tlmenu.onReset();
                 }
-                console.log("resetTable")
+                // console.log("resetTable");
                 this.store_setTableIsLoading(true);
             },
             initTable() {
-                console.log("initTable");
                 this.store_setTableIsLoading(true);
                 this.addCustomScrollEvent();
             },
@@ -274,7 +268,8 @@
             toggleTabs() {
                 this.msaTab = !this.msaTab;
                 this.$emit('toggle-cols');
-                this.updateRenderRows();
+                // this.updateRenderRows();
+                this.updateTable();
             },
             toggleLegend() {
                 this.showMsaLegend = !this.showMsaLegend;
@@ -390,24 +385,40 @@
                 }
             },
             onTreeUpdate(nodes) {
-                console.log("onTreeUpdate");
+                // console.log("onTreeUpdate");
                 //Table data must changed on every tree update.
                 //Note: This even changes after the first tree init call.
                 this.setStoreTableData(nodes);
-                this.isLoading = true;
+                // this.isLoading = true;
                 setTimeout(() => {
-                    this.updateTable();
-                    setTimeout(() => {
-                        
-                    });
+                    
                 }, 1000);
+                this.updateTable();
                 
             },
             updateTable() {
                 this.rowsToRender = [];
-                this.store_tableData.forEach(n => {
+                let maxRows = 30;
+                let noOfRowsToAdd = maxRows + (this.rowsScrolled+5);
+                // this.store_tableData.forEach(n => {
+                //     let processedRowData = this.processRow(n);
+                //     this.rowsToRender.push(processedRowData);
+                // });
+                let i = 0;
+                let noOfTopRowsToRemove = 0;
+                if(this.rowsScrolled > 200) {
+                    noOfTopRowsToRemove = this.rowsScrolled - 100;
+                }
+                this.store_tableData.some(n => {
+                    if(i < noOfTopRowsToRemove) {
+                        n.rendering = false;
+                    } else {
+                        n.rendering = true;
+                    }
                     let processedRowData = this.processRow(n);
                     this.rowsToRender.push(processedRowData);
+                    i++;
+                    return i > noOfRowsToAdd;
                 });
                 //Adjust tree column span and height, to fill the whole table and match the original table height
                 this.treeRowSpan = this.rowsToRender.length+1;
@@ -421,7 +432,6 @@
             },
             //Called from external parent component
             updateRenderRows() {
-                console.log("updateRenderRows")
                 // this.isLoading = true;
                 this.rowsToRender = [];
                 if(this.store_tableData) {
@@ -595,6 +605,12 @@
                 }
                 let scrollLeft_curr = document.getElementById("body").scrollLeft;
                 this.scrollTableHeader(scrollLeft_curr);
+                let scrollTop_curr = document.getElementById("body").scrollTop;
+                let rowsScrolledCurr = Math.round(scrollTop_curr/this.MAX_ROW_HEIGHT);
+                if(Math.abs(rowsScrolledCurr - this.rowsScrolled) > 5) {
+                    this.rowsScrolled = rowsScrolledCurr;
+                    this.updateTable();
+                }
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
@@ -603,10 +619,19 @@
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
-                if(this.rowsScrolled > 0) {
-                    const tbody = document.getElementById("body");
-                    if(tbody) {
-                        tbody.scrollTop = this.MAX_ROW_HEIGHT*this.rowsScrolled;
+                const tbody = document.getElementById("body");
+                if(tbody) {
+                    if(this.rowsScrolled > 0) {
+                        this.updateTable();
+                        setTimeout(() => {
+                            tbody.scrollTop = this.MAX_ROW_HEIGHT*this.rowsScrolled;
+                        }, 1000);
+                    } else {
+                        this.rowsScrolled = 0;
+                        this.updateTable();
+                        setTimeout(() => {
+                            tbody.scrollTop = 0;
+                        }, 1000);
                     }
                 }
             },

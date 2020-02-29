@@ -122,7 +122,6 @@
             store_tableIsLoading: {
                 handler: function(val, oldval) {
                     // this.isLoading = val;
-                    // console.log("store_tableIsLoading ", val);
                     if(val != null && !val) {
                         // this.renderTree();
                         this.checkForGraftedNode();
@@ -282,7 +281,8 @@
                 //  assigns the data to a hierarchy using parent-child relationships
                 this.rootNode = this.convertJsonToD3Hierarchy(this.jsonData);
                 var nodes = this.rootNode.descendants();
-                
+
+                let topNode = this.getTopmostNode(nodes);
                 
                 //Adds extra variables that describe each node in the tree.
                 this.addExtraInfoToNodes();
@@ -293,7 +293,6 @@
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
                 this.adjustTreeLayoutPosition(); 
-                
                 if(this.store_getHasGrafted) {
                     //UpdateTree is called after processing inside
                     this.processGraftedNodes();
@@ -340,6 +339,7 @@
             //Init. Find out the top most node in the tree and align tree layout to that node.
             adjustTreeLayoutPosition() {
                 let nodes = this.rootNode.descendants();
+                this.setLeafNodesByDepth(nodes);
                 let topNode = this.getTopmostNode(nodes);
                 this.setTopmostNodePos(topNode);
                 this.moveTreeToNodePosition(topNode);
@@ -355,10 +355,6 @@
                 this.updateExtraInfo(modifiedNodes);
 
                 this.resetTreeLayout();
-                console.log("updateTree");
-                // setTimeout(() => {
-                //     console.log("updateTree2");
-                // }, 750);
                 //Orders the rows correctly for both table and tree
                 this.setLeafNodesByDepth(modifiedNodes);
                 this.renderTree();
@@ -559,9 +555,12 @@
             },
             alignTable(node) {
                 if(node != null) {
+                    this.store_setCenterNode(null);
                     let currCenterNode = this.leafNodesByDepth.filter(n => n.id == node.id);
                     if(currCenterNode.length > 0) {
-                        this.store_setCenterNode(currCenterNode[0]);
+                        setTimeout(() => {
+                            this.store_setCenterNode(currCenterNode[0]);
+                        });
                     }
                 }
             },
@@ -569,7 +568,6 @@
             // Setting top node padding goes here.
             alignTree() {
                 if(this.wrapper_d3 == null) return;
-                console.log("alignTree");
                 let leafNodes = this.getLeafNodesByDepth();
                 if(this.rowsScrolledUp == null) {
                     let currCenterNode = leafNodes[this.rowsScrolledUp + 8];
@@ -590,7 +588,6 @@
                         return "translate(" + topNodePosX + "," +  topNodePosY+ ")";
                     });
                 setTimeout(() => {
-                    console.log("finally update the table");
                     let modifiedNodes = this.rootNode.descendants();
                     //Orders the rows correctly for both table and tree
                     this.setLeafNodesByDepth(modifiedNodes);

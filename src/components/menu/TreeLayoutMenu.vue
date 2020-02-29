@@ -80,6 +80,7 @@
         watch: {
             store_getSearchTxtWthn: {
                 handler: function (val, oldVal) {
+                    console.log("store_getSearchTxtWthn ", val);
                     if(val != null) {
                         this.defaultSearchText = val;
                     }
