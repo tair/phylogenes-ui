@@ -70,17 +70,6 @@ watch: {
       },
       immediate: true
   },
-  // store_getSearchTxtWthn: {
-  //     handler: function (val, oldVal) {
-  //         console.log("store_getSearchTxtWthn ", val);
-  //         if(val != null) {
-  //             this.searchText = val;
-  //             this.isSearched = true;
-  //         }
-  //     },
-  //     deep: true,
-  //     immediate: true
-  // },
   store_matchedNodes: {
       handler: function (val, oldVal) {
           if(!val.allMatchedNodes) {

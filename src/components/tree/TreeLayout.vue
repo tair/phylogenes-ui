@@ -183,7 +183,7 @@
                 store_setCenterNode: types.TREE_ACTION_SET_CENTER_NODE,
                 stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
                 stateTreeNodes: types.TREE_ACTION_SET_NODES,
-                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
+                store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
             }),
             checkForGraftedNode() {
                 if(!this.rootNode) return;

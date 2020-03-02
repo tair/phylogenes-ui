@@ -245,7 +245,8 @@
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
                 store_setTableData: types.TABLE_ACTION_SET_DATA,
-                store_setClearData: types.TREE_ACTION_CLEAR_DATA
+                store_setClearData: types.TREE_ACTION_CLEAR_DATA,
+                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
             }),
             resetTable() {
                 this.store_setClearData();
@@ -257,14 +258,8 @@
                 if(this.$refs.treeLayout) {
                     this.$refs.treeLayout.refreshView();
                 }
-                // if(this.$refs.tlmenu) {
-                //     console.log("on reset");
-                //     this.$refs.tlmenu.onReset();
-                // }
-                // this.store_setTableIsLoading(true);
             },
             initTable() {
-                // this.store_setTableIsLoading(true);
                 this.addCustomScrollEvent();
             },
             updateTableCols() {
@@ -398,6 +393,10 @@
                     setTimeout(() => {
                         this.$emit('search-tree', this.store_getSearchTxtWthn);
                     }, 2000);
+                } else {
+                    console.log(this.store_getSearchTxtWthn);
+                    this.defaultSearchText = null;
+                    this.store_setSearchTxtWthn(null);
                 }
             },
             onTreeUpdate(nodes) {
@@ -547,6 +546,7 @@
 
             },
             onSearchWithinTree(text) {
+                this.store_setSearchTxtWthn(text);
                 this.$emit('search-tree', text);
             },
             onPruneLoading(isLoad) {
