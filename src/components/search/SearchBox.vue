@@ -64,8 +64,8 @@ watch: {
   //Set a default search text (Called when searched from outside the tree layout)
   defaultText: {
       handler: function (val, oldVal) {
-        console.log("defaultText ", val);
          this.searchText = val;
+         if(this.searchText == "") return;
          this.isSearched = true;
       },
       immediate: true
@@ -84,7 +84,7 @@ watch: {
   store_matchedNodes: {
       handler: function (val, oldVal) {
           if(!val.allMatchedNodes) {
-            this.onReset();
+            // this.onReset();
             return;
           }
           if(this.isSearched) {
@@ -96,7 +96,7 @@ watch: {
             }
           }
           if(val[0] == -1) {
-              this.onReset();
+              // this.onReset();
           }
       },
       immediate: true,
@@ -120,7 +120,6 @@ methods: {
       this.searchText = "";
       this.isSearched = false;
       this.matchText = "";
-      // this.$emit('search', null);
   },
   skipUp() {
     let val = this.store_matchedNodes.allMatchedNodes;

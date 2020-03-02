@@ -695,16 +695,18 @@ export default {
         },
         //Analyze Msa Data and set table cols to msa.
         analyzeAndShowMsa() {
-            console.log("analyzeAndShowMsa");
+            console.log("analyzeAndShowMsa ", this.analyzeCompleted);
             this.store_setTableIsLoading(true);
-            setTimeout(() => {
-                this.analyzeMsaData().then(res => {
-                    this.headerMap["MSA"] = this.setMsaHeaderTitle();
-                    this.setTableCols();
-                    this.analyzeCompleted = true;
-                    this.store_setTableIsLoading(false);
-                });
-            }, 100);
+            if(!this.analyzeCompleted) {
+                setTimeout(() => {
+                    this.analyzeMsaData().then(res => {
+                        this.headerMap["MSA"] = this.setMsaHeaderTitle();
+                        this.setTableCols();
+                        this.analyzeCompleted = true;
+                        this.store_setTableIsLoading(false);
+                    });
+                }, 100);
+            }
         },
         setMsaHeaderTitle() {
             let msa_header = "MSA:";

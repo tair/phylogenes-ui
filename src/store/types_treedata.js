@@ -19,6 +19,7 @@ export const TABLE_GET_SCROLL = 'treedata/store_getTableScrollRow';
 export const TABLE_GET_ISTABLELOADING = 'treedata/store_tableIsLoading';
 
 //actions
+export const TREE_ACTION_CLEAR_DATA = 'treedata/store_setClearData';
 export const TREE_ACTION_SET_PANTHER_TREE = 'treedata/store_setPantherTreeFromApi';
 export const TREE_ACTION_SET_PANTHER_TREE2 = 'treedata/store_setPantherTreeFromString';
 export const TABLE_ACTION_SET_DATA = 'treedata/store_setTableData';

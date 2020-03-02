@@ -108,7 +108,7 @@
             },
             store_tableData: {
                 handler: function (val, oldVal) {
-                    if(val.length == 0) {
+                    if(val && val.length == 0) {
                         this.isLoading = true;
                         this.refreshView();
                     }

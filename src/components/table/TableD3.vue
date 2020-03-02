@@ -169,6 +169,7 @@
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+                store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING
             }),
            
         },
@@ -180,6 +181,20 @@
                         this.resetTable();
                     } else {
                         this.initTable();
+                    }
+                },
+                deep: true,
+                immediate: true
+            },
+            store_getTableIsLoading: {
+                handler: function (val, oldVal) {
+                    if(val) {
+                        this.isLoading = val;
+                        if(this.isLoading) {
+                            this.tableRendering = true;
+                        }
+                    } else {
+                        this.tableRendering = false;
                     }
                 },
                 deep: true,
@@ -198,8 +213,7 @@
             //Auto scroll the table to the center node set by the tree (Auto scrolling)
             store_getCenterNode: {
                 handler: function (val, oldVal) {
-                    if(val == null || this.isLoading) return;
-                    if(oldVal && oldVal.id == val.id) { return; }
+                    if(val == null) return;
                     //Timeout required so that 'storeTableData' is updated after matched nodes are processed
                     setTimeout(() => {
                         this.findRowandScroll(val);
@@ -215,24 +229,27 @@
             this.$nextTick(function () {
             });
         },
+        beforeDestroy() {
+            this.resetTable();
+        },
         updated: function () {
-            // this.isLoading = true;
             this.$nextTick(function () {
                 // Code that will run only after the
                 // entire view has been re-rendered
-                if(this.tableRendering) {
-                    // this.store_setTableIsLoading(false);
-                    // this.isLoading = false;
+                if(this.tableRendering == false) {
+                    this.isLoading = false;
                 }
-                this.tableRendering = false;
             })
         },
         methods: {
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
-                store_setTableData: types.TABLE_ACTION_SET_DATA
+                store_setTableData: types.TABLE_ACTION_SET_DATA,
+                store_setClearData: types.TREE_ACTION_CLEAR_DATA
             }),
             resetTable() {
+                this.store_setClearData();
+                this.isLoading = false;
                 this.showMsaLegend = false;
                 this.msaTab = false;
                 this.rowsToRender = [];
@@ -240,14 +257,14 @@
                 if(this.$refs.treeLayout) {
                     this.$refs.treeLayout.refreshView();
                 }
-                if(this.$refs.tlmenu) {
-                    this.$refs.tlmenu.onReset();
-                }
-                // console.log("resetTable");
-                this.store_setTableIsLoading(true);
+                // if(this.$refs.tlmenu) {
+                //     console.log("on reset");
+                //     this.$refs.tlmenu.onReset();
+                // }
+                // this.store_setTableIsLoading(true);
             },
             initTable() {
-                this.store_setTableIsLoading(true);
+                // this.store_setTableIsLoading(true);
                 this.addCustomScrollEvent();
             },
             updateTableCols() {
@@ -282,7 +299,6 @@
                 //Pixel ratio maps the zoom in. At 100% it is 2.0, at 90% it is 1.8 etc.
                 let pixelRatio = parseFloat(window.devicePixelRatio.toFixed(2));
                 //Hard code adjustment to pixel ratio because the alignment is not perfect
-                // console.log(pixelRatio);
                 if(pixelRatio == 1.8) {
                     pixelRatio -= 0.2;
                 } else if(pixelRatio == 1.6) {
@@ -386,45 +402,51 @@
             },
             onTreeUpdate(nodes) {
                 // console.log("onTreeUpdate");
+                this.tableRendering = true;
                 //Table data must changed on every tree update.
                 //Note: This even changes after the first tree init call.
                 this.setStoreTableData(nodes);
-                // this.isLoading = true;
+                this.isLoading = true;
                 setTimeout(() => {
-                    
+                    this.updateTable();
                 }, 1000);
-                this.updateTable();
-                
             },
             updateTable() {
                 this.rowsToRender = [];
                 let maxRows = 30;
                 let noOfRowsToAdd = maxRows + (this.rowsScrolled+5);
-                // this.store_tableData.forEach(n => {
-                //     let processedRowData = this.processRow(n);
-                //     this.rowsToRender.push(processedRowData);
-                // });
-                let i = 0;
-                let noOfTopRowsToRemove = 0;
-                if(this.rowsScrolled > 200) {
-                    noOfTopRowsToRemove = this.rowsScrolled - 100;
-                }
-                this.store_tableData.some(n => {
-                    if(i < noOfTopRowsToRemove) {
-                        n.rendering = false;
-                    } else {
-                        n.rendering = true;
+                if(this.msaTab) {
+                    this.store_tableData.forEach(n => {
+                        let processedRowData = this.processRow(n);
+                        this.rowsToRender.push(processedRowData);
+                    });
+                    this.treeRowSpan = this.rowsToRender.length+1;
+                    this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
+                    this.rowsHeight = this.rowsHeight.toFixed(2);
+                    this.tableRendering = false;
+                } else {
+                    let i = 0;
+                    let noOfTopRowsToRemove = 0;
+                    if(this.rowsScrolled > 200) {
+                        noOfTopRowsToRemove = this.rowsScrolled - 100;
                     }
-                    let processedRowData = this.processRow(n);
-                    this.rowsToRender.push(processedRowData);
-                    i++;
-                    return i > noOfRowsToAdd;
-                });
-                //Adjust tree column span and height, to fill the whole table and match the original table height
-                this.treeRowSpan = this.rowsToRender.length+1;
-                this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
-                this.rowsHeight = this.rowsHeight.toFixed(2);
-                this.tableRendering = true;
+                    this.store_tableData.some(n => {
+                        if(i < noOfTopRowsToRemove) {
+                            n.rendering = false;
+                        } else {
+                            n.rendering = true;
+                        }
+                        let processedRowData = this.processRow(n);
+                        this.rowsToRender.push(processedRowData);
+                        i++;
+                        return i > noOfRowsToAdd;
+                    });
+                    //Adjust tree column span and height, to fill the whole table and match the original table height
+                    this.treeRowSpan = this.rowsToRender.length+1;
+                    this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
+                    this.rowsHeight = this.rowsHeight.toFixed(2);
+                    this.tableRendering = false;
+                }
             },
             updateTreeLayout() {
                 this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
@@ -518,7 +540,7 @@
             },
             onDefaultView() {
                 this.$refs.treeLayout.onDefaultView();
-                this.$refs.tlmenu.onReset();
+                // this.$refs.tlmenu.onReset();
             },
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
@@ -609,7 +631,9 @@
                 let rowsScrolledCurr = Math.round(scrollTop_curr/this.MAX_ROW_HEIGHT);
                 if(Math.abs(rowsScrolledCurr - this.rowsScrolled) > 5) {
                     this.rowsScrolled = rowsScrolledCurr;
-                    this.updateTable();
+                    if(!this.msaTab) {
+                        this.updateTable();
+                    }
                 }
             },
             scrollTableHeader(amount) {
@@ -644,6 +668,8 @@
                 }
                 if(foundRow) {
                     this.setScrollToRow(foundRow.id);
+                } else {
+                    console.log("row not found for ", foundRow);
                 }
             },
             //CLICK Cell

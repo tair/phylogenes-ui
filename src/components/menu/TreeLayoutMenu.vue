@@ -83,6 +83,9 @@
                     console.log("store_getSearchTxtWthn ", val);
                     if(val != null) {
                         this.defaultSearchText = val;
+                    } else {
+                        this.defaultSearchText = "";
+                        this.onReset();
                     }
                 },
                 deep: true,
