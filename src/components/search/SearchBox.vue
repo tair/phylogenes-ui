@@ -53,7 +53,8 @@ data() {
 },
 computed: {
   ...mapGetters({
-      store_matchedNodes: types.TREE_GET_MATCHED_NODES
+      store_matchedNodes: types.TREE_GET_MATCHED_NODES,
+      store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
   }),
   compMatchText() {
     return this.matchText;
@@ -63,14 +64,16 @@ watch: {
   //Set a default search text (Called when searched from outside the tree layout)
   defaultText: {
       handler: function (val, oldVal) {
-         this.searchText = this.defaultText;
+         this.searchText = val;
+         if(this.searchText == "") return;
          this.isSearched = true;
-      }
+      },
+      immediate: true
   },
   store_matchedNodes: {
       handler: function (val, oldVal) {
           if(!val.allMatchedNodes) {
-            this.onReset();
+            // this.onReset();
             return;
           }
           if(this.isSearched) {
@@ -82,9 +85,10 @@ watch: {
             }
           }
           if(val[0] == -1) {
-              this.onReset();
+              // this.onReset();
           }
       },
+      immediate: true,
       deep: true
   }
 },
@@ -105,7 +109,6 @@ methods: {
       this.searchText = "";
       this.isSearched = false;
       this.matchText = "";
-      // this.$emit('search', null);
   },
   skipUp() {
     let val = this.store_matchedNodes.allMatchedNodes;

@@ -8,7 +8,7 @@ const MSA_S3_URL = process.env.VUE_APP_MSA_S3_URL;
 const state = {
     treedata: {
         isLoading: false,
-        isTableLoading: false,
+        isTableLoading: null,
         hasGrafted: false,
         iserror: false,
         data: null,
@@ -98,6 +98,20 @@ const getters = {
 };
 
 const actions = {
+    [types.TREE_ACTION_CLEAR_DATA]: (context, payload) => {
+        console.log("Action Clear Data");
+        context.state.treedata.jsonString = null;
+        context.state.treedata.jsonObj = null;
+        context.state.treedata.go_annotations = null;
+        context.state.treedata.freq_msa_arr = null;
+        context.state.treedata.msa_data = new Map();
+        context.state.treedata.anno_mapping = {
+            headers: [],
+            mapping: null
+        };
+        context.state.treedata.nodes = null;
+        context.state.treedata.data = null;
+    },
     [types.TABLE_ACTION_SET_DATA]: (context, payload) => {
         context.state.treedata.data = payload;
     },

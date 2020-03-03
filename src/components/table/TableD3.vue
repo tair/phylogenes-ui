@@ -10,8 +10,7 @@
         <div v-if="showMsaLegend" class="legend-box">
             <msa-legend></msa-legend>
         </div>
-        <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
-        <table v-else class="mainTable">
+        <table class="mainTable">
             <thead id="head" ref="thead">
                 <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
@@ -57,7 +56,10 @@
                                         v-on:updated-tree="onTreeUpdate"></treelayout>
                     </td>
                 </tr>
-                <tr v-for="(row, row_i) in rowsToRender" :key=row_i>
+                <tr v-if="this.isLoading" >
+                    <i class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
+                </tr>
+                <tr v-else v-for="(row, row_i) in rowsToRender" :key=row_i>
                     <td v-for="(key, i) in colsToRender" :key="key"
                         @click="tdClicked(key, row)"
                         :class="getTdClasses(key, row[key], i)">
@@ -167,6 +169,7 @@
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+                store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING
             }),
            
         },
@@ -178,6 +181,20 @@
                         this.resetTable();
                     } else {
                         this.initTable();
+                    }
+                },
+                deep: true,
+                immediate: true
+            },
+            store_getTableIsLoading: {
+                handler: function (val, oldVal) {
+                    if(val) {
+                        this.isLoading = val;
+                        if(this.isLoading) {
+                            this.tableRendering = true;
+                        }
+                    } else {
+                        this.tableRendering = false;
                     }
                 },
                 deep: true,
@@ -196,8 +213,7 @@
             //Auto scroll the table to the center node set by the tree (Auto scrolling)
             store_getCenterNode: {
                 handler: function (val, oldVal) {
-                    if(val == null || this.isLoading) return;
-                    if(oldVal && oldVal.id == val.id) { return; }
+                    if(val == null) return;
                     //Timeout required so that 'storeTableData' is updated after matched nodes are processed
                     setTimeout(() => {
                         this.findRowandScroll(val);
@@ -210,13 +226,31 @@
         mounted() {
             this.resetTable();
             this.initTable();
+            this.$nextTick(function () {
+            });
+        },
+        beforeDestroy() {
+            this.resetTable();
+        },
+        updated: function () {
+            this.$nextTick(function () {
+                // Code that will run only after the
+                // entire view has been re-rendered
+                if(this.tableRendering == false) {
+                    this.isLoading = false;
+                }
+            })
         },
         methods: {
             ...mapActions({
                 store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
-                store_setTableData: types.TABLE_ACTION_SET_DATA
+                store_setTableData: types.TABLE_ACTION_SET_DATA,
+                store_setClearData: types.TREE_ACTION_CLEAR_DATA,
+                store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
             }),
             resetTable() {
+                this.store_setClearData();
+                this.isLoading = false;
                 this.showMsaLegend = false;
                 this.msaTab = false;
                 this.rowsToRender = [];
@@ -224,13 +258,8 @@
                 if(this.$refs.treeLayout) {
                     this.$refs.treeLayout.refreshView();
                 }
-                if(this.$refs.tlmenu) {
-                    this.$refs.tlmenu.onReset();
-                }
-                this.store_setTableIsLoading(true);
             },
             initTable() {
-                this.store_setTableIsLoading(true);
                 this.addCustomScrollEvent();
             },
             updateTableCols() {
@@ -251,7 +280,8 @@
             toggleTabs() {
                 this.msaTab = !this.msaTab;
                 this.$emit('toggle-cols');
-                this.updateRenderRows();
+                // this.updateRenderRows();
+                this.updateTable();
             },
             toggleLegend() {
                 this.showMsaLegend = !this.showMsaLegend;
@@ -268,9 +298,10 @@
                     pixelRatio -= 0.2;
                 } else if(pixelRatio == 1.6) {
                     pixelRatio -= 0.325;
+                } else if(pixelRatio < 2) {
+                    pixelRatio = 2;
                 }
                 this.MAX_ROW_HEIGHT = this.MAX_ROW_HEIGHT + pixelRatio;
-                this.isLoading = true;
                 //Update the tree layout (svg height and single row height) on browser resize so that alignment betn tree and table is same
                 this.updateTreeLayout();
             },
@@ -362,24 +393,59 @@
                     setTimeout(() => {
                         this.$emit('search-tree', this.store_getSearchTxtWthn);
                     }, 2000);
+                } else {
+                    console.log(this.store_getSearchTxtWthn);
+                    this.defaultSearchText = null;
+                    this.store_setSearchTxtWthn(null);
                 }
             },
             onTreeUpdate(nodes) {
+                // console.log("onTreeUpdate");
+                this.tableRendering = true;
                 //Table data must changed on every tree update.
                 //Note: This even changes after the first tree init call.
                 this.setStoreTableData(nodes);
-                this.rowsToRender = [];
-                this.store_tableData.forEach(n => {
-                    let processedRowData = this.processRow(n);
-                    this.rowsToRender.push(processedRowData);
-                });
-                //Adjust tree column span and height, to fill the whole table and match the original table height
-                this.treeRowSpan = this.rowsToRender.length+1;
-                this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
-                this.rowsHeight = this.rowsHeight.toFixed(2);
+                this.isLoading = true;
                 setTimeout(() => {
-                    this.store_setTableIsLoading(false);
-                });
+                    this.updateTable();
+                }, 1000);
+            },
+            updateTable() {
+                this.rowsToRender = [];
+                let maxRows = 30;
+                let noOfRowsToAdd = maxRows + (this.rowsScrolled+5);
+                if(this.msaTab) {
+                    this.store_tableData.forEach(n => {
+                        let processedRowData = this.processRow(n);
+                        this.rowsToRender.push(processedRowData);
+                    });
+                    this.treeRowSpan = this.rowsToRender.length+1;
+                    this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
+                    this.rowsHeight = this.rowsHeight.toFixed(2);
+                    this.tableRendering = false;
+                } else {
+                    let i = 0;
+                    let noOfTopRowsToRemove = 0;
+                    if(this.rowsScrolled > 200) {
+                        noOfTopRowsToRemove = this.rowsScrolled - 100;
+                    }
+                    this.store_tableData.some(n => {
+                        if(i < noOfTopRowsToRemove) {
+                            n.rendering = false;
+                        } else {
+                            n.rendering = true;
+                        }
+                        let processedRowData = this.processRow(n);
+                        this.rowsToRender.push(processedRowData);
+                        i++;
+                        return i > noOfRowsToAdd;
+                    });
+                    //Adjust tree column span and height, to fill the whole table and match the original table height
+                    this.treeRowSpan = this.rowsToRender.length+1;
+                    this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
+                    this.rowsHeight = this.rowsHeight.toFixed(2);
+                    this.tableRendering = false;
+                }
             },
             updateTreeLayout() {
                 this.rowsHeight = this.rowsToRender.length*(this.MAX_ROW_HEIGHT);
@@ -387,7 +453,7 @@
             },
             //Called from external parent component
             updateRenderRows() {
-                this.isLoading = true;
+                // this.isLoading = true;
                 this.rowsToRender = [];
                 if(this.store_tableData) {
                     this.store_tableData.forEach(n => {
@@ -395,7 +461,6 @@
                         this.rowsToRender.push(processedRowData);
                     });
                 }
-                this.isLoading = false;
             },
             setStoreTableData(nodes) {
                 var tabularData = [];
@@ -474,13 +539,14 @@
             },
             onDefaultView() {
                 this.$refs.treeLayout.onDefaultView();
-                this.$refs.tlmenu.onReset();
+                // this.$refs.tlmenu.onReset();
             },
             expandAll() {
                 this.$refs.treeLayout.onExpandAll();
 
             },
             onSearchWithinTree(text) {
+                this.store_setSearchTxtWthn(text);
                 this.$emit('search-tree', text);
             },
             onPruneLoading(isLoad) {
@@ -561,6 +627,14 @@
                 }
                 let scrollLeft_curr = document.getElementById("body").scrollLeft;
                 this.scrollTableHeader(scrollLeft_curr);
+                let scrollTop_curr = document.getElementById("body").scrollTop;
+                let rowsScrolledCurr = Math.round(scrollTop_curr/this.MAX_ROW_HEIGHT);
+                if(Math.abs(rowsScrolledCurr - this.rowsScrolled) > 5) {
+                    this.rowsScrolled = rowsScrolledCurr;
+                    if(!this.msaTab) {
+                        this.updateTable();
+                    }
+                }
             },
             scrollTableHeader(amount) {
                 let thead = document.getElementById("head");
@@ -569,10 +643,19 @@
             //From tree panning
             setScrollToRow(rowNumber) {
                 this.rowsScrolled = rowNumber - 8;
-                if(this.rowsScrolled > 0) {
-                    const tbody = document.getElementById("body");
-                    if(tbody) {
-                        tbody.scrollTop = this.MAX_ROW_HEIGHT*this.rowsScrolled;
+                const tbody = document.getElementById("body");
+                if(tbody) {
+                    if(this.rowsScrolled > 0) {
+                        this.updateTable();
+                        setTimeout(() => {
+                            tbody.scrollTop = this.MAX_ROW_HEIGHT*this.rowsScrolled;
+                        }, 1000);
+                    } else {
+                        this.rowsScrolled = 0;
+                        this.updateTable();
+                        setTimeout(() => {
+                            tbody.scrollTop = 0;
+                        }, 1000);
                     }
                 }
             },
@@ -585,6 +668,8 @@
                 }
                 if(foundRow) {
                     this.setScrollToRow(foundRow.id);
+                } else {
+                    console.log("row not found for ", foundRow);
                 }
             },
             //CLICK Cell

@@ -82,6 +82,9 @@
                 handler: function (val, oldVal) {
                     if(val != null) {
                         this.defaultSearchText = val;
+                    } else {
+                        this.defaultSearchText = "";
+                        this.onReset();
                     }
                 },
                 deep: true,
