@@ -2,11 +2,13 @@ import * as types from '../types_treedata';
 import axios from "axios/index";
 
 const API_URL = process.env.VUE_APP_API_URL + '/api/panther';
+const TREE_S3_URL = process.env.VUE_APP_TREE_S3_URL;
+const MSA_S3_URL = process.env.VUE_APP_MSA_S3_URL;
 
 const state = {
     treedata: {
         isLoading: false,
-        isTableLoading: false,
+        isTableLoading: null,
         hasGrafted: false,
         iserror: false,
         data: null,
@@ -26,7 +28,10 @@ const state = {
         },
         nodes: null,
         nodeAtCenter: null, //Node which should be set at the center of tree panel view.
-        matchedNodes: null,
+        matchedNodes: {
+            allMatchedNodes: null,
+            currIdx: 0
+        },
         zoom: null,
         scroll: null,
         topPaddingY: 0,
@@ -93,6 +98,20 @@ const getters = {
 };
 
 const actions = {
+    [types.TREE_ACTION_CLEAR_DATA]: (context, payload) => {
+        console.log("Action Clear Data");
+        context.state.treedata.jsonString = null;
+        context.state.treedata.jsonObj = null;
+        context.state.treedata.go_annotations = null;
+        context.state.treedata.freq_msa_arr = null;
+        context.state.treedata.msa_data = new Map();
+        context.state.treedata.anno_mapping = {
+            headers: [],
+            mapping: null
+        };
+        context.state.treedata.nodes = null;
+        context.state.treedata.data = null;
+    },
     [types.TABLE_ACTION_SET_DATA]: (context, payload) => {
         context.state.treedata.data = payload;
     },
@@ -102,7 +121,11 @@ const actions = {
     },
     [types.TREE_ACTION_SET_MATCHED_NODES]: (context, payload) => {
         //console.log("Action" + payload);
-        context.state.treedata.matchedNodes = payload;
+        context.state.treedata.matchedNodes.allMatchedNodes = payload;
+    },
+    [types.TREE_ACTION_SET_MATCHED_NODES_CURRIDX]: (context, payload) => {
+        // console.log("Action", payload);
+        context.state.treedata.matchedNodes.currIdx = payload;
     },
     [types.TREE_ACTION_SET_METADATA]: (context, payload) => {
         context.state.treedata.metadata = payload;
@@ -141,36 +164,23 @@ const actions = {
     },
     [types.TREE_ACTION_SET_PANTHER_TREE]: (context, payload) => {
         if (!payload) return;
+        let treeUrl = TREE_S3_URL + payload + '.json'
         return new Promise((result, rej) => {
             axios({
                 method: 'GET',
-                url: API_URL + '/tree/' + payload
+                url: treeUrl,
+                responseType: 'json'
             })
-                .then(res => {
-                    if (res.data.response.docs.length > 0) {
-                        if (res.data.response.docs[0].jsonString) {
-                            context.state.treedata.jsonString = res.data.response.docs[0].jsonString;
-                        }
-                        if (res.data.response.docs[0].family_name) {
-                            context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
-                        }
-                        if (res.data.response.docs[0].speciation_events) {
-                            context.state.treedata.metadata.taxonRange = res.data.response.docs[0].speciation_events[0];
-                        }
-                        if (res.data.response.docs[0].go_annotations) {
-                            context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
-                        } else if (!res.data.response.docs[0].go_annotations) {
-                            context.state.treedata.go_annotations = null;
-                        }
-                        result("panther tree");
-                    } else {
-                        result(0);
-                    }
-                })
-                .catch(error => {
-                    console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-                    rej();
-                })
+            .then(res => {
+                if (res.data.search) {
+                    context.state.treedata.jsonString = res.data.search;
+                }
+                result("panther tree");
+            })
+            .catch(error => {
+                console.log('TREE_ACTION_SET_PANTHER_TREE: Error while reading data (E8273): ' + JSON.stringify(error));
+                rej();
+            })
         });
     },
     [types.TREE_ACTION_SET_ANNODATA]: (context, payload) => {
@@ -178,58 +188,63 @@ const actions = {
         return new Promise((result, rej) => {
             axios({
                 method: 'GET',
-                url: API_URL + '/tree/' + payload
+                url: API_URL + '/go_annotations/' + payload
             })
             .then(res => {
-                console.log(res);
                 if (res.data.response.docs.length > 0) {
+                    if (res.data.response.docs[0].family_name) {
+                        context.state.treedata.metadata.familyName = res.data.response.docs[0].family_name;
+                    }
+                    if (res.data.response.docs[0].taxonomic_ranges) {
+                        context.state.treedata.metadata.taxonRange = res.data.response.docs[0].taxonomic_ranges[0];
+                    }
                     if (res.data.response.docs[0].go_annotations) {
                         context.state.treedata.go_annotations = res.data.response.docs[0].go_annotations;
                     } else if (!res.data.response.docs[0].go_annotations) {
                         context.state.treedata.go_annotations = null;
                     }
                 }
-                result("panther tree");
+                result("solr anno");
             })
             .catch(error => {
-                console.log('Error while reading data (E8273): ' + JSON.stringify(error));
+                console.log('TREE_ACTION_SET_ANNODATA: Error while reading data (E8273): ' + JSON.stringify(error));
                 rej();
             })
         });
     },
     [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
         if (!payload) return;
+        let msaUrl = MSA_S3_URL + payload + '.json';
         return new Promise((result, rej) => {
             axios({
                 method: 'GET',
-                url: API_URL + '/msa/' + payload
+                url: msaUrl,
+                responseType: 'json'
             })
-                .then(res => {
-                    if (res.data.response.docs.length > 0) {
-                        let msa_list = res.data.response.docs[0].msa_data;
-                        let msa_data = new Map();
-                        let maxSeqLength = 0;
-                        msa_list.forEach(m => {
-                            var msaObj = JSON.parse(m);
-                            let anno_id = msaObj.annotation_node_id.split(":")[1];
-                            if (msaObj.full_sequence.length > maxSeqLength) {
-                                maxSeqLength = msaObj.full_sequence.length;
-                            }
-                            msa_data.set(anno_id, msaObj.full_sequence);
-                        });
-                        context.state.treedata.msa_data = msa_data;
-                        context.state.treedata.max_msa_length = maxSeqLength;
-                        result("msa data");
-                    } else {
-                        result(0);
-                    }
-                })
-                .catch(error => {
-                    console.log('Error while reading data (E8273): ' + JSON.stringify(error));
-                    rej();
-                })
+            .then(res => {
+                if (res.data.familyNames.length > 0) {
+                    let msa_data = res.data.familyNames[0].msa_data;
+                    msa_data = JSON.parse(msa_data);
+                    let msa_list = msa_data.search.sequence_list.sequence_info;
+                    let msa_mapping = new Map();
+                    let maxSeqLength = 0;
+                    msa_list.forEach(m => {
+                        let anno_id = m.annotation_node_id.split(":")[1];
+                        if (m.full_sequence.length > maxSeqLength) {
+                            maxSeqLength = m.full_sequence.length;
+                        }
+                        msa_mapping.set(anno_id, m.full_sequence);
+                    });
+                    context.state.treedata.msa_data = msa_mapping;
+                    context.state.treedata.max_msa_length = maxSeqLength;
+                    result("msa data");
+                }
+            })
+            .catch(error => {
+                console.log('TREE_ACTION_SET_MSADATA: Error while reading data (E8273): ' + JSON.stringify(error));
+                rej();
+            })
         });
-        
     },
     [types.TREE_ACTION_GET_ANNOTATIONS]: (context, payload) => {
         axios({

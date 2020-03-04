@@ -12,9 +12,9 @@
         data(){
             return{
                 summaryStats: [
-                    { count: 8171, name: "trees (gene families)"},
-                    { count: 950317, name: "proteins"},
-                    { count: 30, name: "plant species"},
+                    { count: 8512, name: "trees (gene families)"},
+                    { count: 1256047, name: "proteins"},
+                    { count: 40, name: "plant species"},
                     { count: 10, name: "non-plant model organisms"},
                 ]
             }

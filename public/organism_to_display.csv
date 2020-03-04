@@ -1,41 +1,51 @@
-﻿Organism,displayName,taxonID
-Amborella trichopoda,A. trichopoda,13333
-Arabidopsis thaliana,A. thaliana,3702
-Brachypodium distachyon,B. distachyon,15368
-Brassica rapa subsp. Pekinensis,Chinese cabbage,51351
-Chlamydomonas reinhardtii,C. reinhardtii,3055
-Citrus sinensis,orange,2711
-Cucumis sativus,cucumber,3659
-Erythranthe guttata,E. guttata,4155
-Glycine max,soybean,3847
-Gossypium hirsutum,cotton,3635
-Helianthus annuus,sunflower,4232
-Hordeum vulgare subsp. vulgare,barley,112509
-Medicago truncatula,M. truncatula,3880
-Musa acuminata subsp. malaccensis,banana,214687
-Nicotiana tabacum,tobacco,4097
-Oryza sativa,rice,39947
-Ostreococcus tauri,O. tauri,70448
-Phoenix dactylifera,date palm,42345
-Physcomitrella patens,P. patens,3218
-Populus trichocarpa,black cottonwood,3694
-Prunus persica,peach,3760
-Ricinus communis,castor bean,3988
-Setaria italica,foxtail millet,4555
-Solanum lycopersicum,tomato,4081
-Sorghum bicolor,sorghum,4558
-Theobroma cacao,cocoa,3641
-Triticum aestivum,wheat,4565
-Vitis vinifera,grape,29760
-Zea mays,corn,4577
-Zostera marina,eelgrass,29655
-Caenorhabditis elegans,C. elegans,6239
-Danio rerio,zebrafish,7955
-Dictyostelium discoideum,D. discoideum,44689
-Drosophila melanogaster,fruit fly,7227
-Escherichia coli,E. coli,83333
-Homo sapiens,human,9606
-Mus musculus,mouse,10090
-Rattus norvegicus,rat,10116
-Saccharomyces cerevisiae,budding yeast,559292
-Schizosaccharomyces pombe,fission yeast,284812
+﻿Organism,displayName,common name,Abbrev name code,taxonID,Is plant?
+Amborella trichopoda,A. trichopoda,,AMBTC,13333,y
+Arabidopsis thaliana,A. thaliana,,ARATH,3702,y
+Brachypodium distachyon,purple false brome,purple false brome,BRADI,15368,y
+Brassica napus,rapeseed,rapeseed,BRANA,3708,
+Brassica rapa subsp. Pekinensis,Chinese cabbage,Chinese cabbage,BRARP,51351,y
+Capsicum annuum,pepper,pepper,CAPAN,4072,
+Chlamydomonas reinhardtii,C. reinhardtii,,CHLRE,3055,y
+Citrus sinensis,orange,orange,CITSI,2711,y
+Cucumis sativus,cucumber,cucumber,CUCSA,3659,y
+Erythranthe guttata,yellow monkeyflower,yellow monkeyflower,ERYGU,4155,y
+Eucalyptus grandis,flooded gum,flooded gum,EUCGR,71139,
+Glycine max,soybean,soybean,SOYBN,3847,y
+Gossypium hirsutum,cotton,cotton,GOSHI,3635,y
+Helianthus annuus,sunflower ,sunflower ,HELAN,4232,y
+Hordeum vulgare subsp. vulgare,barley,barley,HORVV,112509,y
+Juglans regia,walnut,walnut,JUGRE,51240,
+Lactuca sativa,lettuce,lettuce,LACSA,4236,
+Manihot esculenta,cassava,cassava,MANES,3983,
+Medicago truncatula,barrelclover,barrelclover,MEDTR,3880,y
+Musa acuminata subsp. malaccensis,banana,banana,MUSAM,214687,y
+Nelumbo nucifera,sacred lotus,sacred lotus,NELNU,4432,
+Nicotiana tabacum,tobacco,tobacco,TOBAC,4097,y
+Oryza sativa,rice,rice,ORYSJ,39947,y
+Ostreococcus tauri,O. tauri,,OSTTA,70448,y
+Phoenix dactylifera,date palm,date palm,PHODC,42345,y
+Physcomitrella patens,P. patens,,PHYPA,3218,y
+Populus trichocarpa,black cottonwood,black cottonwood,POPTR,3694,y
+Prunus persica,peach,peach,PRUPE,3760,y
+Ricinus communis,castor bean,castor bean,RICCO,3988,y
+Selaginella moellendorffii,S. moellendorffii,,SELML,88036,
+Setaria italica,foxtail millet,foxtail millet,SETIT,4555,y
+Solanum lycopersicum,tomato,tomato,SOLLC,4081,y
+Solanum tuberosum,potato,potato,SOLTU,4113,
+Sorghum bicolor,sorghum,sorghum,SORBI,4558,y
+Spinacia oleracea,spinach,spinach,SPIOL,3562,
+Theobroma cacao,cocoa,cocoa,THECC,3641,y
+Triticum aestivum,wheat,wheat,WHEAT,4565,y
+Vitis vinifera,grape,grape,VITVI,29760,y
+Zea mays,corn,corn,MAIZE,4577,y
+Zostera marina,eelgrass,eelgrass,ZOSMR,29655,y
+Caenorhabditis elegans,nematode worm,nematode worm,CAEEL,6239,
+Danio rerio,zebrafish,zebrafish,DANRE,7955,
+Dictyostelium discoideum,slime mold,slime mold,DICDI,44689,
+Drosophila melanogaster,fruit fly,fruit fly,DROME,7227,
+Escherichia coli,E. coli,,ECOLI,83333,
+Homo sapiens,human,human,HUMAN,9606,
+Mus musculus,mouse,mouse,MOUSE,10090,
+Rattus norvegicus,rat,rat,RAT,10116,
+Saccharomyces cerevisiae,budding yeast,budding yeast,YEAST,559292,
+Schizosaccharomyces pombe,fission yeast,fission yeast,SCHPO,284812,

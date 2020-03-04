@@ -93,7 +93,8 @@
                 for(var i = 0; i < splits.length; i++) {
                     let l = splits[i];
                     let hfl = this.store_getFreqMsa[i];
-                    if(hfl.l != "." && hfl.l != "-") {
+                    if(!hfl.l) break;
+                    if(hfl.l && hfl.l != "." && hfl.l != "-") {
                         if(hfl.p > 50) {
                             if(l == hfl.l) {
                                 if(hfl.p > 50 && hfl.p <= 90) {
@@ -124,6 +125,8 @@
     .tdParent {
         padding-left: 10px;
         width: 100%;
+        height: 30px !important;
+        z-index: 2;
     }
     .tdTxt {
         font-family: "Courier New", Courier, monospace;

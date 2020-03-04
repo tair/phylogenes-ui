@@ -31,8 +31,7 @@ export default new Router({
     {
         path: '/contact',
         component: Contact
-    }
-    ,
+    },
     {
         path: '/login',
         component: Login
@@ -48,8 +47,8 @@ export default new Router({
         pathToRegexpOptions: {strict: true}
     },
     {
-        path: '/tree/:id',
-        component: TreeDetail
+      path: '/tree/:id',
+      component: TreeDetail
     },
     {
       path: '/grafting',

@@ -19,6 +19,7 @@ export const TABLE_GET_SCROLL = 'treedata/store_getTableScrollRow';
 export const TABLE_GET_ISTABLELOADING = 'treedata/store_tableIsLoading';
 
 //actions
+export const TREE_ACTION_CLEAR_DATA = 'treedata/store_setClearData';
 export const TREE_ACTION_SET_PANTHER_TREE = 'treedata/store_setPantherTreeFromApi';
 export const TREE_ACTION_SET_PANTHER_TREE2 = 'treedata/store_setPantherTreeFromString';
 export const TABLE_ACTION_SET_DATA = 'treedata/store_setTableData';
@@ -28,6 +29,7 @@ export const TREE_ACTION_SET_ANNO_MAPPING = 'treedata/store_setAnnoMapping';
 export const TREE_ACTION_SET_MSADATA = 'treedata/store_setMsaFromApi';
 export const TREE_ACTION_SET_ANNODATA = 'treedata/store_setAnnoFromApi';
 export const TREE_ACTION_SET_MATCHED_NODES = 'treedata/stateSetTreeMatchedNodes';
+export const TREE_ACTION_SET_MATCHED_NODES_CURRIDX = 'treedata/store_setTreeMatchedNodesIdx';
 export const TREE_ACTION_SET_CENTER_NODE = 'treedata/store_setCenterNode';
 export const TREE_ACTION_SET_ZOOM = 'treedata/stateSetTreeZoom';
 export const TABLE_ACTION_SET_SCROLL = 'treedata/store_setTableScrolledRow';

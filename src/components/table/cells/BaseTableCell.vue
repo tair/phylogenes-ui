@@ -16,6 +16,7 @@
     import cellLink from '../cells/LinkCell';
     import cellAnnotation from '../cells/AnnotationCell';
     import cellMsa from '../cells/MSACell';
+    import cellSlanted from '../cells/SlantedCell';
 
     export default {
         name: "base-cell",
@@ -24,7 +25,8 @@
             cellDefault: cellDefault,
             cellLink: cellLink,
             cellAnnotation: cellAnnotation,
-            cellMsa: cellMsa
+            cellMsa: cellMsa,
+            cellSlanted: cellSlanted
         },
         data() {
             return {
@@ -34,7 +36,6 @@
         watch: {
             content: {
                 handler(newV, oldV) {
-                    
                 }
             }
         },

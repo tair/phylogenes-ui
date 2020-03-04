@@ -184,11 +184,16 @@ function findFirstMatchedNodeInTree(allLeafNodes) {
     return firstNode;
 }
 
+function findAllMatchedNodes(allLeafNodes) {
+    return allLeafNodes.filter(n => { return n.matched });
+}
+
 export default {
     isMatchWithNode,
     processMatchedNodes,
     processGrafted,
     findMatNodesInChildren,
     expandSelectedFromNode,
-    findFirstMatchedNodeInTree
+    findFirstMatchedNodeInTree,
+    findAllMatchedNodes
 }

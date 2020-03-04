@@ -1,0 +1,41 @@
+﻿Organism,displayName,taxonID
+Amborella trichopoda,A. trichopoda,13333
+Arabidopsis thaliana,A. thaliana,3702
+Brachypodium distachyon,B. distachyon,15368
+Brassica rapa subsp. Pekinensis,Chinese cabbage,51351
+Chlamydomonas reinhardtii,C. reinhardtii,3055
+Citrus sinensis,orange,2711
+Cucumis sativus,cucumber,3659
+Erythranthe guttata,E. guttata,4155
+Glycine max,soybean,3847
+Gossypium hirsutum,cotton,3635
+Helianthus annuus,sunflower,4232
+Hordeum vulgare subsp. vulgare,barley,112509
+Medicago truncatula,M. truncatula,3880
+Musa acuminata subsp. malaccensis,banana,214687
+Nicotiana tabacum,tobacco,4097
+Oryza sativa,rice,39947
+Ostreococcus tauri,O. tauri,70448
+Phoenix dactylifera,date palm,42345
+Physcomitrella patens,P. patens,3218
+Populus trichocarpa,black cottonwood,3694
+Prunus persica,peach,3760
+Ricinus communis,castor bean,3988
+Setaria italica,foxtail millet,4555
+Solanum lycopersicum,tomato,4081
+Sorghum bicolor,sorghum,4558
+Theobroma cacao,cocoa,3641
+Triticum aestivum,wheat,4565
+Vitis vinifera,grape,29760
+Zea mays,corn,4577
+Zostera marina,eelgrass,29655
+Caenorhabditis elegans,C. elegans,6239
+Danio rerio,zebrafish,7955
+Dictyostelium discoideum,D. discoideum,44689
+Drosophila melanogaster,fruit fly,7227
+Escherichia coli,E. coli,83333
+Homo sapiens,human,9606
+Mus musculus,mouse,10090
+Rattus norvegicus,rat,10116
+Saccharomyces cerevisiae,budding yeast,559292
+Schizosaccharomyces pombe,fission yeast,284812

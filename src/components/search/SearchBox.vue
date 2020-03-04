@@ -9,7 +9,19 @@
           {{matchText}}
         </b-input-group-prepend>
         <input id="search" type="text" class="my-input" placeholder="Gene name, Gene ID, Uniprot ID"
-                         v-model="searchText">
+                         v-model="searchText" v-on:keyup.enter="onSearch">
+        <div v-if="matchText" class="col-auto my-text">
+          <!-- {{compMatchText}} -->
+          <button class="btn btn-inline" @click="skipUp()">
+            <i class="fa fa-angle-up"></i>
+          </button>
+          <button class="btn btn-inline" @click="skipDown()">
+            <i class="fa fa-angle-down"></i>
+          </button>
+        </div>
+        <div>
+          
+        </div>
         <b-input-group-append>
           <button type="submit" class="btn btn-inline bg-mblue" @click="onSearch()">
             <i class="fa fa-search"></i>
@@ -35,39 +47,59 @@ data() {
       searchText: "",
       matchText: "",
       isSearched: false,
-      placeholder: "Search by Gene Name, Gene ID or Uniprot ID"
+      placeholder: "Search by Gene Name, Gene ID or Uniprot ID",
+      currIdx: 1
   }
 },
 computed: {
   ...mapGetters({
-      store_matchedNodes: types.TREE_GET_MATCHED_NODES
-  })
+      store_matchedNodes: types.TREE_GET_MATCHED_NODES,
+      store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
+  }),
+  compMatchText() {
+    return this.matchText;
+  }
 },
 watch: {
   //Set a default search text (Called when searched from outside the tree layout)
   defaultText: {
       handler: function (val, oldVal) {
-         this.searchText = this.defaultText;
+         this.searchText = val;
+         if(this.searchText == "") return;
          this.isSearched = true;
-      }
+      },
+      immediate: true
   },
   store_matchedNodes: {
       handler: function (val, oldVal) {
-          if(val == null) {
-             this.onReset();
-             return;
+          if(!val.allMatchedNodes) {
+            // this.onReset();
+            return;
           }
           if(this.isSearched) {
-              this.matchText = val.length + " Matched";
+            this.currIdx = val.currIdx;
+            if(val.allMatchedNodes.length == 0) {
+              this.matchText = "0/0";
+            } else {
+              this.matchText = val.currIdx+1 + "/" + val.allMatchedNodes.length;
+            }
           }
           if(val[0] == -1) {
-              this.onReset();
+              // this.onReset();
           }
-      }
+      },
+      immediate: true,
+      deep: true
   }
 },
 methods: {
+  ...mapActions({
+    store_setTreeMatchedNodesIdx: types.TREE_ACTION_SET_MATCHED_NODES_CURRIDX
+  }),
   onSearch() {
+      this.matchText = "";
+      this.currIdx = 0;
+      this.store_setTreeMatchedNodesIdx(this.currIdx);
       if(this.searchText !== "") {
           this.isSearched = true;
           this.$emit('search', this.searchText);
@@ -79,6 +111,24 @@ methods: {
       this.matchText = "";
       this.$emit('search', null);
   },
+  skipUp() {
+    let val = this.store_matchedNodes.allMatchedNodes;
+    if(val.length == 0) return;
+    if(this.currIdx != 0) {
+      this.currIdx -= 1;
+      this.matchText = this.currIdx+1 + "/" + val.length;
+      this.store_setTreeMatchedNodesIdx(this.currIdx);
+    }
+  },
+  skipDown() {
+    let val = this.store_matchedNodes.allMatchedNodes;
+    if(val.length == 0) return;
+    if(this.currIdx != val.length-1) {
+      this.currIdx += 1;
+      this.matchText = this.currIdx+1 + "/" + val.length;
+      this.store_setTreeMatchedNodesIdx(this.currIdx);
+    }
+  }
 }
 }
 </script>
