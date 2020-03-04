@@ -18,7 +18,7 @@
 
                 <tr id="mainTr">
                     <div v-if="!msaTab && n_annotations>0" class="annoPopver">
-                        <b-button id="annoPopover" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <b-button id="annoPopover" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                         <popover :text="popover1Text" title="GO Annotations" placement='right' target="annoPopover"></popover>
                     </div>
                     <th :class="getThClasses('tree', -1)">
@@ -40,7 +40,7 @@
                     </th>
                     <th v-for="(col,i) in colsToRender.slice(2+n_annotations,5+2+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
                         <tablecell :content="getHeader(col, i+2+n_annotations)"></tablecell>
-                        <b-button v-if="showPopover(col)" :id="col+'id'" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <b-button v-if="showPopover(col)" :id="col+'id'" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                         <popover v-if="showPopover(col)" :text="getPopoverText(col)" :title="col" placement='right' :target="col+'id'"></popover>
                     </th>
 
@@ -962,9 +962,9 @@
     }
     .annoPopver {
         position: absolute;
-        top: 3px;
         left: 1100px;
         z-index: 10;
+        -webkit-transform: translate(3px, 3px);
     }
 
     ::-webkit-scrollbar {

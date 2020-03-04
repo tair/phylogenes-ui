@@ -109,6 +109,7 @@ methods: {
       this.searchText = "";
       this.isSearched = false;
       this.matchText = "";
+      this.$emit('search', null);
   },
   skipUp() {
     let val = this.store_matchedNodes.allMatchedNodes;

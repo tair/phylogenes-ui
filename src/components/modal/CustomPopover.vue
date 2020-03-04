@@ -2,7 +2,7 @@
         <b-popover
         :target= target
         :title = title
-        triggers="focus"
+        triggers="click blur"
         :placement= placement
         >
         <span v-html="text"></span>
