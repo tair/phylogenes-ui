@@ -17,7 +17,10 @@
                 </button>
 
                 <tr id="mainTr">
-                    
+                    <div v-if="!msaTab && n_annotations>0" class="annoPopver">
+                        <b-button id="annoPopover" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
+                        <popover :text="popover1Text" title="GO Annotations" placement='right' target="annoPopover"></popover>
+                    </div>
                     <th :class="getThClasses('tree', -1)">
                         <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu" :treeId="treeId"
                                             v-on:ddItemClicked="ddClicked"
@@ -33,10 +36,6 @@
                         <tablecell :content="getHeader(col, i)"></tablecell>
                     </th>
                     <th v-for="(col,i) in colsToRender.slice(2,2+n_annotations)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
-                        <div v-if="!msaTab && n_annotations>0 && i==0" class="annoPopver">
-                            <b-button id="annoPopover" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
-                            <popover :text="popover1Text" title="GO Annotations" placement='right' target="annoPopover"></popover>
-                        </div>
                         <tablecell :content="getHeader(col, i+2)"></tablecell>
                     </th>
                     <th v-for="(col,i) in colsToRender.slice(2+n_annotations,5+2+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
@@ -172,6 +171,7 @@
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
                 store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING
             }),
+           
         },
         watch: {
             store_tableData: {
@@ -962,7 +962,7 @@
     }
     .annoPopver {
         position: absolute;
-        left: -10px;
+        left: 1100px;
         z-index: 10;
         -webkit-transform: translate(3px, 3px);
     }
