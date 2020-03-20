@@ -1,0 +1,116 @@
+<template>
+    <div class="container">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item mylist" v-for="o in options" :key="o.id">
+                <div class="row">
+                    <div class="col-9">
+                        <div class="pretty p-default">
+                            <input type="checkbox" v-model="o.selected" @click="checkboxClicked(o)"/>
+                            <div class="state p-primary">
+                                <label>{{o.label}}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-inline arrow" @click="moveUp(o)">
+                            <i class="fa fa-angle-up"></i>
+                        </button>
+                        <button class="btn btn-inline arrow" @click="moveDown(o)">
+                            <i class="fa fa-angle-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <ul v-if="o.children" class="list-group">
+                    <li class="list-group-item" v-for="c in o.children" :key="c.id">
+                        <!-- <input type="checkbox" id="option" v-model="c.selected">
+                        <label for="option"> {{c.label}}</label> -->
+                        <div class="pretty p-default">
+                            <input type="checkbox" v-model="c.selected"/>
+                            <div class="state p-primary">
+                                <label>{{c.label}}</label>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "dataPanelEdit",
+        props: ['columns'],
+        computed: {
+            options() {
+                return this.columns;
+            }
+        },
+        data() {
+            return {
+                value: null,
+            }
+        },
+        methods: {
+            checkboxClicked(i) {
+                if(i.label == "GO Annotations") {
+                    if(i.selected) {
+                        this.$emit("uncheck-all");
+                    } else {
+                        this.$emit("check-all");
+                    }
+                }
+            },
+            moveUp(i) {
+                this.$emit("move-up", i);
+            },
+            moveDown(i) {
+                this.$emit("move-down", i);
+            }
+        }
+    }
+</script>
+
+<style scoped>
+ul {
+  list-style: none;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 200px;
+    overflow: scroll;
+}
+.mylist {
+    padding: 0.25rem 0.5rem !important;
+}
+
+li {
+  margin-top: 0.25em;
+}
+
+label {
+  font-weight: bold;
+}
+.arrow {
+    outline: 0 !important;
+    outline-offset: 0  !important;
+    background-image: none  !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none  !important;
+}
+
+.container::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 5px;
+}
+.container::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgb(0,0,0,0.5);
+    -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.897);
+    width: 20px !important;
+}
+</style>

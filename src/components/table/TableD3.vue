@@ -7,6 +7,25 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
+        <modal v-if="showDPEPopup" @close="showDPEPopup = false">
+            <div slot="header">{{DPEpopupHeader}}</div>
+            <template slot="body" slot-scope="props">
+                <dataPanelEdit :columns="editColsList" 
+                    v-on:check-change="onAnyDPECheckboxChange"
+                    v-on:uncheck-all="onDPEUncheckAll"
+                    v-on:check-all="onDPECheckAll"
+                    v-on:move-up="onMoveUp"
+                    v-on:move-down="onMoveDown"></dataPanelEdit>
+            </template>
+            <template slot="footer"> 
+                <button class="modal-default-button" @click="onTableEdit">
+                    Update Table
+                </button>
+                <button class="modal-default-button" @click="showDPEPopup = false">
+                    Close
+                </button>
+            </template>
+        </modal>
         <div v-if="showMsaLegend" class="legend-box">
             <msa-legend></msa-legend>
         </div>
@@ -26,24 +45,27 @@
                                             v-on:expandAll="expandAll"
                                             v-on:onShowLegend="showLegend"></tree-layout-menu>
                     </th>
-                    <th v-for="(col,i) in colsToRender.slice(0,2)" :key="i" :class="getThClasses(col, i)">
+                    <th v-for="(col,i) in colsToRender" :key="i" :class="getThClasses(col, i)">
+                        <tablecell :content="getHeader(col, i)"></tablecell>
+                        <button v-if="i==0" class="btn btn-link showCogBtn" v-b-tooltip.hover.top.o100 title="Table Panel Edit" @click="showPanel">
+                            <i class="fas fa-cog"></i>
+                        </button>
                         <button v-if="i==0" class="btn btn-link showMsaBtn" @click="toggleTabs">
                             <span class="text-danger ">{{msaTab?"Show Gene Info >":"Show MSA >"}}</span>
                         </button>
-                        <tablecell :content="getHeader(col, i)"></tablecell>
                     </th>
-                    <th v-for="(col,i) in colsToRender.slice(2,2+n_annotations)" :key="i+2" :class="getThClasses(col, i+2)" rowspan="2">
+                    <!-- <th v-for="(col,i) in colsToRender.slice(n_before_annotations,n_before_annotations+n_annotations)" :key="i+n_before_annotations" :class="getThClasses(col, i+2)" rowspan="2">
                         <div v-if="!msaTab && n_annotations>0 && i==0" class="annoPopver">
                             <b-button id="annoPopover" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text="popover1Text" title="GO Annotations" placement='right' target="annoPopover"></popover>
                         </div>
-                        <tablecell :content="getHeader(col, i+2)"></tablecell>
+                        <tablecell :content="getHeader(col, i+n_before_annotations)"></tablecell>
                     </th>
-                    <th v-for="(col,i) in colsToRender.slice(2+n_annotations,5+2+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
-                        <tablecell :content="getHeader(col, i+2+n_annotations)"></tablecell>
+                    <th v-for="(col,i) in colsToRender.slice(n_before_annotations+n_annotations,5+n_before_annotations+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
+                        <tablecell :content="getHeader(col, i+n_before_annotations+n_annotations)"></tablecell>
                         <b-button v-if="showPopover(col)" :id="col+'id'" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                         <popover v-if="showPopover(col)" :text="getPopoverText(col)" :title="col" placement='right' :target="col+'id'"></popover>
-                    </th>
+                    </th> -->
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
@@ -76,9 +98,11 @@
     import _ from 'lodash';
     import { mapGetters, mapActions } from 'vuex';
     import { setTimeout } from 'timers';
+    import Vue from 'vue';
 
     import * as types from '../../store/types_treedata';
     import popupTable from './PopupTable';
+    import dataPanelEdit from './DataPanelEdit';
     import customModal from '@/components/modal/CustomModal';
     import baseCell from '@/components/table/cells/BaseTableCell';
     import msaLegend from '../table/MsaLegend';
@@ -98,6 +122,7 @@
         components: {
             treelayout: treelayout,
             popupTable: popupTable,
+            dataPanelEdit: dataPanelEdit,
             searchBox: searchBox,
             'modal': customModal,
             tablecell: baseCell,
@@ -107,6 +132,7 @@
         data() {
             return {
                 isLoading: false,
+                origColsToRender: [],
                 colsToRender: [],
                 rowsToRender: [],
                 lazyLoad: true,
@@ -135,8 +161,12 @@
                 popupHeader: "",
                 popupCols: ["GO term", "Evidence description", "Reference", "With/From", "Source"],
                 popupData: [],
-
+                //DPE Popup
+                showDPEPopup: false,
+                DPEpopupHeader: "Edit Data Panel",
                 showMsaLegend: false,
+                editColsList: [],
+                editedOnce: false,
                 //CSV
                 tableCsvData: [],
                 tableCsvFields:[
@@ -171,6 +201,17 @@
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
                 store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING
             }),
+            // editColsList:{
+            //     // return this.setEditColsList();
+            //     // getter
+            //     get: function () {
+            //         return this.getEditColsList();
+            //     },
+            //     // setter
+            //     set: function (newValue) {
+            //         console.log("set ", newValue);
+            //     }
+            // } 
         },
         watch: {
             store_tableData: {
@@ -247,13 +288,124 @@
                 store_setClearData: types.TREE_ACTION_CLEAR_DATA,
                 store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
             }),
+            onAnyDPECheckboxChange() {
+
+            },
+            onMoveUp(col) {
+                let origCol = {}
+                Object.assign(origCol, col);
+                let idx = this.editColsList.findIndex(c => c.id == col.id);
+                // console.log("found ", idx);
+                if(this.editColsList[idx-1]) {
+                    Object.assign(this.editColsList[idx], this.editColsList[idx-1]);
+                    Object.assign(this.editColsList[idx-1], origCol);
+                }
+            },
+            onMoveDown(col) {
+                let origCol = {}
+                Object.assign(origCol, col);
+                let idx = this.editColsList.findIndex(c => c.id == col.id);
+                // console.log("found ", idx);
+                if(this.editColsList[idx+1]) {
+                    Object.assign(this.editColsList[idx], this.editColsList[idx+1]);
+                    Object.assign(this.editColsList[idx+1], origCol);
+                }
+            },
+            onDPEUncheckAll() {
+                let cols = this.editColsList;
+                let findIdx = cols.findIndex(c => c.label == "GO Annotations");
+                let colAnnotations = cols[findIdx];
+                if(colAnnotations.children) {
+                    colAnnotations.children.forEach(c => {
+                        if(c.selected == true) {
+                            c.selected = false;
+                        }
+                    });
+                }
+                this.editColsList[findIdx] = colAnnotations;
+            },
+            onDPECheckAll() {
+                let cols = this.editColsList;
+                let findIdx = cols.findIndex(c => c.label == "GO Annotations");
+                let colAnnotations = cols[findIdx];
+                if(colAnnotations.children) {
+                    colAnnotations.children.forEach(c => {
+                        if(c.selected == false) {
+                            c.selected = true;
+                        }
+                    });
+                }
+                this.editColsList[findIdx] = colAnnotations;
+            },
+            setEditColsList() {
+                // console.log("get cols edit list");
+                if(this.editedOnce) {
+                    return;
+                }
+                let colsToEdit = [];
+                let i = 0;
+                let total_annotations = this.store_annoMapping.headers.length;
+                // console.log("total_annotations ", total_annotations);
+                this.origColsToRender.forEach(colName => {
+                    let col = {'id': i, 'label': colName, 'selected': true, 'children': []};
+                    if(i==2) {
+                        col = {'id': i, 'label': "GO Annotations", 'selected': true};
+                        col.children = [];
+                    }
+                    if(i > 2 && i < total_annotations+2) {
+                        col['annotation'] = true;
+                        colsToEdit[2].children.push(col);
+                    } else {
+                        colsToEdit.push(col);
+                    }
+                    i++;
+                });
+                this.editColsList = colsToEdit;
+                // return colsToEdit;
+            },
+            onTableEdit() {
+                // console.log("on table edit ", this.editColsList);
+                let filteredCols = []
+                for(let i=0; i<this.editColsList.length; i++) {
+                    let colObj = this.editColsList[i];
+                    if(colObj.label == "GO Annotations") {
+                        if(colObj.children) {
+                            colObj.children.forEach(c => {
+                                if(c.selected == true) {
+                                    filteredCols.push(c);
+                                }
+                            });
+                        }
+                    }
+                    else if(colObj.selected == true) {
+                        filteredCols.push(colObj);
+                    }
+                }
+                // console.log(filteredCols);
+                this.colsToRender = [];
+                let annotationsLeft = 0;
+                filteredCols.forEach(f => {
+                    this.colsToRender.push(f.label);
+                    if(f.annotation) {
+                        annotationsLeft++;
+                    }
+                });
+                this.n_annotations = annotationsLeft;
+                this.editedOnce = true;
+            },
+            showPanel() {
+                this.showDPEPopup = true;
+                this.setEditColsList();
+            },
             resetTable() {
                 this.store_setClearData();
                 this.isLoading = false;
                 this.showMsaLegend = false;
                 this.msaTab = false;
+                this.editedOnce = false;
                 this.rowsToRender = [];
                 this.colsToRender = [];
+                this.origColsToRender = [];
                 if(this.$refs.treeLayout) {
                     this.$refs.treeLayout.refreshView();
                 }
@@ -274,6 +426,7 @@
                 }
                 // console.log(this.colsFromProp);
                 this.colsToRender = filteredCols;
+                this.origColsToRender = filteredCols;
                 this.rowsToRender = [];
             },
             toggleTabs() {
@@ -718,11 +871,12 @@
                 if(this.headerMap[title]) {
                     header['text'] = this.headerMap[title];
                 }
-                if(i > 1 && i < this.n_annotations+2) {
+                let baseCols = ["Gene", "Organism", "Gene name", "Gene ID", "Protein name", "Uniprot ID", "Subfamily Name", "MSA"];
+                if(!baseCols.includes(title)) {
                     header['type'] = 'slanted';
                 }
                 return header;
-            }, 
+            },
             getThClasses(colName, col_idx) {
                 let classes = [];
                 if(colName == "tree") {
@@ -946,6 +1100,17 @@
         -webkit-box-shadow: none !important;
         box-shadow: none  !important;
         font-size: 0.9rem;
+    }
+    .showCogBtn {
+        position: absolute;
+        left: 5px;
+        top: -3px;
+        border: none;
+        outline: 0 !important;
+        font-size: 30px;
+        /* background-image: none  !important; */
+        -webkit-box-shadow: none !important;
+        box-shadow: none  !important;
     }
     .msalegendbtn {
         position: absolute;
