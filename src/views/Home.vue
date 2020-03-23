@@ -40,7 +40,7 @@ export default {
   },
   methods: {
     goToSample(){
-      this.$router.push('/tree/PTHR11101');
+      window.open('/tree/PTHR11101');
     }
   }
 }

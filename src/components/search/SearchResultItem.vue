@@ -35,7 +35,7 @@
                 store_setTreeMetadata: types.TREE_ACTION_SET_METADATA
             }),
             openTreePage(item) {
-                this.$router.push('/tree/' + item.id);
+                window.open('/tree/' + item.id);
             },
             getFamilyName() {
                 if(this.item.family_name) {
