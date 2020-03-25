@@ -26,6 +26,7 @@ const state = {
           headers: [],
           mapping: null
         },
+        hidden_cols: ["Gene name", "Uniprot ID", "Subfamily Name"],
         nodes: null,
         nodeAtCenter: null, //Node which should be set at the center of tree panel view.
         matchedNodes: {
@@ -94,12 +95,15 @@ const getters = {
     },
     [types.TREE_GET_GRAFTSEQ]: state => {
         return state.treedata.graftSequence;
-    }
+    },
+    [types.TABLE_GET_HIDDENCOLS]: state => {
+        return state.treedata.hidden_cols;
+    },
 };
 
 const actions = {
     [types.TREE_ACTION_CLEAR_DATA]: (context, payload) => {
-        console.log("Action Clear Data");
+        // console.log("Action Clear Data");
         context.state.treedata.jsonString = null;
         context.state.treedata.jsonObj = null;
         context.state.treedata.go_annotations = null;
@@ -265,7 +269,10 @@ const actions = {
     },
     [types.TABLE_ACTION_SET_TABLE_ISLOADING]: (context, payload) => {
         context.state.treedata.isTableLoading = payload;
-    }
+    },
+    [types.TABLE_ACTION_SET_TABLE_HIDDENCOLS]: (context, payload) => {
+        context.state.treedata.hidden_cols = payload;
+    },
 };
 
 export default {

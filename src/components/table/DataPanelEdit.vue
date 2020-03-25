@@ -5,7 +5,7 @@
                 <div class="row">
                     <div class="col-9">
                         <div class="pretty p-default">
-                            <input type="checkbox" v-model="o.selected" @click="checkboxClicked(o)"/>
+                            <input :disabled="o.disabled" type="checkbox" v-model="o.selected" @click="checkboxClicked(o)"/>
                             <div class="state p-primary">
                                 <label>{{o.label}}</label>
                             </div>
@@ -22,10 +22,8 @@
                 </div>
                 <ul v-if="o.children" class="list-group">
                     <li class="list-group-item" v-for="c in o.children" :key="c.id">
-                        <!-- <input type="checkbox" id="option" v-model="c.selected">
-                        <label for="option"> {{c.label}}</label> -->
                         <div class="pretty p-default">
-                            <input type="checkbox" v-model="c.selected"/>
+                            <input type="checkbox" v-model="c.selected" @click="checkboxClicked(c)"/>
                             <div class="state p-primary">
                                 <label>{{c.label}}</label>
                             </div>
@@ -60,6 +58,7 @@
                         this.$emit("check-all");
                     }
                 }
+                this.$emit("check-change");
             },
             moveUp(i) {
                 this.$emit("move-up", i);

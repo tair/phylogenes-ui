@@ -53,6 +53,9 @@
                         <button v-if="i==0" class="btn btn-link showMsaBtn" @click="toggleTabs">
                             <span class="text-danger ">{{msaTab?"Show Gene Info >":"Show MSA >"}}</span>
                         </button>
+                        <button v-if="i==0" class="btn btn-link showHiddenVal" @click="showDPEPopup = true">
+                            <span class="text-danger ">{{colsHidden}} Cols Hidden</span>
+                        </button>
                     </th>
                     <!-- <th v-for="(col,i) in colsToRender.slice(n_before_annotations,n_before_annotations+n_annotations)" :key="i+n_before_annotations" :class="getThClasses(col, i+2)" rowspan="2">
                         <div v-if="!msaTab && n_annotations>0 && i==0" class="annoPopver">
@@ -134,6 +137,7 @@
                 isLoading: false,
                 origColsToRender: [],
                 colsToRender: [],
+                defaultColsToHide: [],
                 rowsToRender: [],
                 lazyLoad: true,
                 rowsScrolled: 0,
@@ -167,6 +171,7 @@
                 showMsaLegend: false,
                 editColsList: [],
                 editedOnce: false,
+                colsHidden: 0,
                 //CSV
                 tableCsvData: [],
                 tableCsvFields:[
@@ -199,19 +204,9 @@
                 store_getCenterNode: types.TREE_GET_CENTER_NODE,
                 store_annoMapping: types.TREE_GET_ANNO_MAPPING,
                 store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
-                store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING
-            }),
-            // editColsList:{
-            //     // return this.setEditColsList();
-            //     // getter
-            //     get: function () {
-            //         return this.getEditColsList();
-            //     },
-            //     // setter
-            //     set: function (newValue) {
-            //         console.log("set ", newValue);
-            //     }
-            // } 
+                store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING,
+                store_getTableHiddenCols: types.TABLE_GET_HIDDENCOLS
+            })
         },
         watch: {
             store_tableData: {
@@ -261,6 +256,14 @@
                 },
                 deep: true,
                 immediate: true
+            },
+            store_getTableHiddenCols: {
+                handler: function (val, oldVal) {
+                    if(val == null) return;
+                    this.defaultColsToHide = val;
+                },
+                deep: true,
+                immediate: true
             }
         },
         mounted() {
@@ -287,15 +290,20 @@
                 store_setTableData: types.TABLE_ACTION_SET_DATA,
                 store_setClearData: types.TREE_ACTION_CLEAR_DATA,
                 store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
+                store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS
             }),
             onAnyDPECheckboxChange() {
-
+                setTimeout(() => {
+                    this.refreshTablePanel();
+                })
             },
             onMoveUp(col) {
                 let origCol = {}
                 Object.assign(origCol, col);
                 let idx = this.editColsList.findIndex(c => c.id == col.id);
-                // console.log("found ", idx);
+                if(idx == 1) {
+                    return;
+                }
                 if(this.editColsList[idx-1]) {
                     Object.assign(this.editColsList[idx], this.editColsList[idx-1]);
                     Object.assign(this.editColsList[idx-1], origCol);
@@ -303,6 +311,7 @@
             },
             onMoveDown(col) {
                 let origCol = {}
+                if(col.id == 0) return;
                 Object.assign(origCol, col);
                 let idx = this.editColsList.findIndex(c => c.id == col.id);
                 // console.log("found ", idx);
@@ -348,6 +357,12 @@
                 // console.log("total_annotations ", total_annotations);
                 this.origColsToRender.forEach(colName => {
                     let col = {'id': i, 'label': colName, 'selected': true, 'children': []};
+                    if(i == 0) {
+                        col.disabled= true;
+                    }
+                    if(this.defaultColsToHide.includes(colName)) {
+                        col.selected = false;
+                    }
                     if(i==2) {
                         col = {'id': i, 'label': "GO Annotations", 'selected': true};
                         col.children = [];
@@ -363,9 +378,9 @@
                 this.editColsList = colsToEdit;
                 // return colsToEdit;
             },
-            onTableEdit() {
-                // console.log("on table edit ", this.editColsList);
-                let filteredCols = []
+            refreshTablePanel() {
+                let filteredCols = [];
+                let hiddenCols = [];
                 for(let i=0; i<this.editColsList.length; i++) {
                     let colObj = this.editColsList[i];
                     if(colObj.label == "GO Annotations") {
@@ -380,18 +395,21 @@
                     else if(colObj.selected == true) {
                         filteredCols.push(colObj);
                     }
+                    if(colObj.selected == false) {
+                        hiddenCols.push(colObj.label);
+                    }
                 }
-                // console.log(filteredCols);
                 this.colsToRender = [];
-                let annotationsLeft = 0;
                 filteredCols.forEach(f => {
                     this.colsToRender.push(f.label);
-                    if(f.annotation) {
-                        annotationsLeft++;
-                    }
                 });
-                this.n_annotations = annotationsLeft;
+                this.colsHidden = hiddenCols.length;
+                this.store_setTableHiddenCols(hiddenCols);
                 this.editedOnce = true;
+            },
+            onTableEdit() {
+                this.refreshTablePanel();
+                this.showDPEPopup = false;
             },
             showPanel() {
                 this.showDPEPopup = true;
@@ -425,8 +443,12 @@
                     });
                 }
                 // console.log(this.colsFromProp);
-                this.colsToRender = filteredCols;
                 this.origColsToRender = filteredCols;
+
+                //Remove default hidden cols from the filtered list
+                filteredCols = filteredCols.filter(t => !this.defaultColsToHide.includes(t));
+                this.colsHidden = this.defaultColsToHide.length;
+                this.colsToRender = filteredCols;
                 this.rowsToRender = [];
             },
             toggleTabs() {
@@ -546,7 +568,6 @@
                         this.$emit('search-tree', this.store_getSearchTxtWthn);
                     }, 2000);
                 } else {
-                    console.log(this.store_getSearchTxtWthn);
                     this.defaultSearchText = null;
                     this.store_setSearchTxtWthn(null);
                 }
@@ -1093,6 +1114,18 @@
         position: absolute;
         left: 60px;
         top: -3px;
+        z-index: 100;
+        outline: 0 !important;
+        outline-offset: 0  !important;
+        background-image: none  !important;
+        -webkit-box-shadow: none !important;
+        box-shadow: none  !important;
+        font-size: 0.9rem;
+    }
+    .showHiddenVal {
+        position: absolute;
+        left: 60px;
+        top: 20px;
         z-index: 100;
         outline: 0 !important;
         outline-offset: 0  !important;
