@@ -1104,6 +1104,7 @@ export default {
 <style scoped>
 .pg-databand {
     font-size: medium;
+    min-height: 50px;
 }
 @media (min-height: 300px) {
     .pg-databand { font-size: small; }

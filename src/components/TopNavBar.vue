@@ -9,7 +9,7 @@
             <div>
                 <ul class="announceUl">
                     <li>
-                        <div class="announce">Free Webinar (20min presentation followed by Q&A) </div>
+                        <div class="announce"><a class="announce-link" target="_blank" href="https://www.arabidopsis.org/doc/news/breaking_news/140#id194">Free Webinar</a> (20min presentation followed by Q&A) </div>
                     </li>
                     <li>
                         <div class="announce">Thursday, April 2nd, 10AM PST   Click to join: <a class="announce-link" target="_blank" href="https://chime.aws/4121492755">https://chime.aws/4121492755</a> </div>
@@ -110,7 +110,7 @@
 <style scoped>
     .my-logo {
         position: absolute;
-        padding: 10px;
+        padding: 5px;
     }
     .nav-input-width {
         width: 305px !important;
@@ -121,10 +121,12 @@
         font-weight: 600;
     }
     .announce-link {
+        color: #FFD966;
         text-decoration: underline;
     }
     .announceUl {
         list-style-type: none;
         padding-left: 7rem;
+        margin-bottom: 0.5rem;;
     }
 </style>
