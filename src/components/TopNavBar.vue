@@ -6,14 +6,26 @@
             <a class="my-logo" href="/">
                 <img width="75" height="48" src="../../src/assets/img/phy-logo2.png" alt="">
             </a>
+            <div>
+                <ul class="announceUl">
+                    <li>
+                        <div class="announce">Free Webinar (20min presentation followed by Q&A) </div>
+                    </li>
+                    <li>
+                        <div class="announce">Thursday, April 2nd, 10AM PST   Click to join: <a class="announce-link" target="_blank" href="https://chime.aws/4121492755">https://chime.aws/4121492755</a> </div>
+                    </li>
+                </ul>
+            </div>
+            
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
+                
                 <ul class="navbar-nav ml-auto">
-
+                    
+                    
                     <router-link to="/" tag="li">
                         <a class="nav-link pr-3 active" style="font-size: 15px"  data-toggle="tooltip" title="Home">
                             Home
@@ -102,5 +114,17 @@
     }
     .nav-input-width {
         width: 305px !important;
+    }
+    .announce {
+        color: #FFD966;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .announce-link {
+        text-decoration: underline;
+    }
+    .announceUl {
+        list-style-type: none;
+        padding-left: 7rem;
     }
 </style>
