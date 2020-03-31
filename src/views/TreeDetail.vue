@@ -545,6 +545,7 @@ export default {
         },
         /////////////////////// Anno ///////////////////////////////
         onAnnoClick(data) {
+            console.log(data);
             let uniprotId = data.row["Uniprot ID"].text;
             if(uniprotId) {
                 uniprotId = uniprotId.toLowerCase();

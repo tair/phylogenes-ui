@@ -53,7 +53,7 @@
                         <button v-if="i==0" class="btn btn-link showMsaBtn" @click="toggleTabs">
                             <span class="text-danger ">{{msaTab?"Show Gene Info >":"Show MSA >"}}</span>
                         </button>
-                        <button v-if="i==0" class="btn btn-link showHiddenVal" @click="showDPEPopup = true">
+                        <button v-if="i==0" class="btn btn-link showHiddenVal" @click="showPanel">
                             <span class="text-danger ">{{colsHidden}} Cols Hidden</span>
                         </button>
                     </th>
@@ -298,31 +298,57 @@
                 })
             },
             onMoveUp(col) {
-                let origCol = {}
-                Object.assign(origCol, col);
-                let idx = this.editColsList.findIndex(c => c.id == col.id);
-                if(idx == 1) {
-                    return;
-                }
-                if(this.editColsList[idx-1]) {
-                    Object.assign(this.editColsList[idx], this.editColsList[idx-1]);
-                    Object.assign(this.editColsList[idx-1], origCol);
+                // console.log(col, this.editColsList);
+                if(col.annotation) {
+                    let kf_idx = this.editColsList.findIndex(c => c.label == "Known function");
+                    let kf = this.editColsList[kf_idx]
+                    let idx = kf.children.findIndex(c => c.id == col.id);
+                    let origCol = {}
+                    if(kf.children[idx-1] == null) return;
+                    Object.assign(origCol, kf.children[idx]);
+                    Object.assign(kf.children[idx], kf.children[idx-1]);
+                    Object.assign(kf.children[idx-1], origCol);
+                    Object.assign(this.editColsList[kf_idx], kf);
+                } else {
+                    let origCol = {}
+                    Object.assign(origCol, col);
+                    let idx = this.editColsList.findIndex(c => c.id == col.id);
+                    if(idx == 1) {
+                        return;
+                    }
+                    if(this.editColsList[idx-1]) {
+                        Object.assign(this.editColsList[idx], this.editColsList[idx-1]);
+                        Object.assign(this.editColsList[idx-1], origCol);
+                    }
                 }
             },
             onMoveDown(col) {
-                let origCol = {}
-                if(col.id == 0) return;
-                Object.assign(origCol, col);
-                let idx = this.editColsList.findIndex(c => c.id == col.id);
-                // console.log("found ", idx);
-                if(this.editColsList[idx+1]) {
-                    Object.assign(this.editColsList[idx], this.editColsList[idx+1]);
-                    Object.assign(this.editColsList[idx+1], origCol);
+                if(col.annotation) {
+                    let kf_idx = this.editColsList.findIndex(c => c.label == "Known function");
+                    let kf = this.editColsList[kf_idx]
+                    let idx = kf.children.findIndex(c => c.id == col.id);
+                    if(kf.children[idx+1] == null) return;
+                    let origCol = {}
+                    Object.assign(origCol, kf.children[idx]);
+                    Object.assign(kf.children[idx], kf.children[idx+1]);
+                    Object.assign(kf.children[idx+1], origCol);
+                    Object.assign(this.editColsList[kf_idx], kf);
+                } else {
+                    let origCol = {}
+                    if(col.id == 0) return;
+                    Object.assign(origCol, col);
+                    let idx = this.editColsList.findIndex(c => c.id == col.id);
+                    // console.log("found ", idx);
+                    if(this.editColsList[idx+1]) {
+                        Object.assign(this.editColsList[idx], this.editColsList[idx+1]);
+                        Object.assign(this.editColsList[idx+1], origCol);
+                    }
                 }
             },
             onDPEUncheckAll() {
                 let cols = this.editColsList;
-                let findIdx = cols.findIndex(c => c.label == "GO Annotations");
+                let findIdx = cols.findIndex(c => c.label == "Known function");
+                console.log(findIdx);
                 let colAnnotations = cols[findIdx];
                 if(colAnnotations.children) {
                     colAnnotations.children.forEach(c => {
@@ -335,7 +361,7 @@
             },
             onDPECheckAll() {
                 let cols = this.editColsList;
-                let findIdx = cols.findIndex(c => c.label == "GO Annotations");
+                let findIdx = cols.findIndex(c => c.label == "Known function");
                 let colAnnotations = cols[findIdx];
                 if(colAnnotations.children) {
                     colAnnotations.children.forEach(c => {
@@ -345,6 +371,9 @@
                     });
                 }
                 this.editColsList[findIdx] = colAnnotations;
+            },
+            updateEditAnnotations() {
+                let total_annotations = this.store_annoMapping.headers.length;
             },
             setEditColsList() {
                 // console.log("get cols edit list");
@@ -364,11 +393,17 @@
                         col.selected = false;
                     }
                     if(i==2) {
-                        col = {'id': i, 'label': "GO Annotations", 'selected': true};
+                        col = {'id': i, 'label': "Known function", 'selected': true};
                         col.children = [];
+                        if(this.defaultColsToHide.includes("Known function")) {
+                            col.selected = false;
+                        }
                     }
                     if(i > 2 && i < total_annotations+2) {
                         col['annotation'] = true;
+                        if(this.defaultColsToHide.includes("Known function")) {
+                            col.selected = false;
+                        }
                         colsToEdit[2].children.push(col);
                     } else {
                         colsToEdit.push(col);
@@ -383,7 +418,7 @@
                 let hiddenCols = [];
                 for(let i=0; i<this.editColsList.length; i++) {
                     let colObj = this.editColsList[i];
-                    if(colObj.label == "GO Annotations") {
+                    if(colObj.label == "Known function") {
                         if(colObj.children) {
                             colObj.children.forEach(c => {
                                 if(c.selected == true) {
@@ -405,6 +440,7 @@
                 });
                 this.colsHidden = hiddenCols.length;
                 this.store_setTableHiddenCols(hiddenCols);
+                this.updateRenderRows();
                 this.editedOnce = true;
             },
             onTableEdit() {
@@ -430,6 +466,7 @@
             },
             initTable() {
                 this.addCustomScrollEvent();
+                this.updateEditAnnotations();
             },
             updateTableCols() {
                 if(!this.colsFromProp || !this.store_tableData) return;
@@ -445,8 +482,14 @@
                 // console.log(this.colsFromProp);
                 this.origColsToRender = filteredCols;
 
+                //Check for unchecked cols
+                if(this.defaultColsToHide.includes("Known function")) {
+                    //Removes all annotations cols
+                    filteredCols = filteredCols.filter(t => this.colsFromProp.includes(t));
+                }
                 //Remove default hidden cols from the filtered list
                 filteredCols = filteredCols.filter(t => !this.defaultColsToHide.includes(t));
+
                 this.colsHidden = this.defaultColsToHide.length;
                 this.colsToRender = filteredCols;
                 this.rowsToRender = [];
@@ -499,6 +542,10 @@
                 //Annotations
                 if(n.data.uniprotId) {
                     let uniprotId = n.data.uniprotId.toLowerCase();
+                    // console.log(this.store_annoMapping.annoMap);
+                    if(!this.store_annoMapping.annoMap) {
+                        return tableNode;
+                    }
                     if(this.store_annoMapping.annoMap[uniprotId]) {
                         let currAnno = this.store_annoMapping.annoMap[uniprotId];
                         let allAnnos = this.store_annoMapping.headers;

@@ -21,11 +21,23 @@
                     </div>
                 </div>
                 <ul v-if="o.children" class="list-group">
-                    <li class="list-group-item" v-for="c in o.children" :key="c.id">
-                        <div class="pretty p-default">
-                            <input type="checkbox" v-model="c.selected" @click="checkboxClicked(c)"/>
-                            <div class="state p-primary">
-                                <label>{{c.label}}</label>
+                    <li class="list-group-item annoList" v-for="c in o.children" :key="c.id">
+                        <div class="row">
+                            <div class="col-9">
+                                <div class="pretty p-default">
+                                    <input type="checkbox" v-model="c.selected" @click="checkboxClicked(c)"/>
+                                    <div class="state p-primary">
+                                        <label>{{c.label}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-inline arrow" @click="moveUp(c)">
+                                    <i class="fa fa-angle-up"></i>
+                                </button>
+                                <button class="btn btn-inline arrow" @click="moveDown(c)">
+                                    <i class="fa fa-angle-down"></i>
+                                </button>
                             </div>
                         </div>
                     </li>
@@ -51,7 +63,7 @@
         },
         methods: {
             checkboxClicked(i) {
-                if(i.label == "GO Annotations") {
+                if(i.label == "Known function") {
                     if(i.selected) {
                         this.$emit("uncheck-all");
                     } else {
@@ -85,6 +97,9 @@ ul {
 }
 .mylist {
     padding: 0.25rem 0.5rem !important;
+}
+.annoList {
+    padding: 0.25rem 0.25rem !important;
 }
 
 li {
