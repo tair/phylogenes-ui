@@ -324,7 +324,7 @@
                 //Annotations
                 if(n.data.uniprotId) {
                     let uniprotId = n.data.uniprotId.toLowerCase();
-                    if(this.store_annoMapping.annoMap[uniprotId]) {
+                    if(this.store_annoMapping.annoMap && this.store_annoMapping.annoMap[uniprotId]) {
                         let currAnno = this.store_annoMapping.annoMap[uniprotId];
                         let allAnnos = this.store_annoMapping.headers;
                         allAnnos.forEach(a => {
