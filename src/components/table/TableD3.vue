@@ -1,5 +1,6 @@
 <template>
     <div id="parent" :style="{ width: window.width+'px', height: window.height-50 + 'px' }">
+        <!-- GO Annotations Info modal popup window -->
         <modal v-if="showPopup" @close="showPopup = false">
             <div slot="header">{{popupHeader}}</div>
             <template slot="body" slot-scope="props">
@@ -7,8 +8,9 @@
                 <div v-if="popupData.length===0"><i>No Go Annotations for this gene!</i></div>
             </template>
         </modal>
+        <!-- Data Panel Edit modal popup window -->
         <modal v-if="showDPEPopup" @close="showDPEPopup = false">
-            <div slot="header">{{DPEpopupHeader}}</div>
+            <div slot="header">{{DPEpopupHeader}} <span class="text-danger ">({{colsHidden}} Cols Hidden)</span></div>
             <template slot="body" slot-scope="props">
                 <dataPanelEdit :columns="editColsList" 
                     v-on:check-change="onAnyDPECheckboxChange"
@@ -26,17 +28,17 @@
                 </button>
             </template>
         </modal>
+        <!-- MSA Legend Popup -->
         <div v-if="showMsaLegend" class="legend-box">
             <msa-legend></msa-legend>
         </div>
+        <!-- Main Table -->
         <table class="mainTable">
             <thead id="head" ref="thead">
                 <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
                     <span class="text-danger">{{showMsaLegend?"Hide Legend":"Show Legend"}}</span>
                 </button>
-
-                <tr id="mainTr">
-                    
+                <tr id="mainTr">       
                     <th :class="getThClasses('tree', -1)">
                         <tree-layout-menu ref="tlmenu" :csvTable="csvTable" :dropdownMenu="treeDropdownMenu" :treeId="treeId"
                                             v-on:ddItemClicked="ddClicked"
@@ -46,29 +48,25 @@
                                             v-on:onShowLegend="showLegend"></tree-layout-menu>
                     </th>
                     <th v-for="(col,i) in colsToRender" :key="i" :class="getThClasses(col, i)">
-                        <tablecell :content="getHeader(col, i)"></tablecell>
-                        <button v-if="i==0" class="btn btn-link showCogBtn" v-b-tooltip.hover.top.o100 title="Table Panel Edit" @click="showPanel">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                        <button v-if="i==0" class="btn btn-link showMsaBtn" @click="toggleTabs">
-                            <span class="text-danger ">{{msaTab?"Show Gene Info >":"Show MSA >"}}</span>
-                        </button>
-                        <button v-if="i==0" class="btn btn-link showHiddenVal" @click="showPanel">
-                            <span class="text-danger ">{{colsHidden}} Cols Hidden</span>
-                        </button>
-                    </th>
-                    <!-- <th v-for="(col,i) in colsToRender.slice(n_before_annotations,n_before_annotations+n_annotations)" :key="i+n_before_annotations" :class="getThClasses(col, i+2)" rowspan="2">
-                        <div v-if="!msaTab && n_annotations>0 && i==0" class="annoPopver">
+                        <div v-if="isFirstAnnoCol(col)" class="annoPopver">
                             <b-button id="annoPopover" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                             <popover :text="popover1Text" title="GO Annotations" placement='right' target="annoPopover"></popover>
                         </div>
-                        <tablecell :content="getHeader(col, i+n_before_annotations)"></tablecell>
-                    </th>
-                    <th v-for="(col,i) in colsToRender.slice(n_before_annotations+n_annotations,5+n_before_annotations+n_annotations)" :key="i+2+n_annotations" :class="getThClasses(col, i+2+n_annotations)">
-                        <tablecell :content="getHeader(col, i+n_before_annotations+n_annotations)"></tablecell>
                         <b-button v-if="showPopover(col)" :id="col+'id'" href="#" tabindex="0" variant="flat"><i class="fas fa-info-circle fa-lg"></i></b-button>
                         <popover v-if="showPopover(col)" :text="getPopoverText(col)" :title="col" placement='right' :target="col+'id'"></popover>
-                    </th> -->
+                        <tablecell :content="getHeader(col, i)"></tablecell>
+                        <div v-if="i==0">
+                            <button class="btn btn-link showCogBtn" v-b-tooltip.hover.top.o100 title="Table Panel Edit" @click="showPanel">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <button class="btn btn-link showMsaBtn" @click="toggleTabs">
+                                <span class="text-danger ">{{msaTab?"Show Gene Info >":"Show MSA >"}}</span>
+                            </button>
+                            <button class="btn btn-link showHiddenVal" @click="showPanel">
+                                <span class="text-danger ">{{colsHidden}} Cols Hidden</span>
+                            </button>
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody id="body" ref="tbody">
@@ -292,165 +290,6 @@
                 store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
                 store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS
             }),
-            onAnyDPECheckboxChange() {
-                setTimeout(() => {
-                    this.refreshTablePanel();
-                })
-            },
-            onMoveUp(col) {
-                // console.log(col, this.editColsList);
-                if(col.annotation) {
-                    let kf_idx = this.editColsList.findIndex(c => c.label == "Known function");
-                    let kf = this.editColsList[kf_idx]
-                    let idx = kf.children.findIndex(c => c.id == col.id);
-                    let origCol = {}
-                    if(kf.children[idx-1] == null) return;
-                    Object.assign(origCol, kf.children[idx]);
-                    Object.assign(kf.children[idx], kf.children[idx-1]);
-                    Object.assign(kf.children[idx-1], origCol);
-                    Object.assign(this.editColsList[kf_idx], kf);
-                } else {
-                    let origCol = {}
-                    Object.assign(origCol, col);
-                    let idx = this.editColsList.findIndex(c => c.id == col.id);
-                    if(idx == 1) {
-                        return;
-                    }
-                    if(this.editColsList[idx-1]) {
-                        Object.assign(this.editColsList[idx], this.editColsList[idx-1]);
-                        Object.assign(this.editColsList[idx-1], origCol);
-                    }
-                }
-            },
-            onMoveDown(col) {
-                if(col.annotation) {
-                    let kf_idx = this.editColsList.findIndex(c => c.label == "Known function");
-                    let kf = this.editColsList[kf_idx]
-                    let idx = kf.children.findIndex(c => c.id == col.id);
-                    if(kf.children[idx+1] == null) return;
-                    let origCol = {}
-                    Object.assign(origCol, kf.children[idx]);
-                    Object.assign(kf.children[idx], kf.children[idx+1]);
-                    Object.assign(kf.children[idx+1], origCol);
-                    Object.assign(this.editColsList[kf_idx], kf);
-                } else {
-                    let origCol = {}
-                    if(col.id == 0) return;
-                    Object.assign(origCol, col);
-                    let idx = this.editColsList.findIndex(c => c.id == col.id);
-                    // console.log("found ", idx);
-                    if(this.editColsList[idx+1]) {
-                        Object.assign(this.editColsList[idx], this.editColsList[idx+1]);
-                        Object.assign(this.editColsList[idx+1], origCol);
-                    }
-                }
-            },
-            onDPEUncheckAll() {
-                let cols = this.editColsList;
-                let findIdx = cols.findIndex(c => c.label == "Known function");
-                console.log(findIdx);
-                let colAnnotations = cols[findIdx];
-                if(colAnnotations.children) {
-                    colAnnotations.children.forEach(c => {
-                        if(c.selected == true) {
-                            c.selected = false;
-                        }
-                    });
-                }
-                this.editColsList[findIdx] = colAnnotations;
-            },
-            onDPECheckAll() {
-                let cols = this.editColsList;
-                let findIdx = cols.findIndex(c => c.label == "Known function");
-                let colAnnotations = cols[findIdx];
-                if(colAnnotations.children) {
-                    colAnnotations.children.forEach(c => {
-                        if(c.selected == false) {
-                            c.selected = true;
-                        }
-                    });
-                }
-                this.editColsList[findIdx] = colAnnotations;
-            },
-            updateEditAnnotations() {
-                let total_annotations = this.store_annoMapping.headers.length;
-            },
-            setEditColsList() {
-                // console.log("get cols edit list");
-                if(this.editedOnce) {
-                    return;
-                }
-                let colsToEdit = [];
-                let i = 0;
-                let total_annotations = this.store_annoMapping.headers.length;
-                // console.log("total_annotations ", total_annotations);
-                this.origColsToRender.forEach(colName => {
-                    let col = {'id': i, 'label': colName, 'selected': true, 'children': []};
-                    if(i == 0) {
-                        col.disabled= true;
-                    }
-                    if(this.defaultColsToHide.includes(colName)) {
-                        col.selected = false;
-                    }
-                    if(i==2) {
-                        col = {'id': i, 'label': "Known function", 'selected': true};
-                        col.children = [];
-                        if(this.defaultColsToHide.includes("Known function")) {
-                            col.selected = false;
-                        }
-                    }
-                    if(i > 2 && i < total_annotations+2) {
-                        col['annotation'] = true;
-                        if(this.defaultColsToHide.includes("Known function")) {
-                            col.selected = false;
-                        }
-                        colsToEdit[2].children.push(col);
-                    } else {
-                        colsToEdit.push(col);
-                    }
-                    i++;
-                });
-                this.editColsList = colsToEdit;
-                // return colsToEdit;
-            },
-            refreshTablePanel() {
-                let filteredCols = [];
-                let hiddenCols = [];
-                for(let i=0; i<this.editColsList.length; i++) {
-                    let colObj = this.editColsList[i];
-                    if(colObj.label == "Known function") {
-                        if(colObj.children) {
-                            colObj.children.forEach(c => {
-                                if(c.selected == true) {
-                                    filteredCols.push(c);
-                                }
-                            });
-                        }
-                    }
-                    else if(colObj.selected == true) {
-                        filteredCols.push(colObj);
-                    }
-                    if(colObj.selected == false) {
-                        hiddenCols.push(colObj.label);
-                    }
-                }
-                this.colsToRender = [];
-                filteredCols.forEach(f => {
-                    this.colsToRender.push(f.label);
-                });
-                this.colsHidden = hiddenCols.length;
-                this.store_setTableHiddenCols(hiddenCols);
-                this.updateRenderRows();
-                this.editedOnce = true;
-            },
-            onTableEdit() {
-                this.refreshTablePanel();
-                this.showDPEPopup = false;
-            },
-            showPanel() {
-                this.showDPEPopup = true;
-                this.setEditColsList();
-            },
             resetTable() {
                 this.store_setClearData();
                 this.isLoading = false;
@@ -466,7 +305,6 @@
             },
             initTable() {
                 this.addCustomScrollEvent();
-                this.updateEditAnnotations();
             },
             updateTableCols() {
                 if(!this.colsFromProp || !this.store_tableData) return;
@@ -489,7 +327,6 @@
                 }
                 //Remove default hidden cols from the filtered list
                 filteredCols = filteredCols.filter(t => !this.defaultColsToHide.includes(t));
-
                 this.colsHidden = this.defaultColsToHide.length;
                 this.colsToRender = filteredCols;
                 this.rowsToRender = [];
@@ -750,6 +587,12 @@
                     }
                     row[c] = content;
                 });
+
+                let cellTxt = rowData["Uniprot ID"];
+                //"UniprotFixed" is added to rowData to be used for getting annotation for row clicked, 
+                // but this is not displayed in the table as a column.
+                let content = {text: cellTxt, id: rowData.id};
+                row["UniprotFixed"] = content;
                 return row;
             },
             //TREE MENU
@@ -823,9 +666,174 @@
             highlightTree() {
                 this.$emit('highlight-tree');
             },
+            // ~~~~~~~~~~~~~~~~~~~~~~~~ Table Panel Edit ~~~~~~~~~~~~~~~~//
+            //Show Table Edit Panel (Popup to add/remove and reorder table columns)      
+            showPanel() {
+                this.showDPEPopup = true;
+                this.setEditColsList();
+            },
+            //Events from table edit panel
+            onAnyDPECheckboxChange() {
+                setTimeout(() => {
+                    this.refreshTablePanel();
+                })
+            },
+            onMoveUp(col) {
+                // console.log(col, this.editColsList);
+                if(col.annotation) {
+                    let kf_idx = this.editColsList.findIndex(c => c.label == "Known function");
+                    let kf = this.editColsList[kf_idx]
+                    let idx = kf.children.findIndex(c => c.id == col.id);
+                    let origCol = {}
+                    if(kf.children[idx-1] == null) return;
+                    Object.assign(origCol, kf.children[idx]);
+                    Object.assign(kf.children[idx], kf.children[idx-1]);
+                    Object.assign(kf.children[idx-1], origCol);
+                    Object.assign(this.editColsList[kf_idx], kf);
+                } else {
+                    let origCol = {}
+                    Object.assign(origCol, col);
+                    let idx = this.editColsList.findIndex(c => c.id == col.id);
+                    if(idx == 1) {
+                        return;
+                    }
+                    if(this.editColsList[idx-1]) {
+                        Object.assign(this.editColsList[idx], this.editColsList[idx-1]);
+                        Object.assign(this.editColsList[idx-1], origCol);
+                    }
+                }
+            },
+            onMoveDown(col) {
+                if(col.annotation) {
+                    let kf_idx = this.editColsList.findIndex(c => c.label == "Known function");
+                    let kf = this.editColsList[kf_idx]
+                    let idx = kf.children.findIndex(c => c.id == col.id);
+                    if(kf.children[idx+1] == null) return;
+                    let origCol = {}
+                    Object.assign(origCol, kf.children[idx]);
+                    Object.assign(kf.children[idx], kf.children[idx+1]);
+                    Object.assign(kf.children[idx+1], origCol);
+                    Object.assign(this.editColsList[kf_idx], kf);
+                } else {
+                    let origCol = {}
+                    if(col.id == 0) return;
+                    Object.assign(origCol, col);
+                    let idx = this.editColsList.findIndex(c => c.id == col.id);
+                    if(this.editColsList[idx+1]) {
+                        Object.assign(this.editColsList[idx], this.editColsList[idx+1]);
+                        Object.assign(this.editColsList[idx+1], origCol);
+                    }
+                }
+            },
+            onDPEUncheckAll() {
+                let cols = this.editColsList;
+                let findIdx = cols.findIndex(c => c.label == "Known function");
+                // console.log(findIdx);
+                let colAnnotations = cols[findIdx];
+                if(colAnnotations.children) {
+                    colAnnotations.children.forEach(c => {
+                        if(c.selected == true) {
+                            c.selected = false;
+                        }
+                    });
+                }
+                this.editColsList[findIdx] = colAnnotations;
+            },
+            onDPECheckAll() {
+                let cols = this.editColsList;
+                let findIdx = cols.findIndex(c => c.label == "Known function");
+                let colAnnotations = cols[findIdx];
+                if(colAnnotations.children) {
+                    colAnnotations.children.forEach(c => {
+                        if(c.selected == false) {
+                            c.selected = true;
+                        }
+                    });
+                }
+                this.editColsList[findIdx] = colAnnotations;
+            },
+            setEditColsList() {
+                // console.log("get cols edit list");
+                if(this.editedOnce) {
+                    return;
+                }
+                let colsToEdit = [];
+                let i = 0;
+                let total_annotations = this.store_annoMapping.headers.length;
+                // console.log("total_annotations ", total_annotations);
+                this.origColsToRender.forEach(colName => {
+                    let col = {'id': i, 'label': colName, 'selected': true, 'children': []};
+                    if(i == 0) {
+                        col.disabled= true;
+                    }
+                    if(this.defaultColsToHide.includes(colName)) {
+                        col.selected = false;
+                    }
+                    if(i==2) {
+                        col = {'id': i, 'label': "Known function", 'selected': true};
+                        col.children = [];
+                        if(this.defaultColsToHide.includes("Known function")) {
+                            col.selected = false;
+                        }
+                    }
+                    if(i > 2 && i < total_annotations+2) {
+                        col['annotation'] = true;
+                        if(this.defaultColsToHide.includes("Known function")) {
+                            col.selected = false;
+                        }
+                        colsToEdit[2].children.push(col);
+                    } else {
+                        colsToEdit.push(col);
+                    }
+                    i++;
+                });
+                this.editColsList = colsToEdit;
+            },
+            onTableEdit() {
+                this.refreshTablePanel();
+                this.showDPEPopup = false;
+            },
             //~~~~~~~~~~~~~~~~~~~~~~~~~~ Table Utils ~~~~~~~~~~~~~~~~~~~~//
+            //Refresh the table rendering according to the "editColsList" which has information for cols
+            // selected/deselected and the order of the cols to be displayed.
+            refreshTablePanel() {
+                let filteredCols = [];
+                let hiddenCols = [];
+                for(let i=0; i<this.editColsList.length; i++) {
+                    let colObj = this.editColsList[i];
+                    if(colObj.label == "Known function") {
+                        if(colObj.children) {
+                            colObj.children.forEach(c => {
+                                if(c.selected == true) {
+                                    filteredCols.push(c);
+                                }
+                            });
+                        }
+                    }
+                    else if(colObj.selected == true) {
+                        filteredCols.push(colObj);
+                    }
+                    if(colObj.selected == false) {
+                        hiddenCols.push(colObj.label);
+                    }
+                }
+                this.colsToRender = [];
+                filteredCols.forEach(f => {
+                    this.colsToRender.push(f.label);
+                });
+                this.colsHidden = hiddenCols.length;
+                //Hidden cols vuex storage reused for other trees as well in a session
+                this.store_setTableHiddenCols(hiddenCols);
+                this.updateRenderRows();
+                this.editedOnce = true;
+            },
             getTableCsvData(nodes) {
                 this.$emit('set-csv-data', nodes);
+            },
+            isFirstAnnoCol(colName) {
+                // console.log(this.store_annoMapping.headers);
+                if(colName == this.store_annoMapping.headers[this.store_annoMapping.headers.length-1]) return true;
+                return false;
             },
             //SCROLL
             addCustomScrollEvent() {
@@ -964,7 +972,7 @@
                     classes.push('widthMin');
                     classes.push('cell-no-border');
                 }
-                if(colName=="Gene name" && this.n_annotations>0) {
+                if(colName=="Gene ID" && this.n_annotations>0) {
                     classes.push('left-border');
                 }
                 //col_idx = 0 is 'Gene', which is the 2nd column in table which needs to be sticky
@@ -995,7 +1003,7 @@
                 if(col_idx == 0) {
                     classes.push('stickyCol2');
                 }
-                if(colName=="Gene name" && this.n_annotations>0) {
+                if(colName=="Gene ID" && this.n_annotations>0) {
                     classes.push('left-border');
                 }
                 if(cellValue && cellValue.text == '*') {
