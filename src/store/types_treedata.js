@@ -17,6 +17,7 @@ export const TREE_GET_GRAFTSEQ = 'treedata/store_getGraftSeq';
 export const TABLE_GET_MSA_FREQ = 'treedata/store_getFreqMsa';
 export const TABLE_GET_SCROLL = 'treedata/store_getTableScrollRow';
 export const TABLE_GET_ISTABLELOADING = 'treedata/store_tableIsLoading';
+export const TABLE_GET_HIDDENCOLS = 'treedata/store_getTableHiddenCols';
 
 //actions
 export const TREE_ACTION_CLEAR_DATA = 'treedata/store_setClearData';
@@ -37,5 +38,6 @@ export const TREE_ACTION_SET_SEARCHTEXTWTN = 'treedata/store_setSearchTxtWthn';
 export const TREE_ACTION_SET_ISGRAFTED = 'treedata/store_setHasGrafted';
 export const TREE_ACTION_SET_GRAFTSEQ = 'treedata/store_setGraftSeq';
 export const TABLE_ACTION_SET_TABLE_ISLOADING = 'treedata/store_setTableIsLoading';
+export const TABLE_ACTION_SET_TABLE_HIDDENCOLS = 'treedata/store_setTableHiddenCols';
 export const TABLE_ACTION_SET_MSA_FREQ = 'treedata/store_setFreqMsa';
 export const TREE_ACTION_GET_ANNOTATIONS = 'tree/getAnnotations';

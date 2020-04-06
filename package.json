@@ -17,6 +17,7 @@
     "jquery": "^3.4.1",
     "lodash": "^4.17.14",
     "popper.js": "^1.14.3",
+    "pretty-checkbox": "^3.0.3",
     "vue": "^2.5.16",
     "vue-json-csv": "^1.2.4",
     "vue-router": "^3.0.1",

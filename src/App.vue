@@ -49,6 +49,7 @@
 
 <style lang="scss">
   @import "assets/css/app.scss";
+  @import '~pretty-checkbox/src/pretty-checkbox.scss';
   @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
   @import url('https://use.fontawesome.com/releases/v5.6.0/css/all.css');
   /*@import "/node_modules/@fortawesome/fontawesome-free/css/all.css";*/

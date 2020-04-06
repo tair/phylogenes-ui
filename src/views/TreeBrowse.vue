@@ -68,7 +68,6 @@
         created() {
             this.treeFilters = this.stateTreeFilters;
             this.doSearch();
-
         },
         methods: {
             showSearchResult() {
