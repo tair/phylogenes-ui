@@ -13,32 +13,6 @@
           alt=""
         />
       </a>
-      <div>
-        <ul class="announceUl">
-          <li>
-            <div class="announce">
-              <a
-                class="announce-link"
-                target="_blank"
-                href="https://www.arabidopsis.org/doc/news/breaking_news/140#id194"
-                >Free Webinar</a
-              >
-              (20min presentation followed by Q&A)
-            </div>
-          </li>
-          <li>
-            <div class="announce">
-              Thursday, April 2nd, 10AM PST Click to join:
-              <a
-                class="announce-link"
-                target="_blank"
-                href="https://chime.aws/4121492755"
-                >https://chime.aws/4121492755</a
-              >
-            </div>
-          </li>
-        </ul>
-      </div>
 
       <button
         class="navbar-toggler"
