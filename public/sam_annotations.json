@@ -1,23 +1,652 @@
-[{"uniprot_id":"o14618","go_annotations":[{"geneProductId":"o14618","goId":"GO:0045296","goName":"cadherin binding","reference":"PMID:25468996"}, {"geneProductId":"o14618","goId":"GO:0005507","goName":"copper ion binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:9726962"}, {"geneProductId":"o14618","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:20154138","withFrom":[{"db":"UniProtKB","id":"P98170"}]}, {"geneProductId":"o14618","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:9726962","withFrom":[{"db":"UniProtKB","id":"P00441"}]}]},
-          {"uniprot_id":"q9jk72","go_annotations":[{"geneProductId":"q9jk72","goId":"GO:0019899","goName":"enzyme binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:10964676"}]},
-          {"uniprot_id":"e1jh26","go_annotations":[{"geneProductId":"e1jh26","goId":"GO:0016532","goName":"superoxide dismutase copper chaperone activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:18948262"}]},
-          {"uniprot_id":"p40202","go_annotations":[{"geneProductId":"p40202","goId":"GO:0016532","goName":"superoxide dismutase copper chaperone activity","evidenceCode":"ECO:0000316,IGI,genetic interaction","reference":"PMID:9295278","withFrom":[{"db":"SGD","id":"S000003865"}]}, {"geneProductId":"p40202","goId":"GO:0016532","goName":"superoxide dismutase copper chaperone activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:9295278"}, {"geneProductId":"p40202","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:16429126","withFrom":[{"db":"UniProtKB","id":"P00445"}]}, {"geneProductId":"p40202","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:11524675","withFrom":[{"db":"UniProtKB","id":"P00445"}]}]},
-          {"uniprot_id":"q9ld47","go_annotations":[{"geneProductId":"q9ld47","goId":"GO:0016532","goName":"superoxide dismutase copper chaperone activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:16126858"}]},
-          {"uniprot_id":"q7jr71","go_annotations":[{"geneProductId":"q7jr71","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:25339624"}, {"geneProductId":"q7jr71","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:21635891"}]},
-          {"uniprot_id":"q55gq5","go_annotations":[{"geneProductId":"q55gq5","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:12840076"}]},
-          {"uniprot_id":"p08294","go_annotations":[{"geneProductId":"p08294","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:15528465","withFrom":[{"db":"UniProtKB","id":"Q9UBX5"}]}, {"geneProductId":"p08294","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:25416956","withFrom":[{"db":"UniProtKB","id":"O43765"}]}]},
-          {"uniprot_id":"o09164","go_annotations":[{"geneProductId":"o09164","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:16371425","withFrom":[{"db":"UniProtKB","id":"Q64430"}]}, {"geneProductId":"o09164","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:16371425"}]},
-          {"uniprot_id":"q08420","go_annotations":[{"geneProductId":"q08420","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:8643556"}]},
-          {"uniprot_id":"p00441","go_annotations":[{"geneProductId":"p00441","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:24023695","withFrom":[{"db":"UniProtKB","id":"P25686-2"}]}, {"geneProductId":"p00441","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:24567322"}, {"geneProductId":"p00441","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:12551919"}, {"geneProductId":"p00441","goId":"GO:0051087","goName":"chaperone binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:9726962","withFrom":[{"db":"UniProtKB","id":"O14618"}]}, {"geneProductId":"p00441","goId":"GO:0048365","goName":"Rac GTPase binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:18219391"}, {"geneProductId":"p00441","goId":"GO:0030346","goName":"protein phosphatase 2B binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:17324120"}, {"geneProductId":"p00441","goId":"GO:0008270","goName":"zinc ion binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:17381088"}, {"geneProductId":"p00441","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:16790527","withFrom":[{"db":"UniProtKB","id":"P10415"}]}, {"geneProductId":"p00441","goId":"GO:0005507","goName":"copper ion binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:17008312"}, {"geneProductId":"p00441","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:24140062"}]},
-          {"uniprot_id":"p08228","go_annotations":[{"geneProductId":"p08228","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:2960971","withFrom":[{"db":"UniProtKB","id":"P00441"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:9788901","withFrom":[{"db":"MGI","id":"MGI:3526701"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:9516486","withFrom":[{"db":"MGI","id":"MGI:3526701"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:8673102","withFrom":[{"db":"MGI","id":"MGI:1857872"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:16716900","withFrom":[{"db":"MGI","id":"MGI:2680903"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:14679182","withFrom":[{"db":"MGI","id":"MGI:1857873"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:12433839","withFrom":[{"db":"MGI","id":"MGI:1857873"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:11404260","withFrom":[{"db":"MGI","id":"MGI:1857872"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:10679476","withFrom":[{"db":"MGI","id":"MGI:2387861"}]}, {"geneProductId":"p08228","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:10471451","withFrom":[{"db":"MGI","id":"MGI:1857872"}]}]},
-          {"uniprot_id":"p07632","go_annotations":[{"geneProductId":"p07632","goId":"GO:0030346","goName":"protein phosphatase 2B binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:17324120"}, {"geneProductId":"p07632","goId":"GO:0019899","goName":"enzyme binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:23061969","withFrom":[{"db":"RGD","id":"3244"}]}, {"geneProductId":"p07632","goId":"GO:0005507","goName":"copper ion binding","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:12514262"}, {"geneProductId":"p07632","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:17324120"}, {"geneProductId":"p07632","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:2703531"}, {"geneProductId":"p07632","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:12514262"}, {"geneProductId":"p07632","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:10640619"}]},
-          {"uniprot_id":"o73872","go_annotations":[{"geneProductId":"o73872","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:17549562"}, {"geneProductId":"o73872","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:12876653"}]},
-          {"uniprot_id":"p34461","go_annotations":[{"geneProductId":"p34461","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:9628580"}]},
-          {"uniprot_id":"p34697","go_annotations":[{"geneProductId":"p34697","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:19542232"}, {"geneProductId":"p34697","goId":"GO:0005507","goName":"copper ion binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:16234242"}, {"geneProductId":"p34697","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:19282511","withFrom":[{"db":"WB","id":"WBVar00249804"},{"db":"WB","id":"WBVar00249811"}]}, {"geneProductId":"p34697","goId":"GO:0042803","goName":"protein homodimerization activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:16234242"}, {"geneProductId":"p34697","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:16234242"}]},
-          {"uniprot_id":"p61851","go_annotations":[{"geneProductId":"p61851","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:25339624"}, {"geneProductId":"p61851","goId":"GO:0042803","goName":"protein homodimerization activity","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:7567977","withFrom":[{"db":"FB","id":"FBgn0003462"}]}, {"geneProductId":"p61851","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:7567977"}]},
-          {"uniprot_id":"p00445","go_annotations":[{"geneProductId":"p00445","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:3290902"}, {"geneProductId":"p00445","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:23332757","withFrom":[{"db":"UniProtKB","id":"P23291"}]}, {"geneProductId":"p00445","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:16429126","withFrom":[{"db":"UniProtKB","id":"P40202"}]}, {"geneProductId":"p00445","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:11805837","withFrom":[{"db":"UniProtKB","id":"P23291"}]}, {"geneProductId":"p00445","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:11524675","withFrom":[{"db":"UniProtKB","id":"P40202"}]}]},
-          {"uniprot_id":"q10357","go_annotations":[{"geneProductId":"q10357","goId":"GO:0016532","goName":"superoxide dismutase copper chaperone activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:15107426"}, {"geneProductId":"q10357","goId":"GO:0016531","goName":"copper chaperone activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:15107426"}]},
-          {"uniprot_id":"p28758","go_annotations":[{"geneProductId":"p28758","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000315,IMP,mutant phenotype","reference":"PMID:17409354"}]},
-          {"uniprot_id":"q54rq1","go_annotations":[{"geneProductId":"q54rq1","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:18768936"}]},
-          {"uniprot_id":"p24704","go_annotations":[{"geneProductId":"p24704","goId":"GO:0005515","goName":"protein binding","evidenceCode":"ECO:0000353,IPI,physical interaction","reference":"PMID:20406884","withFrom":[{"db":"UniProtKB","id":"Q9FPF0"}]}]},
-          {"uniprot_id":"p0agd1","go_annotations":[{"geneProductId":"p0agd1","goId":"GO:0008270","goName":"zinc ion binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:9405149"}, {"geneProductId":"p0agd1","goId":"GO:0005507","goName":"copper ion binding","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:8791100"}, {"geneProductId":"p0agd1","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:8626323"}, {"geneProductId":"p0agd1","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:7929223"}, {"geneProductId":"p0agd1","goId":"GO:0004784","goName":"superoxide dismutase activity","evidenceCode":"ECO:0000314,IDA,direct assay","reference":"PMID:8791100"}]}]
+[
+  {
+    "uniprot_id": "o14618",
+    "go_annotations": [
+      {
+        "geneProductId": "o14618",
+        "goId": "GO:0045296",
+        "goName": "cadherin binding",
+        "reference": "PMID:25468996"
+      },
+      {
+        "geneProductId": "o14618",
+        "goId": "GO:0005507",
+        "goName": "copper ion binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:9726962"
+      },
+      {
+        "geneProductId": "o14618",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:20154138",
+        "withFrom": [{ "db": "UniProtKB", "id": "P98170" }]
+      },
+      {
+        "geneProductId": "o14618",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:9726962",
+        "withFrom": [{ "db": "UniProtKB", "id": "P00441" }]
+      }
+    ]
+  },
+  {
+    "uniprot_id": "q9jk72",
+    "go_annotations": [
+      {
+        "geneProductId": "q9jk72",
+        "goId": "GO:0019899",
+        "goName": "enzyme binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:10964676"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "e1jh26",
+    "go_annotations": [
+      {
+        "geneProductId": "e1jh26",
+        "goId": "GO:0016532",
+        "goName": "superoxide dismutase copper chaperone activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:18948262"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p40202",
+    "go_annotations": [
+      {
+        "geneProductId": "p40202",
+        "goId": "GO:0016532",
+        "goName": "superoxide dismutase copper chaperone activity",
+        "evidenceCode": "ECO:0000316,IGI,genetic interaction",
+        "reference": "PMID:9295278",
+        "withFrom": [{ "db": "SGD", "id": "S000003865" }]
+      },
+      {
+        "geneProductId": "p40202",
+        "goId": "GO:0016532",
+        "goName": "superoxide dismutase copper chaperone activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:9295278"
+      },
+      {
+        "geneProductId": "p40202",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:16429126",
+        "withFrom": [{ "db": "UniProtKB", "id": "P00445" }]
+      },
+      {
+        "geneProductId": "p40202",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:11524675",
+        "withFrom": [{ "db": "UniProtKB", "id": "P00445" }]
+      }
+    ]
+  },
+  {
+    "uniprot_id": "q9ld47",
+    "go_annotations": [
+      {
+        "geneProductId": "q9ld47",
+        "goId": "GO:0016532",
+        "goName": "superoxide dismutase copper chaperone activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:16126858"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "q7jr71",
+    "go_annotations": [
+      {
+        "geneProductId": "q7jr71",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:25339624"
+      },
+      {
+        "geneProductId": "q7jr71",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:21635891"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "q55gq5",
+    "go_annotations": [
+      {
+        "geneProductId": "q55gq5",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:12840076"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p08294",
+    "go_annotations": [
+      {
+        "geneProductId": "p08294",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:15528465",
+        "withFrom": [{ "db": "UniProtKB", "id": "Q9UBX5" }]
+      },
+      {
+        "geneProductId": "p08294",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:25416956",
+        "withFrom": [{ "db": "UniProtKB", "id": "O43765" }]
+      }
+    ]
+  },
+  {
+    "uniprot_id": "o09164",
+    "go_annotations": [
+      {
+        "geneProductId": "o09164",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:16371425",
+        "withFrom": [{ "db": "UniProtKB", "id": "Q64430" }]
+      },
+      {
+        "geneProductId": "o09164",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:16371425"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "q08420",
+    "go_annotations": [
+      {
+        "geneProductId": "q08420",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:8643556"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p00441",
+    "go_annotations": [
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:24023695",
+        "withFrom": [{ "db": "UniProtKB", "id": "P25686-2" }]
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:24567322"
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:12551919"
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0051087",
+        "goName": "chaperone binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:9726962",
+        "withFrom": [{ "db": "UniProtKB", "id": "O14618" }]
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0048365",
+        "goName": "Rac GTPase binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:18219391"
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0030346",
+        "goName": "protein phosphatase 2B binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:17324120"
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0008270",
+        "goName": "zinc ion binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:17381088"
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:16790527",
+        "withFrom": [{ "db": "UniProtKB", "id": "P10415" }]
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0005507",
+        "goName": "copper ion binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:17008312"
+      },
+      {
+        "geneProductId": "p00441",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:24140062"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p08228",
+    "go_annotations": [
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:2960971",
+        "withFrom": [{ "db": "UniProtKB", "id": "P00441" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:9788901",
+        "withFrom": [{ "db": "MGI", "id": "MGI:3526701" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:9516486",
+        "withFrom": [{ "db": "MGI", "id": "MGI:3526701" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:8673102",
+        "withFrom": [{ "db": "MGI", "id": "MGI:1857872" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:16716900",
+        "withFrom": [{ "db": "MGI", "id": "MGI:2680903" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:14679182",
+        "withFrom": [{ "db": "MGI", "id": "MGI:1857873" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:12433839",
+        "withFrom": [{ "db": "MGI", "id": "MGI:1857873" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:11404260",
+        "withFrom": [{ "db": "MGI", "id": "MGI:1857872" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:10679476",
+        "withFrom": [{ "db": "MGI", "id": "MGI:2387861" }]
+      },
+      {
+        "geneProductId": "p08228",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:10471451",
+        "withFrom": [{ "db": "MGI", "id": "MGI:1857872" }]
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p07632",
+    "go_annotations": [
+      {
+        "geneProductId": "p07632",
+        "goId": "GO:0030346",
+        "goName": "protein phosphatase 2B binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:17324120"
+      },
+      {
+        "geneProductId": "p07632",
+        "goId": "GO:0019899",
+        "goName": "enzyme binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:23061969",
+        "withFrom": [{ "db": "RGD", "id": "3244" }]
+      },
+      {
+        "geneProductId": "p07632",
+        "goId": "GO:0005507",
+        "goName": "copper ion binding",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:12514262"
+      },
+      {
+        "geneProductId": "p07632",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:17324120"
+      },
+      {
+        "geneProductId": "p07632",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:2703531"
+      },
+      {
+        "geneProductId": "p07632",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:12514262"
+      },
+      {
+        "geneProductId": "p07632",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:10640619"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "o73872",
+    "go_annotations": [
+      {
+        "geneProductId": "o73872",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:17549562"
+      },
+      {
+        "geneProductId": "o73872",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:12876653"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p34461",
+    "go_annotations": [
+      {
+        "geneProductId": "p34461",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:9628580"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p34697",
+    "go_annotations": [
+      {
+        "geneProductId": "p34697",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:19542232"
+      },
+      {
+        "geneProductId": "p34697",
+        "goId": "GO:0005507",
+        "goName": "copper ion binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:16234242"
+      },
+      {
+        "geneProductId": "p34697",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:19282511",
+        "withFrom": [
+          { "db": "WB", "id": "WBVar00249804" },
+          { "db": "WB", "id": "WBVar00249811" }
+        ]
+      },
+      {
+        "geneProductId": "p34697",
+        "goId": "GO:0042803",
+        "goName": "protein homodimerization activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:16234242"
+      },
+      {
+        "geneProductId": "p34697",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:16234242"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p61851",
+    "go_annotations": [
+      {
+        "geneProductId": "p61851",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:25339624"
+      },
+      {
+        "geneProductId": "p61851",
+        "goId": "GO:0042803",
+        "goName": "protein homodimerization activity",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:7567977",
+        "withFrom": [{ "db": "FB", "id": "FBgn0003462" }]
+      },
+      {
+        "geneProductId": "p61851",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:7567977"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p00445",
+    "go_annotations": [
+      {
+        "geneProductId": "p00445",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:3290902"
+      },
+      {
+        "geneProductId": "p00445",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:23332757",
+        "withFrom": [{ "db": "UniProtKB", "id": "P23291" }]
+      },
+      {
+        "geneProductId": "p00445",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:16429126",
+        "withFrom": [{ "db": "UniProtKB", "id": "P40202" }]
+      },
+      {
+        "geneProductId": "p00445",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:11805837",
+        "withFrom": [{ "db": "UniProtKB", "id": "P23291" }]
+      },
+      {
+        "geneProductId": "p00445",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:11524675",
+        "withFrom": [{ "db": "UniProtKB", "id": "P40202" }]
+      }
+    ]
+  },
+  {
+    "uniprot_id": "q10357",
+    "go_annotations": [
+      {
+        "geneProductId": "q10357",
+        "goId": "GO:0016532",
+        "goName": "superoxide dismutase copper chaperone activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:15107426"
+      },
+      {
+        "geneProductId": "q10357",
+        "goId": "GO:0016531",
+        "goName": "copper chaperone activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:15107426"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p28758",
+    "go_annotations": [
+      {
+        "geneProductId": "p28758",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000315,IMP,mutant phenotype",
+        "reference": "PMID:17409354"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "q54rq1",
+    "go_annotations": [
+      {
+        "geneProductId": "q54rq1",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:18768936"
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p24704",
+    "go_annotations": [
+      {
+        "geneProductId": "p24704",
+        "goId": "GO:0005515",
+        "goName": "protein binding",
+        "evidenceCode": "ECO:0000353,IPI,physical interaction",
+        "reference": "PMID:20406884",
+        "withFrom": [{ "db": "UniProtKB", "id": "Q9FPF0" }]
+      }
+    ]
+  },
+  {
+    "uniprot_id": "p0agd1",
+    "go_annotations": [
+      {
+        "geneProductId": "p0agd1",
+        "goId": "GO:0008270",
+        "goName": "zinc ion binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:9405149"
+      },
+      {
+        "geneProductId": "p0agd1",
+        "goId": "GO:0005507",
+        "goName": "copper ion binding",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:8791100"
+      },
+      {
+        "geneProductId": "p0agd1",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:8626323"
+      },
+      {
+        "geneProductId": "p0agd1",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:7929223"
+      },
+      {
+        "geneProductId": "p0agd1",
+        "goId": "GO:0004784",
+        "goName": "superoxide dismutase activity",
+        "evidenceCode": "ECO:0000314,IDA,direct assay",
+        "reference": "PMID:8791100"
+      }
+    ]
+  }
+]
