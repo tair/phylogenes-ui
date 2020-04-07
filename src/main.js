@@ -8,14 +8,14 @@ import popover from './components/modal/CustomPopover'
 
 Vue.config.productionTip = false
 import BootstrapVue from 'bootstrap-vue'
-Vue.component('popover', popover);
+Vue.component('popover', popover)
 
 Vue.component('JsonCsv', JsonCSV)
 
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: (h) => h(App),
 }).$mount('#app')
 
-Vue.use(BootstrapVue);
+Vue.use(BootstrapVue)

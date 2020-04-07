@@ -8,8 +8,8 @@ import Login from './views/Login.vue'
 import TreeBrowse from './views/TreeBrowse.vue'
 import TreeDetail from './views/TreeDetail.vue'
 import TreeGrafting from './views/TreeGrafting'
-import {store} from './store'
-import {TREE_ACTION_SET_SEARCH} from './store/types_tree'
+import { store } from './store'
+import { TREE_ACTION_SET_SEARCH } from './store/types_tree'
 
 Vue.use(Router)
 
@@ -18,41 +18,41 @@ export default new Router({
   routes: [
     {
       path: '/',
-      component: Home
+      component: Home,
     },
     {
       path: '/about',
-      component: About
+      component: About,
     },
     {
-        path: '/help',
-        component: Help
+      path: '/help',
+      component: Help,
     },
     {
-        path: '/contact',
-        component: Contact
+      path: '/contact',
+      component: Contact,
     },
     {
-        path: '/login',
-        component: Login
+      path: '/login',
+      component: Login,
     },
     {
-        path: '/tree',
-        component: TreeBrowse,
-        pathToRegexpOptions: {strict: true}
+      path: '/tree',
+      component: TreeBrowse,
+      pathToRegexpOptions: { strict: true },
     },
     {
-        path: '/tree/',
-        redirect: '/tree',
-        pathToRegexpOptions: {strict: true}
+      path: '/tree/',
+      redirect: '/tree',
+      pathToRegexpOptions: { strict: true },
     },
     {
       path: '/tree/:id',
-      component: TreeDetail
+      component: TreeDetail,
     },
     {
       path: '/grafting',
-      component: TreeGrafting
+      component: TreeGrafting,
     },
     {
       path: '/treeGrafted/',
@@ -60,11 +60,11 @@ export default new Router({
       component: TreeDetail,
     },
     {
-        path: '/gene-id/:id',
-        beforeEnter: (to, from, next) => {
-          store.dispatch(TREE_ACTION_SET_SEARCH,to.params.id);
-          next('/tree');
-        }
-    }
-  ]
+      path: '/gene-id/:id',
+      beforeEnter: (to, from, next) => {
+        store.dispatch(TREE_ACTION_SET_SEARCH, to.params.id)
+        next('/tree')
+      },
+    },
+  ],
 })
