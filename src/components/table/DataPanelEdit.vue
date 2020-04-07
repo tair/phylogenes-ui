@@ -62,37 +62,37 @@
 
 <script>
 export default {
-  name: "dataPanelEdit",
-  props: ["columns"],
+  name: 'dataPanelEdit',
+  props: ['columns'],
   computed: {
     options() {
-      return this.columns;
+      return this.columns
     },
   },
   data() {
     return {
       value: null,
-    };
+    }
   },
   methods: {
     checkboxClicked(i) {
       if (i.checkAllChildren) {
         if (i.selected) {
-          this.$emit("uncheck-all");
+          this.$emit('uncheck-all')
         } else {
-          this.$emit("check-all");
+          this.$emit('check-all')
         }
       }
-      this.$emit("check-change");
+      this.$emit('check-change')
     },
     moveUp(i) {
-      this.$emit("move-up", i);
+      this.$emit('move-up', i)
     },
     moveDown(i) {
-      this.$emit("move-down", i);
+      this.$emit('move-down', i)
     },
   },
-};
+}
 </script>
 
 <style scoped>
