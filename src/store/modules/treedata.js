@@ -238,15 +238,16 @@ const actions = {
           if (res.data.familyNames.length > 0) {
             let msa_data = res.data.familyNames[0].msa_data
             msa_data = JSON.parse(msa_data)
-            let msa_list = msa_data.search.sequence_list.sequence_info
+            let msa_list = msa_data.search.MSA_list.sequence_info
             let msa_mapping = new Map()
             let maxSeqLength = 0
             msa_list.forEach((m) => {
-              let anno_id = m.annotation_node_id.split(':')[1]
-              if (m.full_sequence.length > maxSeqLength) {
-                maxSeqLength = m.full_sequence.length
+              // let anno_id = m.annotation_node_id.split(':')[1]
+              let persistent_id = m.persistent_id
+              if (m.sequence.length > maxSeqLength) {
+                maxSeqLength = m.sequence.length
               }
-              msa_mapping.set(anno_id, m.full_sequence)
+              msa_mapping.set(persistent_id, m.sequence)
             })
             context.state.treedata.msa_data = msa_mapping
             context.state.treedata.max_msa_length = maxSeqLength

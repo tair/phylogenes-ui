@@ -304,7 +304,7 @@ export default {
     },
     // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
     initTreeData(treeJson) {
-      treeJson = treeJson.annotation_node
+      treeJson = treeJson.tree_topology.annotation_node
       this.formatJson(treeJson)
       this.processJson(treeJson)
         .then((res) => {
@@ -428,6 +428,16 @@ export default {
         let sequence = this.store_treeMsaData.get(accessionId)
         if (sequence) {
           node.sequence = sequence
+        } else {
+          console.log('Sequence not found!')
+        }
+      } else {
+        let persistentId = node.persistent_id
+        let sequence = this.store_treeMsaData.get(persistentId)
+        if (sequence) {
+          node.sequence = sequence
+        } else {
+          console.log('Sequence not found!')
         }
       }
       if (node.children) {
@@ -753,7 +763,6 @@ export default {
     },
     //Analyze Msa Data and set table cols to msa.
     analyzeAndShowMsa() {
-      console.log('analyzeAndShowMsa ', this.analyzeCompleted)
       this.store_setTableIsLoading(true)
       if (!this.analyzeCompleted) {
         setTimeout(() => {
