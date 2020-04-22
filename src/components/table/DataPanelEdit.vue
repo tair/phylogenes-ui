@@ -114,7 +114,7 @@ ul {
   flex-direction: column;
   flex: 1 1 auto;
   width: 100%;
-  height: 200px;
+  height: 380px;
   overflow: scroll;
 }
 .mylist {
