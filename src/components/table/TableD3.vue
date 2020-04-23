@@ -109,7 +109,7 @@
                 v-if="showDPEOption"
                 class="btn bg-white showCogBtn"
                 v-b-tooltip.hover.top.o100
-                title="Table Panel Edit"
+                title="Customize gene info table"
                 @click="showPanel"
               >
                 <i class="fas fa-cog"></i>
@@ -240,7 +240,7 @@ export default {
       //DPE Popup
       showDPEOption: true,
       showDPEPopup: false,
-      DPEpopupHeader: 'Edit Data Panel',
+      DPEpopupHeader: 'Customize gene info table',
       showMsaLegend: false,
       editColsList: [],
       editedOnce: false,
