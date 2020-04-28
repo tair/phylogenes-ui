@@ -1,24 +1,31 @@
 <template>
-    <div class="mb-5 elevation-0">
-        <div class="embed-responsive embed-responsive-16by9">
-            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/ZwGNgLlw9Bc?rel=0" allowfullscreen></iframe>
-        </div>
-
-        <div class="bg-pggrey pt-3">
-            <a href="https://conf.arabidopsis.org/display/PHGSUP/User+guide">
-                <p class="text-magenta">Getting Started With PhyloGenes
-                <i class="far fa-file ml-1"></i></p>
-            </a>
-        </div>
+  <div class="mb-5 elevation-0">
+    <div class="embed-responsive embed-responsive-16by9">
+      <iframe
+        class="embed-responsive-item"
+        src="https://www.youtube.com/embed/ZwGNgLlw9Bc?rel=0"
+        allowfullscreen
+      ></iframe>
     </div>
+
+    <div class="bg-pggrey pt-2">
+      <a href="https://www.youtube.com/watch?v=UE7FJpKcP1o" target="_blank">
+        <p class="text-magenta linkTxt">
+          More in a Webinar <i class="fab fa-youtube ml-1"></i>
+        </p>
+      </a>
+    </div>
+  </div>
 </template>
 
 <script>
-    export default {
-        name: "VideoCard"
-    }
+export default {
+  name: "VideoCard",
+};
 </script>
 
 <style scoped>
-
+.linkTxt {
+  font-size: 2rem;
+}
 </style>
