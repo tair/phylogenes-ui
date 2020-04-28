@@ -881,12 +881,24 @@ export default {
             col.selected = false
           }
         }
-        if (i > 2 && i < total_annotations + 2) {
-          col['annotation'] = true
-          if (this.defaultColsToHide.includes('Known function')) {
-            col.selected = false
+        if (i >= 2 && i < total_annotations + 2) {
+          if (i != 2) {
+            col['annotation'] = true
+            if (this.defaultColsToHide.includes('Known function')) {
+              col.selected = false
+            }
+            colsToEdit[2].children.push(col)
+          } else {
+            colsToEdit.push(col)
+            let colFirstAnno = {
+              id: i,
+              label: colName,
+              selected: true,
+              children: [],
+            }
+            colFirstAnno['annotation'] = true
+            colsToEdit[2].children.push(colFirstAnno)
           }
-          colsToEdit[2].children.push(col)
         } else {
           colsToEdit.push(col)
         }
