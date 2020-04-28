@@ -4,17 +4,13 @@
       <li class="list-group-item mylist" v-for="o in options" :key="o.id">
         <div class="row">
           <div class="col-9">
-            <div class="pretty p-default">
-              <input
-                :disabled="o.disabled"
-                type="checkbox"
-                v-model="o.selected"
-                @click="checkboxClicked(o)"
-              />
-              <div class="state p-primary">
-                <label>{{ o.label }}</label>
-              </div>
-            </div>
+            <input
+              :disabled="o.disabled"
+              type="checkbox"
+              v-model="o.selected"
+              @click="checkboxClicked(o)"
+            />
+            <label class="mylabel">{{ o.label }}</label>
           </div>
           <div class="col-3">
             <button class="btn btn-inline arrow" @click="moveUp(o)">
@@ -25,36 +21,35 @@
             </button>
           </div>
         </div>
-        <ul v-if="o.children" class="list-group">
-          <li
-            class="list-group-item annoList"
-            v-for="c in o.children"
-            :key="c.id"
-          >
-            <div class="row">
-              <div class="col-9">
-                <div class="pretty p-default">
+        <div class="childGrp">
+          <ul v-if="o.children" class="list-group">
+            <li
+              class="list-group-item annoList"
+              v-for="c in o.children"
+              :key="c.id"
+            >
+              <div class="row">
+                <div class="col-9">
                   <input
+                    :disabled="c.disabled"
                     type="checkbox"
                     v-model="c.selected"
                     @click="checkboxClicked(c)"
                   />
-                  <div class="state p-primary">
-                    <label>{{ c.label }}</label>
-                  </div>
+                  <label class="mylabel">{{ c.label }}</label>
+                </div>
+                <div class="col-3">
+                  <button class="btn btn-inline arrow" @click="moveUp(c)">
+                    <i class="fa fa-angle-up"></i>
+                  </button>
+                  <button class="btn btn-inline arrow" @click="moveDown(c)">
+                    <i class="fa fa-angle-down"></i>
+                  </button>
                 </div>
               </div>
-              <div class="col-3">
-                <button class="btn btn-inline arrow" @click="moveUp(c)">
-                  <i class="fa fa-angle-up"></i>
-                </button>
-                <button class="btn btn-inline arrow" @click="moveDown(c)">
-                  <i class="fa fa-angle-down"></i>
-                </button>
-              </div>
-            </div>
-          </li>
-        </ul>
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
   </div>
@@ -99,13 +94,27 @@ export default {
 ul {
   list-style: none;
 }
-
+.childGrp {
+  margin-left: 25px;
+}
+.myPretty {
+  display: inline-flex;
+  vertical-align: center;
+  width: 300px;
+  overflow: hidden;
+  padding-left: 10px;
+}
+.mylabel {
+  display: inline;
+  margin-left: 10px;
+  overflow: ellipsis;
+}
 .container {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   width: 100%;
-  height: 200px;
+  height: 380px;
   overflow: scroll;
 }
 .mylist {
