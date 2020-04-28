@@ -106,9 +106,10 @@
             <tablecell :content="getHeader(col, i)"></tablecell>
             <div v-if="i == 0">
               <button
-                class="btn btn-link showCogBtn"
+                v-if="showDPEOption"
+                class="btn bg-white showCogBtn"
                 v-b-tooltip.hover.top.o100
-                title="Table Panel Edit"
+                title="Customize gene info table"
                 @click="showPanel"
               >
                 <i class="fas fa-cog"></i>
@@ -118,7 +119,11 @@
                   msaTab ? 'Show Gene Info >' : 'Show MSA >'
                 }}</span>
               </button>
-              <button class="btn btn-link showHiddenVal" @click="showPanel">
+              <button
+                v-if="showDPEOption"
+                class="btn btn-link showHiddenVal"
+                @click="showPanel"
+              >
                 <span class="text-danger">{{ colsHidden }} Cols Hidden</span>
               </button>
             </div>
@@ -233,8 +238,9 @@ export default {
       ],
       popupData: [],
       //DPE Popup
+      showDPEOption: true,
       showDPEPopup: false,
-      DPEpopupHeader: 'Edit Data Panel',
+      DPEpopupHeader: 'Customize gene info table',
       showMsaLegend: false,
       editColsList: [],
       editedOnce: false,
@@ -408,6 +414,11 @@ export default {
     },
     toggleTabs() {
       this.msaTab = !this.msaTab
+      if (this.msaTab) {
+        this.showDPEOption = false
+      } else {
+        this.showDPEOption = true
+      }
       this.$emit('toggle-cols')
       // this.updateRenderRows();
       this.updateTable()
@@ -870,12 +881,24 @@ export default {
             col.selected = false
           }
         }
-        if (i > 2 && i < total_annotations + 2) {
-          col['annotation'] = true
-          if (this.defaultColsToHide.includes('Known function')) {
-            col.selected = false
+        if (i >= 2 && i < total_annotations + 2) {
+          if (i != 2) {
+            col['annotation'] = true
+            if (this.defaultColsToHide.includes('Known function')) {
+              col.selected = false
+            }
+            colsToEdit[2].children.push(col)
+          } else {
+            colsToEdit.push(col)
+            let colFirstAnno = {
+              id: i,
+              label: colName,
+              selected: true,
+              children: [],
+            }
+            colFirstAnno['annotation'] = true
+            colsToEdit[2].children.push(colFirstAnno)
           }
-          colsToEdit[2].children.push(col)
         } else {
           colsToEdit.push(col)
         }
@@ -917,7 +940,9 @@ export default {
       this.colsHidden = hiddenCols.length
       //Hidden cols vuex storage reused for other trees as well in a session
       this.store_setTableHiddenCols(hiddenCols)
-      this.updateRenderRows()
+      setTimeout(() => {
+        this.updateTable()
+      }, 100)
       this.editedOnce = true
     },
     getTableCsvData(nodes) {
@@ -1314,11 +1339,13 @@ td.tdHover:hover {
 }
 .showCogBtn {
   position: absolute;
-  left: 5px;
-  top: -3px;
+  left: 25px;
+  top: 20px;
   border: none;
   outline: 0 !important;
-  font-size: 30px;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100%;
   /* background-image: none  !important; */
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
