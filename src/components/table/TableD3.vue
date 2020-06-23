@@ -1,17 +1,10 @@
 <template>
-  <div
-    id="parent"
-    :style="{ width: window.width + 'px', height: window.height - 50 + 'px' }"
-  >
+  <div id="parent" :style="{ width: window.width + 'px', height: window.height - 50 + 'px' }">
     <!-- GO Annotations Info modal popup window -->
     <modal v-if="showPopup" @close="showPopup = false">
       <div slot="header">{{ popupHeader }}</div>
       <template slot="body" slot-scope="props">
-        <popupTable
-          v-if="popupData.length > 0"
-          :data="popupData"
-          :cols="popupCols"
-        ></popupTable>
+        <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
         <div v-if="popupData.length === 0">
           <i>No Go Annotations for this gene!</i>
         </div>
@@ -34,12 +27,8 @@
         ></dataPanelEdit>
       </template>
       <template slot="footer">
-        <button class="modal-default-button" @click="onTableEdit">
-          Update Table
-        </button>
-        <button class="modal-default-button" @click="showDPEPopup = false">
-          Close
-        </button>
+        <button class="modal-default-button" @click="onTableEdit">Update Table</button>
+        <button class="modal-default-button" @click="showDPEPopup = false">Close</button>
       </template>
     </modal>
     <!-- MSA Legend Popup -->
@@ -49,14 +38,12 @@
     <!-- Main Table -->
     <table class="mainTable">
       <thead id="head" ref="thead">
-        <button
-          v-if="msaTab"
-          class="btn bg-white float-right msalegendbtn"
-          @click="toggleLegend"
-        >
-          <span class="text-danger">{{
+        <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
+          <span class="text-danger">
+            {{
             showMsaLegend ? 'Hide Legend' : 'Show Legend'
-          }}</span>
+            }}
+          </span>
         </button>
         <tr id="mainTr">
           <th :class="getThClasses('tree', -1)">
@@ -72,15 +59,11 @@
               v-on:onShowLegend="showLegend"
             ></tree-layout-menu>
           </th>
-          <th
-            v-for="(col, i) in colsToRender"
-            :key="i"
-            :class="getThClasses(col, i)"
-          >
+          <th v-for="(col, i) in colsToRender" :key="i" :class="getThClasses(col, i)">
             <div v-if="isFirstAnnoCol(col)" class="annoPopver">
-              <b-button id="annoPopover" href="#" tabindex="0" variant="flat"
-                ><i class="fas fa-info-circle fa-lg"></i
-              ></b-button>
+              <b-button id="annoPopover" href="#" tabindex="0" variant="flat">
+                <i class="fas fa-info-circle fa-lg"></i>
+              </b-button>
               <popover
                 :text="popover1Text"
                 title="GO Annotations"
@@ -88,14 +71,9 @@
                 target="annoPopover"
               ></popover>
             </div>
-            <b-button
-              v-if="showPopover(col)"
-              :id="col + 'id'"
-              href="#"
-              tabindex="0"
-              variant="flat"
-              ><i class="fas fa-info-circle fa-lg"></i
-            ></b-button>
+            <b-button v-if="showPopover(col)" :id="col + 'id'" href="#" tabindex="0" variant="flat">
+              <i class="fas fa-info-circle fa-lg"></i>
+            </b-button>
             <popover
               v-if="showPopover(col)"
               :text="getPopoverText(col)"
@@ -115,15 +93,13 @@
                 <i class="fas fa-cog"></i>
               </button>
               <button class="btn btn-link showMsaBtn" @click="toggleTabs">
-                <span class="text-danger">{{
+                <span class="text-danger">
+                  {{
                   msaTab ? 'Show Gene Info >' : 'Show MSA >'
-                }}</span>
+                  }}
+                </span>
               </button>
-              <button
-                v-if="showDPEOption"
-                class="btn btn-link showHiddenVal"
-                @click="showPanel"
-              >
+              <button v-if="showDPEOption" class="btn btn-link showHiddenVal" @click="showPanel">
                 <span class="text-danger">{{ colsHidden }} Cols Hidden</span>
               </button>
             </div>
@@ -320,7 +296,8 @@ export default {
     },
     store_annoMapping: {
       handler: function (val, oldVal) {
-        this.n_annotations = val.headers.length
+        if(!val.headers.mf) return;
+        this.n_annotations = val.headers.mf.length
       },
     },
     //Auto scroll the table to the center node set by the tree (Auto scrolling)
@@ -392,7 +369,8 @@ export default {
       filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
       //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
       if (this.colsFromProp.includes('Annotations')) {
-        this.store_annoMapping.headers.forEach((h) => {
+        this.store_annoMapping.headers.mf.forEach((h) => {
+
           filteredCols.splice(2, 0, h)
         })
       }
@@ -471,7 +449,7 @@ export default {
         }
         if (this.store_annoMapping.annoMap[uniprotId]) {
           let currAnno = this.store_annoMapping.annoMap[uniprotId]
-          let allAnnos = this.store_annoMapping.headers
+          let allAnnos = this.store_annoMapping.headers.mf;
           allAnnos.forEach((a) => {
             currAnno.forEach((c) => {
               if (c.goName === a) {
@@ -483,25 +461,25 @@ export default {
       }
       return tableNode
     },
-    setTableAnnotationRow() {
-      this.anno_headers.sort(function (a, b) {
-        return a.toLowerCase().localeCompare(b.toLowerCase())
-      })
-      this.anno_headers.forEach((a) => {
-        tableNode[a] = ''
-        if (n.data.uniprotId) {
-          let uniprotId = n.data.uniprotId.toLowerCase()
-          if (this.anno_mapping[uniprotId]) {
-            let currAnno = this.anno_mapping[uniprotId]
-            currAnno.forEach((c) => {
-              if (c.goName === a) {
-                tableNode[a] = '*'
-              }
-            })
-          }
-        }
-      })
-    },
+    // setTableAnnotationRow() {
+    //   this.anno_headers.sort(function (a, b) {
+    //     return a.toLowerCase().localeCompare(b.toLowerCase())
+    //   })
+    //   this.anno_headers.forEach((a) => {
+    //     tableNode[a] = ''
+    //     if (n.data.uniprotId) {
+    //       let uniprotId = n.data.uniprotId.toLowerCase()
+    //       if (this.anno_mapping[uniprotId]) {
+    //         let currAnno = this.anno_mapping[uniprotId]
+    //         currAnno.forEach((c) => {
+    //           if (c.goName === a) {
+    //             tableNode[a] = '*'
+    //           }
+    //         })
+    //       }
+    //     }
+    //   })
+    // },
     onTreeInit(nodes) {
       let tabularData = this.setStoreTableData(nodes)
       //For metadata
