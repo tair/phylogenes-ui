@@ -1,7 +1,23 @@
 <template>
   <svg :width="tdWidth" :height="tdHeight">
     <g>
-      <circle class="anno_circle" cx="25" cy="18" r="8"></circle>
+      <!-- <circle class="anno_circle" cx="25" cy="18" r="8"></circle> -->
+      <image
+        v-if="content.symbol == 'flask'"
+        xlink:href="/flask-yellow-transparent.png"
+        height="15"
+        width="15"
+        x="17"
+        y="7"
+      />
+      <image
+        v-if="content.symbol == 'tree'"
+        xlink:href="/IBA-transparent.png"
+        height="35"
+        width="35"
+        x="8"
+        y="0"
+      />
     </g>
   </svg>
 </template>

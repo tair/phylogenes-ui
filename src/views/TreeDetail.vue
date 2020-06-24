@@ -309,7 +309,8 @@ export default {
       this.go_mapping = {}
       if (!annotations) {
         var annoObj = {
-          headers: this.anno_headers,
+          headers: {"bp": anno_headers_bp, "mf": anno_headers_mf},
+          n_annotations: anno_headers_bp.length + anno_headers_mf.length,
           annoMap: this.anno_mapping,
         }
 
@@ -321,6 +322,7 @@ export default {
         var uni_mapping = JSON.parse(a)
         var uniprotId = uni_mapping.uniprot_id
         var annotationsList = JSON.parse(uni_mapping.go_annotations)
+        // console.log(annotationsList);
         this.anno_mapping[uniprotId] = annotationsList
         annotationsList.forEach((singleAnno) => {
           // if (!this.anno_headers.includes(singleAnno.goName)) {
@@ -344,8 +346,8 @@ export default {
       })
 
       var annoObj = {
-        // headers: this.anno_headers,
         headers: {"bp": anno_headers_bp, "mf": anno_headers_mf},
+        n_annotations: anno_headers_bp.length + anno_headers_mf.length,
         annoMap: this.anno_mapping,
       }
       this.store_setAnnoMapping(annoObj)
@@ -620,11 +622,16 @@ export default {
       var annoList = []
       if (!annosForGene) return annoList
       annosForGene.forEach((a) => {
+        // console.log(a);
         let id = a.goId
         let goTermLink = 'https://www.ebi.ac.uk/QuickGO/term/' + id
         var code = ''
         if (a.evidenceCode) {
-          code = a.evidenceCode.split(',')[2]
+          if(a.evidenceCode.includes("IBA")) {
+            code = a.evidenceCode.split(',')[2];
+          } else {
+            code = a.evidenceCode;
+          }
         }
         var refCode = a.reference.split(':')[0]
         var refId = a.reference.split(':')[1]
