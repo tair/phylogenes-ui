@@ -306,7 +306,6 @@ export default {
     store_annoMapping: {
       handler: function (val, oldVal) {
         if(!val.headers.mf) return;
-        console.log(val);
         this.n_annotations = val.n_annotations;
         this.n_anno_mf = val.headers.mf.length;
         this.n_anno_bp = val.headers.bp.length;
@@ -470,11 +469,11 @@ export default {
             currAnno.forEach((c) => {
                 if (c.goName === a) {
 
-                if(c.evidenceCode.includes("IBA")) {
-                  tableNode[a] = "%";
-                } else {
-                  tableNode[a] = "*";
-                }
+                  if(c.evidenceCode.includes("IBA")) {
+                    tableNode[a] = "%";
+                  } else {
+                    tableNode[a] = "*";
+                  }
                 }
             })
           })
@@ -862,7 +861,7 @@ export default {
       }
       let colsToEdit = []
       let i = 0
-      let total_annotations = this.store_annoMapping.headers.length
+      let total_annotations = this.store_annoMapping.n_annotations;
       // console.log("total_annotations ", total_annotations);
       this.origColsToRender.forEach((colName) => {
         let col = { id: i, label: colName, selected: true, children: [] }
@@ -875,7 +874,7 @@ export default {
         if (i == 2) {
           col = {
             id: i,
-            label: 'Known function',
+            label: 'Molecular function',
             selected: true,
             checkAllChildren: true,
           }

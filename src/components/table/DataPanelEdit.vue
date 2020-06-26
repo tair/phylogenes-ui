@@ -23,11 +23,7 @@
         </div>
         <div class="childGrp">
           <ul v-if="o.children" class="list-group">
-            <li
-              class="list-group-item annoList"
-              v-for="c in o.children"
-              :key="c.id"
-            >
+            <li class="list-group-item annoList" v-for="c in o.children" :key="c.id">
               <div class="row">
                 <div class="col-9">
                   <input
