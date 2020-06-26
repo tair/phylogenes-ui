@@ -301,6 +301,16 @@ export default {
         })
       this.setTableCols()
     },
+    mapEvidenceCodeToDescription(code) {
+      let mapping = {"EXP": "experimental evidence",
+                  "IDA": "direct assay",
+                  "IEP": "expression pattern",
+                  "IGI": "genetic interaction",
+                  "IMP": "mutant phenotype",
+                  "IPI": "physical interaction"}
+      if(mapping[code] == null) return code;
+      return mapping[code];
+    },
     loadAnnotations(annotations) {
       this.anno_mapping = {}
       this.anno_headers = []
@@ -322,12 +332,9 @@ export default {
         var uni_mapping = JSON.parse(a)
         var uniprotId = uni_mapping.uniprot_id
         var annotationsList = JSON.parse(uni_mapping.go_annotations)
-        // console.log(annotationsList);
         this.anno_mapping[uniprotId] = annotationsList
         annotationsList.forEach((singleAnno) => {
-          // if (!this.anno_headers.includes(singleAnno.goName)) {
-          //   this.anno_headers.push(singleAnno.goName)
-          // }
+          singleAnno.evidenceCode = this.mapEvidenceCodeToDescription(singleAnno.evidenceCode);
           if(singleAnno.goAspect == "biological_process" || singleAnno.goAspect == "P") {
             if (!anno_headers_bp.includes(singleAnno.goName)) {
               anno_headers_bp.push(singleAnno.goName)

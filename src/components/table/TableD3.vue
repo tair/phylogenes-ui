@@ -218,7 +218,6 @@ export default {
         'GO term',
         'Evidence description',
         'Reference',
-        'With/From',
         'Source',
       ],
       popupData: [],
@@ -456,7 +455,6 @@ export default {
       //Annotations
       if (n.data.uniprotId) {
         let uniprotId = n.data.uniprotId.toLowerCase()
-        // console.log(this.store_annoMapping.annoMap);
         if (!this.store_annoMapping.annoMap) {
           return tableNode
         }
@@ -468,7 +466,6 @@ export default {
           allAnnos.forEach((a) => {
             currAnno.forEach((c) => {
                 if (c.goName === a) {
-
                   if(c.evidenceCode.includes("IBA")) {
                     tableNode[a] = "%";
                   } else {
@@ -481,25 +478,7 @@ export default {
       }
       return tableNode
     },
-    // setTableAnnotationRow() {
-    //   this.anno_headers.sort(function (a, b) {
-    //     return a.toLowerCase().localeCompare(b.toLowerCase())
-    //   })
-    //   this.anno_headers.forEach((a) => {
-    //     tableNode[a] = ''
-    //     if (n.data.uniprotId) {
-    //       let uniprotId = n.data.uniprotId.toLowerCase()
-    //       if (this.anno_mapping[uniprotId]) {
-    //         let currAnno = this.anno_mapping[uniprotId]
-    //         currAnno.forEach((c) => {
-    //           if (c.goName === a) {
-    //             tableNode[a] = '*'
-    //           }
-    //         })
-    //       }
-    //     }
-    //   })
-    // },
+
     onTreeInit(nodes) {
       let tabularData = this.setStoreTableData(nodes)
       //For metadata
@@ -1059,15 +1038,8 @@ export default {
         })
         singleRow.push(references)
 
-        // let withFrom = { type: 'links' }
-        // withFrom['links'] = []
-        // ann.withFrom.forEach((wf) => {
-        //   withFrom['links'].push({ text: wf.name, link: wf.link })
-        // })
-        // singleRow.push(withFrom)
-
-        // let source = { type: 'link', text: ann.source, link: ann.sourceLink }
-        // singleRow.push(source)
+        let source = { type: 'link', text: ann.source, link: ann.sourceLink }
+        singleRow.push(source)
 
         popUpTableData.push(singleRow)
       })
