@@ -751,7 +751,7 @@ export default {
     onMoveUp(col) {
       if (col.annotation) {
         let kf_idx = this.editColsList.findIndex(
-          (c) => c.label == 'Known function'
+          (c) => c.label == 'Molecular function'|| c.label == 'Biological process'
         )
         let kf = this.editColsList[kf_idx]
         let idx = kf.children.findIndex((c) => c.id == col.id)
@@ -782,7 +782,7 @@ export default {
     onMoveDown(col) {
       if (col.annotation) {
         let kf_idx = this.editColsList.findIndex(
-          (c) => c.label == 'Known function'
+          (c) => c.label == 'Molecular function'|| c.label == 'Biological process'
         )
         let kf = this.editColsList[kf_idx]
         let idx = kf.children.findIndex((c) => c.id == col.id)
@@ -806,9 +806,9 @@ export default {
         this.refreshTablePanel()
       })
     },
-    onDPEUncheckAll() {
+    onDPEUncheckAll(colSelected) {
       let cols = this.editColsList
-      let findIdx = cols.findIndex((c) => c.label == 'Known function')
+      let findIdx = cols.findIndex((c) => c.label == colSelected.label);
       // console.log(findIdx);
       let colAnnotations = cols[findIdx]
       if (colAnnotations.children) {
@@ -820,9 +820,9 @@ export default {
       }
       this.editColsList[findIdx] = colAnnotations
     },
-    onDPECheckAll() {
+    onDPECheckAll(colSelected) {
       let cols = this.editColsList
-      let findIdx = cols.findIndex((c) => c.label == 'Known function')
+      let findIdx = cols.findIndex((c) => c.label == colSelected.label);
       let colAnnotations = cols[findIdx]
       if (colAnnotations.children) {
         colAnnotations.children.forEach((c) => {
@@ -834,14 +834,12 @@ export default {
       this.editColsList[findIdx] = colAnnotations
     },
     setEditColsList() {
-      // console.log("get cols edit list");
       if (this.editedOnce) {
         return
       }
       let colsToEdit = []
       let i = 0
       let total_annotations = this.store_annoMapping.n_annotations;
-      // console.log("total_annotations ", total_annotations);
       this.origColsToRender.forEach((colName) => {
         let col = { id: i, label: colName, selected: true, children: [] }
         if (i == 0) {
@@ -850,39 +848,80 @@ export default {
         if (this.defaultColsToHide.includes(colName)) {
           col.selected = false
         }
-        if (i == 2) {
-          col = {
+        if(i == 2) {
+          let parentCol = {
             id: i,
             label: 'Molecular function',
             selected: true,
             checkAllChildren: true,
           }
-          col.children = []
-          if (this.defaultColsToHide.includes('Known function')) {
+          parentCol.children = []
+          if (this.defaultColsToHide.includes('Molecular function')) {
+            parentCol.selected = false
+          }
+          colsToEdit.push(parentCol);
+          col['annotation'] = true
+          if (this.defaultColsToHide.includes('Molecular function')) {
             col.selected = false
           }
-        }
-        if (i >= 2 && i < total_annotations + 2) {
-          if (i != 2) {
-            col['annotation'] = true
-            if (this.defaultColsToHide.includes('Known function')) {
-              col.selected = false
-            }
-            colsToEdit[2].children.push(col)
-          } else {
-            colsToEdit.push(col)
-            let colFirstAnno = {
-              id: i,
-              label: colName,
-              selected: true,
-              children: [],
-            }
-            colFirstAnno['annotation'] = true
-            colsToEdit[2].children.push(colFirstAnno)
+          colsToEdit[2].children.push(col);
+        } else if( i > 2 && i < 2+this.n_anno_mf) {
+          col['annotation'] = true
+          if (this.defaultColsToHide.includes('Molecular function')) {
+            col.selected = false
           }
-        } else {
-          colsToEdit.push(col)
+          colsToEdit[2].children.push(col);
+        } else if( i == 2+this.n_anno_mf) {
+          let parentCol = {
+            id: i,
+            label: 'Biological process',
+            selected: true,
+            checkAllChildren: true,
+          }
+          parentCol.children = []
+          if (this.defaultColsToHide.includes('Biological process')) {
+            parentCol.selected = false
+          }
+          colsToEdit.push(parentCol);
+          col['annotation'] = true
+          if (this.defaultColsToHide.includes('Biological process')) {
+            col.selected = false
+          }
+          colsToEdit[colsToEdit.length-1].children.push(col);
+        } else if( i > 2+this.n_anno_mf && i < 2+this.n_anno_mf+this.n_anno_bp) {
+          col['annotation'] = true
+          if (this.defaultColsToHide.includes('Biological process')) {
+            col.selected = false
+          }
+          colsToEdit[colsToEdit.length-1].children.push(col);
         }
+        else {
+          colsToEdit.push(col);
+        }
+        
+        // if (i == 2) {
+        
+        
+        // }
+        // if (i >= 2 && i < n_anno_mf + 2) {
+        //   if (i != 2) {
+        //     col['annotation'] = true
+        
+        //     colsToEdit[2].children.push(col)
+        //   } else {
+        //     colsToEdit.push(col)
+        //     let colFirstAnno = {
+        //       id: i,
+        //       label: colName,
+        //       selected: true,
+        //       children: [],
+        //     }
+        //     colFirstAnno['annotation'] = true
+        //     colsToEdit[2].children.push(colFirstAnno)
+        //   }
+        // } else {
+        //   colsToEdit.push(col)
+        // }
         i++
       })
       this.editColsList = colsToEdit
@@ -899,7 +938,7 @@ export default {
       let hiddenCols = []
       for (let i = 0; i < this.editColsList.length; i++) {
         let colObj = this.editColsList[i]
-        if (colObj.label == 'Known function') {
+        if (colObj.label == 'Molecular function' || colObj.label == 'Biological process') {
           if (colObj.children) {
             colObj.children.forEach((c) => {
               if (c.selected == true) {

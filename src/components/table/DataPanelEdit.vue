@@ -69,9 +69,9 @@ export default {
     checkboxClicked(i) {
       if (i.checkAllChildren) {
         if (i.selected) {
-          this.$emit('uncheck-all')
+          this.$emit('uncheck-all', i)
         } else {
-          this.$emit('check-all')
+          this.$emit('check-all', i)
         }
       }
       this.$emit('check-change')
