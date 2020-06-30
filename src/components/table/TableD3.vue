@@ -898,30 +898,6 @@ export default {
         else {
           colsToEdit.push(col);
         }
-        
-        // if (i == 2) {
-        
-        
-        // }
-        // if (i >= 2 && i < n_anno_mf + 2) {
-        //   if (i != 2) {
-        //     col['annotation'] = true
-        
-        //     colsToEdit[2].children.push(col)
-        //   } else {
-        //     colsToEdit.push(col)
-        //     let colFirstAnno = {
-        //       id: i,
-        //       label: colName,
-        //       selected: true,
-        //       children: [],
-        //     }
-        //     colFirstAnno['annotation'] = true
-        //     colsToEdit[2].children.push(colFirstAnno)
-        //   }
-        // } else {
-        //   colsToEdit.push(col)
-        // }
         i++
       })
       this.editColsList = colsToEdit

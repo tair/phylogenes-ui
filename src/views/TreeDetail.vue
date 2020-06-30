@@ -337,12 +337,14 @@ export default {
           singleAnno.evidenceCode = this.mapEvidenceCodeToDescription(singleAnno.evidenceCode);
           if(singleAnno.goAspect == "biological_process" || singleAnno.goAspect == "P") {
             if (!anno_headers_bp.includes(singleAnno.goName)) {
-              anno_headers_bp.push(singleAnno.goName)
+              anno_headers_bp.push(singleAnno.goName);
+              this.anno_headers.push(singleAnno.goName);
             }
           }
           if(singleAnno.goAspect == "molecular_function" || singleAnno.goAspect == "F") {
             if (!anno_headers_mf.includes(singleAnno.goName)) {
-              anno_headers_mf.push(singleAnno.goName)
+              anno_headers_mf.push(singleAnno.goName);
+              this.anno_headers.push(singleAnno.goName);
             }
           }
 
