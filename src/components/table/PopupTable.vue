@@ -1,31 +1,28 @@
 <template>
-  <div>
+  <div class="parent">
     <table class="popupTable">
       <thead id="head">
         <tr>
           <th v-for="col in cols">{{ col }}</th>
         </tr>
       </thead>
-      <tr v-for="row in data">
-        <td v-for="cell in row">
-          <span v-if="!cell.type">{{ cell }}</span>
-          <!--If Cell type is 'link', render a single hyperlink-->
-          <a
-            v-if="cell.type == 'link'"
-            v-bind:href="cell.link"
-            target="_blank"
-            >{{ cell.text }}</a
-          >
-          <!--If Cell type is 'links', render multiple hyperlinks-->
-          <a
-            v-if="cell.type == 'links'"
-            v-for="(ref, i) in cell.links"
-            v-bind:href="ref.link"
-            target="_blank"
-            >{{ ref.text }}<span v-if="i != cell.links.length - 1">,</span>
-          </a>
-        </td>
-      </tr>
+      <tbody>
+        <tr v-for="row in data">
+          <td v-for="cell in row">
+            <span v-if="!cell.type">{{ cell }}</span>
+            <a v-if="cell.type == 'link'" v-bind:href="cell.link" target="_blank">{{ cell.text }}</a>
+            <a
+              v-if="cell.type == 'links'"
+              v-for="(ref, i) in cell.links"
+              v-bind:href="ref.link"
+              target="_blank"
+            >
+              {{ ref.text }}
+              <span v-if="i != cell.links.length - 1">,</span>
+            </a>
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
 </template>
@@ -47,17 +44,16 @@ export default {
 }
 </script>
 <style scoped>
+.parent {
+  width: auto;
+}
 .popupTable {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  width: 100%;
-  height: 200px;
-  overflow: scroll;
+  margin: auto;
 }
 
 .popupTable th {
   width: 100px;
+  align-self: center;
   min-width: 100px;
   max-width: 100px;
   height: 40px;
@@ -75,7 +71,7 @@ export default {
   word-wrap: break-word;
   white-space: normal;
   box-shadow: 2px 0 2px -2px #f1f1f0;
-  padding-left: 5px;
+  /* padding-left: 5px; */
   padding-top: 5px;
 }
 </style>

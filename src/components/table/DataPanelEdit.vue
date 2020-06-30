@@ -23,11 +23,7 @@
         </div>
         <div class="childGrp">
           <ul v-if="o.children" class="list-group">
-            <li
-              class="list-group-item annoList"
-              v-for="c in o.children"
-              :key="c.id"
-            >
+            <li class="list-group-item annoList" v-for="c in o.children" :key="c.id">
               <div class="row">
                 <div class="col-9">
                   <input
@@ -73,9 +69,9 @@ export default {
     checkboxClicked(i) {
       if (i.checkAllChildren) {
         if (i.selected) {
-          this.$emit('uncheck-all')
+          this.$emit('uncheck-all', i)
         } else {
-          this.$emit('check-all')
+          this.$emit('check-all', i)
         }
       }
       this.$emit('check-change')

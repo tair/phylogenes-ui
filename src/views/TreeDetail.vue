@@ -17,48 +17,35 @@
         </div>
       </template>
       <template slot="footer">
-        <button
-          v-if="!isHighlightPopup"
-          class="modal-default-button"
-          @click="onPrune"
-        >
-          Update tree
-        </button>
+        <button v-if="!isHighlightPopup" class="modal-default-button" @click="onPrune">Update tree</button>
         <button
           v-if="isHighlightPopup"
           class="modal-default-button"
           @click="onHighlight"
-        >
-          Highlight tree
-        </button>
-        <button class="modal-default-button" @click="showPopup = false">
-          Close
-        </button>
+        >Highlight tree</button>
+        <button class="modal-default-button" @click="showPopup = false">Close</button>
       </template>
     </modal>
     <div class="row flex-fill">
       <!-- Metadata Band -->
-      <div
-        class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand"
-      >
-        <i
-          v-if="this.metadata.isLoading"
-          class="fa fa-spinner fa-spin fa-2x p-5 text-primary"
-        ></i>
+      <div class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand">
+        <i v-if="this.metadata.isLoading" class="fa fa-spinner fa-spin fa-2x p-5 text-primary"></i>
         <span v-if="!this.metadata.isLoading" v-on:click="showOrganismPopup()">
           {{ metadata.familyName }} ({{ treeId }}),
           {{ metadata.genesCount }} genes,
-          <span style="cursor: pointer;"
-            ><b
-              ><u>
-                {{ metadata.uniqueOrganisms.totalCount }} Organisms<span
+          <span
+            style="cursor: pointer;"
+          >
+            <b>
+              <u>
+                {{ metadata.uniqueOrganisms.totalCount }} Organisms
+                <span
                   v-if="this.prunedLoaded"
-                >
-                  (pruned view)</span
-                >
-              </u></b
-            ></span
-          >, spanning {{ this.metadata.spannedTaxon }}
+                >(pruned view)</span>
+              </u>
+            </b>
+          </span>
+          , spanning {{ this.metadata.spannedTaxon }}
         </span>
       </div>
       <!-- Table -->
@@ -79,8 +66,7 @@
           v-on:prune-from-menu="pruneTreeFromMenu"
           v-on:highlight-tree="highlightTreeByOrg"
           v-on:set-csv-data="setCsvTableData"
-        >
-        </tablelayout>
+        ></tablelayout>
       </div>
     </div>
   </div>
@@ -315,13 +301,26 @@ export default {
         })
       this.setTableCols()
     },
+    mapEvidenceCodeToDescription(code) {
+      let mapping = {"EXP": "experimental evidence",
+                  "IDA": "direct assay",
+                  "IEP": "expression pattern",
+                  "IGI": "genetic interaction",
+                  "IMP": "mutant phenotype",
+                  "IPI": "physical interaction"}
+      if(mapping[code] == null) return code;
+      return mapping[code];
+    },
     loadAnnotations(annotations) {
       this.anno_mapping = {}
       this.anno_headers = []
+      let anno_headers_mf = [];
+      let anno_headers_bp = [];
       this.go_mapping = {}
       if (!annotations) {
         var annoObj = {
-          headers: this.anno_headers,
+          headers: {"bp": anno_headers_bp, "mf": anno_headers_mf},
+          n_annotations: anno_headers_bp.length + anno_headers_mf.length,
           annoMap: this.anno_mapping,
         }
 
@@ -335,9 +334,20 @@ export default {
         var annotationsList = JSON.parse(uni_mapping.go_annotations)
         this.anno_mapping[uniprotId] = annotationsList
         annotationsList.forEach((singleAnno) => {
-          if (!this.anno_headers.includes(singleAnno.goName)) {
-            this.anno_headers.push(singleAnno.goName)
+          singleAnno.evidenceCode = this.mapEvidenceCodeToDescription(singleAnno.evidenceCode);
+          if(singleAnno.goAspect == "biological_process" || singleAnno.goAspect == "P") {
+            if (!anno_headers_bp.includes(singleAnno.goName)) {
+              anno_headers_bp.push(singleAnno.goName);
+              this.anno_headers.push(singleAnno.goName);
+            }
           }
+          if(singleAnno.goAspect == "molecular_function" || singleAnno.goAspect == "F") {
+            if (!anno_headers_mf.includes(singleAnno.goName)) {
+              anno_headers_mf.push(singleAnno.goName);
+              this.anno_headers.push(singleAnno.goName);
+            }
+          }
+
           if (!(singleAnno.goName in this.go_mapping)) {
             this.go_mapping[singleAnno.goName] = singleAnno.goId
           }
@@ -345,7 +355,8 @@ export default {
       })
 
       var annoObj = {
-        headers: this.anno_headers,
+        headers: {"bp": anno_headers_bp, "mf": anno_headers_mf},
+        n_annotations: anno_headers_bp.length + anno_headers_mf.length,
         annoMap: this.anno_mapping,
       }
       this.store_setAnnoMapping(annoObj)
@@ -620,11 +631,16 @@ export default {
       var annoList = []
       if (!annosForGene) return annoList
       annosForGene.forEach((a) => {
+        // console.log(a);
         let id = a.goId
         let goTermLink = 'https://www.ebi.ac.uk/QuickGO/term/' + id
         var code = ''
         if (a.evidenceCode) {
-          code = a.evidenceCode.split(',')[2]
+          if(a.evidenceCode.includes("IBA")) {
+            code = a.evidenceCode.split(',')[2];
+          } else {
+            code = a.evidenceCode;
+          }
         }
         var refCode = a.reference.split(':')[0]
         var refId = a.reference.split(':')[1]

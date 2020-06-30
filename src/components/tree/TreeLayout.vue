@@ -1,9 +1,6 @@
 <template>
   <span class="_parent">
-    <i
-      v-if="this.isLoading"
-      class="fa fa-spinner fa-spin fa-6x p-5 text-primary"
-    ></i>
+    <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
     <div class="menu">
       <div v-if="showLegend" class="legend-box">
         <tree-legend></tree-legend>
@@ -12,12 +9,7 @@
     <svg id="treeSvg" ref="treesvg" width="100%" :height="svgHeight">
       <g id="wrapper">
         <g class="links">
-          <baselink
-            v-for="link in treelinks_view"
-            :key="link.id"
-            ref="treelink"
-            :content="link"
-          ></baselink>
+          <baselink v-for="link in treelinks_view" :key="link.id" ref="treelink" :content="link" />
         </g>
         <g class="nodes">
           <basenode
@@ -27,7 +19,7 @@
             ref="treenode"
             :content="node"
             v-on:clicknode="onClick"
-          ></basenode>
+          />
         </g>
       </g>
     </svg>
@@ -728,16 +720,31 @@ export default {
       if (node.children) return
       let uniprotIds = []
       this.getUniprotIds(node, uniprotIds)
-      const map = this.store_annoMapping
-      uniprotIds.forEach(function (uniprotId) {
+      const mapObj = this.store_annoMapping
+      // console.log(map);
+      uniprotIds.forEach( (uniprotId) => {
+        // console.log(uniprotId, map.annoMap[uniprotId.toLowerCase()].length)
         if (
-          map.annoMap &&
-          uniprotId.toLowerCase() in map.annoMap &&
-          map.annoMap[uniprotId.toLowerCase()].length > 0
+          mapObj.annoMap &&
+          uniprotId.toLowerCase() in mapObj.annoMap &&
+          mapObj.annoMap[uniprotId.toLowerCase()].length > 0
         ) {
-          node.data.hasFunc = true
+          if(this.foundExpAnnos(mapObj.annoMap[uniprotId.toLowerCase()])) {
+            node.data.hasFunc = true
+          }
         }
       })
+    },
+    foundExpAnnos(annoMap) {
+      // console.log(annoMap.length);
+      let expFound = false;
+      annoMap.forEach(a => {
+        // console.log(a.evidenceCode);
+        if(!a.evidenceCode.includes("IBA")) {
+          expFound = true;
+        }   
+      });
+      return expFound;
     },
     // Add extra features to nodes of tree
     // Use this function during init
