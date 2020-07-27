@@ -60,22 +60,32 @@
             ></tree-layout-menu>
           </th>
           <th v-for="(col, i) in colsToRender" :key="i" :class="getThClasses(col, i)">
-            <div v-if="isFirstAnnoCol(col)" class="annoPopver">
-              <!-- Annotation Popover Info Icon -->
-              <b-button id="annoPopover" href="#" tabindex="0" variant="flat">
+            <div v-if="col.type && col.type=='first_mf'" class="annoPopver">
+              <b-button id="annoPopover_mf" href="#" tabindex="0" variant="flat">
                 <i class="fas fa-info-circle fa-lg"></i>
+                <popover
+                  :text="popover1Text"
+                  title="GO Annotations"
+                  placement="right"
+                  target="annoPopover_mf"
+                ></popover>
               </b-button>
-              <popover
-                :text="popover1Text"
-                title="GO Annotations"
-                placement="right"
-                target="annoPopover"
-              ></popover>
-              <div v-if="i==2" class="aspectInfo">
+              <div v-if="i==prefix_anno" class="aspectInfo">
                 <span v-b-tooltip.hover.top.o100 title="Molecular Function">F</span>
               </div>
-              <div v-if="i==2+n_anno_mf" class="aspectInfo">
-                <span v-b-tooltip.hover.top.o100 title="Biological Process">P</span>
+            </div>
+            <div v-if="col.type && col.type=='first_bp'" class="annoPopver">
+              <b-button id="annoPopover_bp" href="#" tabindex="0" variant="flat">
+                <i class="fas fa-info-circle fa-lg"></i>
+                <popover
+                  :text="popover1Text"
+                  title="GO Annotations"
+                  placement="right"
+                  target="annoPopover_bp"
+                ></popover>
+              </b-button>
+              <div v-if="i==prefix_anno + n_anno_mf" class="aspectInfo">
+                <span v-b-tooltip.hover.top.o100 title="Biological process">P</span>
               </div>
             </div>
             <b-button v-if="showPopover(col)" :id="col + 'id'" href="#" tabindex="0" variant="flat">
@@ -133,11 +143,11 @@
         <tr v-else v-for="(row, row_i) in rowsToRender" :key="row_i">
           <td
             v-for="(key, i) in colsToRender"
-            :key="key"
-            @click="tdClicked(key, row)"
-            :class="getTdClasses(key, row[key], i)"
+            :key="key.label"
+            @click="tdClicked(key.label, row)"
+            :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <tablecell :content.sync="rowsToRender[row_i][key]"></tablecell>
+            <tablecell :content.sync="rowsToRender[row_i][key.label]"></tablecell>
           </td>
         </tr>
       </tbody>
@@ -193,6 +203,7 @@ export default {
       n_annotations: 0,
       n_anno_bp: 0,
       n_anno_mf: 0,
+      prefix_anno: 2,
       msaTab: false,
       window: {
         width: 0,
@@ -372,30 +383,42 @@ export default {
       //Only display cols which have corresponding rows in store tableData
       var filteredCols = d3.keys(this.store_tableData[0])
       filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
+      filteredCols = filteredCols.map(function(f) {
+        return { label: f }
+      })
       //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
       if (this.colsFromProp.includes('Annotations')) {
-        this.store_annoMapping.headers.mf.forEach((h) => {
-          filteredCols.splice(2, 0, h)
+        this.store_annoMapping.headers.mf.forEach((h, i) => {
+          let headerObj = { label: h }
+          if (i == this.store_annoMapping.headers.mf.length - 1) {
+            headerObj.type = 'first_mf'
+          }
+          filteredCols.splice(2, 0, headerObj)
         })
-        this.store_annoMapping.headers.bp.forEach((h) => {
+        this.store_annoMapping.headers.bp.forEach((h, i) => {
+          let headerObj = { label: h }
+          if (i == this.store_annoMapping.headers.bp.length - 1) {
+            headerObj.type = 'first_bp'
+          }
           filteredCols.splice(
             2 + this.store_annoMapping.headers.mf.length,
             0,
-            h
+            headerObj
           )
         })
       }
       // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
-
       //Check for unchecked cols
       if (this.defaultColsToHide.includes('Known function')) {
         //Removes all annotations cols
-        filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
+        filteredCols = filteredCols.filter((t) =>
+          this.colsFromProp.includes(t.label)
+        )
       }
       //Remove default hidden cols from the filtered list
       filteredCols = filteredCols.filter(
-        (t) => !this.defaultColsToHide.includes(t)
+        (t) => !this.defaultColsToHide.includes(t.label)
       )
       this.colsHidden = this.defaultColsToHide.length
       this.colsToRender = filteredCols
@@ -466,7 +489,9 @@ export default {
             currAnno.forEach((c) => {
               if (c.goName === a) {
                 if (c.evidenceCode.includes('IBA')) {
-                  tableNode[a] = '%'
+                  if (tableNode[a] != '*') {
+                    tableNode[a] = '%'
+                  }
                 } else {
                   tableNode[a] = '*'
                 }
@@ -638,7 +663,7 @@ export default {
         return { text: '' }
       }
       this.colsToRender.forEach((c) => {
-        let cellTxt = rowData[c]
+        let cellTxt = rowData[c.label]
         let content = { text: cellTxt, id: rowData.id }
         if (cellTxt == '*') {
           content.type = 'annotation'
@@ -647,15 +672,15 @@ export default {
           content.type = 'annotation'
           content.symbol = 'tree'
         }
-        if (c == 'MSA') {
+        if (c.label == 'MSA') {
           content.text = cellTxt
           content.type = 'msa'
           content.isHighlight = true
-        } else if (c == 'Uniprot ID') {
+        } else if (c.label == 'Uniprot ID') {
           content.type = 'link'
           content.link = 'https://www.uniprot.org/uniprot/' + cellTxt
         }
-        row[c] = content
+        row[c.label] = content
       })
 
       let cellTxt = rowData['Uniprot ID']
@@ -750,13 +775,19 @@ export default {
     onMoveUp(col) {
       if (col.annotation) {
         let kf_idx = this.editColsList.findIndex(
-          (c) =>
-            c.label == 'Molecular function' || c.label == 'Biological process'
+          (c) => c.label == 'Molecular function'
         )
         let kf = this.editColsList[kf_idx]
         let idx = kf.children.findIndex((c) => c.id == col.id)
+        if (idx == -1) {
+          kf_idx = this.editColsList.findIndex(
+            (c) => c.label == 'Biological process'
+          )
+          kf = this.editColsList[kf_idx]
+          idx = kf.children.findIndex((c) => c.id == col.id)
+        }
+        if (kf.children[idx + 1] == null || idx == -1) return
         let origCol = {}
-        if (kf.children[idx - 1] == null) return
         //Object.assign needed for Vue reactivity, as any change on Vue list's children, need to be assgined this way.
         //Read more: https://vuejs.org/v2/guide/reactivity.html#For-Objects
         Object.assign(origCol, kf.children[idx])
@@ -782,12 +813,18 @@ export default {
     onMoveDown(col) {
       if (col.annotation) {
         let kf_idx = this.editColsList.findIndex(
-          (c) =>
-            c.label == 'Molecular function' || c.label == 'Biological process'
+          (c) => c.label == 'Molecular function'
         )
         let kf = this.editColsList[kf_idx]
         let idx = kf.children.findIndex((c) => c.id == col.id)
-        if (kf.children[idx + 1] == null) return
+        if (idx == -1) {
+          kf_idx = this.editColsList.findIndex(
+            (c) => c.label == 'Biological process'
+          )
+          kf = this.editColsList[kf_idx]
+          idx = kf.children.findIndex((c) => c.id == col.id)
+        }
+        if (kf.children[idx + 1] == null || idx == -1) return
         let origCol = {}
         Object.assign(origCol, kf.children[idx])
         Object.assign(kf.children[idx], kf.children[idx + 1])
@@ -841,12 +878,12 @@ export default {
       let colsToEdit = []
       let i = 0
       let total_annotations = this.store_annoMapping.n_annotations
-      this.origColsToRender.forEach((colName) => {
-        let col = { id: i, label: colName, selected: true, children: [] }
+      this.origColsToRender.forEach((colObj) => {
+        let col = { id: i, label: colObj.label, selected: true, children: [] }
         if (i == 0) {
           col.disabled = true
         }
-        if (this.defaultColsToHide.includes(colName)) {
+        if (this.defaultColsToHide.includes(colObj.label)) {
           col.selected = false
         }
         if (i == 2) {
@@ -922,8 +959,30 @@ export default {
           colObj.label == 'Biological process'
         ) {
           if (colObj.children) {
+            if (colObj.label == 'Molecular function') {
+              this.n_anno_mf = 0
+            }
+            if (colObj.label == 'Biological process') {
+              this.n_anno_bp = 0
+            }
             colObj.children.forEach((c) => {
               if (c.selected == true) {
+                if (colObj.label == 'Molecular function') {
+                  if (this.n_anno_mf == 0) {
+                    c.type = 'first_mf'
+                  } else {
+                    c.type = ''
+                  }
+                  this.n_anno_mf++
+                }
+                if (colObj.label == 'Biological process') {
+                  if (this.n_anno_bp == 0) {
+                    c.type = 'first_bp'
+                  } else {
+                    c.type = ''
+                  }
+                  this.n_anno_bp++
+                }
                 filteredCols.push(c)
               }
             })
@@ -936,9 +995,19 @@ export default {
         }
       }
       this.colsToRender = []
+
       filteredCols.forEach((f) => {
-        this.colsToRender.push(f.label)
+        this.colsToRender.push(f)
       })
+      //set prefix_anno
+      this.prefix_anno = 0
+      for (var i = 0; i < filteredCols.length; i++) {
+        if (filteredCols[i].annotation) {
+          break
+        }
+        this.prefix_anno++
+      }
+      console.log(this.prefix_anno)
       this.colsHidden = hiddenCols.length
       //Hidden cols vuex storage reused for other trees as well in a session
       this.store_setTableHiddenCols(hiddenCols)
@@ -950,6 +1019,7 @@ export default {
     getTableCsvData(nodes) {
       this.$emit('set-csv-data', nodes)
     },
+    //Checks if the column is the first annotation column
     isFirstAnnoCol(colName) {
       let mf_len = this.store_annoMapping.headers.mf.length
       if (
@@ -1072,7 +1142,8 @@ export default {
       })
       return popUpTableData
     },
-    getHeader(title, i) {
+    getHeader(colObj, i) {
+      let title = colObj.label
       let header = { text: title }
       if (this.headerMap[title]) {
         header['text'] = this.headerMap[title]
@@ -1092,9 +1163,9 @@ export default {
       }
       return header
     },
-    getThClasses(colName, col_idx) {
+    getThClasses(colObj, col_idx) {
       let classes = []
-      if (colName == 'tree') {
+      if (colObj == 'tree') {
         //Sets min width for tree header
         classes.push('widthTree')
         //Sets the column to be sticky while scrolling left/right
@@ -1104,7 +1175,7 @@ export default {
       }
       //Set the borders for annotations if present
       if (this.n_annotations > 0) {
-        if (col_idx >= 2 && col_idx <= this.n_anno_mf) {
+        if (col_idx >= this.prefix_anno && col_idx <= this.n_anno_mf) {
           classes.push('cell-no-border')
         }
         if (
@@ -1114,8 +1185,8 @@ export default {
           classes.push('cell-no-border')
         }
       }
-      if (this.colsFromProp.includes(colName)) {
-        if (colName == 'MSA') {
+      if (this.colsFromProp.includes(colObj.label)) {
+        if (colObj.label == 'MSA') {
           classes.push('widthMax')
         } else {
           classes.push('widthDefault')
