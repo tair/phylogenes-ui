@@ -290,7 +290,11 @@ export default {
     },
     // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
     initTreeData(treeJson) {
-      treeJson = treeJson.tree_topology.annotation_node
+      if (!treeJson.tree_topology) {
+        treeJson = treeJson.annotation_node
+      } else {
+        treeJson = treeJson.tree_topology.annotation_node
+      }
       this.formatJson(treeJson)
       this.processJson(treeJson)
         .then((res) => {

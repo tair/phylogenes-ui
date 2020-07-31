@@ -64,8 +64,8 @@
               <b-button id="annoPopover_mf" href="#" tabindex="0" variant="flat">
                 <i class="fas fa-info-circle fa-lg"></i>
                 <popover
-                  :text="popover1Text"
-                  title="GO Annotations"
+                  :text="popoverGO_mfText"
+                  title="GO Annotations - Molecular Function"
                   placement="right"
                   target="annoPopover_mf"
                 ></popover>
@@ -78,8 +78,8 @@
               <b-button id="annoPopover_bp" href="#" tabindex="0" variant="flat">
                 <i class="fas fa-info-circle fa-lg"></i>
                 <popover
-                  :text="popover1Text"
-                  title="GO Annotations"
+                  :text="popoverGO_bpText"
+                  title="GO Annotations - Biological Process"
                   placement="right"
                   target="annoPopover_bp"
                 ></popover>
@@ -88,17 +88,24 @@
                 <span v-b-tooltip.hover.top.o100 title="Biological process">P</span>
               </div>
             </div>
-            <b-button v-if="showPopover(col)" :id="col + 'id'" href="#" tabindex="0" variant="flat">
+            <b-button
+              v-if="showPopover(col.label)"
+              :id="col.label + 'id'"
+              href="#"
+              tabindex="0"
+              variant="flat"
+            >
               <i class="fas fa-info-circle fa-lg"></i>
             </b-button>
             <popover
-              v-if="showPopover(col)"
-              :text="getPopoverText(col)"
-              :title="col"
+              v-if="showPopover(col.label)"
+              :text="getPopoverText(col.label)"
+              :title="col.label"
               placement="right"
-              :target="col + 'id'"
+              :target="col.label + 'id'"
             ></popover>
             <tablecell :content="getHeader(col, i)"></tablecell>
+            <!-- First fixed table column "Gene" -->
             <div v-if="i == 0">
               <button
                 v-if="showDPEOption"
@@ -256,7 +263,11 @@ export default {
       popover4Text:
         'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
       popover5Text:
-        'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>'
+        'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>',
+      popoverGO_mfText:
+        'GO Molecular Function annotations (from <a href="http://geneontology.org/" target="_blank">http://geneontology.org/</a>). A yellow flask icon indicates evidence by experiment and a green tree icon indicates inference by biological ancestor.',
+      popoverGO_bpText:
+        'GO Biological Process annotations (from <a href="http://geneontology.org/" target="_blank">http://geneontology.org/</a>). A yellow flask icon indicates evidence by experiment and a green tree icon indicates inference by biological ancestor.'
     }
   },
   created() {
@@ -1172,6 +1183,9 @@ export default {
         classes.push('stickyCol1')
         return classes
       } else {
+        if (col_idx == 0) {
+          classes.push('stickyCol2')
+        }
       }
       //Set the borders for annotations if present
       if (this.n_annotations > 0) {
