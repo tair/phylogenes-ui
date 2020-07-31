@@ -22,6 +22,7 @@ function processCompactTree(root, annoMap) {
 
 function filterAnnoMap(annoMap) {
   let filteredAnnoMap = {}
+  if (!annoMap) return
   let annoKeys = Object.keys(annoMap)
   annoKeys.forEach((k) => {
     let annos = annoMap[k]
