@@ -545,7 +545,10 @@ export default {
         n_organisms: n_organisms
       }
       this.$emit('tree-init', msg)
-      this.updateTableCols()
+      setTimeout(() => {
+        this.updateTableCols()
+      }, 100)
+
       this.lazyLoad = true
 
       if (this.store_getSearchTxtWthn != null) {

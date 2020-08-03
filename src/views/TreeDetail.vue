@@ -656,6 +656,7 @@ export default {
             code = a.evidenceCode
           }
         }
+        a.reference = a.reference.split('|')[0]
         var refCode = a.reference.split(':')[0]
         var refId = a.reference.split(':')[1]
         var refLink = 'https://www.ncbi.nlm.nih.gov/pubmed/' + refId
