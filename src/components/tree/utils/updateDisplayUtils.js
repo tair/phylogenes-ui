@@ -1,6 +1,7 @@
 import commonTreeUtils from './commonTreeUtils'
 
 function processCompactTree(root, annoMap) {
+  annoMap = filterAnnoMap(annoMap)
   //First expand all nodes, incase the default view is modified by user.
   commonTreeUtils.expandAllNodes(root)
   var nodes = root.descendants()
@@ -9,6 +10,7 @@ function processCompactTree(root, annoMap) {
     this.nestedCollapseForNonAnno(nodes)
     return
   }
+  // console.log(annoMap)
   let annoKeys = Object.keys(annoMap)
   if (annoKeys.length > 0) {
     this.nestedCollapseForAnno(nodes[0], annoKeys)
@@ -16,6 +18,23 @@ function processCompactTree(root, annoMap) {
     //If there are no annotations in the tree, use a different ruleset for collapsing nodes
     this.nestedCollapseForNonAnno(nodes)
   }
+}
+
+function filterAnnoMap(annoMap) {
+  let filteredAnnoMap = {}
+  if (!annoMap) return
+  let annoKeys = Object.keys(annoMap)
+  annoKeys.forEach((k) => {
+    let annos = annoMap[k]
+    //We add information for only experimental annotations which don't have 'IBA' in the evidence code and the goAspect is either 'molecular funtion' or 'biological process'. All other go aspects should be null, but sometimes they are added in the database.
+    let foundNonIba = annos.some(
+      (e) => !e.evidenceCode.includes('IBA') && e.goAspect != null
+    )
+    if (foundNonIba) {
+      filteredAnnoMap[k] = annos
+    }
+  })
+  return filteredAnnoMap
 }
 
 function nestedCollapseForNonAnno(nodes) {
@@ -74,5 +93,5 @@ export default {
   processCompactTree,
   nestedCollapseForNonAnno,
   nestedCollapseForAnno,
-  collapseIfNoAnnoFound,
+  collapseIfNoAnnoFound
 }
