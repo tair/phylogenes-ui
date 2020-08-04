@@ -367,7 +367,14 @@ export default {
           }
         })
       })
-
+      anno_headers_bp.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase())
+      })
+      anno_headers_bp.reverse()
+      anno_headers_mf.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase())
+      })
+      anno_headers_mf.reverse()
       var annoObj = {
         headers: { bp: anno_headers_bp, mf: anno_headers_mf },
         n_annotations: anno_headers_bp.length + anno_headers_mf.length,
@@ -454,7 +461,7 @@ export default {
         if (sequence) {
           node.sequence = sequence
         } else {
-          console.log('Sequence not found!')
+          // console.log('Sequence not found!')
         }
       } else {
         let persistentId = node.persistent_id
@@ -462,7 +469,7 @@ export default {
         if (sequence) {
           node.sequence = sequence
         } else {
-          console.log('Sequence not found!')
+          // console.log('Sequence not found!')
         }
       }
       if (node.children) {

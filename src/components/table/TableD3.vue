@@ -399,24 +399,26 @@ export default {
       })
       //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
       if (this.colsFromProp.includes('Annotations')) {
-        this.store_annoMapping.headers.mf.forEach((h, i) => {
-          let headerObj = { label: h }
-          if (i == this.store_annoMapping.headers.mf.length - 1) {
-            headerObj.type = 'first_mf'
-          }
-          filteredCols.splice(2, 0, headerObj)
-        })
-        this.store_annoMapping.headers.bp.forEach((h, i) => {
-          let headerObj = { label: h }
-          if (i == this.store_annoMapping.headers.bp.length - 1) {
-            headerObj.type = 'first_bp'
-          }
-          filteredCols.splice(
-            2 + this.store_annoMapping.headers.mf.length,
-            0,
-            headerObj
-          )
-        })
+        if (this.store_annoMapping.headers.mf) {
+          this.store_annoMapping.headers.mf.forEach((h, i) => {
+            let headerObj = { label: h }
+            if (i == this.store_annoMapping.headers.mf.length - 1) {
+              headerObj.type = 'first_mf'
+            }
+            filteredCols.splice(2, 0, headerObj)
+          })
+          this.store_annoMapping.headers.bp.forEach((h, i) => {
+            let headerObj = { label: h }
+            if (i == this.store_annoMapping.headers.bp.length - 1) {
+              headerObj.type = 'first_bp'
+            }
+            filteredCols.splice(
+              2 + this.store_annoMapping.headers.mf.length,
+              0,
+              headerObj
+            )
+          })
+        }
       }
       // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
@@ -545,9 +547,10 @@ export default {
         n_organisms: n_organisms
       }
       this.$emit('tree-init', msg)
-      setTimeout(() => {
-        this.updateTableCols()
-      }, 100)
+      this.updateTableCols()
+      // setTimeout(() => {
+      //   this.updateTableCols()
+      // }, 100)
 
       this.lazyLoad = true
 
@@ -1021,7 +1024,6 @@ export default {
         }
         this.prefix_anno++
       }
-      console.log(this.prefix_anno)
       this.colsHidden = hiddenCols.length
       //Hidden cols vuex storage reused for other trees as well in a session
       this.store_setTableHiddenCols(hiddenCols)
