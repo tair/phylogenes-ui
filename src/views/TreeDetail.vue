@@ -1199,7 +1199,11 @@ export default {
                 let currAnno = this.anno_mapping[uniprotId]
                 currAnno.forEach((c) => {
                   if (c.goName === a) {
-                    tableNode[goNameHeader] = 1
+                    if (c.evidenceCode.includes('IBA') && tableNode[goNameHeader]!='EXP') {
+                      tableNode[goNameHeader] = 'IBA'
+                    } else {
+                      tableNode[goNameHeader] = 'EXP'
+                    }
                   }
                 })
               }
