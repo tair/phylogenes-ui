@@ -276,17 +276,21 @@ export default {
       this.treeData_Json = null
       this.analyzeCompleted = false
 
-      //For a grafted tree, we load the tree json from the store.
+      //For a grafted tree, we load the tree json from the store after it is saved by calling the panther server which constructs a dynamic tree
       var treeJson = this.store_treeJsonObj
       if (treeJson.search) {
-        //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
-        //The MSA will be empty for the extra grafted node.
         this.treeId = treeJson.search.book
-        this.initTreeData(treeJson.search)
-        this.store_setMsaFromApi(this.treeId)
-        this.store_setAnnoFromApi(this.treeId)
-        this.store_setHasGrafted(true)
       }
+      //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
+      //The MSA will be empty for the extra grafted node. Wait for the promise to return the annotations and msa before intializing the tree or it will lead to bugs
+      var p2 = this.store_setMsaFromApi(this.treeId)
+      var p3 = this.store_setAnnoFromApi(this.treeId)
+      Promise.all([p2, p3]).then((vals) => {
+        if (vals.length > 1) {
+          this.initTreeData(treeJson.search)
+          this.store_setHasGrafted(true)
+        }
+      })
     },
     // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
     initTreeData(treeJson) {

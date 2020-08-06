@@ -71,7 +71,11 @@
                 ></popover>
               </b-button>
               <div v-if="i==prefix_anno" class="aspectInfo">
-                <span v-b-tooltip.hover.top.o100 title="Molecular Function">F</span>
+                <span
+                  v-b-tooltip.hover.top.o100
+                  class="anno_type text-danger"
+                  title="Molecular Function"
+                >F</span>
               </div>
             </div>
             <div v-if="col.type && col.type=='first_bp'" class="annoPopver">
@@ -85,7 +89,11 @@
                 ></popover>
               </b-button>
               <div v-if="i==prefix_anno + n_anno_mf" class="aspectInfo">
-                <span v-b-tooltip.hover.top.o100 title="Biological process">P</span>
+                <span
+                  v-b-tooltip.hover.top.o100
+                  title="Biological process"
+                  class="anno_type text-danger"
+                >P</span>
               </div>
             </div>
             <b-button
@@ -548,9 +556,6 @@ export default {
       }
       this.$emit('tree-init', msg)
       this.updateTableCols()
-      // setTimeout(() => {
-      //   this.updateTableCols()
-      // }, 100)
 
       this.lazyLoad = true
 
@@ -1463,6 +1468,10 @@ td.tdHover:hover {
   left: -10px;
   z-index: 10;
   -webkit-transform: translate(3px, 3px);
+}
+.anno_type {
+  font-size: 20px;
+  font-weight: bold;
 }
 .aspectInfo {
   cursor: pointer;
