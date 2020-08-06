@@ -20,25 +20,25 @@ const state = {
     max_msa_length: 0,
     metadata: {
       familyName: [],
-      taxonRange: '',
+      taxonRange: ''
     },
     anno_mapping: {
-      headers: [],
-      mapping: null,
+      headers: { mf: [], bp: [] },
+      mapping: null
     },
     hidden_cols: ['Gene name', 'Uniprot ID', 'Subfamily Name'],
     nodes: null,
     nodeAtCenter: null, //Node which should be set at the center of tree panel view.
     matchedNodes: {
       allMatchedNodes: null,
-      currIdx: 0,
+      currIdx: 0
     },
     zoom: null,
     scroll: null,
     topPaddingY: 0,
     searchTextWithin: null,
-    graftSequence: null,
-  },
+    graftSequence: null
+  }
 }
 
 const getters = {
@@ -98,7 +98,7 @@ const getters = {
   },
   [types.TABLE_GET_HIDDENCOLS]: (state) => {
     return state.treedata.hidden_cols
-  },
+  }
 }
 
 const actions = {
@@ -110,8 +110,8 @@ const actions = {
     context.state.treedata.freq_msa_arr = null
     context.state.treedata.msa_data = new Map()
     context.state.treedata.anno_mapping = {
-      headers: [],
-      mapping: null,
+      headers: { mf: [], bp: [] },
+      mapping: null
     }
     context.state.treedata.nodes = null
     context.state.treedata.data = null
@@ -135,7 +135,7 @@ const actions = {
     context.state.treedata.metadata = payload
   },
   [types.TREE_ACTION_SET_ANNO_MAPPING]: (context, payload) => {
-    //console.log("Action" + payload);
+    // console.log('Action', payload)
     context.state.treedata.anno_mapping = payload
   },
   [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
@@ -173,7 +173,7 @@ const actions = {
       axios({
         method: 'GET',
         url: treeUrl,
-        responseType: 'json',
+        responseType: 'json'
       })
         .then((res) => {
           if (res.data.search) {
@@ -195,7 +195,7 @@ const actions = {
     return new Promise((result, rej) => {
       axios({
         method: 'GET',
-        url: API_URL + '/go_annotations/' + payload,
+        url: API_URL + '/go_annotations/' + payload
       })
         .then((res) => {
           if (res.data.response.docs.length > 0) {
@@ -232,7 +232,7 @@ const actions = {
       axios({
         method: 'GET',
         url: msaUrl,
-        responseType: 'json',
+        responseType: 'json'
       })
         .then((res) => {
           if (res.data.familyNames.length > 0) {
@@ -266,7 +266,7 @@ const actions = {
   [types.TREE_ACTION_GET_ANNOTATIONS]: (context, payload) => {
     axios({
       method: 'GET',
-      url: API_URL + '/go_annotations/' + payload,
+      url: API_URL + '/go_annotations/' + payload
     })
       .then((res) => {
         if (res.data.response.docs.length > 0) {
@@ -288,11 +288,11 @@ const actions = {
   },
   [types.TABLE_ACTION_SET_TABLE_HIDDENCOLS]: (context, payload) => {
     context.state.treedata.hidden_cols = payload
-  },
+  }
 }
 
 export default {
   state,
   getters,
-  actions,
+  actions
 }

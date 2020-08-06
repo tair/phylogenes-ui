@@ -71,7 +71,11 @@
                 ></popover>
               </b-button>
               <div v-if="i==prefix_anno" class="aspectInfo">
-                <span v-b-tooltip.hover.top.o100 title="Molecular Function">F</span>
+                <span
+                  v-b-tooltip.hover.top.o100
+                  class="anno_type text-danger"
+                  title="Molecular Function"
+                >F</span>
               </div>
             </div>
             <div v-if="col.type && col.type=='first_bp'" class="annoPopver">
@@ -85,7 +89,11 @@
                 ></popover>
               </b-button>
               <div v-if="i==prefix_anno + n_anno_mf" class="aspectInfo">
-                <span v-b-tooltip.hover.top.o100 title="Biological process">P</span>
+                <span
+                  v-b-tooltip.hover.top.o100
+                  title="Biological process"
+                  class="anno_type text-danger"
+                >P</span>
               </div>
             </div>
             <b-button
@@ -399,24 +407,26 @@ export default {
       })
       //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
       if (this.colsFromProp.includes('Annotations')) {
-        this.store_annoMapping.headers.mf.forEach((h, i) => {
-          let headerObj = { label: h }
-          if (i == this.store_annoMapping.headers.mf.length - 1) {
-            headerObj.type = 'first_mf'
-          }
-          filteredCols.splice(2, 0, headerObj)
-        })
-        this.store_annoMapping.headers.bp.forEach((h, i) => {
-          let headerObj = { label: h }
-          if (i == this.store_annoMapping.headers.bp.length - 1) {
-            headerObj.type = 'first_bp'
-          }
-          filteredCols.splice(
-            2 + this.store_annoMapping.headers.mf.length,
-            0,
-            headerObj
-          )
-        })
+        if (this.store_annoMapping.headers.mf) {
+          this.store_annoMapping.headers.mf.forEach((h, i) => {
+            let headerObj = { label: h }
+            if (i == this.store_annoMapping.headers.mf.length - 1) {
+              headerObj.type = 'first_mf'
+            }
+            filteredCols.splice(2, 0, headerObj)
+          })
+          this.store_annoMapping.headers.bp.forEach((h, i) => {
+            let headerObj = { label: h }
+            if (i == this.store_annoMapping.headers.bp.length - 1) {
+              headerObj.type = 'first_bp'
+            }
+            filteredCols.splice(
+              2 + this.store_annoMapping.headers.mf.length,
+              0,
+              headerObj
+            )
+          })
+        }
       }
       // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
@@ -545,9 +555,7 @@ export default {
         n_organisms: n_organisms
       }
       this.$emit('tree-init', msg)
-      setTimeout(() => {
-        this.updateTableCols()
-      }, 100)
+      this.updateTableCols()
 
       this.lazyLoad = true
 
@@ -1021,7 +1029,6 @@ export default {
         }
         this.prefix_anno++
       }
-      console.log(this.prefix_anno)
       this.colsHidden = hiddenCols.length
       //Hidden cols vuex storage reused for other trees as well in a session
       this.store_setTableHiddenCols(hiddenCols)
@@ -1461,6 +1468,10 @@ td.tdHover:hover {
   left: -10px;
   z-index: 10;
   -webkit-transform: translate(3px, 3px);
+}
+.anno_type {
+  font-size: 20px;
+  font-weight: bold;
 }
 .aspectInfo {
   cursor: pointer;

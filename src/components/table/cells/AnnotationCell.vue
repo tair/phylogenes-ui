@@ -5,10 +5,10 @@
       <image
         v-if="content.symbol == 'flask'"
         xlink:href="/flask-yellow-transparent.png"
-        height="15"
-        width="15"
-        x="17"
-        y="7"
+        height="20"
+        width="20"
+        x="15"
+        y="6"
       />
       <image
         v-if="content.symbol == 'tree'"
@@ -16,7 +16,7 @@
         height="35"
         width="35"
         x="8"
-        y="0"
+        y="-2"
       />
     </g>
   </svg>
@@ -29,13 +29,13 @@ export default {
   props: ['content'],
   data() {
     return {
-      el: null,
+      el: null
     }
   },
   watch: {
     content: {
-      handler: function (val, oldVal) {},
-    },
+      handler: function(val, oldVal) {}
+    }
   },
   mounted() {
     this.el = d3.select(this.$el)
@@ -43,10 +43,10 @@ export default {
   data() {
     return {
       tdWidth: '190px',
-      tdHeight: '30px',
+      tdHeight: '30px'
     }
   },
-  methods: {},
+  methods: {}
 }
 </script>
 <style scoped>

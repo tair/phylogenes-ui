@@ -276,17 +276,21 @@ export default {
       this.treeData_Json = null
       this.analyzeCompleted = false
 
-      //For a grafted tree, we load the tree json from the store.
+      //For a grafted tree, we load the tree json from the store after it is saved by calling the panther server which constructs a dynamic tree
       var treeJson = this.store_treeJsonObj
       if (treeJson.search) {
-        //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
-        //The MSA will be empty for the extra grafted node.
         this.treeId = treeJson.search.book
-        this.initTreeData(treeJson.search)
-        this.store_setMsaFromApi(this.treeId)
-        this.store_setAnnoFromApi(this.treeId)
-        this.store_setHasGrafted(true)
       }
+      //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
+      //The MSA will be empty for the extra grafted node. Wait for the promise to return the annotations and msa before intializing the tree or it will lead to bugs
+      var p2 = this.store_setMsaFromApi(this.treeId)
+      var p3 = this.store_setAnnoFromApi(this.treeId)
+      Promise.all([p2, p3]).then((vals) => {
+        if (vals.length > 1) {
+          this.initTreeData(treeJson.search)
+          this.store_setHasGrafted(true)
+        }
+      })
     },
     // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
     initTreeData(treeJson) {
@@ -367,7 +371,14 @@ export default {
           }
         })
       })
-
+      anno_headers_bp.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase())
+      })
+      anno_headers_bp.reverse()
+      anno_headers_mf.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase())
+      })
+      anno_headers_mf.reverse()
       var annoObj = {
         headers: { bp: anno_headers_bp, mf: anno_headers_mf },
         n_annotations: anno_headers_bp.length + anno_headers_mf.length,
@@ -454,7 +465,7 @@ export default {
         if (sequence) {
           node.sequence = sequence
         } else {
-          console.log('Sequence not found!')
+          // console.log('Sequence not found!')
         }
       } else {
         let persistentId = node.persistent_id
@@ -462,7 +473,7 @@ export default {
         if (sequence) {
           node.sequence = sequence
         } else {
-          console.log('Sequence not found!')
+          // console.log('Sequence not found!')
         }
       }
       if (node.children) {
