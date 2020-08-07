@@ -1214,11 +1214,11 @@ export default {
       })
       this.csvTable.tableCsvData.forEach((node) => {
         node[
-          "Columns after 'Subfamily name', if any, are 'Known functions'. Each 'Known function' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene."
+          "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
         ] = null
       })
       this.csvTable.tableCsvFields.push(
-        "Columns after 'Subfamily name', if any, are 'Known functions'. Each 'Known function' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene."
+        "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
       )
     },
     sortArrayByX(arr) {
