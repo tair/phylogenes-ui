@@ -60,35 +60,60 @@
             ></tree-layout-menu>
           </th>
           <th v-for="(col, i) in colsToRender" :key="i" :class="getThClasses(col, i)">
-            <div v-if="isFirstAnnoCol(col)" class="annoPopver">
-              <!-- Annotation Popover Info Icon -->
-              <b-button id="annoPopover" href="#" tabindex="0" variant="flat">
+            <div v-if="col.type && col.type=='first_mf'" class="annoPopver">
+              <b-button id="annoPopover_mf" href="#" tabindex="0" variant="flat">
                 <i class="fas fa-info-circle fa-lg"></i>
+                <popover
+                  :text="popoverGO_mfText"
+                  title="GO Annotations - Molecular Function"
+                  placement="right"
+                  target="annoPopover_mf"
+                ></popover>
               </b-button>
-              <popover
-                :text="popover1Text"
-                title="GO Annotations"
-                placement="right"
-                target="annoPopover"
-              ></popover>
-              <div v-if="i==2" class="aspectInfo">
-                <span v-b-tooltip.hover.top.o100 title="Molecular Function">F</span>
-              </div>
-              <div v-if="i==2+n_anno_mf" class="aspectInfo">
-                <span v-b-tooltip.hover.top.o100 title="Biological Process">P</span>
+              <div v-if="i==prefix_anno" class="aspectInfo">
+                <span
+                  v-b-tooltip.hover.top.o100
+                  class="anno_type text-danger"
+                  title="Molecular Function"
+                >F</span>
               </div>
             </div>
-            <b-button v-if="showPopover(col)" :id="col + 'id'" href="#" tabindex="0" variant="flat">
+            <div v-if="col.type && col.type=='first_bp'" class="annoPopver">
+              <b-button id="annoPopover_bp" href="#" tabindex="0" variant="flat">
+                <i class="fas fa-info-circle fa-lg"></i>
+                <popover
+                  :text="popoverGO_bpText"
+                  title="GO Annotations - Biological Process"
+                  placement="right"
+                  target="annoPopover_bp"
+                ></popover>
+              </b-button>
+              <div v-if="i==prefix_anno + n_anno_mf" class="aspectInfo">
+                <span
+                  v-b-tooltip.hover.top.o100
+                  title="Biological process"
+                  class="anno_type text-danger"
+                >P</span>
+              </div>
+            </div>
+            <b-button
+              v-if="showPopover(col.label)"
+              :id="col.label + 'id'"
+              href="#"
+              tabindex="0"
+              variant="flat"
+            >
               <i class="fas fa-info-circle fa-lg"></i>
             </b-button>
             <popover
-              v-if="showPopover(col)"
-              :text="getPopoverText(col)"
-              :title="col"
+              v-if="showPopover(col.label)"
+              :text="getPopoverText(col.label)"
+              :title="col.label"
               placement="right"
-              :target="col + 'id'"
+              :target="col.label + 'id'"
             ></popover>
             <tablecell :content="getHeader(col, i)"></tablecell>
+            <!-- First fixed table column "Gene" -->
             <div v-if="i == 0">
               <button
                 v-if="showDPEOption"
@@ -133,11 +158,11 @@
         <tr v-else v-for="(row, row_i) in rowsToRender" :key="row_i">
           <td
             v-for="(key, i) in colsToRender"
-            :key="key"
-            @click="tdClicked(key, row)"
-            :class="getTdClasses(key, row[key], i)"
+            :key="key.label"
+            @click="tdClicked(key.label, row)"
+            :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <tablecell :content.sync="rowsToRender[row_i][key]"></tablecell>
+            <tablecell :content.sync="rowsToRender[row_i][key.label]"></tablecell>
           </td>
         </tr>
       </tbody>
@@ -169,7 +194,7 @@ export default {
     'colsFromProp',
     'headerMap', //Map: ['Original Col Name': 'Updated Col Name']
     'treeId',
-    'csvTable',
+    'csvTable'
   ],
   components: {
     treelayout: treelayout,
@@ -179,7 +204,7 @@ export default {
     modal: customModal,
     tablecell: baseCell,
     msaLegend: msaLegend,
-    treeLayoutMenu: treeLayoutMenu,
+    treeLayoutMenu: treeLayoutMenu
   },
   data() {
     return {
@@ -193,10 +218,11 @@ export default {
       n_annotations: 0,
       n_anno_bp: 0,
       n_anno_mf: 0,
+      prefix_anno: 2,
       msaTab: false,
       window: {
         width: 0,
-        height: 0,
+        height: 0
       },
       ORIG_ROW_HEIGHT: 35,
       MAX_ROW_HEIGHT: 35,
@@ -209,17 +235,12 @@ export default {
         { id: 2, title: 'Highlight tree by organism' },
         { id: 3, title: 'Prune tree by organism' },
         { id: 4, title: 'Save tree image as PNG' },
-        { id: 5, title: 'Save tree image as SVG' },
+        { id: 5, title: 'Save tree image as SVG' }
       ],
       //Popup
       showPopup: false,
       popupHeader: '',
-      popupCols: [
-        'GO term',
-        'Evidence description',
-        'Reference',
-        'Source',
-      ],
+      popupCols: ['GO term', 'Evidence description', 'Reference', 'More'],
       popupData: [],
       //DPE Popup
       showDPEOption: true,
@@ -238,7 +259,7 @@ export default {
         'Gene name',
         'Organism',
         'Protein name',
-        'Subfamily name',
+        'Subfamily name'
       ],
       //Popover
       popover1Text:
@@ -251,6 +272,10 @@ export default {
         'This information was extracted from the ProteinName filed of a fasta header in the UniProt protein fasta file <a href="https://www.uniprot.org/help/fasta-headers" target="_blank">(https://www.uniprot.org/help/fasta-headers)</a>.',
       popover5Text:
         'The name of a subfamily is transferred from the representative member of the subfamily <a href="https://conf.arabidopsis.org/display/PHGSUP/FAQ" target="_blank">(see more).</a>',
+      popoverGO_mfText:
+        'GO Molecular Function annotations (from <a href="http://geneontology.org/" target="_blank">http://geneontology.org/</a>). A yellow flask icon indicates evidence by experiment and a green tree icon indicates inference by biological ancestor.',
+      popoverGO_bpText:
+        'GO Biological Process annotations (from <a href="http://geneontology.org/" target="_blank">http://geneontology.org/</a>). A yellow flask icon indicates evidence by experiment and a green tree icon indicates inference by biological ancestor.'
     }
   },
   created() {
@@ -267,12 +292,12 @@ export default {
       store_annoMapping: types.TREE_GET_ANNO_MAPPING,
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
       store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING,
-      store_getTableHiddenCols: types.TABLE_GET_HIDDENCOLS,
-    }),
+      store_getTableHiddenCols: types.TABLE_GET_HIDDENCOLS
+    })
   },
   watch: {
     store_tableData: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         //This is zero, when a new tree is reloaded.
         if (val && val.length == 0) {
           this.resetTable()
@@ -281,10 +306,10 @@ export default {
         }
       },
       deep: true,
-      immediate: true,
+      immediate: true
     },
     store_getTableIsLoading: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         if (val) {
           this.isLoading = val
           if (this.isLoading) {
@@ -295,24 +320,24 @@ export default {
         }
       },
       deep: true,
-      immediate: true,
+      immediate: true
     },
     colsFromProp: {
-      handler: function (val, oldval) {
+      handler: function(val, oldval) {
         this.updateTableCols()
-      },
+      }
     },
     store_annoMapping: {
-      handler: function (val, oldVal) {
-        if(!val.headers.mf) return;
-        this.n_annotations = val.n_annotations;
-        this.n_anno_mf = val.headers.mf.length;
-        this.n_anno_bp = val.headers.bp.length;
-      },
+      handler: function(val, oldVal) {
+        if (!val.headers.mf) return
+        this.n_annotations = val.n_annotations
+        this.n_anno_mf = val.headers.mf.length
+        this.n_anno_bp = val.headers.bp.length
+      }
     },
     //Auto scroll the table to the center node set by the tree (Auto scrolling)
     store_getCenterNode: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         if (val == null) return
         //Timeout required so that 'storeTableData' is updated after matched nodes are processed
         setTimeout(() => {
@@ -320,27 +345,27 @@ export default {
         }, 1000)
       },
       deep: true,
-      immediate: true,
+      immediate: true
     },
     store_getTableHiddenCols: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         if (val == null) return
         this.defaultColsToHide = val
       },
       deep: true,
-      immediate: true,
-    },
+      immediate: true
+    }
   },
   mounted() {
     this.resetTable()
     this.initTable()
-    this.$nextTick(function () {})
+    this.$nextTick(function() {})
   },
   beforeDestroy() {
     this.resetTable()
   },
-  updated: function () {
-    this.$nextTick(function () {
+  updated: function() {
+    this.$nextTick(function() {
       // Code that will run only after the
       // entire view has been re-rendered
       if (this.tableRendering == false) {
@@ -354,7 +379,7 @@ export default {
       store_setTableData: types.TABLE_ACTION_SET_DATA,
       store_setClearData: types.TREE_ACTION_CLEAR_DATA,
       store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
-      store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS,
+      store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS
     }),
     resetTable() {
       this.store_setClearData()
@@ -377,26 +402,44 @@ export default {
       //Only display cols which have corresponding rows in store tableData
       var filteredCols = d3.keys(this.store_tableData[0])
       filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
+      filteredCols = filteredCols.map(function(f) {
+        return { label: f }
+      })
       //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
       if (this.colsFromProp.includes('Annotations')) {
-        this.store_annoMapping.headers.mf.forEach((h) => {
-          filteredCols.splice(2, 0, h)
-        });
-        this.store_annoMapping.headers.bp.forEach((h) => {
-          filteredCols.splice(2+this.store_annoMapping.headers.mf.length, 0, h);
-        });
+        if (this.store_annoMapping.headers.mf) {
+          this.store_annoMapping.headers.mf.forEach((h, i) => {
+            let headerObj = { label: h }
+            if (i == this.store_annoMapping.headers.mf.length - 1) {
+              headerObj.type = 'first_mf'
+            }
+            filteredCols.splice(2, 0, headerObj)
+          })
+          this.store_annoMapping.headers.bp.forEach((h, i) => {
+            let headerObj = { label: h }
+            if (i == this.store_annoMapping.headers.bp.length - 1) {
+              headerObj.type = 'first_bp'
+            }
+            filteredCols.splice(
+              2 + this.store_annoMapping.headers.mf.length,
+              0,
+              headerObj
+            )
+          })
+        }
       }
       // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
-
       //Check for unchecked cols
       if (this.defaultColsToHide.includes('Known function')) {
         //Removes all annotations cols
-        filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
+        filteredCols = filteredCols.filter((t) =>
+          this.colsFromProp.includes(t.label)
+        )
       }
       //Remove default hidden cols from the filtered list
       filteredCols = filteredCols.filter(
-        (t) => !this.defaultColsToHide.includes(t)
+        (t) => !this.defaultColsToHide.includes(t.label)
       )
       this.colsHidden = this.defaultColsToHide.length
       this.colsToRender = filteredCols
@@ -460,18 +503,20 @@ export default {
         }
         if (this.store_annoMapping.annoMap[uniprotId]) {
           let currAnno = this.store_annoMapping.annoMap[uniprotId]
-          let allAnnos = this.store_annoMapping.headers.mf;
-          allAnnos = allAnnos.concat(this.store_annoMapping.headers.bp);
+          let allAnnos = this.store_annoMapping.headers.mf
+          allAnnos = allAnnos.concat(this.store_annoMapping.headers.bp)
 
           allAnnos.forEach((a) => {
             currAnno.forEach((c) => {
-                if (c.goName === a) {
-                  if(c.evidenceCode.includes("IBA")) {
-                    tableNode[a] = "%";
-                  } else {
-                    tableNode[a] = "*";
+              if (c.goName === a) {
+                if (c.evidenceCode.includes('IBA')) {
+                  if (tableNode[a] != '*') {
+                    tableNode[a] = '%'
                   }
+                } else {
+                  tableNode[a] = '*'
                 }
+              }
             })
           })
         }
@@ -496,7 +541,7 @@ export default {
                 name: n.data.organism,
                 commonName: n.data.displayName,
                 taxonId: n.data.taxonId,
-                count: 1,
+                count: 1
               }
               uniqueOrganisms.push(org)
             }
@@ -507,10 +552,11 @@ export default {
       let msg = {
         tabularData: tabularData,
         uniqueOrganisms: uniqueOrganisms,
-        n_organisms: n_organisms,
+        n_organisms: n_organisms
       }
       this.$emit('tree-init', msg)
       this.updateTableCols()
+
       this.lazyLoad = true
 
       if (this.store_getSearchTxtWthn != null) {
@@ -639,24 +685,24 @@ export default {
         return { text: '' }
       }
       this.colsToRender.forEach((c) => {
-        let cellTxt = rowData[c]
+        let cellTxt = rowData[c.label]
         let content = { text: cellTxt, id: rowData.id }
         if (cellTxt == '*') {
-          content.type = 'annotation';
-          content.symbol = "flask";
-        } else if(cellTxt == "%") {
-          content.type = 'annotation';
-          content.symbol = "tree";
+          content.type = 'annotation'
+          content.symbol = 'flask'
+        } else if (cellTxt == '%') {
+          content.type = 'annotation'
+          content.symbol = 'tree'
         }
-        if (c == 'MSA') {
+        if (c.label == 'MSA') {
           content.text = cellTxt
           content.type = 'msa'
           content.isHighlight = true
-        } else if (c == 'Uniprot ID') {
+        } else if (c.label == 'Uniprot ID') {
           content.type = 'link'
           content.link = 'https://www.uniprot.org/uniprot/' + cellTxt
         }
-        row[c] = content
+        row[c.label] = content
       })
 
       let cellTxt = rowData['Uniprot ID']
@@ -751,12 +797,19 @@ export default {
     onMoveUp(col) {
       if (col.annotation) {
         let kf_idx = this.editColsList.findIndex(
-          (c) => c.label == 'Molecular function'|| c.label == 'Biological process'
+          (c) => c.label == 'Molecular function'
         )
         let kf = this.editColsList[kf_idx]
         let idx = kf.children.findIndex((c) => c.id == col.id)
+        if (idx == -1) {
+          kf_idx = this.editColsList.findIndex(
+            (c) => c.label == 'Biological process'
+          )
+          kf = this.editColsList[kf_idx]
+          idx = kf.children.findIndex((c) => c.id == col.id)
+        }
+        if (kf.children[idx + 1] == null || idx == -1) return
         let origCol = {}
-        if (kf.children[idx - 1] == null) return
         //Object.assign needed for Vue reactivity, as any change on Vue list's children, need to be assgined this way.
         //Read more: https://vuejs.org/v2/guide/reactivity.html#For-Objects
         Object.assign(origCol, kf.children[idx])
@@ -782,11 +835,18 @@ export default {
     onMoveDown(col) {
       if (col.annotation) {
         let kf_idx = this.editColsList.findIndex(
-          (c) => c.label == 'Molecular function'|| c.label == 'Biological process'
+          (c) => c.label == 'Molecular function'
         )
         let kf = this.editColsList[kf_idx]
         let idx = kf.children.findIndex((c) => c.id == col.id)
-        if (kf.children[idx + 1] == null) return
+        if (idx == -1) {
+          kf_idx = this.editColsList.findIndex(
+            (c) => c.label == 'Biological process'
+          )
+          kf = this.editColsList[kf_idx]
+          idx = kf.children.findIndex((c) => c.id == col.id)
+        }
+        if (kf.children[idx + 1] == null || idx == -1) return
         let origCol = {}
         Object.assign(origCol, kf.children[idx])
         Object.assign(kf.children[idx], kf.children[idx + 1])
@@ -808,7 +868,7 @@ export default {
     },
     onDPEUncheckAll(colSelected) {
       let cols = this.editColsList
-      let findIdx = cols.findIndex((c) => c.label == colSelected.label);
+      let findIdx = cols.findIndex((c) => c.label == colSelected.label)
       // console.log(findIdx);
       let colAnnotations = cols[findIdx]
       if (colAnnotations.children) {
@@ -822,7 +882,7 @@ export default {
     },
     onDPECheckAll(colSelected) {
       let cols = this.editColsList
-      let findIdx = cols.findIndex((c) => c.label == colSelected.label);
+      let findIdx = cols.findIndex((c) => c.label == colSelected.label)
       let colAnnotations = cols[findIdx]
       if (colAnnotations.children) {
         colAnnotations.children.forEach((c) => {
@@ -839,64 +899,66 @@ export default {
       }
       let colsToEdit = []
       let i = 0
-      let total_annotations = this.store_annoMapping.n_annotations;
-      this.origColsToRender.forEach((colName) => {
-        let col = { id: i, label: colName, selected: true, children: [] }
+      let total_annotations = this.store_annoMapping.n_annotations
+      this.origColsToRender.forEach((colObj) => {
+        let col = { id: i, label: colObj.label, selected: true, children: [] }
         if (i == 0) {
           col.disabled = true
         }
-        if (this.defaultColsToHide.includes(colName)) {
+        if (this.defaultColsToHide.includes(colObj.label)) {
           col.selected = false
         }
-        if(i == 2) {
+        if (i == 2) {
           let parentCol = {
             id: i,
             label: 'Molecular function',
             selected: true,
-            checkAllChildren: true,
+            checkAllChildren: true
           }
           parentCol.children = []
           if (this.defaultColsToHide.includes('Molecular function')) {
             parentCol.selected = false
           }
-          colsToEdit.push(parentCol);
+          colsToEdit.push(parentCol)
           col['annotation'] = true
           if (this.defaultColsToHide.includes('Molecular function')) {
             col.selected = false
           }
-          colsToEdit[2].children.push(col);
-        } else if( i > 2 && i < 2+this.n_anno_mf) {
+          colsToEdit[2].children.push(col)
+        } else if (i > 2 && i < 2 + this.n_anno_mf) {
           col['annotation'] = true
           if (this.defaultColsToHide.includes('Molecular function')) {
             col.selected = false
           }
-          colsToEdit[2].children.push(col);
-        } else if( i == 2+this.n_anno_mf) {
+          colsToEdit[2].children.push(col)
+        } else if (i == 2 + this.n_anno_mf) {
           let parentCol = {
             id: i,
             label: 'Biological process',
             selected: true,
-            checkAllChildren: true,
+            checkAllChildren: true
           }
           parentCol.children = []
           if (this.defaultColsToHide.includes('Biological process')) {
             parentCol.selected = false
           }
-          colsToEdit.push(parentCol);
+          colsToEdit.push(parentCol)
           col['annotation'] = true
           if (this.defaultColsToHide.includes('Biological process')) {
             col.selected = false
           }
-          colsToEdit[colsToEdit.length-1].children.push(col);
-        } else if( i > 2+this.n_anno_mf && i < 2+this.n_anno_mf+this.n_anno_bp) {
+          colsToEdit[colsToEdit.length - 1].children.push(col)
+        } else if (
+          i > 2 + this.n_anno_mf &&
+          i < 2 + this.n_anno_mf + this.n_anno_bp
+        ) {
           col['annotation'] = true
           if (this.defaultColsToHide.includes('Biological process')) {
             col.selected = false
           }
-          colsToEdit[colsToEdit.length-1].children.push(col);
-        }
-        else {
-          colsToEdit.push(col);
+          colsToEdit[colsToEdit.length - 1].children.push(col)
+        } else {
+          colsToEdit.push(col)
         }
         i++
       })
@@ -914,10 +976,35 @@ export default {
       let hiddenCols = []
       for (let i = 0; i < this.editColsList.length; i++) {
         let colObj = this.editColsList[i]
-        if (colObj.label == 'Molecular function' || colObj.label == 'Biological process') {
+        if (
+          colObj.label == 'Molecular function' ||
+          colObj.label == 'Biological process'
+        ) {
           if (colObj.children) {
+            if (colObj.label == 'Molecular function') {
+              this.n_anno_mf = 0
+            }
+            if (colObj.label == 'Biological process') {
+              this.n_anno_bp = 0
+            }
             colObj.children.forEach((c) => {
               if (c.selected == true) {
+                if (colObj.label == 'Molecular function') {
+                  if (this.n_anno_mf == 0) {
+                    c.type = 'first_mf'
+                  } else {
+                    c.type = ''
+                  }
+                  this.n_anno_mf++
+                }
+                if (colObj.label == 'Biological process') {
+                  if (this.n_anno_bp == 0) {
+                    c.type = 'first_bp'
+                  } else {
+                    c.type = ''
+                  }
+                  this.n_anno_bp++
+                }
                 filteredCols.push(c)
               }
             })
@@ -930,9 +1017,18 @@ export default {
         }
       }
       this.colsToRender = []
+
       filteredCols.forEach((f) => {
-        this.colsToRender.push(f.label)
+        this.colsToRender.push(f)
       })
+      //set prefix_anno
+      this.prefix_anno = 0
+      for (var i = 0; i < filteredCols.length; i++) {
+        if (filteredCols[i].annotation) {
+          break
+        }
+        this.prefix_anno++
+      }
       this.colsHidden = hiddenCols.length
       //Hidden cols vuex storage reused for other trees as well in a session
       this.store_setTableHiddenCols(hiddenCols)
@@ -944,12 +1040,19 @@ export default {
     getTableCsvData(nodes) {
       this.$emit('set-csv-data', nodes)
     },
+    //Checks if the column is the first annotation column
     isFirstAnnoCol(colName) {
-      let mf_len = this.store_annoMapping.headers.mf.length;
-      if (mf_len > 0 && colName == this.store_annoMapping.headers.mf[mf_len-1])
+      let mf_len = this.store_annoMapping.headers.mf.length
+      if (
+        mf_len > 0 &&
+        colName == this.store_annoMapping.headers.mf[mf_len - 1]
+      )
         return true
-      let bp_len = this.store_annoMapping.headers.bp.length;
-      if (bp_len > 0 && colName == this.store_annoMapping.headers.bp[bp_len-1])
+      let bp_len = this.store_annoMapping.headers.bp.length
+      if (
+        bp_len > 0 &&
+        colName == this.store_annoMapping.headers.bp[bp_len - 1]
+      )
         return true
       return false
     },
@@ -1060,7 +1163,8 @@ export default {
       })
       return popUpTableData
     },
-    getHeader(title, i) {
+    getHeader(colObj, i) {
+      let title = colObj.label
       let header = { text: title }
       if (this.headerMap[title]) {
         header['text'] = this.headerMap[title]
@@ -1073,42 +1177,47 @@ export default {
         'Protein name',
         'Uniprot ID',
         'Subfamily Name',
-        'MSA',
+        'MSA'
       ]
       if (!baseCols.includes(title)) {
         header['type'] = 'slanted'
       }
       return header
     },
-    getThClasses(colName, col_idx) {
+    getThClasses(colObj, col_idx) {
       let classes = []
-      if (colName == 'tree') {
+      if (colObj == 'tree') {
         //Sets min width for tree header
         classes.push('widthTree')
         //Sets the column to be sticky while scrolling left/right
         classes.push('stickyCol1')
-        return classes;
+        return classes
       } else {
-        
+        if (col_idx == 0) {
+          classes.push('stickyCol2')
+        }
       }
       //Set the borders for annotations if present
-      if(this.n_annotations > 0) {
-        if(col_idx >= 2 && col_idx <= this.n_anno_mf) {
-          classes.push("cell-no-border");
+      if (this.n_annotations > 0) {
+        if (col_idx >= this.prefix_anno && col_idx <= this.n_anno_mf) {
+          classes.push('cell-no-border')
         }
-        if(col_idx > this.n_anno_mf+1 && col_idx <= this.n_anno_bp+ this.n_anno_mf) {
-          classes.push("cell-no-border");
+        if (
+          col_idx > this.n_anno_mf + 1 &&
+          col_idx <= this.n_anno_bp + this.n_anno_mf
+        ) {
+          classes.push('cell-no-border')
         }
       }
-      if (this.colsFromProp.includes(colName)) {
-        if (colName == "MSA") {
-          classes.push("widthMax");
+      if (this.colsFromProp.includes(colObj.label)) {
+        if (colObj.label == 'MSA') {
+          classes.push('widthMax')
         } else {
-          classes.push("widthDefault");
+          classes.push('widthDefault')
           // classes.push("left-border");
         }
       } else {
-        classes.push("widthMin");
+        classes.push('widthMin')
       }
       return classes
     },
@@ -1155,8 +1264,8 @@ export default {
       if (colName === 'Protein name') return this.popover4Text
       if (colName === 'Subfamily Name') return this.popover5Text
       return ''
-    },
-  },
+    }
+  }
 }
 </script>
 <style scoped>
@@ -1359,6 +1468,10 @@ td.tdHover:hover {
   left: -10px;
   z-index: 10;
   -webkit-transform: translate(3px, 3px);
+}
+.anno_type {
+  font-size: 20px;
+  font-weight: bold;
 }
 .aspectInfo {
   cursor: pointer;

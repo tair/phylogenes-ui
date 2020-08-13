@@ -2,18 +2,8 @@
 (eg. translate, exit movement).
 <template>
   <g>
-    <baseTxtNode
-      v-if="!content.hideText"
-      ref="txtCom"
-      :content="content"
-    ></baseTxtNode>
-    <component
-      :is="nodeComponent"
-      ref="myCom"
-      :content="content"
-      @clicked="onClick"
-    >
-    </component>
+    <baseTxtNode v-if="!content.hideText" ref="txtCom" :content="content"></baseTxtNode>
+    <component :is="nodeComponent" ref="myCom" :content="content" @clicked="onClick"></component>
     <image
       v-if="content.data.hasFunc"
       v-b-tooltip.hover
@@ -40,11 +30,11 @@ export default {
     nodeCircle: nodeCircle,
     nodeDiamond: nodeDiamond,
     nodeTriangle: nodeTriangle,
-    baseTxtNode: baseTxtNode,
+    baseTxtNode: baseTxtNode
   },
   data() {
     return {
-      duration: 750,
+      duration: 750
     }
   },
   mounted() {
@@ -52,13 +42,13 @@ export default {
     this.renderNode()
   },
   computed: {
-    nodeComponent: function () {
+    nodeComponent: function() {
       // console.log("Current: ", this.content.type);
       return 'node-' + this.content.type.toLowerCase()
     },
     textComponent() {
       return 'node-text'
-    },
+    }
   },
   methods: {
     onClick() {
@@ -93,7 +83,10 @@ export default {
       if (this.content.data.hasFunc) {
         let textLength = 0
         if (this.el.select('text').node()) {
-          textLength = this.el.select('text').node().getComputedTextLength()
+          textLength = this.el
+            .select('text')
+            .node()
+            .getComputedTextLength()
         }
         this.el.select('image').attr('x', textLength + 20)
       }
@@ -107,7 +100,7 @@ export default {
         d._children = null
       }
       return d
-    },
-  },
+    }
+  }
 }
 </script>

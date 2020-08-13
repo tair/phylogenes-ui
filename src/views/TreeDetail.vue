@@ -97,7 +97,7 @@ export default {
     treelayout: treelayout,
     tablecell: baseCell,
     modal: customModal,
-    popupTable: popupTableOrganism,
+    popupTable: popupTableOrganism
   },
   computed: {
     ...mapGetters({
@@ -109,53 +109,53 @@ export default {
       store_treeMsaData: types.TREE_GET_MSADATA,
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
       store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
-      store_maxMsaLength: types.TREE_GET_MAXMSAL,
-    }),
+      store_maxMsaLength: types.TREE_GET_MAXMSAL
+    })
   },
   watch: {
     '$route.params.id': {
-      handler: function (id) {
+      handler: function(id) {
         if (!id) return
         this.initForNewTreeId(id)
       },
       deep: true,
-      immediate: true,
+      immediate: true
     },
     '$route.name': {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         if (val && val == 'treeGrafted') {
           this.loadTreeFromStore()
         }
       },
-      immediate: true,
+      immediate: true
     },
     store_getTreeMetadata: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         this.metadata.familyName = val.familyName[0]
         this.metadata.spannedTaxon = val.taxonRange
         this.metadata.isLoading = false
-      },
+      }
     },
     stateTreeAnnotations: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         this.loadAnnotations(val)
       },
       deep: true,
-      immediate: true,
+      immediate: true
     },
     store_annoMapping: {
-      handler: function (val, oldVal) {},
+      handler: function(val, oldVal) {},
       deep: true,
-      immediate: true,
+      immediate: true
     },
     store_getSearchTxtWthn: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         if (val != null) {
         }
       },
       deep: true,
-      immediate: true,
-    },
+      immediate: true
+    }
   },
   data() {
     return {
@@ -172,7 +172,7 @@ export default {
         'Gene ID',
         'Protein name',
         'Uniprot ID',
-        'Subfamily Name',
+        'Subfamily Name'
       ],
       msaCols: ['Gene', 'MSA'],
       metadata: {
@@ -181,9 +181,9 @@ export default {
         genesCount: 0,
         uniqueOrganisms: {
           totalCount: 0,
-          organisms: [],
+          organisms: []
         },
-        spannedTaxon: '',
+        spannedTaxon: ''
       },
       matchNodes: [],
       //Popup
@@ -193,13 +193,13 @@ export default {
       popupCols: [
         { type: 'checkbox', val: true },
         'Organism',
-        'Number of genes',
+        'Number of genes'
       ],
       popupData: [],
       popupTableConfig: {
         tableHeight: 'auto',
         tableWidth: 'auto',
-        colsWidth: ['50px', '350px', '100px'],
+        colsWidth: ['50px', '350px', '100px']
       },
       //Pruning
       prunedLoaded: false,
@@ -216,8 +216,8 @@ export default {
           'Gene name',
           'Organism',
           'Protein function',
-          'Subfamily name',
-        ],
+          'Subfamily name'
+        ]
       },
       //MSA
       showMsa: false,
@@ -226,7 +226,7 @@ export default {
       completeData: null,
       tableColsToRender: [],
       treeData_Json: null,
-      treeId: null,
+      treeId: null
     }
   },
   mounted() {
@@ -244,7 +244,7 @@ export default {
       store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
       store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
       store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
-      store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED,
+      store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED
     }),
     initForNewTreeId(id) {
       this.treeId = id
@@ -276,21 +276,29 @@ export default {
       this.treeData_Json = null
       this.analyzeCompleted = false
 
-      //For a grafted tree, we load the tree json from the store.
+      //For a grafted tree, we load the tree json from the store after it is saved by calling the panther server which constructs a dynamic tree
       var treeJson = this.store_treeJsonObj
       if (treeJson.search) {
-        //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
-        //The MSA will be empty for the extra grafted node.
         this.treeId = treeJson.search.book
-        this.initTreeData(treeJson.search)
-        this.store_setMsaFromApi(this.treeId)
-        this.store_setAnnoFromApi(this.treeId)
-        this.store_setHasGrafted(true)
       }
+      //Get treeId from the json obj, and use it to get GO annotations and MSA data from the solr server.
+      //The MSA will be empty for the extra grafted node. Wait for the promise to return the annotations and msa before intializing the tree or it will lead to bugs
+      var p2 = this.store_setMsaFromApi(this.treeId)
+      var p3 = this.store_setAnnoFromApi(this.treeId)
+      Promise.all([p2, p3]).then((vals) => {
+        if (vals.length > 1) {
+          this.initTreeData(treeJson.search)
+          this.store_setHasGrafted(true)
+        }
+      })
     },
     // Set tree data which is sent to TreeLayout as a prop called 'jsonData'
     initTreeData(treeJson) {
-      treeJson = treeJson.tree_topology.annotation_node
+      if (!treeJson.tree_topology) {
+        treeJson = treeJson.annotation_node
+      } else {
+        treeJson = treeJson.tree_topology.annotation_node
+      }
       this.formatJson(treeJson)
       this.processJson(treeJson)
         .then((res) => {
@@ -302,26 +310,28 @@ export default {
       this.setTableCols()
     },
     mapEvidenceCodeToDescription(code) {
-      let mapping = {"EXP": "experimental evidence",
-                  "IDA": "direct assay",
-                  "IEP": "expression pattern",
-                  "IGI": "genetic interaction",
-                  "IMP": "mutant phenotype",
-                  "IPI": "physical interaction"}
-      if(mapping[code] == null) return code;
-      return mapping[code];
+      let mapping = {
+        EXP: 'experimental evidence',
+        IDA: 'direct assay',
+        IEP: 'expression pattern',
+        IGI: 'genetic interaction',
+        IMP: 'mutant phenotype',
+        IPI: 'physical interaction'
+      }
+      if (mapping[code] == null) return code
+      return mapping[code]
     },
     loadAnnotations(annotations) {
       this.anno_mapping = {}
       this.anno_headers = []
-      let anno_headers_mf = [];
-      let anno_headers_bp = [];
+      let anno_headers_mf = []
+      let anno_headers_bp = []
       this.go_mapping = {}
       if (!annotations) {
         var annoObj = {
-          headers: {"bp": anno_headers_bp, "mf": anno_headers_mf},
+          headers: { bp: anno_headers_bp, mf: anno_headers_mf },
           n_annotations: anno_headers_bp.length + anno_headers_mf.length,
-          annoMap: this.anno_mapping,
+          annoMap: this.anno_mapping
         }
 
         this.store_setAnnoMapping(annoObj)
@@ -334,17 +344,25 @@ export default {
         var annotationsList = JSON.parse(uni_mapping.go_annotations)
         this.anno_mapping[uniprotId] = annotationsList
         annotationsList.forEach((singleAnno) => {
-          singleAnno.evidenceCode = this.mapEvidenceCodeToDescription(singleAnno.evidenceCode);
-          if(singleAnno.goAspect == "biological_process" || singleAnno.goAspect == "P") {
+          singleAnno.evidenceCode = this.mapEvidenceCodeToDescription(
+            singleAnno.evidenceCode
+          )
+          if (
+            singleAnno.goAspect == 'biological_process' ||
+            singleAnno.goAspect == 'P'
+          ) {
             if (!anno_headers_bp.includes(singleAnno.goName)) {
-              anno_headers_bp.push(singleAnno.goName);
-              this.anno_headers.push(singleAnno.goName);
+              anno_headers_bp.push(singleAnno.goName)
+              this.anno_headers.push(singleAnno.goName)
             }
           }
-          if(singleAnno.goAspect == "molecular_function" || singleAnno.goAspect == "F") {
+          if (
+            singleAnno.goAspect == 'molecular_function' ||
+            singleAnno.goAspect == 'F'
+          ) {
             if (!anno_headers_mf.includes(singleAnno.goName)) {
-              anno_headers_mf.push(singleAnno.goName);
-              this.anno_headers.push(singleAnno.goName);
+              anno_headers_mf.push(singleAnno.goName)
+              this.anno_headers.push(singleAnno.goName)
             }
           }
 
@@ -353,17 +371,24 @@ export default {
           }
         })
       })
-
+      anno_headers_bp.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase())
+      })
+      anno_headers_bp.reverse()
+      anno_headers_mf.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase())
+      })
+      anno_headers_mf.reverse()
       var annoObj = {
-        headers: {"bp": anno_headers_bp, "mf": anno_headers_mf},
+        headers: { bp: anno_headers_bp, mf: anno_headers_mf },
         n_annotations: anno_headers_bp.length + anno_headers_mf.length,
-        annoMap: this.anno_mapping,
+        annoMap: this.anno_mapping
       }
       this.store_setAnnoMapping(annoObj)
     },
     getMappingFromCsv(fileName) {
       return new Promise((resolve, reject) => {
-        d3.csv(fileName, function (error, data) {
+        d3.csv(fileName, function(error, data) {
           if (error) {
             reject(error)
           } else {
@@ -440,7 +465,7 @@ export default {
         if (sequence) {
           node.sequence = sequence
         } else {
-          console.log('Sequence not found!')
+          // console.log('Sequence not found!')
         }
       } else {
         let persistentId = node.persistent_id
@@ -448,7 +473,7 @@ export default {
         if (sequence) {
           node.sequence = sequence
         } else {
-          console.log('Sequence not found!')
+          // console.log('Sequence not found!')
         }
       }
       if (node.children) {
@@ -541,10 +566,10 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept',
+            'Origin, X-Requested-With, Content-Type, Accept'
         },
         url: this.phyloXML_URL + this.treeId + '.xml',
-        responseType: 'arraybuffer',
+        responseType: 'arraybuffer'
       })
         .then((response) => {
           const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -633,15 +658,16 @@ export default {
       annosForGene.forEach((a) => {
         // console.log(a);
         let id = a.goId
-        let goTermLink = 'https://www.ebi.ac.uk/QuickGO/term/' + id
+        let goTermLink = 'http://amigo.geneontology.org/amigo/term/' + id
         var code = ''
         if (a.evidenceCode) {
-          if(a.evidenceCode.includes("IBA")) {
-            code = a.evidenceCode.split(',')[2];
+          if (a.evidenceCode.includes('IBA')) {
+            code = a.evidenceCode.split(',')[2]
           } else {
-            code = a.evidenceCode;
+            code = a.evidenceCode
           }
         }
+        a.reference = a.reference.split('|')[0]
         var refCode = a.reference.split(':')[0]
         var refId = a.reference.split(':')[1]
         var refLink = 'https://www.ncbi.nlm.nih.gov/pubmed/' + refId
@@ -656,7 +682,7 @@ export default {
           a.withFrom.forEach((r) => {
             withFromList.push({
               name: r.db + ':' + r.id,
-              link: this.getDBLink(r),
+              link: this.getDBLink(r)
             })
           })
         }
@@ -677,14 +703,14 @@ export default {
             reference: [
               {
                 count: 1,
-                link: refLink,
-              },
+                link: refLink
+              }
             ],
             withFrom: withFromList,
             source: 'QuickGO',
             sourceLink:
               'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' +
-              uniprotId,
+              uniprotId
           })
         } else {
           let refLinksList = findGoId.reference.map((r) => {
@@ -694,7 +720,7 @@ export default {
           if (!refLinksList.includes(refLink)) {
             findGoId.reference.push({
               count: findGoId.reference.length + 1,
-              link: refLink,
+              link: refLink
             })
             findGoId.withFrom.concat(withFromList)
           }
@@ -980,7 +1006,7 @@ export default {
           type: 'text',
           val: organismDisplayName,
           id: o.taxonId,
-          name: o.name,
+          name: o.name
         })
         singleRow.push(o.count)
         this.popupData.push(singleRow)
@@ -1088,9 +1114,9 @@ export default {
         url: api,
         data: {
           sequence: stored_seq,
-          taxonIdsToShow: taxonList,
+          taxonIdsToShow: taxonList
         },
-        timeout: 200000,
+        timeout: 200000
       })
         .then((res) => {
           this.isLoading = false
@@ -1113,9 +1139,9 @@ export default {
         method: 'POST',
         url: this.REG_PRUNING_PANTHER_API + this.treeId,
         data: {
-          taxonIdsToShow: taxonList,
+          taxonIdsToShow: taxonList
         },
-        timeout: 200000,
+        timeout: 200000
       })
         .then((res) => {
           this.isLoading = false
@@ -1160,7 +1186,7 @@ export default {
           tableNode['Protein name'] = n.data.definition
           tableNode['Uniprot ID'] = n.data.uniprotId
           tableNode['Subfamily name'] = n.data.sf_name
-          this.anno_headers.sort(function (a, b) {
+          this.anno_headers.sort(function(a, b) {
             return a.toLowerCase().localeCompare(b.toLowerCase())
           })
           this.anno_headers.forEach((a) => {
@@ -1173,7 +1199,11 @@ export default {
                 let currAnno = this.anno_mapping[uniprotId]
                 currAnno.forEach((c) => {
                   if (c.goName === a) {
-                    tableNode[goNameHeader] = 1
+                    if (c.evidenceCode.includes('IBA') && tableNode[goNameHeader]!='EXP') {
+                      tableNode[goNameHeader] = 'IBA'
+                    } else {
+                      tableNode[goNameHeader] = 'EXP'
+                    }
                   }
                 })
               }
@@ -1184,11 +1214,11 @@ export default {
       })
       this.csvTable.tableCsvData.forEach((node) => {
         node[
-          "Columns after 'Subfamily name', if any, are 'Known functions'. Each 'Known function' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene."
+          "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
         ] = null
       })
       this.csvTable.tableCsvFields.push(
-        "Columns after 'Subfamily name', if any, are 'Known functions'. Each 'Known function' is a GO molecular function term that is annotated to at least one member of the gene family AND that the annotation is supported by an experimental evidence. Number 1 or 0 indicates the presence or absence of a particular function in a gene."
+        "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
       )
     },
     sortArrayByX(arr) {
@@ -1201,8 +1231,8 @@ export default {
         }
         return 0
       })
-    },
-  },
+    }
+  }
 }
 </script>
 
