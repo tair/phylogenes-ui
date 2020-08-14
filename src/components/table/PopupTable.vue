@@ -49,6 +49,9 @@ export default {
 }
 .popupTable {
   margin: auto;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  height: inherit;
 }
 
 .popupTable th {

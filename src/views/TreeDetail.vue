@@ -639,27 +639,40 @@ export default {
     /////////////////////// Anno ///////////////////////////////
     onAnnoClick(data) {
       let uniprotId = data.row['UniprotFixed'].text
+      let go_term = data.val;
       if (uniprotId) {
         uniprotId = uniprotId.toLowerCase()
       } else {
         uniprotId = 'N/A'
       }
       let uniHeader = 'Uniprot ID: ' + uniprotId.toUpperCase()
-      let annoList = this.getFormattedAnnotationsList(uniprotId)
-      annoList = annoList.filter((a) => a.goTerm === data.val)
+      let annoList = this.getFormattedAnnotationsList(uniprotId, go_term)
+      // annoList = annoList.filter((a) => a.goTerm === data.val)
       if (annoList.length != 0) {
         this.$refs.tableLayout.displayPopup(uniHeader, annoList)
       }
     },
-    getFormattedAnnotationsList(uniprotId) {
-      var annosForGene = this.store_annoMapping.annoMap[uniprotId]
+    //Get annotations data to show in the popup for the selected uniprot id and go_term
+    getFormattedAnnotationsList(uniprotId, go_term) {
+      var allAnnosForGene = this.store_annoMapping.annoMap[uniprotId]
       var annoList = []
-      if (!annosForGene) return annoList
-      annosForGene.forEach((a) => {
+      if (!allAnnosForGene) return annoList
+      //Filter the annotations by func_name
+      var annos_by_func_name = allAnnosForGene.filter((a) => a.goName === go_term)
+      // console.log(go_term, annos_by_func_name);
+      annos_by_func_name.forEach((a) => {
         // console.log(a);
-        let id = a.goId
-        let goTermLink = 'http://amigo.geneontology.org/amigo/term/' + id
+        let curr_anno_data = {};
+        //~~goId
+        curr_anno_data.goId = a.goId;
+        //~~goTerm
+        curr_anno_data.goTerm = a.goName;
+        //~~goTermLink
+        let goTermLink = 'http://amigo.geneontology.org/amigo/term/' +  a.goId
+        curr_anno_data.goTermLink = goTermLink
+        //~~code
         var code = ''
+        //Set evidence description field
         if (a.evidenceCode) {
           if (a.evidenceCode.includes('IBA')) {
             code = a.evidenceCode.split(',')[2]
@@ -667,129 +680,142 @@ export default {
             code = a.evidenceCode
           }
         }
-        a.reference = a.reference.split('|')[0]
-        var refCode = a.reference.split(':')[0]
-        var refId = a.reference.split(':')[1]
-        var refLink = 'https://www.ncbi.nlm.nih.gov/pubmed/' + refId
-        if (refCode == 'GO_REF') {
-          refLink =
-            'https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-' +
-            refId +
-            '.md'
-        }
-        let withFromList = []
-        if (a.withFrom) {
-          a.withFrom.forEach((r) => {
-            withFromList.push({
-              name: r.db + ':' + r.id,
-              link: this.getDBLink(r)
-            })
-          })
-        }
-
-        var findGoId = annoList.find((a) => {
-          if (refCode != '') {
-            return a.goId === id && a.code === code
-          } else {
-            return a.goId === id
-          }
-        })
-        if (!findGoId) {
-          annoList.push({
-            goId: a.goId,
-            goTerm: a.goName,
-            goTermLink: goTermLink,
-            code: code,
-            reference: [
-              {
-                count: 1,
-                link: refLink
+        curr_anno_data.code = code
+        //~~reference
+        curr_anno_data.reference = []
+        //Set References links on the popup
+        if(a.reference) {
+          let refs = a.reference.split('|');
+          // console.log(refs)
+          let references = [];
+          if(refs) {
+            refs.forEach(r => {
+              let link = this.getReferenceLink(r);
+              if(link != "") {
+                references.push({count: references.length+1, link: link});
               }
-            ],
-            withFrom: withFromList,
-            source: 'QuickGO',
-            sourceLink:
-              'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' +
-              uniprotId
-          })
-        } else {
-          let refLinksList = findGoId.reference.map((r) => {
-            return r.link
-          })
-
-          if (!refLinksList.includes(refLink)) {
-            findGoId.reference.push({
-              count: findGoId.reference.length + 1,
-              link: refLink
-            })
-            findGoId.withFrom.concat(withFromList)
+            });
           }
+          curr_anno_data.reference = references
         }
+        
+        //~~source
+        curr_anno_data.source = 'QuickGO'
+        //~~sourceLink
+        curr_anno_data.sourceLink = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' + uniprotId;
+        annoList.push(curr_anno_data);
       })
       return annoList
     },
-    getDBLink(r) {
+    getReferenceLink(r) {
       let link = ''
-      switch (r.db) {
-        case 'UniProtKB':
-          link = 'https://www.uniprot.org/uniprot/' + r.id
+      let db_code = r.split(':')[0]
+      let db_id = r.split(':')[1]
+      switch (db_code) {
+        case 'PMID':
+          link = 'https://pubmed.ncbi.nlm.nih.gov/'+db_id
           break
-        case 'AGI_LocusCode':
-          link =
-            'https://www.arabidopsis.org/servlets/TairObject?type=locus&name=' +
-            r.id
+        case 'GO_REF':
+          link = 'https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-'+db_id+'.md'
           break
-        case 'ComplexPortal':
-          link = 'https://www.ebi.ac.uk/complexportal/complex/' + r.id
-          break
-        case 'EMBL':
-          link =
-            'https://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&Submit=Go&id=' +
-            r.id
-          break
-        case 'EcoGene':
-          link = 'http://www.ecogene.org/geneInfo.php?eg_id=' + r.id
-          break
-        case 'FB':
-          link = 'http://flybase.org/reports/' + r.id
-          break
-        case 'GeneDB':
-          link = 'http://www.genedb.org/gene/' + r.id
-          break
-        case 'NCBI_gi':
-          link = 'https://www.ncbi.nlm.nih.gov/protein/' + r.id
-          break
-        case 'PomBase':
-          link = 'https://www.pombase.org/gene/' + r.id
-          break
-        case 'RGD':
-          link = 'https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=' + r.id
-          break
-        case 'RefSeq':
-          link = 'https://www.ncbi.nlm.nih.gov/nuccore/' + r.id
-          break
-        case 'SGD':
-          link = 'https://www.yeastgenome.org/locus/' + r.id
+        case 'MGI':
+          db_id = db_id + ":" + r.split(':')[2]
+          link = 'http://www.informatics.jax.org/accession/'+db_id
           break
         case 'TAIR':
-          link =
-            'https://www.arabidopsis.org/servlets/TairObject?accession=' + r.id
+          db_id = db_id + ":" + r.split(':')[2]
+          link = 'https://www.arabidopsis.org/servlets/TairObject?accession='+db_id
           break
-        case 'WB':
-          link = 'https://wormbase.org/db/gene/gene?name=' + r.id
+        case 'DOI':
+          link = 'https://doi.org/'+db_id
+          break
+        case 'EcoCyc_REF':
+          link = 'https://biocyc.org/ECOLI/reference.html?type=CITATION-FRAME&object='+db_id
+          break
+        case 'FB':
+          link = 'http://flybase.org/reports/'+db_id
+          break
+        case 'CGD_REF':
+          link = 'http://www.candidagenome.org/cgi-bin/reference/reference.pl?dbid='+db_id
+          break
+        case 'RGD':
+          link = 'https://rgd.mcw.edu/rgdweb/report/reference/main.html?id='+db_id
+          break
+        case 'WB_REF':
+          link = 'http://www.wormbase.org/get?name='+db_id
           break
         case 'ZFIN':
-          link = 'http://zfin.org/' + r.id
-          break
-        case 'dictyBase':
-          link = ' http://dictybase.org/gene/' + r.id
+          link = 'http://zfin.org/'+db_id
           break
         default:
           console.log('DB Id not recognized:', r)
           break
       }
-      return link
+      return link;
     },
+    //Older Code
+    // getDBLink(r) {
+    //   let link = ''
+    //   switch (r.db) {
+    //     case 'UniProtKB':
+    //       link = 'https://www.uniprot.org/uniprot/' + r.id
+    //       break
+    //     case 'AGI_LocusCode':
+    //       link =
+    //         'https://www.arabidopsis.org/servlets/TairObject?type=locus&name=' +
+    //         r.id
+    //       break
+    //     case 'ComplexPortal':
+    //       link = 'https://www.ebi.ac.uk/complexportal/complex/' + r.id
+    //       break
+    //     case 'EMBL':
+    //       link =
+    //         'https://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&Submit=Go&id=' +
+    //         r.id
+    //       break
+    //     case 'EcoGene':
+    //       link = 'http://www.ecogene.org/geneInfo.php?eg_id=' + r.id
+    //       break
+    //     case 'FB':
+    //       link = 'http://flybase.org/reports/' + r.id
+    //       break
+    //     case 'GeneDB':
+    //       link = 'http://www.genedb.org/gene/' + r.id
+    //       break
+    //     case 'NCBI_gi':
+    //       link = 'https://www.ncbi.nlm.nih.gov/protein/' + r.id
+    //       break
+    //     case 'PomBase':
+    //       link = 'https://www.pombase.org/gene/' + r.id
+    //       break
+    //     case 'RGD':
+    //       link = 'https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=' + r.id
+    //       break
+    //     case 'RefSeq':
+    //       link = 'https://www.ncbi.nlm.nih.gov/nuccore/' + r.id
+    //       break
+    //     case 'SGD':
+    //       link = 'https://www.yeastgenome.org/locus/' + r.id
+    //       break
+    //     case 'TAIR':
+    //       link =
+    //         'https://www.arabidopsis.org/servlets/TairObject?accession=' + r.id
+    //       break
+    //     case 'WB':
+    //       link = 'https://wormbase.org/db/gene/gene?name=' + r.id
+    //       break
+    //     case 'ZFIN':
+    //       link = 'http://zfin.org/' + r.id
+    //       break
+    //     case 'dictyBase':
+    //       link = ' http://dictybase.org/gene/' + r.id
+    //       break
+    //     default:
+    //       console.log('DB Id not recognized:', r)
+    //       break
+    //   }
+    //   return link
+    // },
     /////////////////////// MSA ///////////////////////////////
     toggleMsa() {
       this.showMsa = !this.showMsa

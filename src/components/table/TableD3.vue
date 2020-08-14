@@ -1151,9 +1151,11 @@ export default {
 
         let references = { type: 'links' }
         references['links'] = []
+        if(ann.reference) {
         ann.reference.forEach((ref) => {
           references['links'].push({ text: ref.count, link: ref.link })
         })
+        }
         singleRow.push(references)
 
         let source = { type: 'link', text: ann.source, link: ann.sourceLink }
