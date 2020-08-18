@@ -1185,7 +1185,12 @@ export default {
         })
     },
     loadPrunedJson(treeJson) {
-      treeJson = treeJson.search.annotation_node
+      // console.log(treeJson)
+      if (!treeJson.search.tree_topology) {
+        treeJson = treeJson.search.annotation_node
+      } else {
+        treeJson = treeJson.search.tree_topology.annotation_node
+      }
       this.formatJson(treeJson)
       this.processJson(treeJson)
         .then((res) => {
