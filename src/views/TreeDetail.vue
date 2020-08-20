@@ -109,7 +109,9 @@ export default {
       store_treeMsaData: types.TREE_GET_MSADATA,
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
       store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
-      store_maxMsaLength: types.TREE_GET_MAXMSAL
+      store_maxMsaLength: types.TREE_GET_MAXMSAL,
+      store_getHasGrafted: types.TREE_GET_ISGRAFTED,
+      store_getGraftSeq: types.TREE_GET_GRAFTSEQ
     })
   },
   watch: {
@@ -1124,7 +1126,7 @@ export default {
           this.popupData = []
         } else {
           this.$refs.tableLayout.onPruneLoading(true)
-          if (!this.store_getHasGrafted) {
+          if (!this.store_getHasGrafted || this.$route.name != 'treeGrafted') {
             this.regularPruning(taxonList)
           } else {
             this.graftedPruning(taxonList)
@@ -1185,7 +1187,6 @@ export default {
         })
     },
     loadPrunedJson(treeJson) {
-      // console.log(treeJson)
       if (!treeJson.search.tree_topology) {
         treeJson = treeJson.search.annotation_node
       } else {
