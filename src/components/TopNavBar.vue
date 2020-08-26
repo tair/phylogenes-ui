@@ -9,12 +9,11 @@
         <ul class="announceUl">
           <li>
             <div class="announce">
-              <a
-                class="announce-link"
-                target="_blank"
-                href="https://conf.arabidopsis.org/display/PHGSUP/User+survey"
-              >Survey</a>
-              - make PhyloGenes more useful to you!
+              <pre class="announce"> <a
+  class="announce-link"
+  target="_blank"
+  href="https://conf.arabidopsis.org/display/PHGSUP/User+survey"
+>Survey</a>- make PhyloGenes more useful to you! </pre>
             </div>
           </li>
         </ul>
