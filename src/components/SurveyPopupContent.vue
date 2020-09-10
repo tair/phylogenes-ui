@@ -1,21 +1,20 @@
 <template>
   <div class="surveyText">
     <pre>
-We need your feedback! In less than 5 minutes, you can plan the future development of PhyloGenes. 
+Make PhyloGenes more useful! In less than 5 minutes, you can guide PhyloGenes' future.
+Please click on a link below and take the short survey after your visit today: 
 
-Please take the short survey after your visit to PhyloGenes today and tell us your thoughts. 
-  
-Survey link: Users in China 
+<a
+  href="https://www.surveymonkey.com/r/9ZT25V3"
+  target="_blank"
+>https://www.surveymonkey.com/r/9ZT25V3</a>
+
+For users in China who can't access SurveyMonkey:
 <a
   href="https://www.wenjuan.com/s/UbiuIfJ/"
   target="_blank"
 >https://www.wenjuan.com/s/UbiuIfJ/</a>
 
-Survey link: Users elsewhere in the world 
-<a
-  href="https://www.surveymonkey.com/r/9ZT25V3"
-  target="_blank"
->https://www.surveymonkey.com/r/9ZT25V3</a>
 </pre>
   </div>
 </template>

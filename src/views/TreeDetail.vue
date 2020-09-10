@@ -1,7 +1,7 @@
 <template>
   <div id="main" class="container-fluid main_container d-flex">
     <!-- Survey Popup -->
-    <modal v-if="surveyPopup" @close="surveyPopup = false" :modalWidth="700">
+    <modal v-if="surveyPopup" @close="surveyPopup = false" :modalWidth="860">
       <div slot="header">User Survey!</div>
       <template slot="body" slot-scope="props">
         <SurveyPopupContent></SurveyPopupContent>
