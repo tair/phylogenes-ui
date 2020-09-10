@@ -1,25 +1,19 @@
 <template>
   <transition name="modal">
     <div class="modal-mask">
-      <div class="modal-wrapper">
-        <div class="modal-container">
+      <div class="modal-wrapper" @click="$emit('close')">
+        <div class="modal-container" :style="modal_style">
           <div class="modal-header">
-            <slot name="header">
-              default header
-            </slot>
+            <slot name="header">default header</slot>
           </div>
 
           <div class="modal-body align-middle">
-            <slot name="body">
-              default body
-            </slot>
+            <slot name="body">default body</slot>
           </div>
 
           <div class="modal-footer">
             <slot name="footer">
-              <button class="modal-default-button" @click="$emit('close')">
-                OK
-              </button>
+              <button class="modal-default-button" @click="$emit('close')">OK</button>
             </slot>
           </div>
         </div>
@@ -31,12 +25,20 @@
 <script>
 export default {
   name: 'customModal',
+  props: ['modalWidth'],
+  mounted() {
+    if (this.modalWidth) {
+      this.modal_style = 'width: ' + this.modalWidth + 'px'
+    }
+  },
   components: {},
   data() {
-    return {}
+    return {
+      modal_style: 'width: 500px'
+    }
   },
   computed: {},
-  methods: {},
+  methods: {}
 }
 </script>
 
