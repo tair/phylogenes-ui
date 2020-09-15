@@ -1,7 +1,7 @@
 <template>
   <transition name="modal">
     <div class="modal-mask">
-      <div class="modal-wrapper" @click="$emit('close')">
+      <div class="modal-wrapper" @click="closePopup()">
         <div class="modal-container" :style="modal_style">
           <div class="modal-header">
             <slot name="header">default header</slot>
@@ -25,7 +25,7 @@
 <script>
 export default {
   name: 'customModal',
-  props: ['modalWidth'],
+  props: ['modalWidth', 'closeAnywhere'],
   mounted() {
     if (this.modalWidth) {
       this.modal_style = 'width: ' + this.modalWidth + 'px'
@@ -38,7 +38,13 @@ export default {
     }
   },
   computed: {},
-  methods: {}
+  methods: {
+    closePopup() {
+      if (this.closeAnywhere) {
+        this.$emit('close')
+      }
+    }
+  }
 }
 </script>
 
