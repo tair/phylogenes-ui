@@ -9,13 +9,11 @@
         <ul class="announceUl">
           <li>
             <div class="announce">
-              Free
-              <a
-                class="announce-link"
-                target="_blank"
-                href="https://conf.arabidopsis.org/display/COM/TAIR+and+PhyloGenes+webinars+come+to+VooV+Meeting"
-              >Webinar</a>
-              comes to VooV (腾讯会议)
+              <pre class="announce"> <a
+  class="announce-link"
+  target="_blank"
+  href="https://conf.arabidopsis.org/display/PHGSUP/User+survey"
+>Survey</a>- make PhyloGenes more useful to you! </pre>
             </div>
           </li>
         </ul>
@@ -142,12 +140,13 @@ export default {
   width: 305px !important;
 }
 .announce {
-  color: #ffd966;
-  font-size: 14px;
+  color: #f40400;
+  background-color: whitesmoke;
+  font-size: 16px;
   font-weight: 600;
 }
 .announce-link {
-  color: #ffd966 !important;
+  color: #f40400 !important;
   text-decoration: underline;
 }
 .announceUl {

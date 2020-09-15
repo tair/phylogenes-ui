@@ -1,120 +1,112 @@
 {
-	"search": {
-		"parameters": {
-			"elapsed_time": "896 milliseconds.",
-			"id": "PTHR10000"
-		},
-		"annotation_node": {
-			"sf_id": "PTHR10000:SF8",
-			"reference_speciation_event": "LUCA",
-			"species": "LUCA",
-			"children": {
-				"annotation_node": [
-					{
-						"reference_speciation_event": "Eukaryota",
-						"species": "Eukaryota",
-						"children": {
-							"annotation_node": [
-								{
-									"organism": "Thalassiosira pseudonana",
-									"gene_symbol": "THAPS_23626",
-									"node_name": "THAPS|Gene=Thaps23626|UniProtKB=B5YNW5",
-									"definition": "Predicted protein",
-									"branch_length": 0.869,
-									"accession": "AN9",
-									"gene_id": "Gene:Thaps23626",
-									"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
-								}
-							]
-						},
-						"branch_length": 0.12,
-						"accession": "AN1",
-						"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
-					},
-					{
-						"node_type": "DUPLICATION",
-						"reference_speciation_event": "Eubacteria",
-						"children": {
-							"annotation_node": [
-								{
-									"sf_id": "PTHR10000:SF23",
-									"reference_speciation_event": "Eubacteria",
-									"species": "Eubacteria",
-									"children": {
-										"_comment": {
-											"annotation_node": [
-												{
-													"reference_speciation_event": "Bacilli",
-													"species": "Bacilli",
-													"children": {
-
-													},
-													"branch_length": 0.31,
-													"accession": "AN12",
-													"sf_name": "SUBFAMILY NOT NAMED"
-												},
-												{
-													"organism": "mycoplasma genitalium",
-													"gene_symbol": "MG265",
-													"node_name": "MYCGE|EnsemblGenome=MG_265|UniProtKB=P47507",
-													"definition": "Putative phosphatase MG265",
-													"branch_length": 0.938,
-													"accession": "AN23",
-													"gene_id": "EnsemblGenome:MG_265",
-													"sf_name": "SUBFAMILY NOT NAMED"
-												},
-												{
-													"organism": "Leptospira interrogans",
-													"gene_symbol": "LB_007",
-													"node_name": "LEPIN|EnsemblGenome=LB_007|UniProtKB=Q8EY50",
-													"definition": "Haloacid dehalogenase-like protein",
-													"branch_length": 0.97,
-													"accession": "AN24",
-													"gene_id": "EnsemblGenome:LB_007",
-													"sf_name": "SUBFAMILY NOT NAMED"
-												}
-											]
-										}
-									},
-									"branch_length": 0.741,
-									"accession": "AN11",
-									"sf_name": "SUBFAMILY NOT NAMED"
-								},
-								{
-									"sf_id": "PTHR10000:SF25",
-									"reference_speciation_event": "Eubacteria",
-									"species": "Eubacteria",
-									"children": {
-
-									},
-									"branch_length": 0.955,
-									"accession": "AN25",
-									"sf_name": "SUBFAMILY NOT NAMED"
-								},
-								{
-									"reference_speciation_event": "Eubacteria",
-									"species": "Eubacteria",
-									"children": {
-
-									},
-									"branch_length": 0.608,
-									"accession": "AN42",
-									"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
-								}
-							]
-						},
-						"branch_length": 0.12,
-						"accession": "AN10",
-						"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
-					}
-				],
-				"": [
-
-				]
-			},
-			"branch_length": 0,
-			"accession": "AN0",
-			"sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
-		}
-	}
+  "search": {
+    "parameters": {
+      "elapsed_time": "896 milliseconds.",
+      "id": "PTHR10000"
+    },
+    "annotation_node": {
+      "sf_id": "PTHR10000:SF8",
+      "reference_speciation_event": "LUCA",
+      "species": "LUCA",
+      "children": {
+        "annotation_node": [
+          {
+            "reference_speciation_event": "Eukaryota",
+            "species": "Eukaryota",
+            "children": {
+              "annotation_node": [
+                {
+                  "organism": "Thalassiosira pseudonana",
+                  "gene_symbol": "THAPS_23626",
+                  "node_name": "THAPS|Gene=Thaps23626|UniProtKB=B5YNW5",
+                  "definition": "Predicted protein",
+                  "branch_length": 0.869,
+                  "accession": "AN9",
+                  "gene_id": "Gene:Thaps23626",
+                  "sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+                }
+              ]
+            },
+            "branch_length": 0.12,
+            "accession": "AN1",
+            "sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+          },
+          {
+            "node_type": "DUPLICATION",
+            "reference_speciation_event": "Eubacteria",
+            "children": {
+              "annotation_node": [
+                {
+                  "sf_id": "PTHR10000:SF23",
+                  "reference_speciation_event": "Eubacteria",
+                  "species": "Eubacteria",
+                  "children": {
+                    "_comment": {
+                      "annotation_node": [
+                        {
+                          "reference_speciation_event": "Bacilli",
+                          "species": "Bacilli",
+                          "children": {},
+                          "branch_length": 0.31,
+                          "accession": "AN12",
+                          "sf_name": "SUBFAMILY NOT NAMED"
+                        },
+                        {
+                          "organism": "mycoplasma genitalium",
+                          "gene_symbol": "MG265",
+                          "node_name": "MYCGE|EnsemblGenome=MG_265|UniProtKB=P47507",
+                          "definition": "Putative phosphatase MG265",
+                          "branch_length": 0.938,
+                          "accession": "AN23",
+                          "gene_id": "EnsemblGenome:MG_265",
+                          "sf_name": "SUBFAMILY NOT NAMED"
+                        },
+                        {
+                          "organism": "Leptospira interrogans",
+                          "gene_symbol": "LB_007",
+                          "node_name": "LEPIN|EnsemblGenome=LB_007|UniProtKB=Q8EY50",
+                          "definition": "Haloacid dehalogenase-like protein",
+                          "branch_length": 0.97,
+                          "accession": "AN24",
+                          "gene_id": "EnsemblGenome:LB_007",
+                          "sf_name": "SUBFAMILY NOT NAMED"
+                        }
+                      ]
+                    }
+                  },
+                  "branch_length": 0.741,
+                  "accession": "AN11",
+                  "sf_name": "SUBFAMILY NOT NAMED"
+                },
+                {
+                  "sf_id": "PTHR10000:SF25",
+                  "reference_speciation_event": "Eubacteria",
+                  "species": "Eubacteria",
+                  "children": {},
+                  "branch_length": 0.955,
+                  "accession": "AN25",
+                  "sf_name": "SUBFAMILY NOT NAMED"
+                },
+                {
+                  "reference_speciation_event": "Eubacteria",
+                  "species": "Eubacteria",
+                  "children": {},
+                  "branch_length": 0.608,
+                  "accession": "AN42",
+                  "sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+                }
+              ]
+            },
+            "branch_length": 0.12,
+            "accession": "AN10",
+            "sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+          }
+        ],
+        "": []
+      },
+      "branch_length": 0,
+      "accession": "AN0",
+      "sf_name": "PYRIDOXAL PHOSPHATE PHOSPHATASE YBHA"
+    }
+  }
 }

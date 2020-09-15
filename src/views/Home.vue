@@ -1,15 +1,18 @@
 <template>
   <div>
-
     <banner></banner>
 
     <div class="container-fluid px-5">
-
       <div class="d-flex flex-row">
         <div class="col-sm-12 col-md-6 col-lg-6 px-3">
           <summary-stats></summary-stats>
           <search-bar></search-bar>
-          <button class="btn btn-mblue text-magenta my-3 px-3 py-2" @click.prevent="goToSample()">Explore a sample tree</button>
+          <button
+            class="btn btn-mblue text-magenta my-3 px-3 py-2"
+            @click.prevent="goToSample()"
+          >
+            Explore a sample tree
+          </button>
           <video-card></video-card>
         </div>
         <div class="same-height col-sm-12 col-md-6 col-lg-6 px-3">
@@ -18,7 +21,6 @@
       </div>
     </div>
   </div>
-
 </template>
 
 <script>
@@ -39,17 +41,17 @@ export default {
     Organism,
   },
   methods: {
-    goToSample(){
-      this.$router.push('/tree/PTHR11101');
-    }
-  }
+    goToSample() {
+      window.open('/tree/PTHR11101')
+    },
+  },
 }
 </script>
 
 <style scoped>
-  .parent {
-    display: flex;
-  }
+.parent {
+  display: flex;
+}
 .panel {
   position: relative;
   width: 200px;
@@ -60,8 +62,10 @@ export default {
 }
 .panel-inner {
   position: absolute;
-  top: 0; left: 0;
-  right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   overflow-y: scroll;
 }
 </style>
