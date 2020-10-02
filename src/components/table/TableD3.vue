@@ -431,7 +431,7 @@ export default {
       // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
       //Check for unchecked cols
-      if (this.defaultColsToHide.includes('Known function')) {
+      if (this.defaultColsToHide.includes('Molecular function')) {
         //Removes all annotations cols
         filteredCols = filteredCols.filter((t) =>
           this.colsFromProp.includes(t.label)

@@ -519,7 +519,7 @@ export default {
         text += d.speciation_event
       }
       if (!d.children) {
-        if (d.gene_symbol) {
+        if (d.gene_symbol && isNaN(d.gene_symbol)) {
           text += ' ' + d.gene_symbol
         } else {
           var geneId = d.gene_id
