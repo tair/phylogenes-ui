@@ -1,5 +1,12 @@
 <template>
   <div id="main" class="container-fluid main_container d-flex">
+    <!-- Survey Popup -->
+    <modal v-if="surveyPopup" @close="surveyPopup = false" :modalWidth="700" :closeAnywhere="true">
+      <div slot="header">User Survey!</div>
+      <template slot="body" slot-scope="props">
+        <SurveyPopupContent></SurveyPopupContent>
+      </template>
+    </modal>
     <!-- Organisms/Pruning Popup -->
     <modal v-if="showPopup" @close="showPopup = false">
       <div slot="header">{{ popupHeader }}</div>
@@ -77,6 +84,7 @@ import treelayout from '../components/tree/TreeLayout'
 import tablelayout from '../components/table/TableD3'
 import intersect from '../components/tree/Intersection'
 import searchBox from '../components/search/SearchBox'
+import SurveyPopupContent from '../components/SurveyPopupContent'
 
 import * as d3 from 'd3'
 import axios from 'axios/index'
@@ -97,7 +105,8 @@ export default {
     treelayout: treelayout,
     tablecell: baseCell,
     modal: customModal,
-    popupTable: popupTableOrganism
+    popupTable: popupTableOrganism,
+    SurveyPopupContent: SurveyPopupContent
   },
   computed: {
     ...mapGetters({
@@ -228,11 +237,14 @@ export default {
       completeData: null,
       tableColsToRender: [],
       treeData_Json: null,
-      treeId: null
+      treeId: null,
+      //Survey
+      surveyPopup: false
     }
   },
   mounted() {
     this.prunedLoaded = false
+    this.showSurvey()
   },
   methods: {
     ...mapActions({
@@ -248,6 +260,9 @@ export default {
       store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
       store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED
     }),
+    showSurvey() {
+      this.surveyPopup = true
+    },
     initForNewTreeId(id) {
       this.treeId = id
       this.treeData_Json = null
@@ -641,7 +656,7 @@ export default {
     /////////////////////// Anno ///////////////////////////////
     onAnnoClick(data) {
       let uniprotId = data.row['UniprotFixed'].text
-      let go_term = data.val;
+      let go_term = data.val
       if (uniprotId) {
         uniprotId = uniprotId.toLowerCase()
       } else {
@@ -660,17 +675,19 @@ export default {
       var annoList = []
       if (!allAnnosForGene) return annoList
       //Filter the annotations by func_name
-      var annos_by_func_name = allAnnosForGene.filter((a) => a.goName === go_term)
+      var annos_by_func_name = allAnnosForGene.filter(
+        (a) => a.goName === go_term
+      )
       // console.log(go_term, annos_by_func_name);
       annos_by_func_name.forEach((a) => {
         // console.log(a);
-        let curr_anno_data = {};
+        let curr_anno_data = {}
         //~~goId
-        curr_anno_data.goId = a.goId;
+        curr_anno_data.goId = a.goId
         //~~goTerm
-        curr_anno_data.goTerm = a.goName;
+        curr_anno_data.goTerm = a.goName
         //~~goTermLink
-        let goTermLink = 'http://amigo.geneontology.org/amigo/term/' +  a.goId
+        let goTermLink = 'http://amigo.geneontology.org/amigo/term/' + a.goId
         curr_anno_data.goTermLink = goTermLink
         //~~code
         var code = ''
@@ -686,26 +703,27 @@ export default {
         //~~reference
         curr_anno_data.reference = []
         //Set References links on the popup
-        if(a.reference) {
-          let refs = a.reference.split('|');
+        if (a.reference) {
+          let refs = a.reference.split('|')
           // console.log(refs)
-          let references = [];
-          if(refs) {
-            refs.forEach(r => {
-              let link = this.getReferenceLink(r);
-              if(link != "") {
-                references.push({count: references.length+1, link: link});
+          let references = []
+          if (refs) {
+            refs.forEach((r) => {
+              let link = this.getReferenceLink(r)
+              if (link != '') {
+                references.push({ count: references.length + 1, link: link })
               }
-            });
+            })
           }
           curr_anno_data.reference = references
         }
-        
+
         //~~source
         curr_anno_data.source = 'QuickGO'
         //~~sourceLink
-        curr_anno_data.sourceLink = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' + uniprotId;
-        annoList.push(curr_anno_data);
+        curr_anno_data.sourceLink =
+          'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' + uniprotId
+        annoList.push(curr_anno_data)
       })
       return annoList
     },
@@ -715,45 +733,54 @@ export default {
       let db_id = r.split(':')[1]
       switch (db_code) {
         case 'PMID':
-          link = 'https://pubmed.ncbi.nlm.nih.gov/'+db_id
+          link = 'https://pubmed.ncbi.nlm.nih.gov/' + db_id
           break
         case 'GO_REF':
-          link = 'https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-'+db_id+'.md'
+          link =
+            'https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-' +
+            db_id +
+            '.md'
           break
         case 'MGI':
-          db_id = db_id + ":" + r.split(':')[2]
-          link = 'http://www.informatics.jax.org/accession/'+db_id
+          db_id = db_id + ':' + r.split(':')[2]
+          link = 'http://www.informatics.jax.org/accession/' + db_id
           break
         case 'TAIR':
-          db_id = db_id + ":" + r.split(':')[2]
-          link = 'https://www.arabidopsis.org/servlets/TairObject?accession='+db_id
+          db_id = db_id + ':' + r.split(':')[2]
+          link =
+            'https://www.arabidopsis.org/servlets/TairObject?accession=' + db_id
           break
         case 'DOI':
-          link = 'https://doi.org/'+db_id
+          link = 'https://doi.org/' + db_id
           break
         case 'EcoCyc_REF':
-          link = 'https://biocyc.org/ECOLI/reference.html?type=CITATION-FRAME&object='+db_id
+          link =
+            'https://biocyc.org/ECOLI/reference.html?type=CITATION-FRAME&object=' +
+            db_id
           break
         case 'FB':
-          link = 'http://flybase.org/reports/'+db_id
+          link = 'http://flybase.org/reports/' + db_id
           break
         case 'CGD_REF':
-          link = 'http://www.candidagenome.org/cgi-bin/reference/reference.pl?dbid='+db_id
+          link =
+            'http://www.candidagenome.org/cgi-bin/reference/reference.pl?dbid=' +
+            db_id
           break
         case 'RGD':
-          link = 'https://rgd.mcw.edu/rgdweb/report/reference/main.html?id='+db_id
+          link =
+            'https://rgd.mcw.edu/rgdweb/report/reference/main.html?id=' + db_id
           break
         case 'WB_REF':
-          link = 'http://www.wormbase.org/get?name='+db_id
+          link = 'http://www.wormbase.org/get?name=' + db_id
           break
         case 'ZFIN':
-          link = 'http://zfin.org/'+db_id
+          link = 'http://zfin.org/' + db_id
           break
         default:
           console.log('DB Id not recognized:', r)
           break
       }
-      return link;
+      return link
     },
     //Older Code
     // getDBLink(r) {
@@ -1231,7 +1258,10 @@ export default {
                 let currAnno = this.anno_mapping[uniprotId]
                 currAnno.forEach((c) => {
                   if (c.goName === a) {
-                    if (c.evidenceCode.includes('IBA') && tableNode[goNameHeader]!='EXP') {
+                    if (
+                      c.evidenceCode.includes('IBA') &&
+                      tableNode[goNameHeader] != 'EXP'
+                    ) {
                       tableNode[goNameHeader] = 'IBA'
                     } else {
                       tableNode[goNameHeader] = 'EXP'
