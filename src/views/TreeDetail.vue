@@ -239,7 +239,7 @@ export default {
       treeData_Json: null,
       treeId: null,
       //Survey
-      surveyPopup: false
+      surveyPopup: false,
     }
   },
   mounted() {

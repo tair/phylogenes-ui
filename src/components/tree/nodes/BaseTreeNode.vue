@@ -2,7 +2,7 @@
 (eg. translate, exit movement).
 <template>
   <g>
-    <baseTxtNode v-if="!content.hideText" ref="txtCom" :content="content"></baseTxtNode>
+    <baseTxtNode v-if="!content.hideText" ref="txtCom" :content="content" @clicktext="onTextClick"></baseTxtNode>
     <component :is="nodeComponent" ref="myCom" :content="content" @clicked="onClick"></component>
     <image
       v-if="content.data.hasFunc"
@@ -54,6 +54,9 @@ export default {
     onClick() {
       this.content = this.toggleChildren(this.content)
       this.$emit('clicknode', this.content)
+    },
+    onTextClick() {
+      this.$emit('clicktext', this.content)
     },
     onExit(node) {
       if (!node) return

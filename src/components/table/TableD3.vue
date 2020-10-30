@@ -35,6 +35,22 @@
     <div v-if="showMsaLegend" class="legend-box">
       <msa-legend></msa-legend>
     </div>
+    <!-- Tree Node Click Popup --->
+    <modal v-if="showPopup_treeNode" @close="showPopup_treeNode = false">
+      <div slot="header">Menu</div>
+      <template slot="body" slot-scope="props">
+        <button v-if="downloading_ortho != 'downloaded'" @click=downloadOrtholog()>Download Ortholog</button>
+        <span v-if="downloading_ortho == 'downloading'"> Downloading... </span>
+        <json-csv
+          v-if="downloading_ortho == 'downloaded'"
+          :data="orthoTable.tableCsvData"
+          name="ortholog.csv"
+          :fields="orthoTable.tableCsvFields"
+        >
+          <button v-if="downloading_ortho == 'downloaded'">Csv ready for download</button>
+        </json-csv>
+      </template>
+    </modal>
     <!-- Main Table -->
     <table class="mainTable">
       <thead id="head" ref="thead">
@@ -149,6 +165,7 @@
               v-on:init-tree="onTreeInit"
               v-on:get-table-csv-data="getTableCsvData"
               v-on:updated-tree="onTreeUpdate"
+              v-on:click-node="onClickNode"
             ></treelayout>
           </td>
         </tr>
@@ -172,6 +189,7 @@
 
 <script>
 import * as d3 from 'd3'
+import axios from 'axios/index'
 import _ from 'lodash'
 import { mapGetters, mapActions } from 'vuex'
 import { setTimeout } from 'timers'
@@ -239,6 +257,7 @@ export default {
       ],
       //Popup
       showPopup: false,
+      showPopup_treeNode: false,
       popupHeader: '',
       popupCols: ['GO term', 'Evidence description', 'Reference', 'More'],
       popupData: [],
@@ -250,6 +269,9 @@ export default {
       editColsList: [],
       editedOnce: false,
       colsHidden: 0,
+      //ortolog
+      ORTHO_MAPPING_PANTHER_API:
+        process.env.VUE_APP_TOMCAT_URL + '/panther/orthomapping',
       //CSV
       tableCsvData: [],
       tableCsvFields: [
@@ -261,6 +283,17 @@ export default {
         'Protein name',
         'Subfamily name'
       ],
+      //Table CSV
+      orthoTable: {
+        tableCsvData: [],
+        tableCsvFields: [
+          'Uniprot ID',
+          'Gene ID',
+          'Organism',
+          'Ortholog type'
+        ]
+      },
+      downloading_ortho: 'waiting',
       //Popover
       popover1Text:
         'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
@@ -359,6 +392,7 @@ export default {
   mounted() {
     this.resetTable()
     this.initTable()
+    this.process_mapping();
     this.$nextTick(function() {})
   },
   beforeDestroy() {
@@ -381,6 +415,23 @@ export default {
       store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
       store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS
     }),
+    getMappingFromCsv(fileName) {
+      return new Promise((resolve, reject) => {
+        d3.csv(fileName, function(error, data) {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(data)
+          }
+        })
+      })
+    },
+    async process_mapping() {
+      const mappingCsvData = await this.getMappingFromCsv(
+          '/organism_to_display.csv'
+      )
+      this.mappingData = mappingCsvData;
+    },
     resetTable() {
       this.store_setClearData()
       this.isLoading = false
@@ -523,7 +574,61 @@ export default {
       }
       return tableNode
     },
-
+    onClickNode(node) {
+      console.log("node ", node);
+      this.showPopup_treeNode = true;
+      this.downloading_ortho = 'waiting'
+    },
+    map_organism_name(organism_id) {
+      let organism_name = organism_id
+      var found_mapping = this.mappingData.find(
+        (o) => o['Abbrev name code'].toLowerCase() === organism_id.toLowerCase()
+      )
+      if (found_mapping) {
+        organism_name = found_mapping.Organism.trim();
+      }
+      return organism_name;
+    },
+    downloadOrtholog() {
+      let api = this.ORTHO_MAPPING_PANTHER_API
+      this.downloading_ortho = 'downloading';
+      // let stored_seq = this.store_getGraftSeq
+      axios({
+        method: 'POST',
+        url: api,
+        data: {
+          uniprotId: "Q38944",
+          queryOrganismId: 3702
+        },
+        timeout: 200000
+      })
+        .then((res) => {
+          let orthoNodes = res.data;
+          this.orthoTable.tableCsvData = [];
+          orthoNodes.forEach(n => {
+            var tableNode = {}
+            tableNode['Uniprot ID'] = n.uniprot_id;
+            tableNode['Gene ID'] = n.gene_id;
+            tableNode['Ortholog type'] = n.ortholog;
+            let organism = this.map_organism_name(n.organism)
+            tableNode['Organism'] = organism;
+            this.orthoTable.tableCsvData.push(tableNode);
+          });
+          this.orthoTable.tableCsvData.forEach((node) => {
+            node[
+              "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
+            ] = null
+          })
+          this.orthoTable.tableCsvFields.push(
+            "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
+          )
+          this.downloading_ortho = 'downloaded';
+        })
+        .catch((err) => {
+          console.error('error ', err)
+          this.isLoading = false
+        })
+    },
     onTreeInit(nodes) {
       let tabularData = this.setStoreTableData(nodes)
       //For metadata

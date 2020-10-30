@@ -19,6 +19,7 @@
             ref="treenode"
             :content="node"
             v-on:clicknode="onClick"
+            v-on:clicktext="onClickText"
           />
         </g>
       </g>
@@ -39,7 +40,7 @@ import baseLink from '../tree/links/BaseTreeLink'
 
 import contextMenu from '../menu/ContextMenu'
 import treeLegend from '../tree/Legend'
-
+import customModal from '@/components/modal/CustomModal'
 import nodesUtils from './utils/matchedNote'
 import exportUtils from './utils/exportSvg'
 import intersectUtil from '../../util/intersect'
@@ -58,6 +59,7 @@ export default {
   components: {
     basenode: baseNode,
     baselink: baseLink,
+    modal: customModal,
     'context-menu': contextMenu,
     'tree-legend': treeLegend
   },
@@ -145,6 +147,7 @@ export default {
       enableMenu: false,
       showLegend: true,
       showBranchLength: true,
+      showPopup: false,
       //constants
       rowLimit_lazyLoad: 25,
       //Layout
@@ -1111,6 +1114,9 @@ export default {
         .on('end', () => {
           this.onPanEnd(startTransform)
         })
+    },
+    onClickText(source) {
+      this.$emit('click-node', source);
     },
     onClick(source) {
       // Add flask for node with known function
