@@ -39,7 +39,7 @@
     <modal v-if="showPopup_treeNode" @close="showPopup_treeNode = false">
       <div slot="header">Menu</div>
       <template slot="body" slot-scope="props">
-        <button v-if="downloading_ortho != 'downloaded'" @click=downloadOrtholog()>Download Ortholog</button>
+        <button v-if="downloading_ortho != 'downloaded'" @click=downloadOrtholog()>Download Plant Orthologs</button>
         <span v-if="downloading_ortho == 'downloading'"> Downloading... </span>
         <json-csv
           v-if="downloading_ortho == 'downloaded'"
@@ -49,6 +49,9 @@
         >
           <button v-if="downloading_ortho == 'downloaded'">Csv ready for download</button>
         </json-csv>
+      </template>
+      <template slot="footer">
+        <button class="modal-default-button" @click="showPopup_treeNode = false">Close</button>
       </template>
     </modal>
     <!-- Main Table -->
@@ -294,6 +297,7 @@ export default {
         ]
       },
       downloading_ortho: 'waiting',
+      selectedNodeForOrtho: null,
       //Popover
       popover1Text:
         'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
@@ -575,7 +579,8 @@ export default {
       return tableNode
     },
     onClickNode(node) {
-      console.log("node ", node);
+      // console.log("node ", node);
+      this.selectedNodeForOrtho = node.data;
       this.showPopup_treeNode = true;
       this.downloading_ortho = 'waiting'
     },
@@ -592,13 +597,16 @@ export default {
     downloadOrtholog() {
       let api = this.ORTHO_MAPPING_PANTHER_API
       this.downloading_ortho = 'downloading';
-      // let stored_seq = this.store_getGraftSeq
+      if(this.selectedNodeForOrtho == null) {
+        console.log("No selected node found");
+        return;
+      }
       axios({
         method: 'POST',
         url: api,
         data: {
-          uniprotId: "Q38944",
-          queryOrganismId: 3702
+          uniprotId: this.selectedNodeForOrtho.uniprotId,
+          queryOrganismId: this.selectedNodeForOrtho.taxonId
         },
         timeout: 200000
       })
@@ -610,8 +618,8 @@ export default {
             tableNode['Uniprot ID'] = n.uniprot_id;
             tableNode['Gene ID'] = n.gene_id;
             tableNode['Ortholog type'] = n.ortholog;
-            let organism = this.map_organism_name(n.organism)
-            tableNode['Organism'] = organism;
+            // let organism = this.map_organism_name(n.organism)
+            tableNode['Organism'] = n.organism;
             this.orthoTable.tableCsvData.push(tableNode);
           });
           this.orthoTable.tableCsvData.forEach((node) => {
