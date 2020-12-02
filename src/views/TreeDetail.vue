@@ -71,6 +71,7 @@
           v-on:search-tree="onSearchWithinTree"
           v-on:export-xml="exportXML"
           v-on:prune-from-menu="pruneTreeFromMenu"
+          v-on:download-fasta="download_fasta_from_server"
           v-on:highlight-tree="highlightTreeByOrg"
           v-on:set-csv-data="setCsvTableData"
         ></tablelayout>
@@ -174,6 +175,8 @@ export default {
         process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
       GRAFT_PRUNING_PANTHER_API:
         process.env.VUE_APP_TOMCAT_URL + '/panther/grafting/prune',
+      DOWNLOAD_FASTA_API: process.env.VUE_APP_TOMCAT_URL + '/panther/fastadoc/',
+      DOWNLOAD_PRUNED_FASTA_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/fastadoc/',
       phyloXML_URL: process.env.VUE_APP_S3_URL,
       defaultCols: [
         'Gene',
@@ -1160,6 +1163,34 @@ export default {
           }
         }
       }
+    },
+    // ~~~~~~~~~~~~~~ Axios REST calls
+    download_fasta_from_server() {
+      let api = this.DOWNLOAD_FASTA_API + this.treeId
+      if(this.unprunedTaxonIds.length > 0) {
+        api = this.DOWNLOAD_PRUNED_FASTA_API + this.treeId
+      }
+      this.isLoading = true
+      axios({
+        method: 'POST',
+        url: api,
+        data: {
+          taxonIdsToShow: this.unprunedTaxonIds
+        },
+        timeout: 200000
+      })
+        .then((res) => {
+          var msa_text = res.data;
+          var link = document.createElement('a');
+          link.download = this.treeId+'.txt';
+          var blob = new Blob([msa_text], {type: 'text/plain'});
+          link.href = window.URL.createObjectURL(blob);
+          link.click();
+          this.isLoading = false
+        })
+        .catch((err) => {
+          console.error('downloadMSA error ', err)
+        })
     },
     graftedPruning(taxonList) {
       let api = this.GRAFT_PRUNING_PANTHER_API

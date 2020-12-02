@@ -256,7 +256,8 @@ export default {
         { id: 2, title: 'Highlight tree by organism' },
         { id: 3, title: 'Prune tree by organism' },
         { id: 4, title: 'Save tree image as PNG' },
-        { id: 5, title: 'Save tree image as SVG' }
+        { id: 5, title: 'Save tree image as SVG' },
+        {id: 6, title: 'Download MSA'}
       ],
       //Popup
       showPopup: false,
@@ -867,6 +868,9 @@ export default {
           case 5:
             this.exportSVG()
             break
+          case 6:
+            this.downloadMSA()
+            break
           default:
             console.log('Error! Unknown Dropdown ID')
         }
@@ -894,6 +898,9 @@ export default {
     },
     highlightTree() {
       this.$emit('highlight-tree')
+    },
+    downloadMSA() {
+      this.$emit('download-fasta')
     },
     // ~~~~~~~~~~~~~~~~~~~~~~~~ Table Panel Edit ~~~~~~~~~~~~~~~~//
     //Show Table Edit Panel (Popup to add/remove and reorder table columns)
