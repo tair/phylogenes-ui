@@ -6,8 +6,8 @@
       :x="textPosn.x"
       :y="textPosn.y"
       :fill="color"
-      >{{ getText() }}</text
-    >
+      @click.stop.prevent="onClick"
+    >{{ getText() }}</text>
   </g>
 </template>
 
@@ -44,6 +44,9 @@ export default {
   },
   computed: {},
   methods: {
+    onClick() {
+      this.$emit('clicked', this.content);
+    },
     renderText() {
       //Appearance
       this.setFill()
@@ -65,5 +68,9 @@ export default {
   font-size: 14px;
   font-family: sans-serif;
   font-weight: bold;
+  cursor: pointer;
+}
+#nodeText:hover {
+  font-size: 15px;
 }
 </style>
