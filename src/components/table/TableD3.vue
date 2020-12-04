@@ -10,6 +10,15 @@
         </div>
       </template>
     </modal>
+    <!-- Download Orthoh Instruction Popup -->
+    <modal v-if="showOrthoPopup" @close="showOrthoPopup = false" :closeAnywhere="true">
+      <div slot="header">Download Orthologs</div>
+      <template slot="body" slot-scope="props">
+        <div>
+          <i>Click on a gene (leaf node on the tree) to download its plant orthologs</i>
+        </div>
+      </template>
+    </modal>
     <!-- Data Panel Edit modal popup window -->
     <modal v-if="showDPEPopup" @close="showDPEPopup = false">
       <div slot="header">
@@ -251,12 +260,14 @@ export default {
       treeRowSpan: 100,
       rowsHeight: 1000,
       treeDropdownMenu: [
-        { id: 0, title: 'Download tree as PhyloXML' },
+        {id: 1, title: 'Download multiple sequence alignment'},
+        {id: 2, title: 'Download orthologs'},
+        { id: 3, title: 'Download tree as PhyloXML' },
         // {id: 1, title: "Download gene table as CSV"},
-        { id: 2, title: 'Highlight tree by organism' },
-        { id: 3, title: 'Prune tree by organism' },
-        { id: 4, title: 'Save tree image as PNG' },
-        { id: 5, title: 'Save tree image as SVG' }
+        { id: 4, title: 'Highlight tree by organism' },
+        { id: 5, title: 'Prune tree by organism' },
+        { id: 6, title: 'Save tree image as PNG' },
+        { id: 7, title: 'Save tree image as SVG' },
       ],
       //Popup
       showPopup: false,
@@ -273,6 +284,7 @@ export default {
       editedOnce: false,
       colsHidden: 0,
       //ortolog
+      showOrthoPopup: false,
       ORTHO_MAPPING_PANTHER_API:
         process.env.VUE_APP_TOMCAT_URL + '/panther/orthomapping',
       //CSV
@@ -846,25 +858,39 @@ export default {
     },
     ///~~~~~~~~~~~~~~~~~~~~~~~~~~ Dropdown Menu Click Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
     ddClicked(id) {
+      // {id: 1, title: 'Download multiple sequence alignment'},
+      //   {id: 2, title: 'Download orthologs'},
+      //   { id: 3, title: 'Download tree as PhyloXML' },
+      //   // {id: 1, title: "Download gene table as CSV"},
+      //   { id: 4, title: 'Highlight tree by organism' },
+      //   { id: 5, title: 'Prune tree by organism' },
+      //   { id: 6, title: 'Save tree image as PNG' },
+      //   { id: 7, title: 'Save tree image as SVG' },
       if (id == -1) {
         this.dropdownMenuClicked()
       } else {
         switch (id) {
           case 0:
-            this.exportXML()
             break
           case 1:
+            this.downloadMSA()
             break
           case 2:
-            this.highlightTree()
+            this.downloadOrtho()
             break
           case 3:
-            this.pruneTreeFromMenu()
+            this.exportXML();
             break
           case 4:
-            this.exportPNG()
+            this.highlightTree();
             break
           case 5:
+            this.pruneTreeFromMenu()
+            break
+          case 6:
+            this.exportPNG()
+            break
+          case 7:
             this.exportSVG()
             break
           default:
@@ -894,6 +920,12 @@ export default {
     },
     highlightTree() {
       this.$emit('highlight-tree')
+    },
+    downloadMSA() {
+      this.$emit('download-fasta')
+    },
+    downloadOrtho() {
+      this.showOrthoPopup = true;
     },
     // ~~~~~~~~~~~~~~~~~~~~~~~~ Table Panel Edit ~~~~~~~~~~~~~~~~//
     //Show Table Edit Panel (Popup to add/remove and reorder table columns)
