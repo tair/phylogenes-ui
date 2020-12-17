@@ -10,6 +10,15 @@
         </div>
       </template>
     </modal>
+    <!-- Download Orthoh Instruction Popup -->
+    <modal v-if="showOrthoPopup" @close="showOrthoPopup = false" :closeAnywhere="true">
+      <div slot="header">Download Orthologs</div>
+      <template slot="body" slot-scope="props">
+        <div>
+          <i>Click on a gene (leaf node on the tree) to download its plant orthologs</i>
+        </div>
+      </template>
+    </modal>
     <!-- Data Panel Edit modal popup window -->
     <modal v-if="showDPEPopup" @close="showDPEPopup = false">
       <div slot="header">
@@ -35,6 +44,25 @@
     <div v-if="showMsaLegend" class="legend-box">
       <msa-legend></msa-legend>
     </div>
+    <!-- Tree Node Click Popup --->
+    <modal v-if="showPopup_treeNode" @close="showPopup_treeNode = false">
+      <div slot="header">Menu</div>
+      <template slot="body" slot-scope="props">
+        <button v-if="downloading_ortho != 'downloaded'" @click=downloadOrtholog()>Download Plant Orthologs</button>
+        <span v-if="downloading_ortho == 'downloading'"> Downloading... </span>
+        <json-csv
+          v-if="downloading_ortho == 'downloaded'"
+          :data="orthoTable.tableCsvData"
+          name="ortholog.csv"
+          :fields="orthoTable.tableCsvFields"
+        >
+          <button v-if="downloading_ortho == 'downloaded'">Csv ready for download</button>
+        </json-csv>
+      </template>
+      <template slot="footer">
+        <button class="modal-default-button" @click="showPopup_treeNode = false">Close</button>
+      </template>
+    </modal>
     <!-- Main Table -->
     <table class="mainTable">
       <thead id="head" ref="thead">
@@ -149,6 +177,7 @@
               v-on:init-tree="onTreeInit"
               v-on:get-table-csv-data="getTableCsvData"
               v-on:updated-tree="onTreeUpdate"
+              v-on:click-node="onClickNode"
             ></treelayout>
           </td>
         </tr>
@@ -172,6 +201,7 @@
 
 <script>
 import * as d3 from 'd3'
+import axios from 'axios/index'
 import _ from 'lodash'
 import { mapGetters, mapActions } from 'vuex'
 import { setTimeout } from 'timers'
@@ -230,15 +260,18 @@ export default {
       treeRowSpan: 100,
       rowsHeight: 1000,
       treeDropdownMenu: [
-        { id: 0, title: 'Download tree as PhyloXML' },
+        {id: 1, title: 'Download multiple sequence alignment'},
+        {id: 2, title: 'Download orthologs'},
+        { id: 3, title: 'Download tree as PhyloXML' },
         // {id: 1, title: "Download gene table as CSV"},
-        { id: 2, title: 'Highlight tree by organism' },
-        { id: 3, title: 'Prune tree by organism' },
-        { id: 4, title: 'Save tree image as PNG' },
-        { id: 5, title: 'Save tree image as SVG' }
+        { id: 4, title: 'Highlight tree by organism' },
+        { id: 5, title: 'Prune tree by organism' },
+        { id: 6, title: 'Save tree image as PNG' },
+        { id: 7, title: 'Save tree image as SVG' },
       ],
       //Popup
       showPopup: false,
+      showPopup_treeNode: false,
       popupHeader: '',
       popupCols: ['GO term', 'Evidence description', 'Reference', 'More'],
       popupData: [],
@@ -250,6 +283,10 @@ export default {
       editColsList: [],
       editedOnce: false,
       colsHidden: 0,
+      //ortolog
+      showOrthoPopup: false,
+      ORTHO_MAPPING_PANTHER_API:
+        process.env.VUE_APP_TOMCAT_URL + '/panther/orthomapping',
       //CSV
       tableCsvData: [],
       tableCsvFields: [
@@ -261,6 +298,18 @@ export default {
         'Protein name',
         'Subfamily name'
       ],
+      //Table CSV
+      orthoTable: {
+        tableCsvData: [],
+        tableCsvFields: [
+          'Uniprot ID',
+          'Gene ID',
+          'Organism',
+          'Ortholog type'
+        ]
+      },
+      downloading_ortho: 'waiting',
+      selectedNodeForOrtho: null,
       //Popover
       popover1Text:
         'This information was extracted from GOA <a href="https://www.ebi.ac.uk/GOA/" target="_blank">(https://www.ebi.ac.uk/GOA/)</a>. Only Molecular Function annotations with Experimental Evidence are shown.',
@@ -359,6 +408,7 @@ export default {
   mounted() {
     this.resetTable()
     this.initTable()
+    this.process_mapping();
     this.$nextTick(function() {})
   },
   beforeDestroy() {
@@ -381,6 +431,26 @@ export default {
       store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
       store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS
     }),
+    callShowOrtho() {
+      console.log("callShowOrtho")
+    },
+    getMappingFromCsv(fileName) {
+      return new Promise((resolve, reject) => {
+        d3.csv(fileName, function(error, data) {
+          if (error) {
+            reject(error)
+          } else {
+            resolve(data)
+          }
+        })
+      })
+    },
+    async process_mapping() {
+      const mappingCsvData = await this.getMappingFromCsv(
+          '/organism_to_display.csv'
+      )
+      this.mappingData = mappingCsvData;
+    },
     resetTable() {
       this.store_setClearData()
       this.isLoading = false
@@ -431,7 +501,7 @@ export default {
       // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
       //Check for unchecked cols
-      if (this.defaultColsToHide.includes('Known function')) {
+      if (this.defaultColsToHide.includes('Molecular function')) {
         //Removes all annotations cols
         filteredCols = filteredCols.filter((t) =>
           this.colsFromProp.includes(t.label)
@@ -523,7 +593,65 @@ export default {
       }
       return tableNode
     },
-
+    onClickNode(node) {
+      // console.log("node ", node);
+      this.selectedNodeForOrtho = node.data;
+      this.showPopup_treeNode = true;
+      this.downloading_ortho = 'waiting'
+    },
+    map_organism_name(organism_id) {
+      let organism_name = organism_id
+      var found_mapping = this.mappingData.find(
+        (o) => o['Abbrev name code'].toLowerCase() === organism_id.toLowerCase()
+      )
+      if (found_mapping) {
+        organism_name = found_mapping.Organism.trim();
+      }
+      return organism_name;
+    },
+    downloadOrtholog() {
+      let api = this.ORTHO_MAPPING_PANTHER_API
+      this.downloading_ortho = 'downloading';
+      if(this.selectedNodeForOrtho == null) {
+        console.log("No selected node found");
+        return;
+      }
+      axios({
+        method: 'POST',
+        url: api,
+        data: {
+          uniprotId: this.selectedNodeForOrtho.uniprotId,
+          queryOrganismId: this.selectedNodeForOrtho.taxonId
+        },
+        timeout: 200000
+      })
+        .then((res) => {
+          let orthoNodes = res.data;
+          this.orthoTable.tableCsvData = [];
+          orthoNodes.forEach(n => {
+            var tableNode = {}
+            tableNode['Uniprot ID'] = n.uniprot_id;
+            tableNode['Gene ID'] = n.gene_id;
+            tableNode['Ortholog type'] = n.ortholog;
+            // let organism = this.map_organism_name(n.organism)
+            tableNode['Organism'] = n.organism;
+            this.orthoTable.tableCsvData.push(tableNode);
+          });
+          this.orthoTable.tableCsvData.forEach((node) => {
+            node[
+              "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
+            ] = null
+          })
+          this.orthoTable.tableCsvFields.push(
+            "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
+          )
+          this.downloading_ortho = 'downloaded';
+        })
+        .catch((err) => {
+          console.error('error ', err)
+          this.isLoading = false
+        })
+    },
     onTreeInit(nodes) {
       let tabularData = this.setStoreTableData(nodes)
       //For metadata
@@ -733,25 +861,39 @@ export default {
     },
     ///~~~~~~~~~~~~~~~~~~~~~~~~~~ Dropdown Menu Click Events ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
     ddClicked(id) {
+      // {id: 1, title: 'Download multiple sequence alignment'},
+      //   {id: 2, title: 'Download orthologs'},
+      //   { id: 3, title: 'Download tree as PhyloXML' },
+      //   // {id: 1, title: "Download gene table as CSV"},
+      //   { id: 4, title: 'Highlight tree by organism' },
+      //   { id: 5, title: 'Prune tree by organism' },
+      //   { id: 6, title: 'Save tree image as PNG' },
+      //   { id: 7, title: 'Save tree image as SVG' },
       if (id == -1) {
         this.dropdownMenuClicked()
       } else {
         switch (id) {
           case 0:
-            this.exportXML()
             break
           case 1:
+            this.downloadMSA()
             break
           case 2:
-            this.highlightTree()
+            this.downloadOrtho()
             break
           case 3:
-            this.pruneTreeFromMenu()
+            this.exportXML();
             break
           case 4:
-            this.exportPNG()
+            this.highlightTree();
             break
           case 5:
+            this.pruneTreeFromMenu()
+            break
+          case 6:
+            this.exportPNG()
+            break
+          case 7:
             this.exportSVG()
             break
           default:
@@ -781,6 +923,12 @@ export default {
     },
     highlightTree() {
       this.$emit('highlight-tree')
+    },
+    downloadMSA() {
+      this.$emit('download-fasta')
+    },
+    downloadOrtho() {
+      this.showOrthoPopup = true;
     },
     // ~~~~~~~~~~~~~~~~~~~~~~~~ Table Panel Edit ~~~~~~~~~~~~~~~~//
     //Show Table Edit Panel (Popup to add/remove and reorder table columns)
