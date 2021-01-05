@@ -37,7 +37,8 @@ const state = {
     scroll: null,
     topPaddingY: 0,
     searchTextWithin: null,
-    graftSequence: null
+    graftSequence: null,
+    surveyPopup: false
   }
 }
 

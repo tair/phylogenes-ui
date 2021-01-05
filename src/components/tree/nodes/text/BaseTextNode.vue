@@ -1,11 +1,5 @@
 <template>
-  <component
-    :is="textComponent"
-    ref="myCom"
-    :content="content"
-    @clicked="onClick"
-  >
-  </component>
+  <component :is="textComponent" ref="myCom" :content="content" @clicked="onTextClick"></component>
 </template>
 <script>
 import * as d3 from 'd3'
@@ -36,8 +30,8 @@ export default {
     },
   },
   methods: {
-    onClick() {
-      return
+    onTextClick() {
+      this.$emit('clicktext', this.content)
     },
     onExit(node) {
       // console.log("on exit");
