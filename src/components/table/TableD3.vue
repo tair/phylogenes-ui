@@ -431,9 +431,6 @@ export default {
       store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
       store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS
     }),
-    callShowOrtho() {
-      console.log("callShowOrtho")
-    },
     getMappingFromCsv(fileName) {
       return new Promise((resolve, reject) => {
         d3.csv(fileName, function(error, data) {
