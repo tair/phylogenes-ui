@@ -1,6 +1,9 @@
 <template>
   <span class="_parent">
-    <i v-if="this.isLoading" class="fa fa-spinner fa-spin fa-6x p-5 text-primary"></i>
+    <i
+      v-if="this.isLoading"
+      class="fa fa-spinner fa-spin fa-6x p-5 text-primary"
+    ></i>
     <div class="menu">
       <div v-if="showLegend" class="legend-box">
         <tree-legend></tree-legend>
@@ -9,7 +12,12 @@
     <svg id="treeSvg" ref="treesvg" width="100%" :height="svgHeight">
       <g id="wrapper">
         <g class="links">
-          <baselink v-for="link in treelinks_view" :key="link.id" ref="treelink" :content="link" />
+          <baselink
+            v-for="link in treelinks_view"
+            :key="link.id"
+            ref="treelink"
+            :content="link"
+          />
         </g>
         <g class="nodes">
           <basenode
@@ -177,7 +185,6 @@ export default {
       delayInCall: 20,
       ticking: false,
       timerId: null,
-      svgHeight: '1000px',
       firstLoadForGrafted: true
     }
   },
@@ -858,6 +865,7 @@ export default {
     onExportPng(treeId) {
       this.isLoading = true
       //Svg size is increased to the complete tree size
+      this.$parent.renderFullTable()
       this.adjustSvgForExport(true)
       setTimeout(() => {
         var svgNode = d3.select('#treeSvg').node()
@@ -899,6 +907,7 @@ export default {
       // reset svg is called.
       // Remember to set svg back to 'relative' once the exporet is done.
       // TODO: The fixed position does not work for '.svg' export.
+
       if (fixed) {
         d3.select('#treeSvg').style('position', 'fixed')
       }
@@ -924,13 +933,14 @@ export default {
         }
       } else {
         let canvasWidth = this.$refs.treesvg.clientWidth
-        let canvasHeight = this.$refs.treesvg.clientHeight
+        let canvasHeight = svgHeight
         if (canvasHeight > 34000) {
           canvasHeight = 34000
         }
         exportUtils.canvasToPng(img, treeId, canvasWidth, canvasHeight, false)
       }
       this.resetSvgAfterExport()
+      this.$parent.updateTable()
     },
     resetSvgAfterExport() {
       d3.select('#treeSvg')
@@ -1116,7 +1126,7 @@ export default {
         })
     },
     onClickText(source) {
-      this.$emit('click-node', source);
+      this.$emit('click-node', source)
     },
     onClick(source) {
       // Add flask for node with known function
