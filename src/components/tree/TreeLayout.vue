@@ -853,6 +853,7 @@ export default {
     onExportSvg(treeId) {
       this.isLoading = true
       //Svg size is increased to the complete tree size
+      this.$parent.renderFullTable()
       this.adjustSvgForExport(false)
       setTimeout(() => {
         var svgNode = d3.select('#treeSvg').node()
@@ -860,7 +861,7 @@ export default {
           //Reset the svg to it's original size
           this.resetSvgAfterExport()
         })
-      }, 1000)
+      }, 10)
     },
     onExportPng(treeId) {
       this.isLoading = true
@@ -940,13 +941,15 @@ export default {
         exportUtils.canvasToPng(img, treeId, canvasWidth, canvasHeight, false)
       }
       this.resetSvgAfterExport()
-      this.$parent.updateTable()
     },
     resetSvgAfterExport() {
       d3.select('#treeSvg')
         .attr('width', '100%')
         .style('position', 'relative')
       this.isLoading = false
+      setTimeout(() => {
+        this.$parent.updateTable()
+      }, 1000)
     },
 
     // ~~~~~~~~~~~~~~~~ Tree Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
