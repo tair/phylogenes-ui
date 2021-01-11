@@ -1,21 +1,35 @@
 <template>
-  <div id="parent" :style="{ width: window.width + 'px', height: window.height - 50 + 'px' }">
+  <div
+    id="parent"
+    :style="{ width: window.width + 'px', height: window.height - 50 + 'px' }"
+  >
     <!-- GO Annotations Info modal popup window -->
     <modal v-if="showPopup" @close="showPopup = false">
       <div slot="header">{{ popupHeader }}</div>
       <template slot="body" slot-scope="props">
-        <popupTable v-if="popupData.length > 0" :data="popupData" :cols="popupCols"></popupTable>
+        <popupTable
+          v-if="popupData.length > 0"
+          :data="popupData"
+          :cols="popupCols"
+        ></popupTable>
         <div v-if="popupData.length === 0">
           <i>No Go Annotations for this gene!</i>
         </div>
       </template>
     </modal>
     <!-- Download Orthoh Instruction Popup -->
-    <modal v-if="showOrthoPopup" @close="showOrthoPopup = false" :closeAnywhere="true">
+    <modal
+      v-if="showOrthoPopup"
+      @close="showOrthoPopup = false"
+      :closeAnywhere="true"
+    >
       <div slot="header">Download Orthologs</div>
       <template slot="body" slot-scope="props">
         <div>
-          <i>Click on a gene (leaf node on the tree) to download its plant orthologs</i>
+          <i
+            >Click on a gene (leaf node on the tree) to download its plant
+            orthologs</i
+          >
         </div>
       </template>
     </modal>
@@ -36,8 +50,12 @@
         ></dataPanelEdit>
       </template>
       <template slot="footer">
-        <button class="modal-default-button" @click="onTableEdit">Update Table</button>
-        <button class="modal-default-button" @click="showDPEPopup = false">Close</button>
+        <button class="modal-default-button" @click="onTableEdit">
+          Update Table
+        </button>
+        <button class="modal-default-button" @click="showDPEPopup = false">
+          Close
+        </button>
       </template>
     </modal>
     <!-- MSA Legend Popup -->
@@ -48,7 +66,14 @@
     <modal v-if="showPopup_treeNode" @close="showPopup_treeNode = false">
       <div slot="header">Menu</div>
       <template slot="body" slot-scope="props">
-        <button v-if="downloading_ortho != 'downloaded'" @click=downloadOrtholog()>Download Plant Orthologs</button>
+        <button
+          v-if="
+            downloading_ortho != 'downloaded' && downloading_ortho != 'error'
+          "
+          @click="downloadOrtholog()"
+        >
+          Download Plant Orthologs
+        </button>
         <span v-if="downloading_ortho == 'downloading'"> Downloading... </span>
         <json-csv
           v-if="downloading_ortho == 'downloaded'"
@@ -56,21 +81,33 @@
           name="ortholog.csv"
           :fields="orthoTable.tableCsvFields"
         >
-          <button v-if="downloading_ortho == 'downloaded'">Csv ready for download</button>
+          <button v-if="downloading_ortho == 'downloaded'">
+            Csv ready for download
+          </button>
         </json-csv>
+        <button v-if="downloading_ortho == 'error'" disabled>
+          There is no plant ortholog for your gene
+        </button>
       </template>
       <template slot="footer">
-        <button class="modal-default-button" @click="showPopup_treeNode = false">Close</button>
+        <button
+          class="modal-default-button"
+          @click="showPopup_treeNode = false"
+        >
+          Close
+        </button>
       </template>
     </modal>
     <!-- Main Table -->
     <table class="mainTable">
       <thead id="head" ref="thead">
-        <button v-if="msaTab" class="btn bg-white float-right msalegendbtn" @click="toggleLegend">
+        <button
+          v-if="msaTab"
+          class="btn bg-white float-right msalegendbtn"
+          @click="toggleLegend"
+        >
           <span class="text-danger">
-            {{
-            showMsaLegend ? 'Hide Legend' : 'Show Legend'
-            }}
+            {{ showMsaLegend ? 'Hide Legend' : 'Show Legend' }}
           </span>
         </button>
         <tr id="mainTr">
@@ -87,9 +124,18 @@
               v-on:onShowLegend="showLegend"
             ></tree-layout-menu>
           </th>
-          <th v-for="(col, i) in colsToRender" :key="i" :class="getThClasses(col, i)">
-            <div v-if="col.type && col.type=='first_mf'" class="annoPopver">
-              <b-button id="annoPopover_mf" href="#" tabindex="0" variant="flat">
+          <th
+            v-for="(col, i) in colsToRender"
+            :key="i"
+            :class="getThClasses(col, i)"
+          >
+            <div v-if="col.type && col.type == 'first_mf'" class="annoPopver">
+              <b-button
+                id="annoPopover_mf"
+                href="#"
+                tabindex="0"
+                variant="flat"
+              >
                 <i class="fas fa-info-circle fa-lg"></i>
                 <popover
                   :text="popoverGO_mfText"
@@ -98,16 +144,22 @@
                   target="annoPopover_mf"
                 ></popover>
               </b-button>
-              <div v-if="i==prefix_anno" class="aspectInfo">
+              <div v-if="i == prefix_anno" class="aspectInfo">
                 <span
                   v-b-tooltip.hover.top.o100
                   class="anno_type text-danger"
                   title="Molecular Function"
-                >F</span>
+                  >F</span
+                >
               </div>
             </div>
-            <div v-if="col.type && col.type=='first_bp'" class="annoPopver">
-              <b-button id="annoPopover_bp" href="#" tabindex="0" variant="flat">
+            <div v-if="col.type && col.type == 'first_bp'" class="annoPopver">
+              <b-button
+                id="annoPopover_bp"
+                href="#"
+                tabindex="0"
+                variant="flat"
+              >
                 <i class="fas fa-info-circle fa-lg"></i>
                 <popover
                   :text="popoverGO_bpText"
@@ -116,12 +168,13 @@
                   target="annoPopover_bp"
                 ></popover>
               </b-button>
-              <div v-if="i==prefix_anno + n_anno_mf" class="aspectInfo">
+              <div v-if="i == prefix_anno + n_anno_mf" class="aspectInfo">
                 <span
                   v-b-tooltip.hover.top.o100
                   title="Biological process"
                   class="anno_type text-danger"
-                >P</span>
+                  >P</span
+                >
               </div>
             </div>
             <b-button
@@ -154,12 +207,14 @@
               </button>
               <button class="btn btn-link showMsaBtn" @click="toggleTabs">
                 <span class="text-danger">
-                  {{
-                  msaTab ? 'Show Gene Info >' : 'Show MSA >'
-                  }}
+                  {{ msaTab ? 'Show Gene Info >' : 'Show MSA >' }}
                 </span>
               </button>
-              <button v-if="showDPEOption" class="btn btn-link showHiddenVal" @click="showPanel">
+              <button
+                v-if="showDPEOption"
+                class="btn btn-link showHiddenVal"
+                @click="showPanel"
+              >
                 <span class="text-danger">{{ colsHidden }} Cols Hidden</span>
               </button>
             </div>
@@ -191,7 +246,9 @@
             @click="tdClicked(key.label, row)"
             :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <tablecell :content.sync="rowsToRender[row_i][key.label]"></tablecell>
+            <tablecell
+              :content.sync="rowsToRender[row_i][key.label]"
+            ></tablecell>
           </td>
         </tr>
       </tbody>
@@ -260,14 +317,14 @@ export default {
       treeRowSpan: 100,
       rowsHeight: 1000,
       treeDropdownMenu: [
-        {id: 1, title: 'Download multiple sequence alignment'},
-        {id: 2, title: 'Download orthologs'},
+        { id: 1, title: 'Download multiple sequence alignment' },
+        { id: 2, title: 'Download orthologs' },
         { id: 3, title: 'Download tree as PhyloXML' },
         // {id: 1, title: "Download gene table as CSV"},
         { id: 4, title: 'Highlight tree by organism' },
         { id: 5, title: 'Prune tree by organism' },
         { id: 6, title: 'Save tree image as PNG' },
-        { id: 7, title: 'Save tree image as SVG' },
+        { id: 7, title: 'Save tree image as SVG' }
       ],
       //Popup
       showPopup: false,
@@ -301,12 +358,7 @@ export default {
       //Table CSV
       orthoTable: {
         tableCsvData: [],
-        tableCsvFields: [
-          'Uniprot ID',
-          'Gene ID',
-          'Organism',
-          'Ortholog type'
-        ]
+        tableCsvFields: ['Uniprot ID', 'Gene ID', 'Organism', 'Ortholog type']
       },
       downloading_ortho: 'waiting',
       selectedNodeForOrtho: null,
@@ -408,7 +460,7 @@ export default {
   mounted() {
     this.resetTable()
     this.initTable()
-    this.process_mapping();
+    this.process_mapping()
     this.$nextTick(function() {})
   },
   beforeDestroy() {
@@ -444,9 +496,9 @@ export default {
     },
     async process_mapping() {
       const mappingCsvData = await this.getMappingFromCsv(
-          '/organism_to_display.csv'
+        '/organism_to_display.csv'
       )
-      this.mappingData = mappingCsvData;
+      this.mappingData = mappingCsvData
     },
     resetTable() {
       this.store_setClearData()
@@ -592,8 +644,8 @@ export default {
     },
     onClickNode(node) {
       // console.log("node ", node);
-      this.selectedNodeForOrtho = node.data;
-      this.showPopup_treeNode = true;
+      this.selectedNodeForOrtho = node.data
+      this.showPopup_treeNode = true
       this.downloading_ortho = 'waiting'
     },
     map_organism_name(organism_id) {
@@ -602,16 +654,16 @@ export default {
         (o) => o['Abbrev name code'].toLowerCase() === organism_id.toLowerCase()
       )
       if (found_mapping) {
-        organism_name = found_mapping.Organism.trim();
+        organism_name = found_mapping.Organism.trim()
       }
-      return organism_name;
+      return organism_name
     },
     downloadOrtholog() {
       let api = this.ORTHO_MAPPING_PANTHER_API
-      this.downloading_ortho = 'downloading';
-      if(this.selectedNodeForOrtho == null) {
-        console.log("No selected node found");
-        return;
+      this.downloading_ortho = 'downloading'
+      if (this.selectedNodeForOrtho == null) {
+        console.log('No selected node found')
+        return
       }
       axios({
         method: 'POST',
@@ -623,17 +675,22 @@ export default {
         timeout: 200000
       })
         .then((res) => {
-          let orthoNodes = res.data;
-          this.orthoTable.tableCsvData = [];
-          orthoNodes.forEach(n => {
+          let orthoNodes = res.data
+          if (!Array.isArray(orthoNodes)) {
+            this.downloading_ortho = 'error'
+            console.log(this.downloading_ortho)
+            return
+          }
+          this.orthoTable.tableCsvData = []
+          orthoNodes.forEach((n) => {
             var tableNode = {}
-            tableNode['Uniprot ID'] = n.uniprot_id;
-            tableNode['Gene ID'] = n.gene_id;
-            tableNode['Ortholog type'] = n.ortholog;
+            tableNode['Uniprot ID'] = n.uniprot_id
+            tableNode['Gene ID'] = n.gene_id
+            tableNode['Ortholog type'] = n.ortholog
             // let organism = this.map_organism_name(n.organism)
-            tableNode['Organism'] = n.organism;
-            this.orthoTable.tableCsvData.push(tableNode);
-          });
+            tableNode['Organism'] = n.organism
+            this.orthoTable.tableCsvData.push(tableNode)
+          })
           this.orthoTable.tableCsvData.forEach((node) => {
             node[
               "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
@@ -642,7 +699,7 @@ export default {
           this.orthoTable.tableCsvFields.push(
             "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
           )
-          this.downloading_ortho = 'downloaded';
+          this.downloading_ortho = 'downloaded'
         })
         .catch((err) => {
           console.error('error ', err)
@@ -650,6 +707,7 @@ export default {
         })
     },
     onTreeInit(nodes) {
+      //   console.log('onTreeInit')
       let tabularData = this.setStoreTableData(nodes)
       //For metadata
       let uniqueOrganisms = []
@@ -695,7 +753,6 @@ export default {
       }
     },
     onTreeUpdate(nodes) {
-      // console.log("onTreeUpdate");
       this.tableRendering = true
       //Table data must changed on every tree update.
       //Note: This even changes after the first tree init call.
@@ -724,6 +781,7 @@ export default {
         if (this.rowsScrolled > 200) {
           noOfTopRowsToRemove = this.rowsScrolled - 100
         }
+
         this.store_tableData.some((n) => {
           if (i < noOfTopRowsToRemove) {
             n.rendering = false
@@ -757,6 +815,18 @@ export default {
         })
       }
     },
+    //Called from external component
+    renderFullTable() {
+      //   console.log('renderFullTable')
+      //Get initial full table height when all nodes are present without lazy loading which decreses the table height
+      this.rowsToRender = []
+      this.store_tableData.forEach((n) => {
+        n.rendering = false
+        let processedRowData = this.processRow(n)
+        this.rowsToRender.push(processedRowData)
+      })
+      this.rowsHeight = this.rowsToRender.length * this.MAX_ROW_HEIGHT
+    },
     setStoreTableData(nodes) {
       var tabularData = []
       let i = 0
@@ -769,6 +839,7 @@ export default {
       this.store_setTableData(tabularData)
       return tabularData
     },
+
     //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
     //This depends on 'rowsScrolled'
     updateRows(calledWhileScrolling = false, pm = '') {
@@ -879,10 +950,10 @@ export default {
             this.downloadOrtho()
             break
           case 3:
-            this.exportXML();
+            this.exportXML()
             break
           case 4:
-            this.highlightTree();
+            this.highlightTree()
             break
           case 5:
             this.pruneTreeFromMenu()
@@ -925,7 +996,7 @@ export default {
       this.$emit('download-fasta')
     },
     downloadOrtho() {
-      this.showOrthoPopup = true;
+      this.showOrthoPopup = true
     },
     // ~~~~~~~~~~~~~~~~~~~~~~~~ Table Panel Edit ~~~~~~~~~~~~~~~~//
     //Show Table Edit Panel (Popup to add/remove and reorder table columns)
@@ -1185,6 +1256,7 @@ export default {
     getTableCsvData(nodes) {
       this.$emit('set-csv-data', nodes)
     },
+
     //Checks if the column is the first annotation column
     isFirstAnnoCol(colName) {
       let mf_len = this.store_annoMapping.headers.mf.length
@@ -1255,6 +1327,7 @@ export default {
         }
       }
     },
+    setScrollToEnd() {},
     //Find Row in the table based on 'val' and scroll the table to that row
     findRowandScroll(val) {
       var foundRow = this.store_tableData.find(
@@ -1296,10 +1369,10 @@ export default {
 
         let references = { type: 'links' }
         references['links'] = []
-        if(ann.reference) {
-        ann.reference.forEach((ref) => {
-          references['links'].push({ text: ref.count, link: ref.link })
-        })
+        if (ann.reference) {
+          ann.reference.forEach((ref) => {
+            references['links'].push({ text: ref.count, link: ref.link })
+          })
         }
         singleRow.push(references)
 

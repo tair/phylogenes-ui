@@ -1,12 +1,12 @@
 <template>
   <div id="main" class="container-fluid main_container d-flex">
     <!-- Survey Popup -->
-    <modal v-if="surveyPopup" @close="surveyPopup = false" :modalWidth="700" :closeAnywhere="true">
+    <!-- <modal v-if="surveyPopup" @close="surveyPopup = false" :modalWidth="700" :closeAnywhere="true">
       <div slot="header">User Survey!</div>
       <template slot="body" slot-scope="props">
         <SurveyPopupContent></SurveyPopupContent>
       </template>
-    </modal>
+    </modal> -->
     <!-- Organisms/Pruning Popup -->
     <modal v-if="showPopup" @close="showPopup = false">
       <div slot="header">{{ popupHeader }}</div>
@@ -24,31 +24,42 @@
         </div>
       </template>
       <template slot="footer">
-        <button v-if="!isHighlightPopup" class="modal-default-button" @click="onPrune">Update tree</button>
+        <button
+          v-if="!isHighlightPopup"
+          class="modal-default-button"
+          @click="onPrune"
+        >
+          Update tree
+        </button>
         <button
           v-if="isHighlightPopup"
           class="modal-default-button"
           @click="onHighlight"
-        >Highlight tree</button>
-        <button class="modal-default-button" @click="showPopup = false">Close</button>
+        >
+          Highlight tree
+        </button>
+        <button class="modal-default-button" @click="showPopup = false">
+          Close
+        </button>
       </template>
     </modal>
     <div class="row flex-fill">
       <!-- Metadata Band -->
-      <div class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand">
-        <i v-if="this.metadata.isLoading" class="fa fa-spinner fa-spin fa-2x p-5 text-primary"></i>
+      <div
+        class="col-sm-12 h-5 d-flex align-items-center text-danger pg-databand"
+      >
+        <i
+          v-if="this.metadata.isLoading"
+          class="fa fa-spinner fa-spin fa-2x p-5 text-primary"
+        ></i>
         <span v-if="!this.metadata.isLoading" v-on:click="showOrganismPopup()">
           {{ metadata.familyName }} ({{ treeId }}),
           {{ metadata.genesCount }} genes,
-          <span
-            style="cursor: pointer;"
-          >
+          <span style="cursor: pointer;">
             <b>
               <u>
                 {{ metadata.uniqueOrganisms.totalCount }} Organisms
-                <span
-                  v-if="this.prunedLoaded"
-                >(pruned view)</span>
+                <span v-if="this.prunedLoaded">(pruned view)</span>
               </u>
             </b>
           </span>
@@ -176,7 +187,8 @@ export default {
       GRAFT_PRUNING_PANTHER_API:
         process.env.VUE_APP_TOMCAT_URL + '/panther/grafting/prune',
       DOWNLOAD_FASTA_API: process.env.VUE_APP_TOMCAT_URL + '/panther/fastadoc/',
-      DOWNLOAD_PRUNED_FASTA_API: process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/fastadoc/',
+      DOWNLOAD_PRUNED_FASTA_API:
+        process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/fastadoc/',
       phyloXML_URL: process.env.VUE_APP_S3_URL,
       defaultCols: [
         'Gene',
@@ -242,7 +254,7 @@ export default {
       treeData_Json: null,
       treeId: null,
       //Survey
-      surveyPopup: false,
+      surveyPopup: false
     }
   },
   mounted() {
@@ -1167,7 +1179,7 @@ export default {
     // ~~~~~~~~~~~~~~ Axios REST calls
     download_fasta_from_server() {
       let api = this.DOWNLOAD_FASTA_API + this.treeId
-      if(this.unprunedTaxonIds.length > 0) {
+      if (this.unprunedTaxonIds.length > 0) {
         api = this.DOWNLOAD_PRUNED_FASTA_API + this.treeId
       }
       this.isLoading = true
@@ -1180,12 +1192,12 @@ export default {
         timeout: 200000
       })
         .then((res) => {
-          var msa_text = res.data;
-          var link = document.createElement('a');
-          link.download = this.treeId+'.txt';
-          var blob = new Blob([msa_text], {type: 'text/plain'});
-          link.href = window.URL.createObjectURL(blob);
-          link.click();
+          var msa_text = res.data
+          var link = document.createElement('a')
+          link.download = this.treeId + '.txt'
+          var blob = new Blob([msa_text], { type: 'text/plain' })
+          link.href = window.URL.createObjectURL(blob)
+          link.click()
           this.isLoading = false
         })
         .catch((err) => {
