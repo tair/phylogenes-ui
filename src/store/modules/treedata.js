@@ -260,7 +260,7 @@ const actions = {
             'TREE_ACTION_SET_MSADATA: Error while reading data (E8273): ' +
               JSON.stringify(error)
           )
-          rej()
+          result('msa data')
         })
     })
   },
