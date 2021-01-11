@@ -67,7 +67,9 @@
       <div slot="header">Menu</div>
       <template slot="body" slot-scope="props">
         <button
-          v-if="downloading_ortho != 'downloaded' && downloading_ortho != 'error'"
+          v-if="
+            downloading_ortho != 'downloaded' && downloading_ortho != 'error'
+          "
           @click="downloadOrtholog()"
         >
           Download Plant Orthologs
@@ -84,8 +86,8 @@
           </button>
         </json-csv>
         <button v-if="downloading_ortho == 'error'" disabled>
-            There is no plant ortholog for your gene 
-          </button>
+          There is no plant ortholog for your gene
+        </button>
       </template>
       <template slot="footer">
         <button
@@ -674,10 +676,10 @@ export default {
       })
         .then((res) => {
           let orthoNodes = res.data
-          if(!Array.isArray(orthoNodes)) {
+          if (!Array.isArray(orthoNodes)) {
             this.downloading_ortho = 'error'
             console.log(this.downloading_ortho)
-            return;
+            return
           }
           this.orthoTable.tableCsvData = []
           orthoNodes.forEach((n) => {
