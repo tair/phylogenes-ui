@@ -139,7 +139,7 @@ const actions = {
             context.state.tree.data.facets.nodeTypes.push(jsonData)
           }
         }
-
+        // console.log(res.data.facet_counts.facet_fields);
         if (res.data.facet_counts.facet_fields.organisms != null) {
           for (
             var i = 0;
@@ -154,15 +154,15 @@ const actions = {
           }
         }
 
-        if (res.data.facet_counts.facet_fields.species_list != null) {
+        if (res.data.facet_counts.facet_fields.taxonomic_ranges_root != null) {
           for (
             var i = 0;
-            i < res.data.facet_counts.facet_fields.species_list.length;
+            i < res.data.facet_counts.facet_fields.taxonomic_ranges_root.length;
 
           ) {
             var jsonData = {}
-            let key = res.data.facet_counts.facet_fields.species_list[i++]
-            let count = res.data.facet_counts.facet_fields.species_list[i++]
+            let key = res.data.facet_counts.facet_fields.taxonomic_ranges_root[i++]
+            let count = res.data.facet_counts.facet_fields.taxonomic_ranges_root[i++]
             if (count > 0) {
               jsonData['key'] = key
               jsonData['count'] = count
