@@ -644,9 +644,11 @@ export default {
     },
     onClickNode(node) {
       // console.log("node ", node);
-      this.selectedNodeForOrtho = node.data
-      this.showPopup_treeNode = true
-      this.downloading_ortho = 'waiting'
+      if(node.geneId != null) {
+        this.selectedNodeForOrtho = node.data
+        this.showPopup_treeNode = true
+        this.downloading_ortho = 'waiting'
+      }
     },
     map_organism_name(organism_id) {
       let organism_name = organism_id
@@ -1117,6 +1119,7 @@ export default {
       let i = 0
       let total_annotations = this.store_annoMapping.n_annotations
       this.origColsToRender.forEach((colObj) => {
+        console.log(colObj.label);
         let col = { id: i, label: colObj.label, selected: true, children: [] }
         if (i == 0) {
           col.disabled = true
@@ -1124,7 +1127,8 @@ export default {
         if (this.defaultColsToHide.includes(colObj.label)) {
           col.selected = false
         }
-        if (i == 2) {
+        if(this.n_anno_mf > 0 || this.n_anno_bp > 0) {
+          if (i == 2) {
           let parentCol = {
             id: i,
             label: 'Molecular function',
@@ -1173,6 +1177,9 @@ export default {
             col.selected = false
           }
           colsToEdit[colsToEdit.length - 1].children.push(col)
+        } else {
+          colsToEdit.push(col)
+        }
         } else {
           colsToEdit.push(col)
         }
