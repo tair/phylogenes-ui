@@ -1,6 +1,6 @@
 <template>
   <div class="mb-5 elevation-0">
-    <div class="embed-responsive embed-responsive-16by9">
+    <div class="embed-responsive embed-responsive-5by3">
       <iframe
         class="embed-responsive-item"
         src="https://www.youtube.com/embed/oIXdai9fu6o?rel=0"
@@ -27,5 +27,9 @@ export default {
 <style scoped>
 .linkTxt {
   font-size: 2rem;
+}
+
+.embed-responsive-5by3{
+   padding-bottom: 60%;
 }
 </style>
