@@ -932,9 +932,9 @@ export default {
         case 'Solanum lycopersicum':
           link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
           break
-        case 'Solanum tuberosum':
-          link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
-          break
+        // case 'Solanum tuberosum':
+        //   link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
+        //   break
         case 'Triticum aestivum':
           link_text = 'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name='+gene_id
           break
