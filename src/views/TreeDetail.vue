@@ -686,6 +686,7 @@ export default {
     },
     //Get annotations data to show in the popup for the selected uniprot id and go_term
     getFormattedAnnotationsList(uniprotId, go_term) {
+      // console.log(uniprotId, go_term);
       var allAnnosForGene = this.store_annoMapping.annoMap[uniprotId]
       var annoList = []
       if (!allAnnosForGene) return annoList
@@ -696,11 +697,15 @@ export default {
       // console.log(go_term, annos_by_func_name);
       annos_by_func_name.forEach((a) => {
         // console.log(a);
+        
         let curr_anno_data = {}
+        curr_anno_data.unique_id = a.evidenceCode + "_" + a.goName;
+        
         //~~goId
         curr_anno_data.goId = a.goId
         //~~goTerm
         curr_anno_data.goTerm = a.goName
+        
         //~~goTermLink
         let goTermLink = 'http://amigo.geneontology.org/amigo/term/' + a.goId
         curr_anno_data.goTermLink = goTermLink
@@ -714,32 +719,52 @@ export default {
             code = a.evidenceCode
           }
         }
+        
         curr_anno_data.code = code
-        //~~reference
-        curr_anno_data.reference = []
-        //Set References links on the popup
-        if (a.reference) {
-          let refs = a.reference.split('|')
-          // console.log(refs)
-          let references = []
-          if (refs) {
-            refs.forEach((r) => {
-              let link = this.getReferenceLink(r)
-              if (link != '') {
-                references.push({ count: references.length + 1, link: link })
-              }
-            })
-          }
-          curr_anno_data.reference = references
-        }
-
         //~~source
         curr_anno_data.source = 'QuickGO'
         //~~sourceLink
         curr_anno_data.sourceLink =
           'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' + uniprotId
-        annoList.push(curr_anno_data)
+
+        let uniqueId_matched_idx = annoList.findIndex(l => l.unique_id == curr_anno_data.unique_id);
+        // console.log(annoList.length)
+        if(uniqueId_matched_idx != -1) {
+          // console.log(annoList[uniqueId_matched_idx].reference, a.reference);
+          let ref_already_exists_idx = annoList[uniqueId_matched_idx].reference.findIndex(r => r.ref == a.reference)
+          if(ref_already_exists_idx == -1) {
+            // console.log("ref_already_exists_idx ", a.reference);
+            let link = this.getReferenceLink(a.reference)
+            if (link != '') {
+              annoList[uniqueId_matched_idx].reference.push(
+                { count: annoList[uniqueId_matched_idx].reference.length + 1, link: link, ref: a.reference }
+              )
+            }
+          }
+        } else {
+          //~~reference
+          curr_anno_data.reference = []
+          //Set References links on the popup
+          if (a.reference) {
+            let refs = a.reference.split('|')
+            // console.log(refs)
+            let references = []
+            if (refs) {
+              refs.forEach((r) => {
+                let link = this.getReferenceLink(r)
+                if (link != '') {
+                  references.push({ count: references.length + 1, link: link, ref: r })
+                }
+              })
+            }
+            curr_anno_data.reference = references
+          }
+
+    
+          annoList.push(curr_anno_data)
+        }
       })
+      // console.log("annoList " + annoList.length);
       return annoList
     },
     getReferenceLink(r) {

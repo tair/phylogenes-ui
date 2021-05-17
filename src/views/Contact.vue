@@ -10,9 +10,9 @@
           <div class="card-footer text-center text-muted h5 mb-0">
             <div class="row">
               <div class="col">
-                Phoenix Bioinformatics<br />
-                39221 Paseo Padre Parkway, Ste. J<br />
-                Fremont, CA 94538, USA<br /><br /><br />
+                Phoenix Bioinformatics Corporation<br />
+                39899 Balentine Drive, Suite 200<br />
+                Newark, CA 94560, USA<br /><br /><br />
 
                 We are in the Pacific Time Zone<br />
                 Tel. : (650) 995-7502<br />
