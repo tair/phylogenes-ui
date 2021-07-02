@@ -246,23 +246,42 @@
             @click="tdClicked(key.label, row)"
             :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <!-- <tablecell
-              :content.sync="rowsToRender[row_i][key.label]"
-            ></tablecell> -->
             <span v-if="rowsToRender[row_i][key.label].type=='annotation'">
               <svg width="190px" height="30px">
                 <g>
                   <image
+                   v-if="rowsToRender[row_i][key.label].symbol == 'flask'"
                     xlink:href="/flask-yellow-transparent.png"
                     height="20"
                     width="20"
                     x="15"
                     y="6"
                   />
+                  <image
+                   v-if="rowsToRender[row_i][key.label].symbol == 'tree'"
+                    xlink:href="/IBA-transparent.png"
+                    height="35"
+                    width="35"
+                    x="8"
+                    y="-2"
+                  />
                 </g>
               </svg>
               <!-- {{rowsToRender[row_i][key.label].text}} -->
             </span>
+            <a
+              v-else-if="rowsToRender[row_i][key.label].type=='link'"
+              class="spanText"
+              data-toggle="tooltip"
+              :title="rowsToRender[row_i][key.label].text"
+              :href="rowsToRender[row_i][key.label].link"
+              target="_blank"
+            >
+              {{ rowsToRender[row_i][key.label].text }}
+            </a>
+            <tablecell v-else-if="rowsToRender[row_i][key.label].type=='msa'"
+              :content.sync="rowsToRender[row_i][key.label]"
+            ></tablecell>
             <span v-else>{{rowsToRender[row_i][key.label].text}}</span>
           </td>
         </tr>
