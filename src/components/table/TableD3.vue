@@ -512,7 +512,6 @@ export default {
       if (this.tableRendering == false) {
         this.isLoading = false
       }
-      console.log("table updated!")
     })
   },
   methods: {
@@ -587,7 +586,6 @@ export default {
           })
         }
       }
-      // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
       //Check for unchecked cols
       if (this.defaultColsToHide.includes('Molecular function')) {
@@ -683,7 +681,6 @@ export default {
       return tableNode
     },
     onClickNode(node) {
-      // console.log("node ", node);
       if(node.geneId != null) {
         this.selectedNodeForOrtho = node.data
         this.showPopup_treeNode = true
@@ -720,7 +717,6 @@ export default {
           let orthoNodes = res.data
           if (!Array.isArray(orthoNodes)) {
             this.downloading_ortho = 'error'
-            console.log(this.downloading_ortho)
             return
           }
           this.orthoTable.tableCsvData = []
@@ -823,7 +819,6 @@ export default {
         if (this.rowsScrolled > 200) {
           noOfTopRowsToRemove = this.rowsScrolled - 100
         }
-        // console.log("start");
         let tempList = [];
         this.store_tableData.some((n) => {
           if (i < noOfTopRowsToRemove) {
@@ -838,11 +833,8 @@ export default {
           i++
           return i > noOfRowsToAdd
         })
-        console.log("assigning ", tempList.length);
         Object.assign(this.rowsToRender, tempList)
 
-        // this.rowsToRender.push(processedRowData)
-        // console.log("end");
         //Adjust tree column span and height, to fill the whole table and match the original table height
         this.treeRowSpan = this.rowsToRender.length + 1
         this.rowsHeight = this.rowsToRender.length * this.MAX_ROW_HEIGHT
@@ -867,7 +859,6 @@ export default {
     },
     //Called from external component
     renderFullTable() {
-      //   console.log('renderFullTable')
       //Get initial full table height when all nodes are present without lazy loading which decreses the table height
       this.rowsToRender = []
       this.store_tableData.forEach((n) => {
@@ -893,7 +884,6 @@ export default {
     //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
     //This depends on 'rowsScrolled'
     updateRows(calledWhileScrolling = false, pm = '') {
-      // console.log("called by "+ pm);
       if (!this.lazyLoad) return
       //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
       //We add all the rows scolled to the table
@@ -919,7 +909,7 @@ export default {
         let processedRowData = this.processRow(n)
         var end = new Date().getTime();
         var time = end - start;
-        console.log('Execution time: ' + time);
+        // console.log('Execution time: ' + time);
         this.rowsToRender.push(processedRowData)
         i++
         return i > noOfRowsToAdd
@@ -960,7 +950,6 @@ export default {
           }
         }
         row[c.label] = content
-        // row[c.label] = { text:"text"};
       })
 
       let cellTxt = rowData['Uniprot ID']
@@ -1176,7 +1165,6 @@ export default {
     onDPEUncheckAll(colSelected) {
       let cols = this.editColsList
       let findIdx = cols.findIndex((c) => c.label == colSelected.label)
-      // console.log(findIdx);
       let colAnnotations = cols[findIdx]
       if (colAnnotations.children) {
         colAnnotations.children.forEach((c) => {
@@ -1208,7 +1196,6 @@ export default {
       let i = 0
       let total_annotations = this.store_annoMapping.n_annotations
       this.origColsToRender.forEach((colObj) => {
-        console.log(colObj.label);
         let col = { id: i, label: colObj.label, selected: true, children: [] }
         if (i == 0) {
           col.disabled = true
@@ -1395,7 +1382,6 @@ export default {
       let rowsScrolledCurr = Math.round(scrollTop_curr / this.MAX_ROW_HEIGHT)
       if (Math.abs(rowsScrolledCurr - this.rowsScrolled) > 5) {
         this.rowsScrolled = rowsScrolledCurr
-        console.log("rowsToRender ", Object.keys(this.rowsToRender).length * this.rowsToRender.length)
         if (!this.msaTab) {
             this.updateTable()
         }
@@ -1456,7 +1442,6 @@ export default {
     getPopupData(annoList) {
       let popUpTableData = []
       annoList.forEach((ann) => {
-        // console.log(ann);
         let singleRow = []
         let goTerm = { type: 'link', text: ann.goTerm, link: ann.goTermLink }
         singleRow.push(goTerm)
@@ -1475,7 +1460,6 @@ export default {
 
         let source = { type: 'link', text: ann.source, link: ann.sourceLink }
         singleRow.push(source)
-        // console.log(singleRow)
 
         popUpTableData.push(singleRow)
       })
