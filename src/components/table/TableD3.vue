@@ -246,9 +246,43 @@
             @click="tdClicked(key.label, row)"
             :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <tablecell
+            <span v-if="rowsToRender[row_i][key.label].type=='annotation'">
+              <svg width="190px" height="30px">
+                <g>
+                  <image
+                   v-if="rowsToRender[row_i][key.label].symbol == 'flask'"
+                    xlink:href="/flask-yellow-transparent.png"
+                    height="20"
+                    width="20"
+                    x="15"
+                    y="6"
+                  />
+                  <image
+                   v-if="rowsToRender[row_i][key.label].symbol == 'tree'"
+                    xlink:href="/IBA-transparent.png"
+                    height="35"
+                    width="35"
+                    x="8"
+                    y="-2"
+                  />
+                </g>
+              </svg>
+              <!-- {{rowsToRender[row_i][key.label].text}} -->
+            </span>
+            <a
+              v-else-if="rowsToRender[row_i][key.label].type=='link'"
+              class="spanText"
+              data-toggle="tooltip"
+              :title="rowsToRender[row_i][key.label].text"
+              :href="rowsToRender[row_i][key.label].link"
+              target="_blank"
+            >
+              {{ rowsToRender[row_i][key.label].text }}
+            </a>
+            <tablecell v-else-if="rowsToRender[row_i][key.label].type=='msa'"
               :content.sync="rowsToRender[row_i][key.label]"
             ></tablecell>
+            <span v-else>{{rowsToRender[row_i][key.label].text}}</span>
           </td>
         </tr>
       </tbody>
@@ -466,6 +500,11 @@ export default {
   beforeDestroy() {
     this.resetTable()
   },
+  beforeUpdate: function() {
+    this.$nextTick(function() {
+      // console.log("table updating!")
+    })
+  },
   updated: function() {
     this.$nextTick(function() {
       // Code that will run only after the
@@ -473,6 +512,7 @@ export default {
       if (this.tableRendering == false) {
         this.isLoading = false
       }
+      console.log("table updated!")
     })
   },
   methods: {
@@ -783,18 +823,26 @@ export default {
         if (this.rowsScrolled > 200) {
           noOfTopRowsToRemove = this.rowsScrolled - 100
         }
-
+        // console.log("start");
+        let tempList = [];
         this.store_tableData.some((n) => {
           if (i < noOfTopRowsToRemove) {
             n.rendering = false
           } else {
             n.rendering = true
           }
+
           let processedRowData = this.processRow(n)
-          this.rowsToRender.push(processedRowData)
+          tempList.push(processedRowData);
+
           i++
           return i > noOfRowsToAdd
         })
+        console.log("assigning ", tempList.length);
+        Object.assign(this.rowsToRender, tempList)
+
+        // this.rowsToRender.push(processedRowData)
+        // console.log("end");
         //Adjust tree column span and height, to fill the whole table and match the original table height
         this.treeRowSpan = this.rowsToRender.length + 1
         this.rowsHeight = this.rowsToRender.length * this.MAX_ROW_HEIGHT
@@ -867,7 +915,11 @@ export default {
         } else {
           n.rendering = true
         }
+        var start = new Date().getTime();
         let processedRowData = this.processRow(n)
+        var end = new Date().getTime();
+        var time = end - start;
+        console.log('Execution time: ' + time);
         this.rowsToRender.push(processedRowData)
         i++
         return i > noOfRowsToAdd
@@ -908,6 +960,7 @@ export default {
           }
         }
         row[c.label] = content
+        // row[c.label] = { text:"text"};
       })
 
       let cellTxt = rowData['Uniprot ID']
@@ -1342,8 +1395,9 @@ export default {
       let rowsScrolledCurr = Math.round(scrollTop_curr / this.MAX_ROW_HEIGHT)
       if (Math.abs(rowsScrolledCurr - this.rowsScrolled) > 5) {
         this.rowsScrolled = rowsScrolledCurr
+        console.log("rowsToRender ", Object.keys(this.rowsToRender).length * this.rowsToRender.length)
         if (!this.msaTab) {
-          this.updateTable()
+            this.updateTable()
         }
       }
     },
