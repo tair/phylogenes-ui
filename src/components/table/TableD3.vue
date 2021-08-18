@@ -246,7 +246,7 @@
             @click="tdClicked(key.label, row)"
             :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <span v-if="rowsToRender[row_i][key.label].type=='annotation'">
+            <span v-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='annotation'">
               <svg width="190px" height="30px">
                 <g>
                   <image
@@ -270,7 +270,7 @@
               <!-- {{rowsToRender[row_i][key.label].text}} -->
             </span>
             <a
-              v-else-if="rowsToRender[row_i][key.label].type=='link'"
+              v-else-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='link'"
               class="spanText"
               data-toggle="tooltip"
               :title="rowsToRender[row_i][key.label].text"
@@ -279,10 +279,10 @@
             >
               {{ rowsToRender[row_i][key.label].text }}
             </a>
-            <tablecell v-else-if="rowsToRender[row_i][key.label].type=='msa'"
+            <tablecell v-else-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='msa'"
               :content.sync="rowsToRender[row_i][key.label]"
             ></tablecell>
-            <span v-else>{{rowsToRender[row_i][key.label].text}}</span>
+            <span v-else-if="rowsToRender[row_i][key.label]">{{rowsToRender[row_i][key.label].text}}</span>
           </td>
         </tr>
       </tbody>
