@@ -320,11 +320,11 @@ export default {
         { id: 1, title: 'Download multiple sequence alignment' },
         { id: 2, title: 'Download orthologs' },
         { id: 3, title: 'Download tree as PhyloXML' },
-        // {id: 1, title: "Download gene table as CSV"},
         { id: 4, title: 'Highlight tree by organism' },
         { id: 5, title: 'Prune tree by organism' },
         { id: 6, title: 'Save tree image as PNG' },
-        { id: 7, title: 'Save tree image as SVG' }
+        { id: 7, title: 'Save tree image as SVG' },
+        {id: 8, title: "Download gene table as CSV"},
       ],
       //Popup
       showPopup: false,
@@ -391,6 +391,7 @@ export default {
       store_tableData: types.TABLE_GET_DATA,
       store_getCenterNode: types.TREE_GET_CENTER_NODE,
       store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+      store_pubsMapping: types.TREE_GET_PUBS_MAPPING,
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
       store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING,
       store_getTableHiddenCols: types.TABLE_GET_HIDDENCOLS
@@ -518,12 +519,14 @@ export default {
     },
     updateTableCols() {
       if (!this.colsFromProp || !this.store_tableData) return
+      // console.log(this.colsFromProp)
       //Only display cols which have corresponding rows in store tableData
       var filteredCols = d3.keys(this.store_tableData[0])
       filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
       filteredCols = filteredCols.map(function(f) {
         return { label: f }
       })
+
       //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
       if (this.colsFromProp.includes('Annotations')) {
         if (this.store_annoMapping.headers.mf) {
@@ -607,6 +610,14 @@ export default {
       }
       tableNode['Gene'] = n.data.gene_symbol ? n.data.gene_symbol : geneId
       tableNode['Organism'] = n.data.organism
+      if(this.store_pubsMapping) {
+          if(n.data.uniprotId) {
+            let pub_count = this.store_pubsMapping[n.data.uniprotId.toLowerCase()];
+            tableNode['Publications']=pub_count;
+          } else {
+            tableNode['Publications']=0;
+          }
+      } 
       tableNode['Gene name'] = n.data.gene_symbol
       tableNode['Gene ID'] = geneId
       tableNode['Protein name'] = n.data.definition
@@ -620,6 +631,7 @@ export default {
         if (!this.store_annoMapping.annoMap) {
           return tableNode
         }
+        
         if (this.store_annoMapping.annoMap[uniprotId]) {
           let currAnno = this.store_annoMapping.annoMap[uniprotId]
           let allAnnos = this.store_annoMapping.headers.mf
@@ -680,7 +692,7 @@ export default {
           let orthoNodes = res.data
           if (!Array.isArray(orthoNodes)) {
             this.downloading_ortho = 'error'
-            console.log(this.downloading_ortho)
+            // console.log(this.downloading_ortho)
             return
           }
           this.orthoTable.tableCsvData = []
@@ -906,6 +918,9 @@ export default {
             content.type = 'link'
             content.link = link_txt
           }
+        } else if (c.label == 'Publications') {
+          content.type = 'link'
+          content.link = 'https://www.uniprot.org/uniprot/'+rowData['Uniprot ID']+'/publications';
         }
         row[c.label] = content
       })
@@ -1002,6 +1017,9 @@ export default {
           case 7:
             this.exportSVG()
             break
+          case 8:
+            this.exportCSV()
+            break
           default:
             console.log('Error! Unknown Dropdown ID')
         }
@@ -1017,6 +1035,9 @@ export default {
     },
     exportXML() {
       this.$emit('export-xml')
+    },
+    exportCSV() {
+      this.$emit('export-csv');
     },
     exportPNG() {
       this.$refs.treeLayout.onExportPng(this.treeId)
@@ -1155,7 +1176,7 @@ export default {
       let i = 0
       let total_annotations = this.store_annoMapping.n_annotations
       this.origColsToRender.forEach((colObj) => {
-        console.log(colObj.label);
+        // console.log(colObj.label);
         let col = { id: i, label: colObj.label, selected: true, children: [] }
         if (i == 0) {
           col.disabled = true
@@ -1436,6 +1457,7 @@ export default {
       let baseCols = [
         'Gene',
         'Organism',
+        'Publications',
         'Gene name',
         'Gene ID',
         'Protein name',
