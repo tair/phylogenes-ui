@@ -246,9 +246,43 @@
             @click="tdClicked(key.label, row)"
             :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <tablecell
+            <span v-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='annotation'">
+              <svg width="190px" height="30px">
+                <g>
+                  <image
+                   v-if="rowsToRender[row_i][key.label].symbol == 'flask'"
+                    xlink:href="/flask-yellow-transparent.png"
+                    height="20"
+                    width="20"
+                    x="15"
+                    y="6"
+                  />
+                  <image
+                   v-if="rowsToRender[row_i][key.label].symbol == 'tree'"
+                    xlink:href="/IBA-transparent.png"
+                    height="35"
+                    width="35"
+                    x="8"
+                    y="-2"
+                  />
+                </g>
+              </svg>
+              <!-- {{rowsToRender[row_i][key.label].text}} -->
+            </span>
+            <a
+              v-else-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='link'"
+              class="spanText"
+              data-toggle="tooltip"
+              :title="rowsToRender[row_i][key.label].text"
+              :href="rowsToRender[row_i][key.label].link"
+              target="_blank"
+            >
+              {{ rowsToRender[row_i][key.label].text }}
+            </a>
+            <tablecell v-else-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='msa'"
               :content.sync="rowsToRender[row_i][key.label]"
             ></tablecell>
+            <span v-else-if="rowsToRender[row_i][key.label]">{{rowsToRender[row_i][key.label].text}}</span>
           </td>
         </tr>
       </tbody>
@@ -320,11 +354,11 @@ export default {
         { id: 1, title: 'Download multiple sequence alignment' },
         { id: 2, title: 'Download orthologs' },
         { id: 3, title: 'Download tree as PhyloXML' },
-        // {id: 1, title: "Download gene table as CSV"},
         { id: 4, title: 'Highlight tree by organism' },
         { id: 5, title: 'Prune tree by organism' },
         { id: 6, title: 'Save tree image as PNG' },
-        { id: 7, title: 'Save tree image as SVG' }
+        { id: 7, title: 'Save tree image as SVG' },
+        {id: 8, title: "Download gene table as CSV"},
       ],
       //Popup
       showPopup: false,
@@ -391,6 +425,7 @@ export default {
       store_tableData: types.TABLE_GET_DATA,
       store_getCenterNode: types.TREE_GET_CENTER_NODE,
       store_annoMapping: types.TREE_GET_ANNO_MAPPING,
+      store_pubsMapping: types.TREE_GET_PUBS_MAPPING,
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
       store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING,
       store_getTableHiddenCols: types.TABLE_GET_HIDDENCOLS
@@ -466,6 +501,11 @@ export default {
   beforeDestroy() {
     this.resetTable()
   },
+  beforeUpdate: function() {
+    this.$nextTick(function() {
+      // console.log("table updating!")
+    })
+  },
   updated: function() {
     this.$nextTick(function() {
       // Code that will run only after the
@@ -518,12 +558,14 @@ export default {
     },
     updateTableCols() {
       if (!this.colsFromProp || !this.store_tableData) return
+      // console.log(this.colsFromProp)
       //Only display cols which have corresponding rows in store tableData
       var filteredCols = d3.keys(this.store_tableData[0])
       filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
       filteredCols = filteredCols.map(function(f) {
         return { label: f }
       })
+
       //Add all annotation cols to 'filteredCols' array if it is present in 'colsFromProp'
       if (this.colsFromProp.includes('Annotations')) {
         if (this.store_annoMapping.headers.mf) {
@@ -547,7 +589,6 @@ export default {
           })
         }
       }
-      // console.log(this.colsFromProp);
       this.origColsToRender = filteredCols
       //Check for unchecked cols
       if (this.defaultColsToHide.includes('Molecular function')) {
@@ -607,6 +648,14 @@ export default {
       }
       tableNode['Gene'] = n.data.gene_symbol ? n.data.gene_symbol : geneId
       tableNode['Organism'] = n.data.organism
+      if(this.store_pubsMapping) {
+        if(n.data.uniprotId) {
+          let pub_count = this.store_pubsMapping[n.data.uniprotId.toLowerCase()];
+          tableNode['Publications']=pub_count;
+        } else {
+          tableNode['Publications']=-1;
+        }
+      } 
       tableNode['Gene name'] = n.data.gene_symbol
       tableNode['Gene ID'] = geneId
       tableNode['Protein name'] = n.data.definition
@@ -620,6 +669,7 @@ export default {
         if (!this.store_annoMapping.annoMap) {
           return tableNode
         }
+        
         if (this.store_annoMapping.annoMap[uniprotId]) {
           let currAnno = this.store_annoMapping.annoMap[uniprotId]
           let allAnnos = this.store_annoMapping.headers.mf
@@ -643,7 +693,6 @@ export default {
       return tableNode
     },
     onClickNode(node) {
-      // console.log("node ", node);
       if(node.geneId != null) {
         this.selectedNodeForOrtho = node.data
         this.showPopup_treeNode = true
@@ -680,7 +729,6 @@ export default {
           let orthoNodes = res.data
           if (!Array.isArray(orthoNodes)) {
             this.downloading_ortho = 'error'
-            console.log(this.downloading_ortho)
             return
           }
           this.orthoTable.tableCsvData = []
@@ -783,18 +831,22 @@ export default {
         if (this.rowsScrolled > 200) {
           noOfTopRowsToRemove = this.rowsScrolled - 100
         }
-
+        let tempList = [];
         this.store_tableData.some((n) => {
           if (i < noOfTopRowsToRemove) {
             n.rendering = false
           } else {
             n.rendering = true
           }
+
           let processedRowData = this.processRow(n)
-          this.rowsToRender.push(processedRowData)
+          tempList.push(processedRowData);
+
           i++
           return i > noOfRowsToAdd
         })
+        Object.assign(this.rowsToRender, tempList)
+
         //Adjust tree column span and height, to fill the whole table and match the original table height
         this.treeRowSpan = this.rowsToRender.length + 1
         this.rowsHeight = this.rowsToRender.length * this.MAX_ROW_HEIGHT
@@ -819,7 +871,6 @@ export default {
     },
     //Called from external component
     renderFullTable() {
-      //   console.log('renderFullTable')
       //Get initial full table height when all nodes are present without lazy loading which decreses the table height
       this.rowsToRender = []
       this.store_tableData.forEach((n) => {
@@ -845,7 +896,6 @@ export default {
     //if lazyLoad=true, only add 'noOfRowsToAdd' to the table, instead of all rows.
     //This depends on 'rowsScrolled'
     updateRows(calledWhileScrolling = false, pm = '') {
-      // console.log("called by "+ pm);
       if (!this.lazyLoad) return
       //rowsScrolled is the number of rows scrolled by mouse or through panning of tree.
       //We add all the rows scolled to the table
@@ -867,7 +917,11 @@ export default {
         } else {
           n.rendering = true
         }
+        var start = new Date().getTime();
         let processedRowData = this.processRow(n)
+        var end = new Date().getTime();
+        var time = end - start;
+        // console.log('Execution time: ' + time);
         this.rowsToRender.push(processedRowData)
         i++
         return i > noOfRowsToAdd
@@ -906,6 +960,14 @@ export default {
             content.type = 'link'
             content.link = link_txt
           }
+        } else if (c.label == 'Publications') {
+          if(cellTxt != 0 && cellTxt != -1) {
+            content.type = 'link'
+            content.link = 'https://www.uniprot.org/uniprot/'+rowData['Uniprot ID']+'/publications';
+          } 
+          if(cellTxt == -1) {
+            content.text = "";
+          }
         }
         row[c.label] = content
       })
@@ -926,9 +988,15 @@ export default {
         case 'Zea mays':
           link_text = 'https://www.maizegdb.org/gene_center/gene/'+gene_id
           break
+        // case 'Gossypium hirsutum':
+        //   link_text = 'https://www.cottongen.org/lookup/gene/'+gene_id
+        //   break
         case 'Glycine max':
           link_text = 'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term='+gene_id.replace("_",".")
           break
+        case 'Prunus persica':
+          link_text = 'https://www.rosaceae.org/lookup/gene/'+gene_id.replace("_",".")
+          break;
         case 'Solanum lycopersicum':
           link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
           break
@@ -1002,6 +1070,9 @@ export default {
           case 7:
             this.exportSVG()
             break
+          case 8:
+            this.exportCSV()
+            break
           default:
             console.log('Error! Unknown Dropdown ID')
         }
@@ -1017,6 +1088,9 @@ export default {
     },
     exportXML() {
       this.$emit('export-xml')
+    },
+    exportCSV() {
+      this.$emit('export-csv');
     },
     exportPNG() {
       this.$refs.treeLayout.onExportPng(this.treeId)
@@ -1123,7 +1197,6 @@ export default {
     onDPEUncheckAll(colSelected) {
       let cols = this.editColsList
       let findIdx = cols.findIndex((c) => c.label == colSelected.label)
-      // console.log(findIdx);
       let colAnnotations = cols[findIdx]
       if (colAnnotations.children) {
         colAnnotations.children.forEach((c) => {
@@ -1155,7 +1228,6 @@ export default {
       let i = 0
       let total_annotations = this.store_annoMapping.n_annotations
       this.origColsToRender.forEach((colObj) => {
-        console.log(colObj.label);
         let col = { id: i, label: colObj.label, selected: true, children: [] }
         if (i == 0) {
           col.disabled = true
@@ -1343,7 +1415,7 @@ export default {
       if (Math.abs(rowsScrolledCurr - this.rowsScrolled) > 5) {
         this.rowsScrolled = rowsScrolledCurr
         if (!this.msaTab) {
-          this.updateTable()
+            this.updateTable()
         }
       }
     },
@@ -1402,7 +1474,6 @@ export default {
     getPopupData(annoList) {
       let popUpTableData = []
       annoList.forEach((ann) => {
-        // console.log(ann);
         let singleRow = []
         let goTerm = { type: 'link', text: ann.goTerm, link: ann.goTermLink }
         singleRow.push(goTerm)
@@ -1421,7 +1492,6 @@ export default {
 
         let source = { type: 'link', text: ann.source, link: ann.sourceLink }
         singleRow.push(source)
-        // console.log(singleRow)
 
         popUpTableData.push(singleRow)
       })
@@ -1436,6 +1506,7 @@ export default {
       let baseCols = [
         'Gene',
         'Organism',
+        'Publications',
         'Gene name',
         'Gene ID',
         'Protein name',

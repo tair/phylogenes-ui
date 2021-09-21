@@ -15,6 +15,7 @@ const state = {
     jsonString: null,
     jsonObj: null,
     go_annotations: null,
+    pubs_count: null,
     freq_msa_arr: [],
     msa_data: new Map(),
     max_msa_length: 0,
@@ -60,6 +61,9 @@ const getters = {
   },
   [types.TREE_GET_ANNO_MAPPING]: (state) => {
     return state.treedata.anno_mapping
+  },
+  [types.TREE_GET_PUBS_MAPPING]: (state) => {
+    return state.treedata.pubs_count;
   },
   [types.TREE_GET_MSADATA]: (state) => {
     return state.treedata.msa_data
@@ -190,6 +194,38 @@ const actions = {
           rej()
         })
     })
+  },
+  [types.TREE_ACTION_SET_PUBS]: (context, payload) => {
+    if (!payload) return
+    return new Promise((result, rej) => {
+      axios({
+        method: 'GET',
+        url: API_URL + '/publications/' + payload
+      })
+        .then((res) => {
+          if (res.data.response.docs.length > 0) {
+            // console.log(res.data.response.docs);
+            if (res.data.response.docs[0].publications_count) {
+              let pub_count = res.data.response.docs[0].publications_count;
+              pub_count = pub_count.map(p => JSON.parse(p));
+              let pubCountMapping = {};
+              pub_count.forEach(p => {
+                pubCountMapping[p.uniprot_id] = p.pub_count;
+              });
+              // console.log(pubCountMapping);
+              context.state.treedata.pubs_count = pubCountMapping;
+            }
+            result('solr pubs')
+          }
+        })
+        .catch((error) => {
+          console.log(
+            'TREE_ACTION_SET_PUBS: Error while reading data (E8273): ' +
+              JSON.stringify(error)
+          )
+          rej()
+        });
+    });
   },
   [types.TREE_ACTION_SET_ANNODATA]: (context, payload) => {
     if (!payload) return
