@@ -649,12 +649,12 @@ export default {
       tableNode['Gene'] = n.data.gene_symbol ? n.data.gene_symbol : geneId
       tableNode['Organism'] = n.data.organism
       if(this.store_pubsMapping) {
-          if(n.data.uniprotId) {
-            let pub_count = this.store_pubsMapping[n.data.uniprotId.toLowerCase()];
-            tableNode['Publications']=pub_count;
-          } else {
-            tableNode['Publications']=0;
-          }
+        if(n.data.uniprotId) {
+          let pub_count = this.store_pubsMapping[n.data.uniprotId.toLowerCase()];
+          tableNode['Publications']=pub_count;
+        } else {
+          tableNode['Publications']=-1;
+        }
       } 
       tableNode['Gene name'] = n.data.gene_symbol
       tableNode['Gene ID'] = geneId
@@ -961,8 +961,13 @@ export default {
             content.link = link_txt
           }
         } else if (c.label == 'Publications') {
-          content.type = 'link'
-          content.link = 'https://www.uniprot.org/uniprot/'+rowData['Uniprot ID']+'/publications';
+          if(cellTxt != 0 && cellTxt != -1) {
+            content.type = 'link'
+            content.link = 'https://www.uniprot.org/uniprot/'+rowData['Uniprot ID']+'/publications';
+          } 
+          if(cellTxt == -1) {
+            content.text = "";
+          }
         }
         row[c.label] = content
       })
@@ -983,9 +988,15 @@ export default {
         case 'Zea mays':
           link_text = 'https://www.maizegdb.org/gene_center/gene/'+gene_id
           break
+        // case 'Gossypium hirsutum':
+        //   link_text = 'https://www.cottongen.org/lookup/gene/'+gene_id
+        //   break
         case 'Glycine max':
           link_text = 'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term='+gene_id.replace("_",".")
           break
+        case 'Prunus persica':
+          link_text = 'https://www.rosaceae.org/lookup/gene/'+gene_id.replace("_",".")
+          break;
         case 'Solanum lycopersicum':
           link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
           break
