@@ -81,6 +81,7 @@
           v-on:anno-click="onAnnoClick"
           v-on:search-tree="onSearchWithinTree"
           v-on:export-xml="exportXML"
+          v-on:export-csv="exportCSV"
           v-on:prune-from-menu="pruneTreeFromMenu"
           v-on:download-fasta="download_fasta_from_server"
           v-on:highlight-tree="highlightTreeByOrg"
@@ -190,9 +191,11 @@ export default {
       DOWNLOAD_PRUNED_FASTA_API:
         process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/fastadoc/',
       phyloXML_URL: process.env.VUE_APP_S3_URL,
+      phyloCSV_URL: process.env.VUE_APP_CSV_S3_URL,
       defaultCols: [
         'Gene',
         'Organism',
+        'Publications',
         'Annotations',
         'Gene name',
         'Gene ID',
@@ -266,6 +269,7 @@ export default {
       store_setPantherTreeFromApi: types.TREE_ACTION_SET_PANTHER_TREE,
       store_setMsaFromApi: types.TREE_ACTION_SET_MSADATA,
       store_setAnnoFromApi: types.TREE_ACTION_SET_ANNODATA,
+      store_setPubsFromApi: types.TREE_ACTION_SET_PUBS,
       store_setMatchedNodes: types.TREE_ACTION_SET_MATCHED_NODES,
       store_setAnnoMapping: types.TREE_ACTION_SET_ANNO_MAPPING,
       store_setTableData: types.TABLE_ACTION_SET_DATA,
@@ -294,8 +298,10 @@ export default {
       var p1 = this.store_setPantherTreeFromApi(this.treeId)
       var p2 = this.store_setMsaFromApi(this.treeId)
       var p3 = this.store_setAnnoFromApi(this.treeId)
-      Promise.all([p1, p2, p3]).then((vals) => {
+      var p4 = this.store_setPubsFromApi(this.treeId);
+      Promise.all([p1, p2, p3, p4]).then((vals) => {
         if (vals.length > 1) {
+          console.log(vals);
           var treeJson = this.store_treeJsonString
           this.initTreeData(treeJson)
         }
@@ -317,6 +323,7 @@ export default {
       //The MSA will be empty for the extra grafted node. Wait for the promise to return the annotations and msa before intializing the tree or it will lead to bugs
       var p2 = this.store_setMsaFromApi(this.treeId)
       var p3 = this.store_setAnnoFromApi(this.treeId)
+
       Promise.all([p2, p3]).then((vals) => {
         if (vals.length > 1) {
           this.initTreeData(treeJson.search)
@@ -608,6 +615,31 @@ export default {
           const link = document.createElement('a')
           link.href = url
           link.setAttribute('download', this.treeId + '.xml') //or any other extension
+          document.body.appendChild(link)
+          link.click()
+        })
+        .catch((e) => console.error('error occured ', e))
+    },
+    exportCSV() {
+      this.downloadCsvWithAxios();
+    },
+    downloadCsvWithAxios() {
+      // console.log(this.phyloCSV_URL + this.treeId + '.csv');
+      axios({
+        method: 'get',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers':
+            'Origin, X-Requested-With, Content-Type, Accept'
+        },
+        url: this.phyloCSV_URL + this.treeId + '.csv',
+        responseType: 'arraybuffer'
+      }).then((response) => {
+        // console.log(response);
+          const url = window.URL.createObjectURL(new Blob([response.data]))
+          const link = document.createElement('a')
+          link.href = url
+          link.setAttribute('download', this.treeId + '.csv') //or any other extension
           document.body.appendChild(link)
           link.click()
         })
@@ -1298,59 +1330,62 @@ export default {
     },
     // ~~~~~~~~~~~~~ Download csv ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
     setCsvTableData(nodes) {
-      this.sortArrayByX(nodes)
-      nodes.forEach((n) => {
-        if (!n.children) {
-          var tableNode = {}
-          tableNode['Gene name'] = n.data.gene_symbol
-          tableNode['Organism'] = n.data.organism
-          var geneId = n.data.gene_id
-          if (geneId) {
-            geneId = geneId.split(':')[1]
-          }
-          tableNode['Gene ID'] = geneId
-          tableNode['Gene'] = n.data.gene_symbol ? n.data.gene_symbol : geneId
-          tableNode['Protein name'] = n.data.definition
-          tableNode['Uniprot ID'] = n.data.uniprotId
-          tableNode['Subfamily name'] = n.data.sf_name
-          this.anno_headers.sort(function(a, b) {
-            return a.toLowerCase().localeCompare(b.toLowerCase())
-          })
-          this.anno_headers.forEach((a) => {
-            const goNameHeader = `${a} (${this.go_mapping[a]})`
-            this.csvTable.tableCsvFields.push(goNameHeader)
-            tableNode[goNameHeader] = 0
-            if (n.data.uniprotId) {
-              let uniprotId = n.data.uniprotId.toLowerCase()
-              if (this.anno_mapping[uniprotId]) {
-                let currAnno = this.anno_mapping[uniprotId]
-                currAnno.forEach((c) => {
-                  if (c.goName === a) {
-                    if (
-                      c.evidenceCode.includes('IBA') &&
-                      tableNode[goNameHeader] != 'EXP'
-                    ) {
-                      tableNode[goNameHeader] = 'IBA'
-                    } else {
-                      tableNode[goNameHeader] = 'EXP'
-                    }
-                  }
-                })
-              }
-            }
-          })
-          this.csvTable.tableCsvData.push(tableNode)
-        }
-      })
-      this.csvTable.tableCsvData.forEach((node) => {
-        node[
-          "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
-        ] = null
-      })
-      this.csvTable.tableCsvFields.push(
-        "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
-      )
+      console.log("setCsvTableData");
     },
+    // setCsvTableData(nodes) {
+    //   this.sortArrayByX(nodes)
+    //   nodes.forEach((n) => {
+    //     if (!n.children) {
+    //       var tableNode = {}
+    //       tableNode['Gene name'] = n.data.gene_symbol
+    //       tableNode['Organism'] = n.data.organism
+    //       var geneId = n.data.gene_id
+    //       if (geneId) {
+    //         geneId = geneId.split(':')[1]
+    //       }
+    //       tableNode['Gene ID'] = geneId
+    //       tableNode['Gene'] = n.data.gene_symbol ? n.data.gene_symbol : geneId
+    //       tableNode['Protein name'] = n.data.definition
+    //       tableNode['Uniprot ID'] = n.data.uniprotId
+    //       tableNode['Subfamily name'] = n.data.sf_name
+    //       this.anno_headers.sort(function(a, b) {
+    //         return a.toLowerCase().localeCompare(b.toLowerCase())
+    //       })
+    //       this.anno_headers.forEach((a) => {
+    //         const goNameHeader = `${a} (${this.go_mapping[a]})`
+    //         this.csvTable.tableCsvFields.push(goNameHeader)
+    //         tableNode[goNameHeader] = 0
+    //         if (n.data.uniprotId) {
+    //           let uniprotId = n.data.uniprotId.toLowerCase()
+    //           if (this.anno_mapping[uniprotId]) {
+    //             let currAnno = this.anno_mapping[uniprotId]
+    //             currAnno.forEach((c) => {
+    //               if (c.goName === a) {
+    //                 if (
+    //                   c.evidenceCode.includes('IBA') &&
+    //                   tableNode[goNameHeader] != 'EXP'
+    //                 ) {
+    //                   tableNode[goNameHeader] = 'IBA'
+    //                 } else {
+    //                   tableNode[goNameHeader] = 'EXP'
+    //                 }
+    //               }
+    //             })
+    //           }
+    //         }
+    //       })
+    //       this.csvTable.tableCsvData.push(tableNode)
+    //     }
+    //   })
+    //   this.csvTable.tableCsvData.forEach((node) => {
+    //     node[
+    //       "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
+    //     ] = null
+    //   })
+    //   this.csvTable.tableCsvFields.push(
+    //     "Columns after 'Subfamily name', if any, are GO annotations. Each column is a GO molecular function or biological process term that is annotated to at least one member of the gene family AND the annotation is supported by an experimental evidence (indicated by 'EXP') or phylogenetic inference (indicated by 'IBA'). A '0' indicates absence of either annotations."
+    //   )
+    // },
     sortArrayByX(arr) {
       arr.sort((a, b) => {
         if (a.x < b.x) {

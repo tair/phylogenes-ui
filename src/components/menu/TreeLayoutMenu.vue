@@ -18,13 +18,13 @@
         <template slot="button-content">
           <i @click="ddClicked" class="fas fa-tools fa-2x fa-fw"></i>
         </template>
-        <json-csv
+        <!-- <json-csv
           :data="csvTable.tableCsvData"
           :name="treeId + '.csv'"
           :fields="csvTable.tableCsvFields"
         >
           <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
-        </json-csv>
+        </json-csv> -->
         <b-dropdown-item
           v-for="item in dropdownMenu"
           :key="item.id"
