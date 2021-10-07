@@ -988,9 +988,9 @@ export default {
         case 'Zea mays':
           link_text = 'https://www.maizegdb.org/gene_center/gene/'+gene_id
           break
-        // case 'Gossypium hirsutum':
-        //   link_text = 'https://www.cottongen.org/lookup/gene/'+gene_id
-        //   break
+        case 'Gossypium hirsutum':
+          link_text = 'https://www.cottongen.org/lookup/gene/'+gene_id
+          break
         case 'Glycine max':
           link_text = 'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term='+gene_id.replace("_",".")
           break
