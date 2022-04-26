@@ -6,7 +6,7 @@
           v-if="!matchText"
           class="mx-2 align-items-center"
         >
-          Search within tree
+          Search this tree
         </b-input-group-prepend>
         <b-input-group-prepend v-if="matchText" class="mx-2 align-items-center">
           {{ matchText }}

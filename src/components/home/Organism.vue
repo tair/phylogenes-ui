@@ -5,19 +5,25 @@
         class="btn btn-default btn-organism"
         @click.prevent="switchView()"
         v-if="showText"
-      >View species tree</button>
+      >
+        View species tree
+      </button>
       <button
         class="btn btn-default btn-organism"
         @click.prevent="switchView()"
         v-if="!showText"
-      >Switch to see full list of species in plain text</button>
+      >
+        Switch to see full list of species in plain text
+      </button>
       <a class="btn btn-outline btn-organism a-link">
-        <router-link class="text-magenta" to="/grafting">Not seeing your species?</router-link>
+        <router-link class="text-magenta" to="/grafting"
+          >Not seeing your species?</router-link
+        >
       </a>
       <div class="scroll-div bg-white my-2 px-5" v-if="showText">
         <p class="text-lg mr-5 pr-5">
           Protein sequences from these plant species are included in the current
-          PhyloGenes release (version 3.2):
+          PhyloGenes release (version 4.0):
         </p>
         <div class="row">
           <div class="col-sm-12 col-md-6 col-lg-6">
@@ -32,7 +38,8 @@
                   data.sciName.replace(' ', '+')
                 "
               >
-                <i>{{ data.sciName }}</i>&nbsp;
+                <i>{{ data.sciName }}</i
+                >&nbsp;
                 <template v-if="data.cmnName">({{ data.cmnName }})</template>
                 <br />
               </a>
@@ -49,7 +56,8 @@
                   data.sciName.replace(' ', '+')
                 "
               >
-                <i>{{ data.sciName }}</i>&nbsp;
+                <i>{{ data.sciName }}</i
+                >&nbsp;
                 <template v-if="data.cmnName">({{ data.cmnName }})</template>
                 <br />
               </a>
@@ -65,15 +73,19 @@
 
         <p>
           <template v-for="data in nonPlantSpecies" href>
-            <i>{{ data.sciName }}</i>&nbsp;
+            <i>{{ data.sciName }}</i
+            >&nbsp;
             <template v-if="data.cmnName">({{ data.cmnName }})</template>
             <br />
           </template>
         </p>
       </div>
-      <div class="scroll-div bg-white mt-lg d-flex align-items-center" v-if="!showText">
+      <div
+        class="scroll-div bg-white mt-lg d-flex align-items-center"
+        v-if="!showText"
+      >
         <img
-          src="../../../src/assets/img/speciestree_202002.png"
+          src="../../../src/assets/img/species-tree-Panther17.png"
           alt="speciestree"
           style="width: 100%; height: 100%;"
         />
@@ -108,15 +120,15 @@ export default {
         { sciName: 'Helianthus annuus', cmnName: 'sunflower' },
         { sciName: 'Hordeum vulgare', cmnName: 'barley' },
         { sciName: 'Juglans regia', cmnName: 'walnut' },
+        { sciName: 'Klebsormidium nitens', cmnName: '' },
         { sciName: 'Lactuca sativa', cmnName: 'lettuce' },
         { sciName: 'Manihot esculenta', cmnName: 'cassava' },
         { sciName: 'Medicago truncatula', cmnName: 'barrelclover' },
+        { sciName: 'Marchantia polymorpha', cmnName: 'common liverwort' },
         { sciName: 'Musa acuminata', cmnName: 'banana' },
         { sciName: 'Nelumbo nucifera', cmnName: 'sacred lotus' },
         { sciName: 'Nicotiana tabacum', cmnName: 'tobacco' },
         { sciName: 'Oryza sativa', cmnName: 'rice' },
-        { sciName: 'Ostreococcus tauri', cmnName: '' },
-        { sciName: 'Phoenix dactylifera', cmnName: 'date palm' },
         { sciName: 'Physcomitrella patens', cmnName: '' },
         { sciName: 'Populus trichocarpa', cmnName: 'black cottonwood' },
         { sciName: 'Prunus persica', cmnName: 'peach' },

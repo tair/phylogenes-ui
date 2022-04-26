@@ -5,7 +5,9 @@
         class="bg-lblue py-2 text-dark text-lg"
         v-for="stat in summaryStats"
         :key="stat.name"
-      >{{ stat.count }}&nbsp;{{ stat.name }}</div>
+      >
+        {{ stat.count }}&nbsp;{{ stat.name }}
+      </div>
     </div>
   </div>
 </template>
@@ -16,8 +18,8 @@ export default {
   data() {
     return {
       summaryStats: [
-        { count: 8486, name: 'trees (gene families)' },
-        { count: 1273757, name: 'proteins' },
+        { count: 8521, name: 'trees (gene families)' },
+        { count: 1194693, name: 'proteins' },
         { count: 40, name: 'plant species' },
         { count: 10, name: 'non-plant model organisms' },
       ],

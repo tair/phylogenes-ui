@@ -2,38 +2,38 @@
 Amborella trichopoda,A. trichopoda,,AMBTC,13333,y
 Arabidopsis thaliana,A. thaliana,,ARATH,3702,y
 Brachypodium distachyon,purple false brome,purple false brome,BRADI,15368,y
-Brassica napus,rapeseed,rapeseed,BRANA,3708,y
+Brassica napus,rapeseed,rapeseed,BRANA,3708,
 Brassica rapa subsp. Pekinensis,Chinese cabbage,Chinese cabbage,BRARP,51351,y
-Capsicum annuum,pepper,pepper,CAPAN,4072,y
+Capsicum annuum,pepper,pepper,CAPAN,4072,
 Chlamydomonas reinhardtii,C. reinhardtii,,CHLRE,3055,y
 Citrus sinensis,orange,orange,CITSI,2711,y
 Cucumis sativus,cucumber,cucumber,CUCSA,3659,y
 Erythranthe guttata,yellow monkeyflower,yellow monkeyflower,ERYGU,4155,y
-Eucalyptus grandis,flooded gum,flooded gum,EUCGR,71139,y
+Eucalyptus grandis,flooded gum,flooded gum,EUCGR,71139,
 Glycine max,soybean,soybean,SOYBN,3847,y
 Gossypium hirsutum,cotton,cotton,GOSHI,3635,y
 Helianthus annuus,sunflower ,sunflower ,HELAN,4232,y
 Hordeum vulgare subsp. vulgare,barley,barley,HORVV,112509,y
-Klebsormidium nitens,K. nitens,,KLENI,105231,y
-Juglans regia,walnut,walnut,JUGRE,51240,y
-Lactuca sativa,lettuce,lettuce,LACSA,4236,y
-Manihot esculenta,cassava,cassava,MANES,3983,y
-Marchantia polymorpha,common liverwort,common liverwort,MARPO,3197,y
+Juglans regia,walnut,walnut,JUGRE,51240,
+Lactuca sativa,lettuce,lettuce,LACSA,4236,
+Manihot esculenta,cassava,cassava,MANES,3983,
 Medicago truncatula,barrelclover,barrelclover,MEDTR,3880,y
 Musa acuminata subsp. malaccensis,banana,banana,MUSAM,214687,y
-Nelumbo nucifera,sacred lotus,sacred lotus,NELNU,4432,y
+Nelumbo nucifera,sacred lotus,sacred lotus,NELNU,4432,
 Nicotiana tabacum,tobacco,tobacco,TOBAC,4097,y
 Oryza sativa,rice,rice,ORYSJ,39947,y
+Ostreococcus tauri,O. tauri,,OSTTA,70448,y
+Phoenix dactylifera,date palm,date palm,PHODC,42345,y
 Physcomitrella patens,P. patens,,PHYPA,3218,y
 Populus trichocarpa,black cottonwood,black cottonwood,POPTR,3694,y
 Prunus persica,peach,peach,PRUPE,3760,y
 Ricinus communis,castor bean,castor bean,RICCO,3988,y
-Selaginella moellendorffii,S. moellendorffii,,SELML,88036,y
+Selaginella moellendorffii,S. moellendorffii,,SELML,88036,
 Setaria italica,foxtail millet,foxtail millet,SETIT,4555,y
 Solanum lycopersicum,tomato,tomato,SOLLC,4081,y
-Solanum tuberosum,potato,potato,SOLTU,4113,y
+Solanum tuberosum,potato,potato,SOLTU,4113,
 Sorghum bicolor,sorghum,sorghum,SORBI,4558,y
-Spinacia oleracea,spinach,spinach,SPIOL,3562,y
+Spinacia oleracea,spinach,spinach,SPIOL,3562,
 Theobroma cacao,cocoa,cocoa,THECC,3641,y
 Triticum aestivum,wheat,wheat,WHEAT,4565,y
 Vitis vinifera,grape,grape,VITVI,29760,y

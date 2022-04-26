@@ -246,11 +246,16 @@
             @click="tdClicked(key.label, row)"
             :class="getTdClasses(key.label, row[key.label], i)"
           >
-            <span v-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='annotation'">
+            <span
+              v-if="
+                rowsToRender[row_i][key.label] &&
+                rowsToRender[row_i][key.label].type == 'annotation'
+              "
+            >
               <svg width="190px" height="30px">
                 <g>
                   <image
-                   v-if="rowsToRender[row_i][key.label].symbol == 'flask'"
+                    v-if="rowsToRender[row_i][key.label].symbol == 'flask'"
                     xlink:href="/flask-yellow-transparent.png"
                     height="20"
                     width="20"
@@ -258,7 +263,7 @@
                     y="6"
                   />
                   <image
-                   v-if="rowsToRender[row_i][key.label].symbol == 'tree'"
+                    v-if="rowsToRender[row_i][key.label].symbol == 'tree'"
                     xlink:href="/IBA-transparent.png"
                     height="35"
                     width="35"
@@ -270,7 +275,10 @@
               <!-- {{rowsToRender[row_i][key.label].text}} -->
             </span>
             <a
-              v-else-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='link'"
+              v-else-if="
+                rowsToRender[row_i][key.label] &&
+                rowsToRender[row_i][key.label].type == 'link'
+              "
               class="spanText"
               data-toggle="tooltip"
               :title="rowsToRender[row_i][key.label].text"
@@ -279,10 +287,16 @@
             >
               {{ rowsToRender[row_i][key.label].text }}
             </a>
-            <tablecell v-else-if="rowsToRender[row_i][key.label] && rowsToRender[row_i][key.label].type=='msa'"
+            <tablecell
+              v-else-if="
+                rowsToRender[row_i][key.label] &&
+                rowsToRender[row_i][key.label].type == 'msa'
+              "
               :content.sync="rowsToRender[row_i][key.label]"
             ></tablecell>
-            <span v-else-if="rowsToRender[row_i][key.label]">{{rowsToRender[row_i][key.label].text}}</span>
+            <span v-else-if="rowsToRender[row_i][key.label]">{{
+              rowsToRender[row_i][key.label].text
+            }}</span>
           </td>
         </tr>
       </tbody>
@@ -315,7 +329,7 @@ export default {
     'colsFromProp',
     'headerMap', //Map: ['Original Col Name': 'Updated Col Name']
     'treeId',
-    'csvTable'
+    'csvTable',
   ],
   components: {
     treelayout: treelayout,
@@ -325,7 +339,7 @@ export default {
     modal: customModal,
     tablecell: baseCell,
     msaLegend: msaLegend,
-    treeLayoutMenu: treeLayoutMenu
+    treeLayoutMenu: treeLayoutMenu,
   },
   data() {
     return {
@@ -343,7 +357,7 @@ export default {
       msaTab: false,
       window: {
         width: 0,
-        height: 0
+        height: 0,
       },
       ORIG_ROW_HEIGHT: 35,
       MAX_ROW_HEIGHT: 35,
@@ -358,7 +372,7 @@ export default {
         { id: 5, title: 'Prune tree by organism' },
         { id: 6, title: 'Save tree image as PNG' },
         { id: 7, title: 'Save tree image as SVG' },
-        {id: 8, title: "Download gene table as CSV"},
+        { id: 8, title: 'Download gene table as CSV' },
       ],
       //Popup
       showPopup: false,
@@ -387,12 +401,12 @@ export default {
         'Gene name',
         'Organism',
         'Protein name',
-        'Subfamily name'
+        'Subfamily name',
       ],
       //Table CSV
       orthoTable: {
         tableCsvData: [],
-        tableCsvFields: ['Uniprot ID', 'Gene ID', 'Organism', 'Ortholog type']
+        tableCsvFields: ['Uniprot ID', 'Gene ID', 'Organism', 'Ortholog type'],
       },
       downloading_ortho: 'waiting',
       selectedNodeForOrtho: null,
@@ -410,7 +424,7 @@ export default {
       popoverGO_mfText:
         'GO Molecular Function annotations (from <a href="http://geneontology.org/" target="_blank">http://geneontology.org/</a>). A yellow flask icon indicates evidence by experiment and a green tree icon indicates inference by biological ancestor.',
       popoverGO_bpText:
-        'GO Biological Process annotations (from <a href="http://geneontology.org/" target="_blank">http://geneontology.org/</a>). A yellow flask icon indicates evidence by experiment and a green tree icon indicates inference by biological ancestor.'
+        'GO Biological Process annotations (from <a href="http://geneontology.org/" target="_blank">http://geneontology.org/</a>). A yellow flask icon indicates evidence by experiment and a green tree icon indicates inference by biological ancestor.',
     }
   },
   created() {
@@ -428,12 +442,12 @@ export default {
       store_pubsMapping: types.TREE_GET_PUBS_MAPPING,
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
       store_getTableIsLoading: types.TABLE_GET_ISTABLELOADING,
-      store_getTableHiddenCols: types.TABLE_GET_HIDDENCOLS
-    })
+      store_getTableHiddenCols: types.TABLE_GET_HIDDENCOLS,
+    }),
   },
   watch: {
     store_tableData: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         //This is zero, when a new tree is reloaded.
         if (val && val.length == 0) {
           this.resetTable()
@@ -442,10 +456,10 @@ export default {
         }
       },
       deep: true,
-      immediate: true
+      immediate: true,
     },
     store_getTableIsLoading: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val) {
           this.isLoading = val
           if (this.isLoading) {
@@ -456,24 +470,24 @@ export default {
         }
       },
       deep: true,
-      immediate: true
+      immediate: true,
     },
     colsFromProp: {
-      handler: function(val, oldval) {
+      handler: function (val, oldval) {
         this.updateTableCols()
-      }
+      },
     },
     store_annoMapping: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (!val.headers.mf) return
         this.n_annotations = val.n_annotations
         this.n_anno_mf = val.headers.mf.length
         this.n_anno_bp = val.headers.bp.length
-      }
+      },
     },
     //Auto scroll the table to the center node set by the tree (Auto scrolling)
     store_getCenterNode: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val == null) return
         //Timeout required so that 'storeTableData' is updated after matched nodes are processed
         setTimeout(() => {
@@ -481,33 +495,33 @@ export default {
         }, 1000)
       },
       deep: true,
-      immediate: true
+      immediate: true,
     },
     store_getTableHiddenCols: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val == null) return
         this.defaultColsToHide = val
       },
       deep: true,
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   mounted() {
     this.resetTable()
     this.initTable()
     this.process_mapping()
-    this.$nextTick(function() {})
+    this.$nextTick(function () {})
   },
   beforeDestroy() {
     this.resetTable()
   },
-  beforeUpdate: function() {
-    this.$nextTick(function() {
+  beforeUpdate: function () {
+    this.$nextTick(function () {
       // console.log("table updating!")
     })
   },
-  updated: function() {
-    this.$nextTick(function() {
+  updated: function () {
+    this.$nextTick(function () {
       // Code that will run only after the
       // entire view has been re-rendered
       if (this.tableRendering == false) {
@@ -521,11 +535,11 @@ export default {
       store_setTableData: types.TABLE_ACTION_SET_DATA,
       store_setClearData: types.TREE_ACTION_CLEAR_DATA,
       store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
-      store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS
+      store_setTableHiddenCols: types.TABLE_ACTION_SET_TABLE_HIDDENCOLS,
     }),
     getMappingFromCsv(fileName) {
       return new Promise((resolve, reject) => {
-        d3.csv(fileName, function(error, data) {
+        d3.csv(fileName, function (error, data) {
           if (error) {
             reject(error)
           } else {
@@ -562,7 +576,7 @@ export default {
       //Only display cols which have corresponding rows in store tableData
       var filteredCols = d3.keys(this.store_tableData[0])
       filteredCols = filteredCols.filter((t) => this.colsFromProp.includes(t))
-      filteredCols = filteredCols.map(function(f) {
+      filteredCols = filteredCols.map(function (f) {
         return { label: f }
       })
 
@@ -648,14 +662,14 @@ export default {
       }
       tableNode['Gene'] = n.data.gene_symbol ? n.data.gene_symbol : geneId
       tableNode['Organism'] = n.data.organism
-      if(this.store_pubsMapping) {
-        if(n.data.uniprotId) {
-          let pub_count = this.store_pubsMapping[n.data.uniprotId.toLowerCase()];
-          tableNode['Publications']=pub_count;
+      if (this.store_pubsMapping) {
+        if (n.data.uniprotId) {
+          let pub_count = this.store_pubsMapping[n.data.uniprotId.toLowerCase()]
+          tableNode['Publications'] = pub_count
         } else {
-          tableNode['Publications']=-1;
+          tableNode['Publications'] = -1
         }
-      } 
+      }
       tableNode['Gene name'] = n.data.gene_symbol
       tableNode['Gene ID'] = geneId
       tableNode['Protein name'] = n.data.definition
@@ -669,7 +683,7 @@ export default {
         if (!this.store_annoMapping.annoMap) {
           return tableNode
         }
-        
+
         if (this.store_annoMapping.annoMap[uniprotId]) {
           let currAnno = this.store_annoMapping.annoMap[uniprotId]
           let allAnnos = this.store_annoMapping.headers.mf
@@ -693,7 +707,7 @@ export default {
       return tableNode
     },
     onClickNode(node) {
-      if(node.geneId != null) {
+      if (node.geneId != null) {
         this.selectedNodeForOrtho = node.data
         this.showPopup_treeNode = true
         this.downloading_ortho = 'waiting'
@@ -721,9 +735,9 @@ export default {
         url: api,
         data: {
           uniprotId: this.selectedNodeForOrtho.uniprotId,
-          queryOrganismId: this.selectedNodeForOrtho.taxonId
+          queryOrganismId: this.selectedNodeForOrtho.taxonId,
         },
-        timeout: 200000
+        timeout: 200000,
       })
         .then((res) => {
           let orthoNodes = res.data
@@ -774,7 +788,7 @@ export default {
                 name: n.data.organism,
                 commonName: n.data.displayName,
                 taxonId: n.data.taxonId,
-                count: 1
+                count: 1,
               }
               uniqueOrganisms.push(org)
             }
@@ -785,8 +799,13 @@ export default {
       let msg = {
         tabularData: tabularData,
         uniqueOrganisms: uniqueOrganisms,
-        n_organisms: n_organisms
+        n_organisms: n_organisms,
       }
+      let orgTaxons = uniqueOrganisms.map((o) => {
+        return Number(o.taxonId)
+      })
+      let orgTaxonsFil = orgTaxons.filter((o) => o == 3702)
+      console.log(orgTaxonsFil)
       this.$emit('tree-init', msg)
       this.updateTableCols()
 
@@ -831,7 +850,7 @@ export default {
         if (this.rowsScrolled > 200) {
           noOfTopRowsToRemove = this.rowsScrolled - 100
         }
-        let tempList = [];
+        let tempList = []
         this.store_tableData.some((n) => {
           if (i < noOfTopRowsToRemove) {
             n.rendering = false
@@ -840,7 +859,7 @@ export default {
           }
 
           let processedRowData = this.processRow(n)
-          tempList.push(processedRowData);
+          tempList.push(processedRowData)
 
           i++
           return i > noOfRowsToAdd
@@ -917,10 +936,10 @@ export default {
         } else {
           n.rendering = true
         }
-        var start = new Date().getTime();
+        var start = new Date().getTime()
         let processedRowData = this.processRow(n)
-        var end = new Date().getTime();
-        var time = end - start;
+        var end = new Date().getTime()
+        var time = end - start
         // console.log('Execution time: ' + time);
         this.rowsToRender.push(processedRowData)
         i++
@@ -955,18 +974,21 @@ export default {
           content.link = 'https://www.uniprot.org/uniprot/' + cellTxt
         } else if (c.label == 'Gene ID') {
           let organism = rowData['Organism']
-          let link_txt = this.getGeneIdLink(cellTxt, organism);
-          if(link_txt != null) {
+          let link_txt = this.getGeneIdLink(cellTxt, organism)
+          if (link_txt != null) {
             content.type = 'link'
             content.link = link_txt
           }
         } else if (c.label == 'Publications') {
-          if(cellTxt != 0 && cellTxt != -1) {
+          if (cellTxt != 0 && cellTxt != -1) {
             content.type = 'link'
-            content.link = 'https://www.uniprot.org/uniprot/'+rowData['Uniprot ID']+'/publications';
-          } 
-          if(cellTxt == -1) {
-            content.text = "";
+            content.link =
+              'https://www.uniprot.org/uniprot/' +
+              rowData['Uniprot ID'] +
+              '/publications'
+          }
+          if (cellTxt == -1) {
+            content.text = ''
           }
         }
         row[c.label] = content
@@ -983,36 +1005,45 @@ export default {
       let link_text = null
       switch (organism) {
         case 'Arabidopsis thaliana':
-          link_text = 'http://www.arabidopsis.org/servlets/TairObject?type=locus&name='+gene_id
+          link_text =
+            'http://www.arabidopsis.org/servlets/TairObject?type=locus&name=' +
+            gene_id
           break
         case 'Zea mays':
-          link_text = 'https://www.maizegdb.org/gene_center/gene/'+gene_id
+          link_text = 'https://www.maizegdb.org/gene_center/gene/' + gene_id
           break
         case 'Gossypium hirsutum':
-          link_text = 'https://www.cottongen.org/lookup/gene/'+gene_id
+          link_text = 'https://www.cottongen.org/lookup/gene/' + gene_id
           break
         case 'Glycine max':
-          link_text = 'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term='+gene_id.replace("_",".")
+          link_text =
+            'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term=' +
+            gene_id.replace('_', '.')
           break
         case 'Prunus persica':
-          link_text = 'https://www.rosaceae.org/lookup/gene/'+gene_id.replace("_",".")
-          break;
+          link_text =
+            'https://www.rosaceae.org/lookup/gene/' + gene_id.replace('_', '.')
+          break
         case 'Solanum lycopersicum':
-          link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
+          link_text = 'https://solgenomics.net/locus/' + gene_id + '/view'
           break
         // case 'Solanum tuberosum':
         //   link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
         //   break
         case 'Triticum aestivum':
-          link_text = 'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name='+gene_id
+          link_text =
+            'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name=' +
+            gene_id
           break
         case 'Hordeum vulgare subsp. vulgare':
-          link_text = 'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name='+gene_id
+          link_text =
+            'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name=' +
+            gene_id
           break
         default:
           break
       }
-      return link_text;
+      return link_text
     },
     //TREE MENU
     showLegend() {
@@ -1090,7 +1121,7 @@ export default {
       this.$emit('export-xml')
     },
     exportCSV() {
-      this.$emit('export-csv');
+      this.$emit('export-csv')
     },
     exportPNG() {
       this.$refs.treeLayout.onExportPng(this.treeId)
@@ -1235,59 +1266,59 @@ export default {
         if (this.defaultColsToHide.includes(colObj.label)) {
           col.selected = false
         }
-        if(this.n_anno_mf > 0 || this.n_anno_bp > 0) {
+        if (this.n_anno_mf > 0 || this.n_anno_bp > 0) {
           if (i == 2) {
-          let parentCol = {
-            id: i,
-            label: 'Molecular function',
-            selected: true,
-            checkAllChildren: true
+            let parentCol = {
+              id: i,
+              label: 'Molecular function',
+              selected: true,
+              checkAllChildren: true,
+            }
+            parentCol.children = []
+            if (this.defaultColsToHide.includes('Molecular function')) {
+              parentCol.selected = false
+            }
+            colsToEdit.push(parentCol)
+            col['annotation'] = true
+            if (this.defaultColsToHide.includes('Molecular function')) {
+              col.selected = false
+            }
+            colsToEdit[2].children.push(col)
+          } else if (i > 2 && i < 2 + this.n_anno_mf) {
+            col['annotation'] = true
+            if (this.defaultColsToHide.includes('Molecular function')) {
+              col.selected = false
+            }
+            colsToEdit[2].children.push(col)
+          } else if (i == 2 + this.n_anno_mf) {
+            let parentCol = {
+              id: i,
+              label: 'Biological process',
+              selected: true,
+              checkAllChildren: true,
+            }
+            parentCol.children = []
+            if (this.defaultColsToHide.includes('Biological process')) {
+              parentCol.selected = false
+            }
+            colsToEdit.push(parentCol)
+            col['annotation'] = true
+            if (this.defaultColsToHide.includes('Biological process')) {
+              col.selected = false
+            }
+            colsToEdit[colsToEdit.length - 1].children.push(col)
+          } else if (
+            i > 2 + this.n_anno_mf &&
+            i < 2 + this.n_anno_mf + this.n_anno_bp
+          ) {
+            col['annotation'] = true
+            if (this.defaultColsToHide.includes('Biological process')) {
+              col.selected = false
+            }
+            colsToEdit[colsToEdit.length - 1].children.push(col)
+          } else {
+            colsToEdit.push(col)
           }
-          parentCol.children = []
-          if (this.defaultColsToHide.includes('Molecular function')) {
-            parentCol.selected = false
-          }
-          colsToEdit.push(parentCol)
-          col['annotation'] = true
-          if (this.defaultColsToHide.includes('Molecular function')) {
-            col.selected = false
-          }
-          colsToEdit[2].children.push(col)
-        } else if (i > 2 && i < 2 + this.n_anno_mf) {
-          col['annotation'] = true
-          if (this.defaultColsToHide.includes('Molecular function')) {
-            col.selected = false
-          }
-          colsToEdit[2].children.push(col)
-        } else if (i == 2 + this.n_anno_mf) {
-          let parentCol = {
-            id: i,
-            label: 'Biological process',
-            selected: true,
-            checkAllChildren: true
-          }
-          parentCol.children = []
-          if (this.defaultColsToHide.includes('Biological process')) {
-            parentCol.selected = false
-          }
-          colsToEdit.push(parentCol)
-          col['annotation'] = true
-          if (this.defaultColsToHide.includes('Biological process')) {
-            col.selected = false
-          }
-          colsToEdit[colsToEdit.length - 1].children.push(col)
-        } else if (
-          i > 2 + this.n_anno_mf &&
-          i < 2 + this.n_anno_mf + this.n_anno_bp
-        ) {
-          col['annotation'] = true
-          if (this.defaultColsToHide.includes('Biological process')) {
-            col.selected = false
-          }
-          colsToEdit[colsToEdit.length - 1].children.push(col)
-        } else {
-          colsToEdit.push(col)
-        }
         } else {
           colsToEdit.push(col)
         }
@@ -1415,7 +1446,7 @@ export default {
       if (Math.abs(rowsScrolledCurr - this.rowsScrolled) > 5) {
         this.rowsScrolled = rowsScrolledCurr
         if (!this.msaTab) {
-            this.updateTable()
+          this.updateTable()
         }
       }
     },
@@ -1512,7 +1543,7 @@ export default {
         'Protein name',
         'Uniprot ID',
         'Subfamily Name',
-        'MSA'
+        'MSA',
       ]
       if (!baseCols.includes(title)) {
         header['type'] = 'slanted'
@@ -1599,8 +1630,8 @@ export default {
       if (colName === 'Protein name') return this.popover4Text
       if (colName === 'Subfamily Name') return this.popover5Text
       return ''
-    }
-  }
+    },
+  },
 }
 </script>
 <style scoped>
