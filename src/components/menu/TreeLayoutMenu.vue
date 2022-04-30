@@ -18,21 +18,31 @@
         <template slot="button-content">
           <i @click="ddClicked" class="fas fa-tools fa-2x fa-fw"></i>
         </template>
-        <!-- <json-csv
-          :data="csvTable.tableCsvData"
-          :name="treeId + '.csv'"
-          :fields="csvTable.tableCsvFields"
-        >
-          <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
-        </json-csv> -->
         <b-dropdown-item
-          v-for="item in dropdownMenu"
+          v-for="item in dropdown_default"
           :key="item.id"
           @click="ddMenuitemClicked(item.id)"
         >
           {{ item.title }}
         </b-dropdown-item>
-        <!-- <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item> -->
+      </b-dropdown>
+      <b-dropdown
+        v-b-tooltip.hover.bottom.o-300
+        title="Downloads"
+        variant="white"
+        class="bg-white"
+        no-caret
+      >
+        <template slot="button-content">
+          <i @click="ddClicked" class="fas fa-download fa-2x fa-fw"></i>
+        </template>
+        <b-dropdown-item
+          v-for="item in dropdown_downloads"
+          :key="item.id"
+          @click="ddMenuitemClicked(item.id)"
+        >
+          {{ item.title }}
+        </b-dropdown-item>
       </b-dropdown>
       <button
         v-b-tooltip.hover.bottom.o300
@@ -85,6 +95,12 @@ export default {
     ...mapGetters({
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
     }),
+    dropdown_downloads() {
+      return this.dropdownMenu.filter((m) => m.type == 'download')
+    },
+    dropdown_default() {
+      return this.dropdownMenu.filter((m) => !m.type)
+    },
     showLegendButtonIcon() {
       return this.legendIcon
         ? {

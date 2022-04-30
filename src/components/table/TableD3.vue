@@ -310,7 +310,6 @@ import axios from 'axios/index'
 import _ from 'lodash'
 import { mapGetters, mapActions } from 'vuex'
 import { setTimeout } from 'timers'
-import Vue from 'vue'
 
 import * as types from '../../store/types_treedata'
 import popupTable from './PopupTable'
@@ -365,14 +364,18 @@ export default {
       treeRowSpan: 100,
       rowsHeight: 1000,
       treeDropdownMenu: [
-        { id: 1, title: 'Download multiple sequence alignment' },
-        { id: 2, title: 'Download orthologs' },
-        { id: 3, title: 'Download tree as PhyloXML' },
-        { id: 4, title: 'Highlight tree by organism' },
+        {
+          id: 1,
+          title: 'Download multiple sequence alignment',
+          type: 'download',
+        },
+        { id: 2, title: 'Download orthologs', type: 'download' },
+        { id: 3, title: 'Download tree as PhyloXML', type: 'download' },
+        { id: 4, title: 'Highlight genes by organism' },
         { id: 5, title: 'Prune tree by organism' },
         { id: 6, title: 'Save tree image as PNG' },
         { id: 7, title: 'Save tree image as SVG' },
-        { id: 8, title: 'Download gene table as CSV' },
+        { id: 8, title: 'Download gene table as CSV', type: 'download' },
       ],
       //Popup
       showPopup: false,
