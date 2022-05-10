@@ -15,7 +15,7 @@
       version="1.1"
       id="treeSvg"
       ref="treesvg"
-      width="700"
+      width="100%"
       :height="svgHeight"
     >
       <g id="wrapper">
@@ -915,6 +915,7 @@ export default {
       if (fixed) {
         d3.select('#treeSvg').style('position', 'fixed')
       }
+      d3.select('#treeSvg').attr('width', '1000')
     },
     //Draw a canvas element with the 'img' of the svg.
     drawCanvas(img, treeId) {
@@ -946,7 +947,7 @@ export default {
       this.resetSvgAfterExport()
     },
     resetSvgAfterExport() {
-      d3.select('#treeSvg').attr('width', '700').style('position', 'relative')
+      d3.select('#treeSvg').attr('width', '100%').style('position', 'relative')
       this.isLoading = false
       setTimeout(() => {
         this.$parent.updateTable()
