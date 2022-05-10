@@ -373,8 +373,8 @@ export default {
         { id: 3, title: 'Download tree as PhyloXML', type: 'download' },
         { id: 4, title: 'Highlight genes by organism' },
         { id: 5, title: 'Prune tree by organism' },
-        { id: 6, title: 'Save tree image as PNG' },
-        { id: 7, title: 'Save tree image as SVG' },
+        { id: 6, title: 'Download tree image as PNG', type: 'download' },
+        { id: 7, title: 'Download tree image as SVG', type: 'download' },
         { id: 8, title: 'Download gene table as CSV', type: 'download' },
       ],
       //Popup
@@ -804,11 +804,10 @@ export default {
         uniqueOrganisms: uniqueOrganisms,
         n_organisms: n_organisms,
       }
-      let orgTaxons = uniqueOrganisms.map((o) => {
-        return Number(o.taxonId)
-      })
-      let orgTaxonsFil = orgTaxons.filter((o) => o == 3702)
-      console.log(orgTaxonsFil)
+      // let orgTaxons = uniqueOrganisms.map((o) => {
+      //   return Number(o.taxonId)
+      // })
+      // let orgTaxonsFil = orgTaxons.filter((o) => o == 3702)
       this.$emit('tree-init', msg)
       this.updateTableCols()
 

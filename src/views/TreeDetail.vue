@@ -278,6 +278,7 @@ export default {
       store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
       store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
       store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED,
+      store_setTreeMetadata: types.TREE_ACTION_SET_METADATA,
     }),
     showSurvey() {
       this.surveyPopup = true
@@ -661,6 +662,11 @@ export default {
         this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount
       }
       this.metadata.isLoading = false
+      let storeMeta = {}
+      storeMeta.familyName = this.store_getTreeMetadata.familyName
+      storeMeta.taxonRange = this.store_getTreeMetadata.taxonRange
+      storeMeta.genesCount = this.metadata.genesCount
+      this.store_setTreeMetadata(storeMeta)
     },
     /////////////////////// Tree search from within ////////////
     onSearchWithinTree(text) {

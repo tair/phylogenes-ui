@@ -62,14 +62,14 @@ export default {
     'mappingData',
     'matchedNodes',
     'heightFP',
-    'singleRowHeight'
+    'singleRowHeight',
   ],
   components: {
     basenode: baseNode,
     baselink: baseLink,
     modal: customModal,
     'context-menu': contextMenu,
-    'tree-legend': treeLegend
+    'tree-legend': treeLegend,
   },
   computed: {
     ...mapGetters({
@@ -79,29 +79,29 @@ export default {
       store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
       store_annoMapping: types.TREE_GET_ANNO_MAPPING,
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
-      store_getHasGrafted: types.TREE_GET_ISGRAFTED
-    })
+      store_getHasGrafted: types.TREE_GET_ISGRAFTED,
+    }),
   },
   watch: {
     jsonData: {
       deep: true,
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         this.isLoading = true
         if (val && val != null) {
           this.initTree()
         }
-      }
+      },
     },
     heightFP: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val && val != null) {
           this.svgHeight = val + 'px'
         }
       },
-      immediate: true
+      immediate: true,
     },
     singleRowHeight: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val && val != null) {
           if (this.rootNode) {
             this.initTreeLayout(this.rootNode)
@@ -110,41 +110,41 @@ export default {
           }
         }
       },
-      immediate: true
+      immediate: true,
     },
     'store_matchedNodes.allMatchedNodes': {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         this.processMatchedNodes(val)
-      }
+      },
     },
     'store_matchedNodes.currIdx': {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         this.moveToMatchedNode(val)
-      }
+      },
     },
     store_tableData: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val && val.length == 0) {
           this.isLoading = true
           this.refreshView()
         }
-      }
+      },
     },
     store_getTableScrollRow: {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         this.scrollTreeFromTable(val)
-      }
+      },
     },
     store_tableIsLoading: {
-      handler: function(val, oldval) {
+      handler: function (val, oldval) {
         // this.isLoading = val;
         if (val != null && !val) {
           // this.renderTree();
           this.checkForGraftedNode()
         }
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   data() {
     return {
@@ -185,7 +185,7 @@ export default {
       delayInCall: 20,
       ticking: false,
       timerId: null,
-      firstLoadForGrafted: true
+      firstLoadForGrafted: true,
     }
   },
   mounted() {
@@ -199,7 +199,7 @@ export default {
       store_setCenterNode: types.TREE_ACTION_SET_CENTER_NODE,
       stateTreeZoom: types.TREE_ACTION_SET_ZOOM,
       stateTreeNodes: types.TREE_ACTION_SET_NODES,
-      store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING
+      store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
     }),
     checkForGraftedNode() {
       if (!this.rootNode) return
@@ -322,7 +322,7 @@ export default {
     //Convert json into d3 hierarchy which adds depth, height and
     // parent variables to each node.
     convertJsonToD3Hierarchy(json) {
-      return d3.hierarchy(this.jsonData, function(d) {
+      return d3.hierarchy(this.jsonData, function (d) {
         return d.children
       })
     },
@@ -363,7 +363,7 @@ export default {
       this.moveTreeToNodePosition(topNode)
       this.setCurrentTopNode({
         x: this.topMostNodePos.x,
-        y: this.topMostNodePos.y
+        y: this.topMostNodePos.y,
       })
       this.stateTreeZoom({ x: 0, y: 0 })
     },
@@ -407,7 +407,7 @@ export default {
       var nodesData = d3
         .select('.nodes')
         .selectAll('g.shape')
-        .data(nodes, function(d) {
+        .data(nodes, function (d) {
           if (d) {
             return d.id
           }
@@ -453,14 +453,12 @@ export default {
     },
     // ~~~~~~~~~ Links
     renderLinks(nodes) {
-      d3.select('.links')
-        .selectAll('path')
-        .data(this.treelinks_view)
+      d3.select('.links').selectAll('path').data(this.treelinks_view)
 
       var linksData = d3
         .select('.links')
         .selectAll('path')
-        .data(nodes, function(d) {
+        .data(nodes, function (d) {
           if (d) {
             return d.id
           }
@@ -871,10 +869,7 @@ export default {
       setTimeout(() => {
         var svgNode = d3.select('#treeSvg').node()
         var url = exportUtils.createSvgBlobUrl(svgNode)
-        var img = d3
-          .select('span')
-          .append('img')
-          .node()
+        var img = d3.select('span').append('img').node()
         this.isLoading = false
         // start loading the image with the svg blob
         img.src = url
@@ -943,9 +938,7 @@ export default {
       this.resetSvgAfterExport()
     },
     resetSvgAfterExport() {
-      d3.select('#treeSvg')
-        .attr('width', '100%')
-        .style('position', 'relative')
+      d3.select('#treeSvg').attr('width', '100%').style('position', 'relative')
       this.isLoading = false
       setTimeout(() => {
         this.$parent.updateTable()
@@ -1138,7 +1131,7 @@ export default {
         id: source.id,
         x: source.x,
         y: source.y,
-        source: source
+        source: source,
       }
       this.updateTree()
     },
@@ -1272,7 +1265,7 @@ export default {
           parent: parentNode,
           children: null,
           x: parentNode.x,
-          y: parentNode.y
+          y: parentNode.y,
         }
         if (parentNode.children) {
           parentNode.children.push(nn)
@@ -1298,11 +1291,11 @@ export default {
         parent: pn,
         text: 'Sample Gene',
         x: n.x,
-        y: n.y
+        y: n.y,
       }
       return newNode
-    }
-  }
+    },
+  },
 }
 </script>
 <style scoped>
