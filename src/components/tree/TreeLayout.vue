@@ -9,7 +9,15 @@
         <tree-legend></tree-legend>
       </div>
     </div>
-    <svg id="treeSvg" ref="treesvg" width="100%" :height="svgHeight">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      version="1.1"
+      id="treeSvg"
+      ref="treesvg"
+      width="700"
+      :height="svgHeight"
+    >
       <g id="wrapper">
         <g class="links">
           <baselink
@@ -938,7 +946,7 @@ export default {
       this.resetSvgAfterExport()
     },
     resetSvgAfterExport() {
-      d3.select('#treeSvg').attr('width', '100%').style('position', 'relative')
+      d3.select('#treeSvg').attr('width', '700').style('position', 'relative')
       this.isLoading = false
       setTimeout(() => {
         this.$parent.updateTable()
