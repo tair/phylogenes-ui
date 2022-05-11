@@ -6,7 +6,7 @@
           v-if="!matchText"
           class="mx-2 align-items-center"
         >
-          Search within tree
+          Search this tree
         </b-input-group-prepend>
         <b-input-group-prepend v-if="matchText" class="mx-2 align-items-center">
           {{ matchText }}
@@ -158,7 +158,7 @@ export default {
   background-clip: padding-box;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
     -webkit-box-shadow 0.15s ease-in-out;
-  width: 220px;
+  width: 175px;
 }
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
