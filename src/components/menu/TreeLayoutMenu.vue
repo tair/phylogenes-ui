@@ -1,95 +1,72 @@
 <template>
-  <div>
-    <div
-      v-if="showWarning"
-      class="row align-items-center justify-content-between"
-    >
-      <div class="announceUl">
-        <div class="announce">
-          You can remove unwanted species from the tree. Click the Tools icon
-          and select Prune tree.
-        </div>
-      </div>
+  <div class="row align-items-center justify-content-between">
+    <div class="col-auto">
+      <search-box
+        ref="searchBox"
+        v-on:search="onSearch"
+        :defaultText="defaultSearchText"
+      ></search-box>
     </div>
-    <div class="row align-items-center justify-content-between">
-      <div class="col-auto">
-        <search-box
-          ref="searchBox"
-          v-on:search="onSearch"
-          :defaultText="defaultSearchText"
-        ></search-box>
-      </div>
-      <div class="col-auto align-items-center">
-        <b-dropdown
-          v-b-tooltip.hover.bottom.o-300
-          title="Operations"
-          variant="white"
-          class="bg-white"
-          no-caret
+    <div class="col-auto align-items-center">
+      <b-dropdown
+        v-b-tooltip.hover.bottom.o-300
+        title="Operations"
+        variant="white"
+        class="bg-white"
+        no-caret
+      >
+        <template slot="button-content">
+          <i @click="ddClicked" class="fas fa-tools fa-2x fa-fw"></i>
+        </template>
+        <!-- <json-csv
+          :data="csvTable.tableCsvData"
+          :name="treeId + '.csv'"
+          :fields="csvTable.tableCsvFields"
         >
-          <template slot="button-content">
-            <i @click="ddClicked" class="fas fa-tools fa-2x fa-fw"></i>
-          </template>
-          <b-dropdown-item
-            v-for="item in dropdown_default"
-            :key="item.id"
-            @click="ddMenuitemClicked(item.id)"
-          >
-            {{ item.title }}
-          </b-dropdown-item>
-        </b-dropdown>
-        <b-dropdown
-          v-b-tooltip.hover.bottom.o-300
-          title="Downloads"
-          variant="white"
-          class="bg-white"
-          no-caret
+          <b-dropdown-item>Download gene table as CSV</b-dropdown-item>
+        </json-csv> -->
+        <b-dropdown-item
+          v-for="item in dropdownMenu"
+          :key="item.id"
+          @click="ddMenuitemClicked(item.id)"
         >
-          <template slot="button-content">
-            <i @click="ddClicked" class="fas fa-download fa-2x fa-fw"></i>
-          </template>
-          <b-dropdown-item
-            v-for="item in dropdown_downloads"
-            :key="item.id"
-            @click="ddMenuitemClicked(item.id)"
-          >
-            {{ item.title }}
-          </b-dropdown-item>
-        </b-dropdown>
-        <button
-          v-b-tooltip.hover.bottom.o300
-          title="Compact View"
-          class="btn bg-white"
-          @click="onDefaultView"
+          {{ item.title }}
+        </b-dropdown-item>
+        <!-- <b-dropdown-item @click="exportXML">Download tree as PhyloXML</b-dropdown-item> -->
+      </b-dropdown>
+      <button
+        v-b-tooltip.hover.bottom.o300
+        title="Compact View"
+        class="btn bg-white"
+        @click="onDefaultView"
+      >
+        <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i>
+      </button>
+      <button
+        v-b-tooltip.hover.bottom.o300
+        title="Expand All"
+        class="btn bg-white"
+        @click="expandAll"
+      >
+        <i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i>
+      </button>
+      <button
+        @mouseover="showLegendTip = true"
+        @mouseout="showLegendTip = false"
+        class="btn bg-white"
+        @click="showLegend"
+        id="legendButton"
+      >
+        <i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>
+        <b-tooltip
+          :show.sync="showLegendTip"
+          target="legendButton"
+          placement="bottom"
+          offset="o300"
         >
-          <i class="fas fa-compress-arrows-alt fa-2x fa-fw"></i>
-        </button>
-        <button
-          v-b-tooltip.hover.bottom.o300
-          title="Expand All"
-          class="btn bg-white"
-          @click="expandAll"
-        >
-          <i class="fas fa-expand-arrows-alt fa-2x fa-fw"></i>
-        </button>
-        <button
-          @mouseover="showLegendTip = true"
-          @mouseout="showLegendTip = false"
-          class="btn bg-white"
-          @click="showLegend"
-          id="legendButton"
-        >
-          <i :class="showLegendButtonIcon.buttonIcon + ' fa-2x  fa-fw'"></i>
-          <b-tooltip
-            :show.sync="showLegendTip"
-            target="legendButton"
-            placement="bottom"
-            offset="o300"
-          >
-            {{ showLegendButtonIcon.title }}
-          </b-tooltip>
-        </button>
-      </div>
+          {{ showLegendButtonIcon.title }}
+        </b-tooltip>
+      </button>
     </div>
   </div>
 </template>
@@ -107,14 +84,7 @@ export default {
   computed: {
     ...mapGetters({
       store_getSearchTxtWthn: types.TREE_GET_SEARCHTEXTWTN,
-      store_getTreeMetadata: types.TREE_GET_METADATA,
     }),
-    dropdown_downloads() {
-      return this.dropdownMenu.filter((m) => m.type == 'download')
-    },
-    dropdown_default() {
-      return this.dropdownMenu.filter((m) => !m.type)
-    },
     showLegendButtonIcon() {
       return this.legendIcon
         ? {
@@ -126,10 +96,6 @@ export default {
             buttonIcon: 'fas fa-angle-double-down',
           }
     },
-    showWarning() {
-      console.log('showWarning ', this.store_getTreeMetadata.genesCount)
-      return this.store_getTreeMetadata.genesCount > 500 ? true : false
-    },
   },
   data() {
     return {
@@ -137,7 +103,6 @@ export default {
       //Legend
       legendIcon: false,
       showLegendTip: false,
-      genesCount: null,
     }
   },
   watch: {
@@ -148,16 +113,6 @@ export default {
         } else {
           this.defaultSearchText = ''
           this.onReset()
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-    store_getTreeMetadata: {
-      handler: function (val, oldVal) {
-        if (val) {
-          // console.log(val)
-          this.genesCount = val.genesCount
         }
       },
       deep: true,
@@ -193,20 +148,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.announce {
-  color: #ff7aff;
-  background-color: whitesmoke;
-  font-size: 16px;
-  font-weight: 600;
-}
-.announce-link {
-  color: #ff7aff !important;
-  text-decoration: underline;
-}
-.announceUl {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  margin-bottom: 0.5rem;
-}
-</style>
+<style scoped></style>

@@ -119,7 +119,7 @@ export default {
     tablecell: baseCell,
     modal: customModal,
     popupTable: popupTableOrganism,
-    SurveyPopupContent: SurveyPopupContent,
+    SurveyPopupContent: SurveyPopupContent
   },
   computed: {
     ...mapGetters({
@@ -133,53 +133,53 @@ export default {
       store_tableIsLoading: types.TABLE_GET_ISTABLELOADING,
       store_maxMsaLength: types.TREE_GET_MAXMSAL,
       store_getHasGrafted: types.TREE_GET_ISGRAFTED,
-      store_getGraftSeq: types.TREE_GET_GRAFTSEQ,
-    }),
+      store_getGraftSeq: types.TREE_GET_GRAFTSEQ
+    })
   },
   watch: {
     '$route.params.id': {
-      handler: function (id) {
+      handler: function(id) {
         if (!id) return
         this.initForNewTreeId(id)
       },
       deep: true,
-      immediate: true,
+      immediate: true
     },
     '$route.name': {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         if (val && val == 'treeGrafted') {
           this.loadTreeFromStore()
         }
       },
-      immediate: true,
+      immediate: true
     },
     store_getTreeMetadata: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         this.metadata.familyName = val.familyName[0]
         this.metadata.spannedTaxon = val.taxonRange
         this.metadata.isLoading = false
-      },
+      }
     },
     stateTreeAnnotations: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         this.loadAnnotations(val)
       },
       deep: true,
-      immediate: true,
+      immediate: true
     },
     store_annoMapping: {
-      handler: function (val, oldVal) {},
+      handler: function(val, oldVal) {},
       deep: true,
-      immediate: true,
+      immediate: true
     },
     store_getSearchTxtWthn: {
-      handler: function (val, oldVal) {
+      handler: function(val, oldVal) {
         if (val != null) {
         }
       },
       deep: true,
-      immediate: true,
-    },
+      immediate: true
+    }
   },
   data() {
     return {
@@ -201,7 +201,7 @@ export default {
         'Gene ID',
         'Protein name',
         'Uniprot ID',
-        'Subfamily Name',
+        'Subfamily Name'
       ],
       msaCols: ['Gene', 'MSA'],
       metadata: {
@@ -210,9 +210,9 @@ export default {
         genesCount: 0,
         uniqueOrganisms: {
           totalCount: 0,
-          organisms: [],
+          organisms: []
         },
-        spannedTaxon: '',
+        spannedTaxon: ''
       },
       matchNodes: [],
       //Popup
@@ -222,13 +222,13 @@ export default {
       popupCols: [
         { type: 'checkbox', val: true },
         'Organism',
-        'Number of genes',
+        'Number of genes'
       ],
       popupData: [],
       popupTableConfig: {
         tableHeight: 'auto',
         tableWidth: 'auto',
-        colsWidth: ['50px', '350px', '100px'],
+        colsWidth: ['50px', '350px', '100px']
       },
       //Pruning
       prunedLoaded: false,
@@ -245,8 +245,8 @@ export default {
           'Gene name',
           'Organism',
           'Protein function',
-          'Subfamily name',
-        ],
+          'Subfamily name'
+        ]
       },
       //MSA
       showMsa: false,
@@ -257,7 +257,7 @@ export default {
       treeData_Json: null,
       treeId: null,
       //Survey
-      surveyPopup: false,
+      surveyPopup: false
     }
   },
   mounted() {
@@ -277,8 +277,7 @@ export default {
       store_setSearchTxtWthn: types.TREE_ACTION_SET_SEARCHTEXTWTN,
       store_setTableIsLoading: types.TABLE_ACTION_SET_TABLE_ISLOADING,
       store_setFreqMsa: types.TABLE_ACTION_SET_MSA_FREQ,
-      store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED,
-      store_setTreeMetadata: types.TREE_ACTION_SET_METADATA,
+      store_setHasGrafted: types.TREE_ACTION_SET_ISGRAFTED
     }),
     showSurvey() {
       this.surveyPopup = true
@@ -299,10 +298,10 @@ export default {
       var p1 = this.store_setPantherTreeFromApi(this.treeId)
       var p2 = this.store_setMsaFromApi(this.treeId)
       var p3 = this.store_setAnnoFromApi(this.treeId)
-      var p4 = this.store_setPubsFromApi(this.treeId)
+      var p4 = this.store_setPubsFromApi(this.treeId);
       Promise.all([p1, p2, p3, p4]).then((vals) => {
         if (vals.length > 1) {
-          console.log(vals)
+          console.log(vals);
           var treeJson = this.store_treeJsonString
           this.initTreeData(treeJson)
         }
@@ -356,7 +355,7 @@ export default {
         IEP: 'expression pattern',
         IGI: 'genetic interaction',
         IMP: 'mutant phenotype',
-        IPI: 'physical interaction',
+        IPI: 'physical interaction'
       }
       if (mapping[code] == null) return code
       return mapping[code]
@@ -371,7 +370,7 @@ export default {
         var annoObj = {
           headers: { bp: anno_headers_bp, mf: anno_headers_mf },
           n_annotations: anno_headers_bp.length + anno_headers_mf.length,
-          annoMap: this.anno_mapping,
+          annoMap: this.anno_mapping
         }
 
         this.store_setAnnoMapping(annoObj)
@@ -411,24 +410,24 @@ export default {
           }
         })
       })
-      anno_headers_bp.sort(function (a, b) {
+      anno_headers_bp.sort(function(a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase())
       })
       anno_headers_bp.reverse()
-      anno_headers_mf.sort(function (a, b) {
+      anno_headers_mf.sort(function(a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase())
       })
       anno_headers_mf.reverse()
       var annoObj = {
         headers: { bp: anno_headers_bp, mf: anno_headers_mf },
         n_annotations: anno_headers_bp.length + anno_headers_mf.length,
-        annoMap: this.anno_mapping,
+        annoMap: this.anno_mapping
       }
       this.store_setAnnoMapping(annoObj)
     },
     getMappingFromCsv(fileName) {
       return new Promise((resolve, reject) => {
-        d3.csv(fileName, function (error, data) {
+        d3.csv(fileName, function(error, data) {
           if (error) {
             reject(error)
           } else {
@@ -606,10 +605,10 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept',
+            'Origin, X-Requested-With, Content-Type, Accept'
         },
         url: this.phyloXML_URL + this.treeId + '.xml',
-        responseType: 'arraybuffer',
+        responseType: 'arraybuffer'
       })
         .then((response) => {
           const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -622,7 +621,7 @@ export default {
         .catch((e) => console.error('error occured ', e))
     },
     exportCSV() {
-      this.downloadCsvWithAxios()
+      this.downloadCsvWithAxios();
     },
     downloadCsvWithAxios() {
       // console.log(this.phyloCSV_URL + this.treeId + '.csv');
@@ -631,13 +630,12 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept',
+            'Origin, X-Requested-With, Content-Type, Accept'
         },
         url: this.phyloCSV_URL + this.treeId + '.csv',
-        responseType: 'arraybuffer',
-      })
-        .then((response) => {
-          // console.log(response);
+        responseType: 'arraybuffer'
+      }).then((response) => {
+        // console.log(response);
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
@@ -662,11 +660,6 @@ export default {
         this.originalTaxonIdsLength = this.metadata.uniqueOrganisms.totalCount
       }
       this.metadata.isLoading = false
-      let storeMeta = {}
-      storeMeta.familyName = this.store_getTreeMetadata.familyName
-      storeMeta.taxonRange = this.store_getTreeMetadata.taxonRange
-      storeMeta.genesCount = this.metadata.genesCount
-      this.store_setTreeMetadata(storeMeta)
     },
     /////////////////////// Tree search from within ////////////
     onSearchWithinTree(text) {
@@ -736,15 +729,15 @@ export default {
       // console.log(go_term, annos_by_func_name);
       annos_by_func_name.forEach((a) => {
         // console.log(a);
-
+        
         let curr_anno_data = {}
-        curr_anno_data.unique_id = a.evidenceCode + '_' + a.goName
-
+        curr_anno_data.unique_id = a.evidenceCode + "_" + a.goName;
+        
         //~~goId
         curr_anno_data.goId = a.goId
         //~~goTerm
         curr_anno_data.goTerm = a.goName
-
+        
         //~~goTermLink
         let goTermLink = 'http://amigo.geneontology.org/amigo/term/' + a.goId
         curr_anno_data.goTermLink = goTermLink
@@ -758,7 +751,7 @@ export default {
             code = a.evidenceCode
           }
         }
-
+        
         curr_anno_data.code = code
         //~~source
         curr_anno_data.source = 'QuickGO'
@@ -766,24 +759,18 @@ export default {
         curr_anno_data.sourceLink =
           'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' + uniprotId
 
-        let uniqueId_matched_idx = annoList.findIndex(
-          (l) => l.unique_id == curr_anno_data.unique_id
-        )
+        let uniqueId_matched_idx = annoList.findIndex(l => l.unique_id == curr_anno_data.unique_id);
         // console.log(annoList.length)
-        if (uniqueId_matched_idx != -1) {
+        if(uniqueId_matched_idx != -1) {
           // console.log(annoList[uniqueId_matched_idx].reference, a.reference);
-          let ref_already_exists_idx = annoList[
-            uniqueId_matched_idx
-          ].reference.findIndex((r) => r.ref == a.reference)
-          if (ref_already_exists_idx == -1) {
+          let ref_already_exists_idx = annoList[uniqueId_matched_idx].reference.findIndex(r => r.ref == a.reference)
+          if(ref_already_exists_idx == -1) {
             // console.log("ref_already_exists_idx ", a.reference);
             let link = this.getReferenceLink(a.reference)
             if (link != '') {
-              annoList[uniqueId_matched_idx].reference.push({
-                count: annoList[uniqueId_matched_idx].reference.length + 1,
-                link: link,
-                ref: a.reference,
-              })
+              annoList[uniqueId_matched_idx].reference.push(
+                { count: annoList[uniqueId_matched_idx].reference.length + 1, link: link, ref: a.reference }
+              )
             }
           }
         } else {
@@ -798,17 +785,14 @@ export default {
               refs.forEach((r) => {
                 let link = this.getReferenceLink(r)
                 if (link != '') {
-                  references.push({
-                    count: references.length + 1,
-                    link: link,
-                    ref: r,
-                  })
+                  references.push({ count: references.length + 1, link: link, ref: r })
                 }
               })
             }
             curr_anno_data.reference = references
           }
 
+    
           annoList.push(curr_anno_data)
         }
       })
@@ -1124,8 +1108,6 @@ export default {
         if (anyUnchecked) this.popupCols[0].val = false
       })
 
-      console.log(this.metadata)
-
       this.metadata.uniqueOrganisms.organisms.forEach((o) => {
         let singleRow = []
         let checkedV = true
@@ -1151,7 +1133,7 @@ export default {
           type: 'text',
           val: organismDisplayName,
           id: o.taxonId,
-          name: o.name,
+          name: o.name
         })
         singleRow.push(o.count)
         this.popupData.push(singleRow)
@@ -1262,9 +1244,9 @@ export default {
         method: 'POST',
         url: api,
         data: {
-          taxonIdsToShow: this.unprunedTaxonIds,
+          taxonIdsToShow: this.unprunedTaxonIds
         },
-        timeout: 200000,
+        timeout: 200000
       })
         .then((res) => {
           var msa_text = res.data
@@ -1287,9 +1269,9 @@ export default {
         url: api,
         data: {
           sequence: stored_seq,
-          taxonIdsToShow: taxonList,
+          taxonIdsToShow: taxonList
         },
-        timeout: 200000,
+        timeout: 200000
       })
         .then((res) => {
           this.isLoading = false
@@ -1312,9 +1294,9 @@ export default {
         method: 'POST',
         url: this.REG_PRUNING_PANTHER_API + this.treeId,
         data: {
-          taxonIdsToShow: taxonList,
+          taxonIdsToShow: taxonList
         },
-        timeout: 200000,
+        timeout: 200000
       })
         .then((res) => {
           this.isLoading = false
@@ -1348,7 +1330,7 @@ export default {
     },
     // ~~~~~~~~~~~~~ Download csv ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
     setCsvTableData(nodes) {
-      console.log('setCsvTableData')
+      console.log("setCsvTableData");
     },
     // setCsvTableData(nodes) {
     //   this.sortArrayByX(nodes)
@@ -1414,8 +1396,8 @@ export default {
         }
         return 0
       })
-    },
-  },
+    }
+  }
 }
 </script>
 
