@@ -23,7 +23,7 @@
       <div class="scroll-div bg-white my-2 px-5" v-if="showText">
         <p class="text-lg mr-5 pr-5">
           Protein sequences from these plant species are included in the current
-          PhyloGenes release (version 4.0):
+          PhyloGenes release (version 4.1):
         </p>
         <div class="row">
           <div class="col-sm-12 col-md-6 col-lg-6">
