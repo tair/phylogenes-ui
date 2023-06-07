@@ -1,5 +1,5 @@
 # install node.js
-FROM node
+FROM node:14.1-alpine
 
 # install Vue CLI
 RUN npm install -g @vue/cli
