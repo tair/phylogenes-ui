@@ -5,4 +5,4 @@ services:
     image: phoenix/phylogenes-front
     container_name: phylogenes-front
     ports:
-      - 8080:8080
+      - 8081:8081
