@@ -9,5 +9,5 @@ RUN npm run build
 # dev stage
 FROM build-stage as dev-stage
 RUN apk update && apk add bash
-EXPOSE 8080
+EXPOSE 8081
 CMD [ "npm", "run", "serve" ]
