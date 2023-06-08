@@ -1,23 +1,13 @@
-# install node.js
-FROM node:14.1-alpine
-
-# install Vue CLI
-RUN npm install -g @vue/cli
-
-# Create app directory
-WORKDIR /usr/src/app
-
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
+# build stage
+FROM node:14.1-alpine as build-stage
+WORKDIR /app
 COPY package*.json ./
 RUN npm install
-RUN npm audit fix
-
-# Bundle app source
 COPY . .
-
 RUN npm run build
 
-EXPOSE 8081
+# dev stage
+FROM build-stage as dev-stage
+RUN apk update && apk add bash
+EXPOSE 8080
 CMD [ "npm", "run", "serve" ]

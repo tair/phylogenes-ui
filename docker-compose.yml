@@ -1,8 +1,14 @@
-version: "3.6"
+version: '3.4'
+
 services:
-  front:
-    build: .
-    image: phoenix/phylogenes-front
-    container_name: phylogenes-front
-    ports:
-      - 8081:8081
+    mb4-web-dev:
+        build: 
+            context: .
+            target: dev-stage
+        image: pg-web-dev:1.0
+        container_name: pg-web-container-dev
+        volumes:
+            - .:/app
+            - /app/node_modules
+        ports:
+            - "8080:8080"
