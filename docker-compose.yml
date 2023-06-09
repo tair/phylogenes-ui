@@ -1,7 +1,7 @@
 version: '3.4'
 
 services:
-    mb4-web-dev:
+    pg-web-dev:
         build: 
             context: .
             target: dev-stage
@@ -11,4 +11,4 @@ services:
             - .:/app
             - /app/node_modules
         ports:
-            - "8081:8080"
+            - "8082:8080"
