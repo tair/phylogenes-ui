@@ -106,6 +106,7 @@
           </li>
 
           <a
+            v-if="!isLoggedIn"
             href="https://sandbox.arabidopsis.org/community/abrc-new-register.faces"
             target="_blank"
             class="nav-link pr-3"
@@ -115,6 +116,7 @@
             >Register</a
           >
           <a
+            v-if="!isLoggedIn"
             href="https://demoui.arabidopsis.org/#/contentaccess/login?partnerId=tair&redirect=https:%2F%2Fphylogenes-sandbox.arabidopsis.org"
             target="_blank"
             class="nav-link pr-3"
@@ -122,6 +124,16 @@
             data-toggle="tooltip"
             title="About Us"
             >Login</a
+          >
+          <a
+            v-if="isLoggedIn"
+            href="https://demoui.arabidopsis.org/#/contentaccess/login?partnerId=tair&redirect=https:%2F%2Fphylogenes-sandbox.arabidopsis.org"
+            target="_blank"
+            class="nav-link pr-3"
+            style="font-size: 15px;"
+            data-toggle="tooltip"
+            title="About Us"
+            >Logout</a
           >
         </ul>
       </div>
@@ -139,10 +151,15 @@ export default {
     return {
       treeFilters: null,
       searchText: null,
+      isLoggedIn: false,
     }
   },
   created() {
     this.treeFilters = this.stateTreeFilters
+  },
+  mounted() {
+    const credentialId = this.getCookieValue('credentialId')
+    console.log('Credential ID:', credentialId)
   },
   computed: {
     ...mapGetters({
@@ -155,6 +172,16 @@ export default {
       resetFilter: types.TREE_ACTION_RESET_FILTER,
       stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
     }),
+    getCookieValue(name) {
+      const cookies = document.cookie.split('; ')
+      for (const cookie of cookies) {
+        const [cookieName, cookieValue] = cookie.split('=')
+        if (cookieName === name) {
+          return decodeURIComponent(cookieValue)
+        }
+      }
+      return null // Return null if the cookie is not found
+    },
     onSearch() {
       this.resetFilter()
       this.setSearchText(this.searchText)
