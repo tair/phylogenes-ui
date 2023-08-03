@@ -128,7 +128,7 @@
           <a
             v-if="isLoggedIn"
             class="nav-link pr-3"
-            style="font-size: 15px;"
+            style="font-size: 15px; cursor: pointer;"
             data-toggle="tooltip"
             title="Logout"
             @click.prevent="onLogout"
@@ -151,7 +151,7 @@ export default {
     return {
       treeFilters: null,
       searchText: null,
-      isLoggedIn: false,
+      isLoggedIn: true,
     }
   },
   created() {
@@ -186,7 +186,9 @@ export default {
       this.searchText = null
     },
     onLogout() {
+      console.log('onLogout')
       Cookies.set('credentialId', null)
+      this.isLoggedIn = false
     },
   },
 }
