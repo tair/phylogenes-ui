@@ -112,7 +112,7 @@
             class="nav-link pr-3"
             style="font-size: 15px;"
             data-toggle="tooltip"
-            title="About Us"
+            title="Register"
             >Register</a
           >
           <a
@@ -122,17 +122,16 @@
             class="nav-link pr-3"
             style="font-size: 15px;"
             data-toggle="tooltip"
-            title="About Us"
+            title="Login"
             >Login</a
           >
           <a
             v-if="isLoggedIn"
-            href="https://demoui.arabidopsis.org/#/contentaccess/login?partnerId=tair&redirect=https:%2F%2Fphylogenes-sandbox.arabidopsis.org"
-            target="_blank"
             class="nav-link pr-3"
             style="font-size: 15px;"
             data-toggle="tooltip"
-            title="About Us"
+            title="Logout"
+            @click.prevent="onLogout"
             >Logout</a
           >
         </ul>
@@ -141,6 +140,7 @@
   </div>
 </template>
 <script>
+import Cookies from 'js-cookie'
 import * as types from '@/store/types_tree'
 import { mapActions } from 'vuex'
 import { mapGetters } from 'vuex'
@@ -158,8 +158,11 @@ export default {
     this.treeFilters = this.stateTreeFilters
   },
   mounted() {
-    const credentialId = this.getCookieValue('credentialId')
+    const credentialId = Cookies.get('credentialId')
     console.log('Credential ID:', credentialId)
+    if (credentialId) {
+      this.isLoggedIn = true
+    }
   },
   computed: {
     ...mapGetters({
@@ -172,16 +175,6 @@ export default {
       resetFilter: types.TREE_ACTION_RESET_FILTER,
       stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
     }),
-    getCookieValue(name) {
-      const cookies = document.cookie.split('; ')
-      for (const cookie of cookies) {
-        const [cookieName, cookieValue] = cookie.split('=')
-        if (cookieName === name) {
-          return decodeURIComponent(cookieValue)
-        }
-      }
-      return null // Return null if the cookie is not found
-    },
     onSearch() {
       this.resetFilter()
       this.setSearchText(this.searchText)
@@ -191,6 +184,9 @@ export default {
     },
     onReset() {
       this.searchText = null
+    },
+    onLogout() {
+      Cookies.set('credentialId', null)
     },
   },
 }

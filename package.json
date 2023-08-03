@@ -17,6 +17,7 @@
     "bootstrap-vue": "^2.0.0-rc.26",
     "d3": "^4.4.0",
     "jquery": "^3.4.1",
+    "js-cookie": "^3.0.5",
     "lodash": "^4.17.14",
     "popper.js": "^1.14.3",
     "pretty-checkbox": "^3.0.3",
