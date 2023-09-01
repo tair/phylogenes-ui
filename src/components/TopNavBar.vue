@@ -162,6 +162,8 @@ export default {
     console.log('Credential ID:', credentialId)
     if (credentialId) {
       this.isLoggedIn = true
+    } else {
+      this.isLoggedIn = false
     }
   },
   computed: {
