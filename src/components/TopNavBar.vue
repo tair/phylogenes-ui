@@ -159,7 +159,6 @@ export default {
   },
   mounted() {
     const credentialId = Cookies.get('credentialId')
-    console.log('Credential ID:', credentialId)
     if (credentialId) {
       this.isLoggedIn = true
     } else {
@@ -188,7 +187,6 @@ export default {
       this.searchText = null
     },
     onLogout() {
-      console.log('onLogout')
       Cookies.set('credentialId', null)
       this.isLoggedIn = false
     },
