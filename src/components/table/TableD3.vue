@@ -310,6 +310,7 @@ import axios from 'axios/index'
 import _ from 'lodash'
 import { mapGetters, mapActions } from 'vuex'
 import { setTimeout } from 'timers'
+import Vue from 'vue'
 
 import * as types from '../../store/types_treedata'
 import popupTable from './PopupTable'
@@ -372,6 +373,7 @@ export default {
         { id: 2, title: 'Download orthologs', type: 'download' },
         { id: 3, title: 'Download tree as PhyloXML', type: 'download' },
         { id: 4, title: 'Highlight genes by organism' },
+
         { id: 5, title: 'Prune tree by organism' },
         { id: 6, title: 'Download tree image as PNG', type: 'download' },
         { id: 7, title: 'Download tree image as SVG', type: 'download' },
@@ -804,10 +806,6 @@ export default {
         uniqueOrganisms: uniqueOrganisms,
         n_organisms: n_organisms,
       }
-      // let orgTaxons = uniqueOrganisms.map((o) => {
-      //   return Number(o.taxonId)
-      // })
-      // let orgTaxonsFil = orgTaxons.filter((o) => o == 3702)
       this.$emit('tree-init', msg)
       this.updateTableCols()
 
@@ -1014,9 +1012,9 @@ export default {
         case 'Zea mays':
           link_text = 'https://www.maizegdb.org/gene_center/gene/' + gene_id
           break
-        case 'Gossypium hirsutum':
-          link_text = 'https://www.cottongen.org/lookup/gene/' + gene_id
-          break
+        // case 'Gossypium hirsutum':
+        //   link_text = 'https://www.cottongen.org/lookup/gene/'+gene_id
+        //   break
         case 'Glycine max':
           link_text =
             'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term=' +

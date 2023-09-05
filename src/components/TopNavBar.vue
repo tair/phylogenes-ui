@@ -13,19 +13,19 @@
           alt
         />
       </a>
-      <div>
-        <!-- <ul class="announceUl">
-          <li>
-            <div class="announce">
-              <pre class="announce"> <a
-  class="announce-link"
-  target="_blank"
-  href="https://conf.arabidopsis.org/display/PHGSUP/User+survey"
->Survey</a>- make PhyloGenes more useful to you! </pre>
-            </div>
-          </li>
-        </ul> -->
-      </div>
+      <a
+        class="my-logo2"
+        href="https://sandbox.arabidopsis.org/jsp/community/welcome.jsp"
+        target="_blank"
+      >
+        <span>Supported by </span>
+        <img
+          width="60"
+          height="60"
+          src="../../src/assets/img/tairLogo.gif"
+          alt
+        />
+      </a>
       <button
         class="navbar-toggler"
         type="button"
@@ -43,7 +43,7 @@
           <router-link to="/" tag="li">
             <a
               class="nav-link pr-3 active"
-              style="font-size: 15px"
+              style="font-size: 15px;"
               data-toggle="tooltip"
               title="Home"
               >Home</a
@@ -54,7 +54,7 @@
             href="https://conf.arabidopsis.org/display/PHGSUP/About+PhyloGenes"
             target="_blank"
             class="nav-link pr-3"
-            style="font-size: 15px"
+            style="font-size: 15px;"
             data-toggle="tooltip"
             title="About Us"
             >About</a
@@ -64,7 +64,7 @@
             href="https://conf.arabidopsis.org/display/PHGSUP"
             target="_blank"
             class="nav-link pr-3"
-            style="font-size: 15px"
+            style="font-size: 15px;"
             data-toggle="tooltip"
             title="Help"
             >Help</a
@@ -73,7 +73,7 @@
           <router-link to="/contact" tag="li">
             <a
               class="nav-link pr-3"
-              style="font-size: 15px"
+              style="font-size: 15px;"
               data-toggle="tooltip"
               title="Contact Us"
               >Contact</a
@@ -104,12 +104,43 @@
               </button>
             </form>
           </li>
+
+          <a
+            v-if="!isLoggedIn"
+            href="https://sandbox.arabidopsis.org/community/abrc-new-register.faces"
+            target="_blank"
+            class="nav-link pr-3"
+            style="font-size: 15px;"
+            data-toggle="tooltip"
+            title="Register"
+            >Register</a
+          >
+          <a
+            v-if="!isLoggedIn"
+            href="https://demoui.arabidopsis.org/#/contentaccess/login?partnerId=tair&redirect=https:%2F%2Fphylogenes-sandbox.arabidopsis.org"
+            target="_blank"
+            class="nav-link pr-3"
+            style="font-size: 15px;"
+            data-toggle="tooltip"
+            title="Login"
+            >Login</a
+          >
+          <a
+            v-if="isLoggedIn"
+            class="nav-link pr-3"
+            style="font-size: 15px; cursor: pointer;"
+            data-toggle="tooltip"
+            title="Logout"
+            @click.prevent="onLogout"
+            >Logout</a
+          >
         </ul>
       </div>
     </nav>
   </div>
 </template>
 <script>
+import Cookies from 'js-cookie'
 import * as types from '@/store/types_tree'
 import { mapActions } from 'vuex'
 import { mapGetters } from 'vuex'
@@ -119,22 +150,31 @@ export default {
   data() {
     return {
       treeFilters: null,
-      searchText: null
+      searchText: null,
+      isLoggedIn: true,
     }
   },
   created() {
     this.treeFilters = this.stateTreeFilters
   },
+  mounted() {
+    const credentialId = Cookies.get('credentialId')
+    if (credentialId) {
+      this.isLoggedIn = true
+    } else {
+      this.isLoggedIn = false
+    }
+  },
   computed: {
     ...mapGetters({
-      stateTreeFilters: types.TREE_GET_FILTERS
-    })
+      stateTreeFilters: types.TREE_GET_FILTERS,
+    }),
   },
   methods: {
     ...mapActions({
       setSearchText: types.TREE_ACTION_SET_SEARCH,
       resetFilter: types.TREE_ACTION_RESET_FILTER,
-      stateAction_doSearch: types.TREE_ACTION_DO_SEARCH
+      stateAction_doSearch: types.TREE_ACTION_DO_SEARCH,
     }),
     onSearch() {
       this.resetFilter()
@@ -145,14 +185,22 @@ export default {
     },
     onReset() {
       this.searchText = null
-    }
-  }
+    },
+    onLogout() {
+      Cookies.set('credentialId', null)
+      this.isLoggedIn = false
+    },
+  },
 }
 </script>
 <style scoped>
 .my-logo {
   position: absolute;
   padding: 10px;
+}
+.my-logo2 {
+  position: absolute;
+  padding: 110px;
 }
 .nav-input-width {
   width: 305px !important;

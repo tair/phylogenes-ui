@@ -625,7 +625,7 @@ export default {
       this.downloadCsvWithAxios()
     },
     downloadCsvWithAxios() {
-      // console.log(this.phyloCSV_URL + this.treeId + '.csv');
+      // console.log(this.phyloCSV_URL + this.treeId + '.csv')
       axios({
         method: 'get',
         headers: {
@@ -1123,8 +1123,6 @@ export default {
           })
         if (anyUnchecked) this.popupCols[0].val = false
       })
-
-      console.log(this.metadata)
 
       this.metadata.uniqueOrganisms.organisms.forEach((o) => {
         let singleRow = []
