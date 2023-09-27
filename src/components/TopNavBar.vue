@@ -15,7 +15,7 @@
       </a>
       <a
         class="my-logo2"
-        href="https://sandbox.arabidopsis.org/jsp/community/welcome.jsp"
+        :href="`${profileDomain}/jsp/community/welcome.jsp`"
         target="_blank"
       >
         <span>Supported by </span>
@@ -107,7 +107,7 @@
 
           <a
             v-if="!isLoggedIn"
-            href="https://sandbox.arabidopsis.org/community/abrc-new-register.faces"
+            :href="`${profileDomain}/community/abrc-new-register.faces`"
             target="_blank"
             class="nav-link pr-3"
             style="font-size: 15px;"
@@ -117,7 +117,7 @@
           >
           <a
             v-if="!isLoggedIn"
-            href="https://demoui.arabidopsis.org/#/contentaccess/login?partnerId=tair&redirect=https:%2F%2Fphylogenes-sandbox.arabidopsis.org"
+            :href="`${loginDomain}/#/contentaccess/login?partnerId=tair&redirect=https:%2F%2Fphylogenes-sandbox.arabidopsis.org`"
             target="_blank"
             class="nav-link pr-3"
             style="font-size: 15px;"
@@ -152,6 +152,8 @@ export default {
       treeFilters: null,
       searchText: null,
       isLoggedIn: true,
+      loginDomain: process.env.VUE_APP_LOGIN_DOMAIN,
+      profileDomain: process.env.VUE_APP_PROFILE_DOMAIN,
     }
   },
   created() {
@@ -200,7 +202,8 @@ export default {
 }
 .my-logo2 {
   position: absolute;
-  padding: 110px;
+  margin-left: 100px;
+  padding: 10px;
 }
 .nav-input-width {
   width: 305px !important;
