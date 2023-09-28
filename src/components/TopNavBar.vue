@@ -15,7 +15,7 @@
       </a>
       <a
         class="my-logo2"
-        :href="`${profileDomain}/jsp/community/welcome.jsp`"
+        :href="`${profileDomain}`"
         target="_blank"
       >
         <span>Supported by </span>
