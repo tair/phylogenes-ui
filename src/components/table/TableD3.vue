@@ -1015,11 +1015,11 @@ export default {
         // case 'Gossypium hirsutum':
         //   link_text = 'https://www.cottongen.org/lookup/gene/'+gene_id
         //   break
-        case 'Glycine max':
-          link_text =
-            'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term=' +
-            gene_id.replace('_', '.')
-          break
+        // case 'Glycine max':
+        //   link_text =
+        //     'https://www.soybase.org/sbt/search/search_results.php?category=FeatureName&version=Glyma2.0&search_term=' +
+        //     gene_id.replace('_', '.')
+        //   break
         case 'Prunus persica':
           link_text =
             'https://www.rosaceae.org/lookup/gene/' + gene_id.replace('_', '.')
@@ -1030,16 +1030,16 @@ export default {
         // case 'Solanum tuberosum':
         //   link_text = 'https://solgenomics.net/locus/'+gene_id+"/view"
         //   break
-        case 'Triticum aestivum':
-          link_text =
-            'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name=' +
-            gene_id
-          break
-        case 'Hordeum vulgare subsp. vulgare':
-          link_text =
-            'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name=' +
-            gene_id
-          break
+        // case 'Triticum aestivum':
+        //   link_text =
+        //     'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name=' +
+        //     gene_id
+        //   break
+        // case 'Hordeum vulgare subsp. vulgare':
+        //   link_text =
+        //     'https://wheat.pw.usda.gov/cgi-bin/GG3/report.cgi?class=probe;name=' +
+        //     gene_id
+        //   break
         default:
           break
       }
