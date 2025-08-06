@@ -824,10 +824,7 @@ export default {
           link = 'https://pubmed.ncbi.nlm.nih.gov/' + db_id
           break
         case 'GO_REF':
-          link =
-            'https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-' +
-            db_id +
-            '.md'
+          link = 'https://geneontology.org/GO_REF/' + db_id
           break
         case 'MGI':
           db_id = db_id + ':' + r.split(':')[2]
