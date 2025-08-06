@@ -306,13 +306,19 @@
 
 <script>
 import * as d3 from 'd3'
-import axios from 'axios/index'
 import _ from 'lodash'
 import { mapGetters, mapActions } from 'vuex'
 import { setTimeout } from 'timers'
 import Vue from 'vue'
 
 import * as types from '../../store/types_treedata'
+import {
+  getOrthologMapping,
+  validateOrthologResponse,
+  handleApiError,
+  LOADING_OPERATIONS,
+} from '../../services'
+import { loadingService } from '../../services'
 import popupTable from './PopupTable'
 import dataPanelEdit from './DataPanelEdit'
 import customModal from '@/components/modal/CustomModal'
@@ -395,8 +401,7 @@ export default {
       colsHidden: 0,
       //ortolog
       showOrthoPopup: false,
-      ORTHO_MAPPING_PANTHER_API:
-        process.env.VUE_APP_TOMCAT_URL + '/panther/orthomapping',
+
       //CSV
       tableCsvData: [],
       tableCsvFields: [
@@ -728,52 +733,60 @@ export default {
       }
       return organism_name
     },
-    downloadOrtholog() {
-      let api = this.ORTHO_MAPPING_PANTHER_API
-      this.downloading_ortho = 'downloading'
+    async downloadOrtholog() {
       if (this.selectedNodeForOrtho == null) {
         console.log('No selected node found')
         return
       }
-      axios({
-        method: 'POST',
-        url: api,
-        data: {
-          uniprotId: this.selectedNodeForOrtho.uniprotId,
-          queryOrganismId: this.selectedNodeForOrtho.taxonId,
-        },
-        timeout: 200000,
-      })
-        .then((res) => {
-          let orthoNodes = res.data
-          if (!Array.isArray(orthoNodes)) {
-            this.downloading_ortho = 'error'
-            return
+
+      this.downloading_ortho = 'downloading'
+      loadingService.setLoading(LOADING_OPERATIONS.ORTHOLOG_DOWNLOAD, true)
+
+      try {
+        const orthoNodes = await getOrthologMapping(
+          this.selectedNodeForOrtho.uniprotId,
+          this.selectedNodeForOrtho.taxonId
+        )
+
+        // Validate response using centralized validation
+        const validation = validateOrthologResponse(orthoNodes)
+        if (!validation.isValid) {
+          this.downloading_ortho = 'error'
+          handleApiError({ message: validation.error }, 'ortholog mapping')
+          return
+        }
+
+        // Process ortholog data
+        this.orthoTable.tableCsvData = []
+        orthoNodes.forEach((n) => {
+          const tableNode = {
+            'Uniprot ID': n.uniprot_id,
+            'Gene ID': n.gene_id,
+            'Ortholog type': n.ortholog,
+            Organism: n.organism,
           }
-          this.orthoTable.tableCsvData = []
-          orthoNodes.forEach((n) => {
-            var tableNode = {}
-            tableNode['Uniprot ID'] = n.uniprot_id
-            tableNode['Gene ID'] = n.gene_id
-            tableNode['Ortholog type'] = n.ortholog
-            // let organism = this.map_organism_name(n.organism)
-            tableNode['Organism'] = n.organism
-            this.orthoTable.tableCsvData.push(tableNode)
-          })
-          this.orthoTable.tableCsvData.forEach((node) => {
-            node[
-              "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
-            ] = null
-          })
-          this.orthoTable.tableCsvFields.push(
-            "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
-          )
-          this.downloading_ortho = 'downloaded'
+          this.orthoTable.tableCsvData.push(tableNode)
         })
-        .catch((err) => {
-          console.error('error ', err)
-          this.isLoading = false
+
+        // Add metadata footer
+        const metadataFooter =
+          "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
+        this.orthoTable.tableCsvData.forEach((node) => {
+          node[metadataFooter] = null
         })
+
+        if (!this.orthoTable.tableCsvFields.includes(metadataFooter)) {
+          this.orthoTable.tableCsvFields.push(metadataFooter)
+        }
+
+        this.downloading_ortho = 'downloaded'
+      } catch (error) {
+        console.error('Ortholog download failed:', error)
+        this.downloading_ortho = 'error'
+        handleApiError(error, 'ortholog mapping')
+      } finally {
+        loadingService.setLoading(LOADING_OPERATIONS.ORTHOLOG_DOWNLOAD, false)
+      }
     },
     onTreeInit(nodes) {
       //   console.log('onTreeInit')
