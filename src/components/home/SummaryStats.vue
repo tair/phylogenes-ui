@@ -18,8 +18,8 @@ export default {
   data() {
     return {
       summaryStats: [
-        { count: 8521, name: 'trees (gene families)' },
-        { count: 1194693, name: 'proteins' },
+        { count: 8500, name: 'trees (gene families)' },
+        { count: 1208319, name: 'proteins' },
         { count: 40, name: 'plant species' },
         { count: 10, name: 'non-plant model organisms' },
       ],

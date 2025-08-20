@@ -820,6 +820,7 @@ export default {
       let link = ''
       let db_code = r.split(':')[0]
       let db_id = r.split(':')[1]
+      console.log(db_code, db_id)
       switch (db_code) {
         case 'PMID':
           link = 'https://pubmed.ncbi.nlm.nih.gov/' + db_id
@@ -830,6 +831,9 @@ export default {
         case 'MGI':
           db_id = db_id + ':' + r.split(':')[2]
           link = 'http://www.informatics.jax.org/accession/' + db_id
+          break
+        case 'AGI_LocusCode':
+          link = 'https://www.arabidopsis.org/locus?name=' + db_id
           break
         case 'TAIR':
           db_id = db_id + ':' + r.split(':')[2]
