@@ -95,11 +95,10 @@
 <script>
 import treelayout from '../components/tree/TreeLayout'
 import tablelayout from '../components/table/TableD3'
-import intersect from '../components/tree/Intersection'
-import searchBox from '../components/search/SearchBox'
 import SurveyPopupContent from '../components/SurveyPopupContent'
 
 import * as d3 from 'd3'
+import axios from 'axios'
 import { mapActions } from 'vuex'
 import { mapGetters } from 'vuex'
 import { setTimeout } from 'timers'
