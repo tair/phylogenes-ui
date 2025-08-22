@@ -770,7 +770,7 @@ export default {
 
         // Add metadata footer
         const metadataFooter =
-          "Source: PANTHERDB. Version: 15. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
+          "Source: PANTHERDB. Version: 19. Ortholog type 'O' stands for Ortholog, 'LDO' for Least Diverged Ortholog."
         this.orthoTable.tableCsvData.forEach((node) => {
           node[metadataFooter] = null
         })
