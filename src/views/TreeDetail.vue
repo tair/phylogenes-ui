@@ -835,9 +835,11 @@ export default {
           link = 'https://www.arabidopsis.org/locus?name=' + db_id
           break
         case 'TAIR':
-          db_id = db_id + ':' + r.split(':')[2]
-          link =
-            'https://www.arabidopsis.org/servlets/TairObject?accession=' + db_id
+          // Handle cases like "TAIR:Publication:501785323|PMID:31170927"
+          // Extract only the TAIR part before the pipe
+          let tairPart = r.split('|')[0]
+          db_id = tairPart.split(':')[1] + ':' + tairPart.split(':')[2]
+          link = 'https://www.arabidopsis.org/publication?key=' + db_id
           break
         case 'DOI':
           link = 'https://doi.org/' + db_id

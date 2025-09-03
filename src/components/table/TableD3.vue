@@ -72,7 +72,7 @@
           "
           @click="downloadOrtholog()"
         >
-          Download Plant Orthologs
+          Download Orthologs
         </button>
         <span v-if="downloading_ortho == 'downloading'"> Downloading... </span>
         <json-csv
