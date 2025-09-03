@@ -839,7 +839,8 @@ export default {
           // Extract only the TAIR part before the pipe
           let tairPart = r.split('|')[0]
           db_id = tairPart.split(':')[1] + ':' + tairPart.split(':')[2]
-          link = 'https://www.arabidopsis.org/publication?key=' + db_id
+          link =
+            'https://www.arabidopsis.org/servlets/TairObject?accession=' + db_id
           break
         case 'DOI':
           link = 'https://doi.org/' + db_id
