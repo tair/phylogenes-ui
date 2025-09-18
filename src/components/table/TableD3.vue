@@ -27,7 +27,7 @@
       <template slot="body" slot-scope="props">
         <div>
           <i
-            >Click on a gene (leaf node on the tree) to download its plant
+            >Click on a gene (leaf node on the tree) to download its
             orthologs</i
           >
         </div>
