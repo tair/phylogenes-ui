@@ -95,18 +95,25 @@
 <script>
 import treelayout from '../components/tree/TreeLayout'
 import tablelayout from '../components/table/TableD3'
-import intersect from '../components/tree/Intersection'
-import searchBox from '../components/search/SearchBox'
 import SurveyPopupContent from '../components/SurveyPopupContent'
 
 import * as d3 from 'd3'
-import axios from 'axios/index'
+import axios from 'axios'
 import { mapActions } from 'vuex'
 import { mapGetters } from 'vuex'
 import { setTimeout } from 'timers'
 import { Promise } from 'q'
 
 import * as types from '../store/types_treedata'
+import {
+  pruneTree,
+  pruneGraftedTree,
+  downloadFasta,
+  downloadAsFile,
+  handleApiError,
+  LOADING_OPERATIONS,
+} from '../services'
+import { loadingService } from '../services'
 import customModal from '@/components/modal/CustomModal'
 import popupTableOrganism from '@/components/table/PopupTableOrganism'
 import baseCell from '@/components/table/cells/BaseTableCell'
@@ -183,13 +190,6 @@ export default {
   },
   data() {
     return {
-      REG_PRUNING_PANTHER_API:
-        process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/',
-      GRAFT_PRUNING_PANTHER_API:
-        process.env.VUE_APP_TOMCAT_URL + '/panther/grafting/prune',
-      DOWNLOAD_FASTA_API: process.env.VUE_APP_TOMCAT_URL + '/panther/fastadoc/',
-      DOWNLOAD_PRUNED_FASTA_API:
-        process.env.VUE_APP_TOMCAT_URL + '/panther/pruning/fastadoc/',
       phyloXML_URL: process.env.VUE_APP_S3_URL,
       phyloCSV_URL: process.env.VUE_APP_CSV_S3_URL,
       defaultCols: [
@@ -819,22 +819,26 @@ export default {
       let link = ''
       let db_code = r.split(':')[0]
       let db_id = r.split(':')[1]
+      console.log(db_code, db_id)
       switch (db_code) {
         case 'PMID':
           link = 'https://pubmed.ncbi.nlm.nih.gov/' + db_id
           break
         case 'GO_REF':
-          link =
-            'https://github.com/geneontology/go-site/blob/master/metadata/gorefs/goref-' +
-            db_id +
-            '.md'
+          link = 'https://geneontology.org/GO_REF/' + db_id
           break
         case 'MGI':
           db_id = db_id + ':' + r.split(':')[2]
           link = 'http://www.informatics.jax.org/accession/' + db_id
           break
+        case 'AGI_LocusCode':
+          link = 'https://www.arabidopsis.org/locus?name=' + db_id
+          break
         case 'TAIR':
-          db_id = db_id + ':' + r.split(':')[2]
+          // Handle cases like "TAIR:Publication:501785323|PMID:31170927"
+          // Extract only the TAIR part before the pipe
+          let tairPart = r.split('|')[0]
+          db_id = tairPart.split(':')[1] + ':' + tairPart.split(':')[2]
           link =
             'https://www.arabidopsis.org/servlets/TairObject?accession=' + db_id
           break
@@ -1250,84 +1254,69 @@ export default {
       }
     },
     // ~~~~~~~~~~~~~~ Axios REST calls
-    download_fasta_from_server() {
-      let api = this.DOWNLOAD_FASTA_API + this.treeId
-      if (this.unprunedTaxonIds.length > 0) {
-        api = this.DOWNLOAD_PRUNED_FASTA_API + this.treeId
+    async download_fasta_from_server() {
+      loadingService.setLoading(LOADING_OPERATIONS.FASTA_DOWNLOAD, true, this)
+
+      try {
+        const fastaText = await downloadFasta(
+          this.treeId,
+          this.unprunedTaxonIds
+        )
+        downloadAsFile(fastaText, `${this.treeId}.txt`, 'text/plain')
+      } catch (error) {
+        console.error('FASTA download failed:', error)
+        handleApiError(error, 'FASTA download')
+      } finally {
+        loadingService.setLoading(
+          LOADING_OPERATIONS.FASTA_DOWNLOAD,
+          false,
+          this
+        )
       }
-      this.isLoading = true
-      axios({
-        method: 'POST',
-        url: api,
-        data: {
-          taxonIdsToShow: this.unprunedTaxonIds,
-        },
-        timeout: 200000,
-      })
-        .then((res) => {
-          var msa_text = res.data
-          var link = document.createElement('a')
-          link.download = this.treeId + '.txt'
-          var blob = new Blob([msa_text], { type: 'text/plain' })
-          link.href = window.URL.createObjectURL(blob)
-          link.click()
-          this.isLoading = false
-        })
-        .catch((err) => {
-          console.error('downloadMSA error ', err)
-        })
     },
-    graftedPruning(taxonList) {
-      let api = this.GRAFT_PRUNING_PANTHER_API
-      let stored_seq = this.store_getGraftSeq
-      axios({
-        method: 'POST',
-        url: api,
-        data: {
-          sequence: stored_seq,
-          taxonIdsToShow: taxonList,
-        },
-        timeout: 200000,
-      })
-        .then((res) => {
-          this.isLoading = false
-          this.showPopup = false
-          this.prunedLoaded = true
-          let prunedJson = res.data
-          this.analyzeCompleted = false
-          this.loadPrunedJson(prunedJson)
-          this.$refs.tableLayout.onPruneLoading(false)
-        })
-        .catch((err) => {
-          console.error('error ', err)
-          this.isLoading = false
-          this.resetPruning()
-          this.$refs.tableLayout.onPruneLoading(false)
-        })
+    async graftedPruning(taxonList) {
+      const stored_seq = this.store_getGraftSeq
+      loadingService.setLoading(LOADING_OPERATIONS.GRAFTED_PRUNING, true, this)
+
+      try {
+        const prunedJson = await pruneGraftedTree(stored_seq, taxonList)
+
+        this.showPopup = false
+        this.prunedLoaded = true
+        this.analyzeCompleted = false
+        this.loadPrunedJson(prunedJson)
+        this.$refs.tableLayout.onPruneLoading(false)
+      } catch (error) {
+        console.error('Grafted pruning failed:', error)
+        handleApiError(error, 'grafted tree pruning')
+        this.resetPruning()
+        this.$refs.tableLayout.onPruneLoading(false)
+      } finally {
+        loadingService.setLoading(
+          LOADING_OPERATIONS.GRAFTED_PRUNING,
+          false,
+          this
+        )
+      }
     },
-    regularPruning(taxonList) {
-      axios({
-        method: 'POST',
-        url: this.REG_PRUNING_PANTHER_API + this.treeId,
-        data: {
-          taxonIdsToShow: taxonList,
-        },
-        timeout: 200000,
-      })
-        .then((res) => {
-          this.isLoading = false
-          this.showPopup = false
-          this.prunedLoaded = true
-          let prunedJson = res.data
-          this.loadPrunedJson(prunedJson)
-          this.$refs.tableLayout.onPruneLoading(false)
-        })
-        .catch((err) => {
-          console.error('error ', err)
-          this.isLoading = false
-          this.resetPruning()
-          this.$refs.tableLayout.onPruneLoading(false)
-        })
+    async regularPruning(taxonList) {
+      loadingService.setLoading(LOADING_OPERATIONS.TREE_PRUNING, true, this)
+
+      try {
+        const prunedJson = await pruneTree(this.treeId, taxonList)
+
+        this.showPopup = false
+        this.prunedLoaded = true
+        this.loadPrunedJson(prunedJson)
+        this.$refs.tableLayout.onPruneLoading(false)
+      } catch (error) {
+        console.error('Tree pruning failed:', error)
+        handleApiError(error, 'tree pruning')
+        this.resetPruning()
+        this.$refs.tableLayout.onPruneLoading(false)
+      } finally {
+        loadingService.setLoading(LOADING_OPERATIONS.TREE_PRUNING, false, this)
+      }
     },
     loadPrunedJson(treeJson) {
       if (!treeJson.search.tree_topology) {

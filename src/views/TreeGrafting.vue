@@ -71,30 +71,34 @@
 </template>
 
 <script>
-import axios from "axios/index";
-import { mapActions } from "vuex";
-import * as types from "../store/types_treedata";
+import { mapActions } from 'vuex'
+import * as types from '../store/types_treedata'
+import {
+  graftTree,
+  validateGraftResponse,
+  handleApiError,
+  LOADING_OPERATIONS,
+} from '../services'
+import { loadingService } from '../services'
 
 export default {
-  name: "TreeGrafting",
+  name: 'TreeGrafting',
   data() {
     return {
-      GRAFTING_PANTHER_API:
-        process.env.VUE_APP_TOMCAT_URL + "/panther/grafting",
       isLoading: false,
-      sequence_txt: "",
-      graftError: "",
-    };
+      sequence_txt: '',
+      graftError: '',
+    }
   },
   mounted() {
-    this.reset();
+    this.reset()
   },
   beforeRouteLeave(to, from, next) {
     // called when the route that renders this component is about to
     // be navigated away from.
     // has access to `this` component instance.
-    this.reset();
-    next();
+    this.reset()
+    next()
   },
   methods: {
     ...mapActions({
@@ -104,66 +108,61 @@ export default {
     }),
     reset() {
       if (!this.isLoading) {
-        this.graftError = "";
-        this.sequence_txt = "";
+        this.graftError = ''
+        this.sequence_txt = ''
       }
     },
-    graft() {
-      this.graftError = "";
-      let api = this.GRAFTING_PANTHER_API;
-      this.isLoading = true;
-      let processedSeq = this.processTxt();
-      axios({
-        method: "POST",
-        url: api,
-        data: {
-          sequence: processedSeq,
-        },
-        timeout: 200000,
-      })
-        .then((res) => {
-          let graftedTreeJson = res.data;
-          if (graftedTreeJson.search.error) {
-            this.graftError =
-              "Sorry, your sequence could not be grafted to a Phylogenes gene tree";
-            this.isLoading = false;
-          } else if (!graftedTreeJson.search.book) {
-            this.graftError = "Connection Timed Out";
-            this.isLoading = false;
-          } else {
-            this.store_setGraftSeq(processedSeq);
-            this.loadGraftedJson(graftedTreeJson);
-          }
-          this.isLoading = false;
-        })
-        .catch((err) => {
-          console.error("error ", err);
-          this.graftError = err.message;
-          this.isLoading = false;
-        });
+    async graft() {
+      this.graftError = ''
+
+      const processedSeq = this.processTxt()
+      loadingService.setLoading(LOADING_OPERATIONS.TREE_GRAFTING, true, this)
+
+      try {
+        const graftedTreeJson = await graftTree(processedSeq)
+
+        // Validate the response using the centralized validation
+        const validation = validateGraftResponse(graftedTreeJson)
+
+        if (!validation.isValid) {
+          this.graftError = validation.error
+          return
+        }
+
+        // Success - process the grafted tree
+        this.store_setGraftSeq(processedSeq)
+        this.loadGraftedJson(graftedTreeJson)
+      } catch (error) {
+        console.error('Tree grafting failed:', error)
+        this.graftError =
+          error.message || 'An error occurred during tree grafting'
+        handleApiError(error, 'tree grafting')
+      } finally {
+        loadingService.setLoading(LOADING_OPERATIONS.TREE_GRAFTING, false, this)
+      }
     },
     processTxt() {
-      var cleanString = this.sequence_txt.replace(/[|&;$%@"<>()+,]/g, "");
-      cleanString = this.sequence_txt.replace(/\r?\n|\r/g, "");
-      cleanString = this.sequence_txt.replace(/\s/g, "");
-      return cleanString;
+      var cleanString = this.sequence_txt.replace(/[|&;$%@"<>()+,]/g, '')
+      cleanString = this.sequence_txt.replace(/\r?\n|\r/g, '')
+      cleanString = this.sequence_txt.replace(/\s/g, '')
+      return cleanString
     },
     loadGraftedJson(treeJson) {
-      var treeId = treeJson.search.book;
+      var treeId = treeJson.search.book
       //Check if the treeId exists in solr database
       this.store_setPantherTreeFromApi(treeId).then((p) => {
         if (p == 0) {
           this.graftError =
-            "Sorry, your sequence could not be grafted to a Phylogenes gene tree";
-          this.isLoading = false;
+            'Sorry, your sequence could not be grafted to a Phylogenes gene tree'
+          this.isLoading = false
         } else {
-          this.store_setPantherTreeFromString(treeJson);
-          this.$router.push({ name: "treeGrafted" });
+          this.store_setPantherTreeFromString(treeJson)
+          this.$router.push({ name: 'treeGrafted' })
         }
-      });
+      })
     },
   },
-};
+}
 </script>
 <style scoped>
 @media only screen and (min-width: 1200px) {

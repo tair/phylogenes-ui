@@ -19,13 +19,15 @@
     "jquery": "^3.4.1",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.14",
+    "phylogenes-ui": "file:",
     "popper.js": "^1.14.3",
     "pretty-checkbox": "^3.0.3",
     "sass": "^1.49.9",
     "vue": "^2.5.16",
     "vue-json-csv": "^1.2.4",
     "vue-router": "^3.0.1",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.9.2",

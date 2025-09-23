@@ -1,0 +1,51 @@
+﻿Organism,displayName,common name,Abbrev name code,taxonID,Is plant?
+Amborella trichopoda,A. trichopoda,,AMBTC,13333,y
+Arabidopsis thaliana,A. thaliana,,ARATH,3702,y
+Brachypodium distachyon,purple false brome,purple false brome,BRADI,15368,y
+Brassica napus,rapeseed,rapeseed,BRANA,3708,y
+Brassica rapa subsp. Pekinensis,Chinese cabbage,Chinese cabbage,BRARP,51351,y
+Capsicum annuum,pepper,pepper,CAPAN,4072,y
+Chlamydomonas reinhardtii,C. reinhardtii,,CHLRE,3055,y
+Citrus sinensis,orange,orange,CITSI,2711,y
+Cucumis sativus,cucumber,cucumber,CUCSA,3659,y
+Erythranthe guttata,yellow monkeyflower,yellow monkeyflower,ERYGU,4155,y
+Eucalyptus grandis,flooded gum,flooded gum,EUCGR,71139,y
+Glycine max,soybean,soybean,SOYBN,3847,y
+Gossypium hirsutum,cotton,cotton,GOSHI,3635,y
+Helianthus annuus,sunflower ,sunflower ,HELAN,4232,y
+Hordeum vulgare subsp. vulgare,barley,barley,HORVV,112509,y
+Klebsormidium nitens,K. nitens,,KLENI,105231,y
+Juglans regia,walnut,walnut,JUGRE,51240,y
+Lactuca sativa,lettuce,lettuce,LACSA,4236,y
+Manihot esculenta,cassava,cassava,MANES,3983,y
+Marchantia polymorpha,common liverwort,common liverwort,MARPO,3197,y
+Medicago truncatula,barrelclover,barrelclover,MEDTR,3880,y
+Musa acuminata subsp. malaccensis,banana,banana,MUSAM,214687,y
+Nelumbo nucifera,sacred lotus,sacred lotus,NELNU,4432,y
+Nicotiana tabacum,tobacco,tobacco,TOBAC,4097,y
+Oryza sativa,rice,rice,ORYSJ,39947,y
+Physcomitrella patens,P. patens,,PHYPA,3218,y
+Populus trichocarpa,black cottonwood,black cottonwood,POPTR,3694,y
+Prunus persica,peach,peach,PRUPE,3760,y
+Ricinus communis,castor bean,castor bean,RICCO,3988,y
+Selaginella moellendorffii,S. moellendorffii,,SELML,88036,y
+Setaria italica,foxtail millet,foxtail millet,SETIT,4555,y
+Solanum lycopersicum,tomato,tomato,SOLLC,4081,y
+Solanum tuberosum,potato,potato,SOLTU,4113,y
+Sorghum bicolor,sorghum,sorghum,SORBI,4558,y
+Spinacia oleracea,spinach,spinach,SPIOL,3562,y
+Theobroma cacao,cocoa,cocoa,THECC,3641,y
+Triticum aestivum,wheat,wheat,WHEAT,4565,y
+Vitis vinifera,grape,grape,VITVI,29760,y
+Zea mays,corn,corn,MAIZE,4577,y
+Zostera marina,eelgrass,eelgrass,ZOSMR,29655,y
+Caenorhabditis elegans,nematode worm,nematode worm,CAEEL,6239,
+Danio rerio,zebrafish,zebrafish,DANRE,7955,
+Dictyostelium discoideum,slime mold,slime mold,DICDI,44689,
+Drosophila melanogaster,fruit fly,fruit fly,DROME,7227,
+Escherichia coli,E. coli,,ECOLI,83333,
+Homo sapiens,human,human,HUMAN,9606,
+Mus musculus,mouse,mouse,MOUSE,10090,
+Rattus norvegicus,rat,rat,RAT,10116,
+Saccharomyces cerevisiae,budding yeast,budding yeast,YEAST,559292,
+Schizosaccharomyces pombe,fission yeast,fission yeast,SCHPO,284812,

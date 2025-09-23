@@ -10,7 +10,12 @@
         <tr v-for="row in data">
           <td v-for="cell in row">
             <span v-if="!cell.type">{{ cell }}</span>
-            <a v-if="cell.type == 'link'" v-bind:href="cell.link" target="_blank">{{ cell.text }}</a>
+            <a
+              v-if="cell.type == 'link'"
+              v-bind:href="cell.link"
+              target="_blank"
+              >{{ cell.text }}</a
+            >
             <a
               v-if="cell.type == 'links'"
               v-for="(ref, i) in cell.links"
