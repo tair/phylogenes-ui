@@ -1018,9 +1018,20 @@ export default {
       let link_text = null
       switch (organism) {
         case 'Arabidopsis thaliana':
-          link_text =
-            'http://www.arabidopsis.org/servlets/TairObject?type=locus&name=' +
-            gene_id
+          // TAIR3-825: upstream gene_id for Arabidopsis entries arrives as
+          // "locus=<numericKey>" (e.g. "locus=2120402"). Building the legacy
+          // /servlets/TairObject?type=locus&name=locus=<key> URL produces a
+          // 404 because TAIR redirects to /locus?name=locus%3D<key>, which
+          // has the literal "locus=" inside the name param. Strip the
+          // "locus=" prefix and target the modern /locus?key=<numericKey>
+          // route. If a bare AGI name ever arrives (e.g. "AT4G20260"), fall
+          // back to /locus?name=<name>.
+          if (gene_id && gene_id.startsWith('locus=')) {
+            link_text =
+              'https://www.arabidopsis.org/locus?key=' + gene_id.slice(6)
+          } else {
+            link_text = 'https://www.arabidopsis.org/locus?name=' + gene_id
+          }
           break
         case 'Zea mays':
           link_text = 'https://www.maizegdb.org/gene_center/gene/' + gene_id
