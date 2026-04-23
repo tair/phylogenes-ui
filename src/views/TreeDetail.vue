@@ -832,7 +832,17 @@ export default {
           link = 'http://www.informatics.jax.org/accession/' + db_id
           break
         case 'AGI_LocusCode':
-          link = 'https://www.arabidopsis.org/locus?name=' + db_id
+          // TAIR3-825: upstream reference strings are "AGI_LocusCode:locus=<key>"
+          // (e.g. "AGI_LocusCode:locus=2120402"). The split above leaves
+          // db_id = "locus=<key>" — strip the "locus=" prefix and target
+          // TAIR's /locus?key=<numericKey> route. If a bare AGI name ever
+          // arrives (e.g. "AT4G20260"), fall back to /locus?name=.
+          if (db_id && db_id.startsWith('locus=')) {
+            link =
+              'https://www.arabidopsis.org/locus?key=' + db_id.slice(6)
+          } else {
+            link = 'https://www.arabidopsis.org/locus?name=' + db_id
+          }
           break
         case 'TAIR':
           // Handle cases like "TAIR:Publication:501785323|PMID:31170927"
