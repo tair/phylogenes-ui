@@ -832,14 +832,16 @@ export default {
           link = 'http://www.informatics.jax.org/accession/' + db_id
           break
         case 'AGI_LocusCode':
-          // TAIR3-825: upstream reference strings are "AGI_LocusCode:locus=<key>"
-          // (e.g. "AGI_LocusCode:locus=2120402"). The split above leaves
-          // db_id = "locus=<key>" — strip the "locus=" prefix and target
-          // TAIR's /locus?key=<numericKey> route. If a bare AGI name ever
-          // arrives (e.g. "AT4G20260"), fall back to /locus?name=.
+          // TAIR3-825: upstream reference strings are
+          // "AGI_LocusCode:locus=<tair_object_id>". The numeric id is the
+          // legacy tair_object_id, NOT TAIR3's internal locus_id (they are
+          // distinct numbering systems). Route via ?accession=<objectId>
+          // so TAIR3's /detail/locus/accession endpoint resolves the
+          // tair_object_id → locus_id server-side. If a bare AGI name
+          // ever arrives (e.g. "AT4G20260"), fall back to /locus?name=.
           if (db_id && db_id.startsWith('locus=')) {
             link =
-              'https://www.arabidopsis.org/locus?key=' + db_id.slice(6)
+              'https://www.arabidopsis.org/locus?accession=' + db_id.slice(6)
           } else {
             link = 'https://www.arabidopsis.org/locus?name=' + db_id
           }
