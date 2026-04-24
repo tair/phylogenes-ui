@@ -1018,9 +1018,21 @@ export default {
       let link_text = null
       switch (organism) {
         case 'Arabidopsis thaliana':
-          link_text =
-            'http://www.arabidopsis.org/servlets/TairObject?type=locus&name=' +
-            gene_id
+          // TAIR3-825: upstream gene_id for Arabidopsis entries is the
+          // legacy tair_object_id, formatted as "locus=<objectId>"
+          // (e.g. "locus=2120402"). TAIR3 keys locus pages by a different
+          // internal locus_id (e.g. 127368 for AT4G20260), so we can't
+          // use ?key=<objectId>. Use ?accession=<objectId>, which hits
+          // TAIR3's /detail/locus/accession endpoint and resolves the
+          // tair_object_id to locus_id server-side before rendering.
+          // If a bare AGI name ever arrives (e.g. "AT4G20260"), fall
+          // back to /locus?name=<name>.
+          if (gene_id && gene_id.startsWith('locus=')) {
+            link_text =
+              'https://www.arabidopsis.org/locus?accession=' + gene_id.slice(6)
+          } else {
+            link_text = 'https://www.arabidopsis.org/locus?name=' + gene_id
+          }
           break
         case 'Zea mays':
           link_text = 'https://www.maizegdb.org/gene_center/gene/' + gene_id
