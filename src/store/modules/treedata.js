@@ -2,8 +2,6 @@ import * as types from '../types_treedata'
 import axios from 'axios/index'
 
 const API_URL = process.env.VUE_APP_API_URL + '/api/panther'
-const TREE_S3_URL = process.env.VUE_APP_TREE_S3_URL
-const MSA_S3_URL = process.env.VUE_APP_MSA_S3_URL
 
 const state = {
   treedata: {
@@ -173,7 +171,7 @@ const actions = {
   },
   [types.TREE_ACTION_SET_PANTHER_TREE]: (context, payload) => {
     if (!payload) return
-    let treeUrl = TREE_S3_URL + payload + '.json'
+    let treeUrl = API_URL + '/tree-data/' + payload
     return new Promise((result, rej) => {
       axios({
         method: 'GET',
@@ -266,7 +264,7 @@ const actions = {
   },
   [types.TREE_ACTION_SET_MSADATA]: (context, payload) => {
     if (!payload) return
-    let msaUrl = MSA_S3_URL + payload + '.json'
+    let msaUrl = API_URL + '/msa-data/' + payload
     return new Promise((result, rej) => {
       axios({
         method: 'GET',
