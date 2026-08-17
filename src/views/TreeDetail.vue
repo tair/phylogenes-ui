@@ -746,7 +746,7 @@ export default {
         curr_anno_data.goTerm = a.goName
 
         //~~goTermLink
-        let goTermLink = 'http://amigo.geneontology.org/amigo/term/' + a.goId
+        let goTermLink = 'https://amigo.geneontology.org/amigo/term/' + a.goId
         curr_anno_data.goTermLink = goTermLink
         //~~code
         var code = ''
