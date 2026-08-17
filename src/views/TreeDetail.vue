@@ -761,10 +761,12 @@ export default {
 
         curr_anno_data.code = code
         //~~source
-        curr_anno_data.source = 'QuickGO'
+        curr_anno_data.source = 'AmiGO'
         //~~sourceLink
+        //AmiGO's gene_product path is case sensitive, uniprotId arrives lowercased
         curr_anno_data.sourceLink =
-          'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=' + uniprotId
+          'https://amigo.geneontology.org/amigo/gene_product/UniProtKB:' +
+          uniprotId.toUpperCase()
 
         let uniqueId_matched_idx = annoList.findIndex(
           (l) => l.unique_id == curr_anno_data.unique_id
